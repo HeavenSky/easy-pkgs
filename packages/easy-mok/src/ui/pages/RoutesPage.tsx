@@ -1,16 +1,18 @@
 import { FileCode2, Plus, Search } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useLocation, useParams, useSearchParams } from "wouter";
 import type { RouteSummary } from "@/api/contract";
 import { useMeta, useRoutes } from "@/api/queries";
-import { NewRouteDialog } from "@/components/NewRouteDialog";
-import { RouteDetail } from "@/components/RouteDetail";
 import { MethodBadge, Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/state";
 import { confirmLeave } from "@/lib/unsaved";
 import { cn, relativeTime } from "@/lib/utils";
+
+// 详情与新建表单(react-hook-form)只在选中路由或点新建时加载
+const RouteDetail = lazy(() => import("@/components/RouteDetail").then(m => ({ default: m.RouteDetail })));
+const NewRouteDialog = lazy(() => import("@/components/NewRouteDialog").then(m => ({ default: m.NewRouteDialog })));
 
 const METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "ALL"];
 
@@ -141,9 +143,13 @@ export const RoutesPage = () => {
 				</div>
 			</aside>
 			<section className="min-w-0 flex-1 overflow-auto">
-				{id && routes.data?.some(r => r.id === id) ? <RouteDetail key={id} id={id} /> : !routes.isPending && <EmptyState title="选择左侧的一个路由" />}
+				{id && routes.data?.some(r => r.id === id) ? <Suspense fallback={<Skeleton rows={8} />}><RouteDetail key={id} id={id} /></Suspense> : !routes.isPending && <EmptyState title="选择左侧的一个路由" />}
 			</section>
-			<NewRouteDialog open={creating} onClose={() => setCreating(false)} onCreated={routeId => navigate(`/routes/${routeId}`)} />
+			{creating && (
+				<Suspense fallback={null}>
+					<NewRouteDialog open onClose={() => setCreating(false)} onCreated={routeId => navigate(`/routes/${routeId}`)} />
+				</Suspense>
+			)}
 		</div>
 	);
 };

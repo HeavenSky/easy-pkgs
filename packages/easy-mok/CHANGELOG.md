@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- The admin page opens with about a quarter less JavaScript (gzip 179 KB to 135 KB): each page, the route detail panel and the new-route dialog load when you first open them.
+
 ## 0.0.2 (2026-10-16)
 
 ### Breaking changes

@@ -151,7 +151,8 @@ jobs:
             echo "$NAME@$VERSION 已在 npm 上, 跳过发布"
             exit 0
           fi
-          npm publish pack/*.tgz --provenance --access public --tag "${{ needs.build.outputs.dist_tag }}"
+          # 必须带 ./: 写成 pack/x.tgz 会被 npm 当成 GitHub 简写 <用户>/<仓库> 去 git 拉取
+          npm publish ./pack/*.tgz --provenance --access public --tag "${{ needs.build.outputs.dist_tag }}"
 
   release:
     needs: [build, publish]

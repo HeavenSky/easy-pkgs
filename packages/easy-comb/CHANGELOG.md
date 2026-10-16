@@ -4,7 +4,7 @@ easy-comb is based on [csscomb/csscomb.js](https://github.com/csscomb/csscomb.js
 
 0.0.1 lists all changes relative to csscomb 4.3.0; later versions list only the changes since the previous version.
 
-## Unreleased
+## 0.0.3 (2026-10-16)
 
 ### Changed
 

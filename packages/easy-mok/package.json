@@ -16,7 +16,7 @@
     "proxy",
     "msw-alternative"
   ],
-  "version": "0.0.2",
+  "version": "0.0.3",
   "homepage": "https://github.com/HeavenSky/easy-pkgs/tree/main/packages/easy-mok#readme",
   "bugs": {
     "url": "https://github.com/HeavenSky/easy-pkgs/issues"

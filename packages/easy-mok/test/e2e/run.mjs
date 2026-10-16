@@ -38,6 +38,21 @@ try {
 	await page.getByRole("tab", { name: "场景" }).click();
 	await page.getByRole("radio", { name: /不手动选择/ }).click();
 
+	await page.getByRole("button", { name: "新建场景" }).click();
+	const form = page.getByRole("form", { name: "新建场景" });
+	await form.getByLabel("场景名").fill("e2escript");
+	await form.getByRole("radio", { name: "JS 脚本" }).click();
+	const code = form.getByLabel("脚本").locator(".cm-content");
+	await code.click();
+	await page.keyboard.press("ControlOrMeta+a");
+	await page.keyboard.insertText("req => ({ script: req.params.id })");
+	await form.getByRole("button", { name: "保存" }).click();
+	await page.getByText("已新建场景「e2escript」").waitFor();
+	const scripted = await page.evaluate(async () => (await fetch("/api/user/5?__scene=e2escript")).json());
+	check("管理页新建的脚本场景按处理函数执行", scripted?.script === "5", JSON.stringify(scripted));
+	const routeId = Buffer.from("GET /api/user/:id").toString("base64url");
+	await page.evaluate(async id => { await fetch(`/__mock/api/routes/${id}/scenes/e2escript`, { method: "DELETE", headers: { "x-mock-ui": "1" } }); }, routeId);
+
 	const biz = await context.newPage();
 	await biz.goto(`${BASE}/`);
 	await biz.locator("[data-easy-mok=float]").waitFor({ state: "attached" });

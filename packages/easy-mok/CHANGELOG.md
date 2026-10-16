@@ -2,6 +2,17 @@
 
 ## 0.0.2 (2026-10-16)
 
+### Breaking changes
+
+- Pages on private-network IPs (such as `http://192.168.1.9:5173`) no longer get cross-origin access to mock responses unless `lan` is on, so other machines on your LAN cannot read them with your credentials; pages on the same IP as the mock server, on any port, still work. To migrate, start with `--lan` or set `MOCK_LAN=1` if a page on another LAN machine calls your mocks ([guide](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/docs/security.md#let-pages-on-other-origins-read-mock-responses)).
+- A route whose value is `null` in a mock file now responds with a JSON `null` body, like `null` in `__gui__.json`, instead of being skipped silently. To keep a route off, remove it or set it to `undefined` ([guide](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/docs/writing-mocks.md#declare-routes-and-scenes)).
+
+### Added
+
+- Write a scene as a JavaScript handler on the admin page: choose **JS script** (`JS 脚本`) in the scene editor; scripts are checked on save and accepted only from the same machine ([guide](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/docs/scenes.md#write-a-scene-as-a-script-on-the-admin-page)).
+- A one-time warning with the path and how to create it when the mock folder does not exist, for `createMock`, the Vite plugin, `startMock`, and the CLI ([guide](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/docs/connect.md#create-the-mock-folder)).
+- In the CLI, `--name=-value` passes values that start with `-`, and a bare `--` (as some package managers forward it) is ignored ([guide](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/docs/standalone.md#pass-values-to-flags)).
+
 ### Fixed
 
 - Admin-created routes with a `null` response body now load and replay `null`, instead of failing with 500 and leaving a dead entry in `__gui__.json` ([guide](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/docs/files.md#replay-saved-routes-and-scenes)).
@@ -9,11 +20,8 @@
 - A route that fails to load after creation now rolls back `__gui__.json` and its scene file, and the admin API returns `LOAD_ERROR` with the related diagnostics ([guide](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/docs/files.md#recover-when-a-new-route-fails-to-load)).
 - `--folder -v` and similar now report a missing value and exit with code 1, instead of using `-v` as the folder ([guide](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/docs/standalone.md#pass-values-to-flags)).
 - A missing `--builtin` file now reports its own path and exits with code 1 ([guide](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/docs/standalone.md#pass-values-to-flags)).
-
-### Added
-
-- A one-time warning with the path and how to create it when the mock folder does not exist, for `createMock`, the Vite plugin, `startMock`, and the CLI ([guide](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/docs/connect.md#create-the-mock-folder)).
-- In the CLI, `--` ends option parsing, and `--name=-value` passes values that start with `-` ([guide](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/docs/standalone.md#pass-values-to-flags)).
+- A hand-edited `__gui__.json` that is not a valid JSON object is no longer overwritten by the admin page; changes fail with `GUI_FILE_INVALID` until you fix or delete the file ([guide](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/docs/files.md#fix-a-hand-edited-__gui__json)).
+- A mock folder created later now loads without a restart even when its parent directories did not exist at startup ([guide](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/docs/connect.md#create-the-mock-folder)).
 
 ## 0.0.1 (2026-10-16)
 

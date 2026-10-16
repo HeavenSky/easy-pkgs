@@ -20,6 +20,6 @@ Setting `hosts` to `*` turns off the Host check for mock routes; the admin API k
 
 ## Let pages on other origins read mock responses
 
-Mock responses send cross-origin headers only to trusted origins: `localhost` and `*.localhost`, loopback and private-network IPs, pages on the same Host as the request, and the names in `hosts`. easy-mok never echoes an arbitrary `Origin`.
+Mock responses send cross-origin headers only to trusted origins: `localhost` and `*.localhost`, loopback IPs, pages on the same Host as the request, pages on the same IP as the request on another port, and the names in `hosts`. Private-network IPs are trusted only when `lan` is on (`MOCK_LAN=1` or `--lan`), so a page served by another machine on your LAN cannot read mock responses by default. easy-mok never echoes an arbitrary `Origin`.
 
 Other web pages get no `access-control-allow-origin`, so the browser blocks them from reading the response. This keeps any website you happen to open from reading mock and proxy responses with your credentials. If your frontend runs on a custom domain, add it to `MOCK_HOSTS`.

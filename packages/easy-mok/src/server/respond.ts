@@ -29,9 +29,9 @@ export type Next = (err?: unknown) => void;
 
 const firstHeader = (req: Req, name: string) => String(req.headers[name] || "").split(",")[0].trim();
 
-export const setCors = (req: Req, res: Res, hosts: Set<string>) => {
+export const setCors = (req: Req, res: Res, hosts: Set<string>, lan = false) => {
 	const { origin } = req.headers;
-	if (origin && !isTrustedOrigin(origin, req.headers.host, hosts)) { return; } // 不回显即由浏览器拦下读取
+	if (origin && !isTrustedOrigin(origin, req.headers.host, hosts, lan)) { return; } // 不回显即由浏览器拦下读取
 	res.setHeader("access-control-allow-origin", origin || "*");
 	origin && res.setHeader("access-control-allow-credentials", "true"); // 通配源时浏览器拒绝携带凭证
 	res.setHeader("access-control-allow-methods", firstHeader(req, "access-control-request-method") || "*");
@@ -104,11 +104,13 @@ type Slot = {
 
 const isProxyOptions = (v: unknown) => isPlainObject(v) && ("target" in v || "router" in v);
 
-export const createResponder = ({ registry, store, journal, hosts = [], ignore }: {
+export const createResponder = ({ registry, store, journal, hosts = [], lan = false, ignore }: {
 	registry: ReturnType<typeof createRegistry>,
 	store: ReturnType<typeof createStateStore>,
 	journal: ReturnType<typeof createJournal>,
 	hosts?: string[],
+	/** 是否把私有网段 IP 来源当作可信跨域来源, 与管理接口的 lan 同一开关 */
+	lan?: boolean,
 	/** 请求忽略规则; 命中的请求不进请求日志, 不打印终端日志, 路由匹配与响应照常 */
 	ignore?: { test: (method: string, pathname: string) => boolean },
 }) => {
@@ -272,7 +274,7 @@ export const createResponder = ({ registry, store, journal, hosts = [], ignore }
 				message: `easy-mok 拒绝了不受信任的 Host: ${hostname}. 本机名, IP 与 *.localhost 默认放行; 自定义域名请设置环境变量 MOCK_HOSTS=${hostname}(逗号分隔, .example.com 匹配子域名)或传入选项 hosts`,
 			}));
 		}
-		setCors(req, res, trustedHosts);
+		setCors(req, res, trustedHosts, lan);
 		if (preflight) { res.statusCode = 204; return res.end(); }
 		const active = activeScene(req, route, state, uri);
 		const scene = route.scenes.get(active.name) as Scene;
@@ -320,17 +322,17 @@ export const createResponder = ({ registry, store, journal, hosts = [], ignore }
 				res.setHeader("connection", "close"); // 剩余请求体未读完, 不复用连接
 				return res.end(JSON.stringify({ mock: true, route: route.key, message: err.message }));
 			}
-			if (scene.kind === "function") {
+			const callHandler = async (fn: Function) => {
 				let passed = false;
-				const out = await Promise.resolve((scene.value as Function)(req, res, (err?: unknown) => { passed = true; next(err); }));
+				const out = await Promise.resolve(fn(req, res, (err?: unknown) => { passed = true; next(err); }));
 				// 未响应也未交给宿主时把返回的数据当响应体, 免得 req => ({...}) 写法挂起
 				if (!passed && !res.headersSent && !res.writableEnded && isBodyValue(out)) { sendBody(res, out); }
-				return;
-			}
+			};
+			if (scene.kind === "function") { return callHandler(scene.value as Function); }
 			if (envelope) {
 				if (typeof routeState.status !== "number" && envelope.status) { res.status(envelope.status); }
 				Object.entries(envelope.headers || {}).forEach(([k, v]) => res.setHeader(k, v));
-				return sendBody(res, envelope.body);
+				return scene.handler ? callHandler(scene.handler) : sendBody(res, envelope.body);
 			}
 			return sendBody(res, scene.value);
 		};
@@ -347,6 +349,7 @@ export const createResponder = ({ registry, store, journal, hosts = [], ignore }
 
 	/** 管理页展示的场景类型: 无参函数调用前为 nullary, 之后按实际返回值为 function(返回数据)或 proxy */
 	const sceneKind = (scene: Scene): DisplayKind => {
+		if (scene.handler) { return "script"; }
 		if (scene.kind !== "proxy") { return scene.kind; }
 		const seen = observed.get(scene.value as Function);
 		return seen === "proxy" ? "proxy" : seen === "data" ? "function" : "nullary";

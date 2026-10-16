@@ -16,7 +16,7 @@ easy-mok requires Node.js 18 or later. It ships its own express 5 and http-proxy
 
 easy-mok loads mocks from the mock folder, `src/mocks` by default; when the folder does not exist, no request matches a mock. `createMock`, the Vite plugin, `startMock`, and the CLI then print a one-time warning with the folder path and how to create it.
 
-If the parent directory exists, a folder you create later loads automatically. If the parent directory does not exist either, or `watch` is `false`, restart easy-mok after creating the folder.
+A folder you create later loads automatically, even when its parent directories are created with it (`mkdir -p`). If `watch` is `false`, restart easy-mok after creating the folder.
 
 ## Mount it on your host
 

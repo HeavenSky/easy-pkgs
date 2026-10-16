@@ -239,14 +239,28 @@ describe("mock 路由的 Host 校验", () => {
 		for (const bad of ["null", "http://127.0.0.1.nip.io", "http://127.evil.test", "http://localhost.evil.test", "http://localhost@evil.test", "http://x.dev.example.com", "file://"]) {
 			expect([bad, await acao(bad)]).toEqual([bad, null]);
 		}
-		for (const ok of ["HTTP://LOCALHOST:3000", "http://[::1]:3000", "http://evil.localhost", "https://192.168.1.2", "http://a.corp.test"]) {
+		for (const ok of ["HTTP://LOCALHOST:3000", "http://[::1]:3000", "http://evil.localhost", "http://a.corp.test"]) {
 			expect([ok, await acao(ok)]).toEqual([ok, ok]);
 		}
+		expect(await acao("https://192.168.1.2")).toBeNull(); // 私有网段来源只在 lan 开启时放行
 		const patch = headers => ctx.api("/state", { method: "PATCH", body: "{}", headers: { "content-type": "application/json", ...headers } });
 		expect((await patch({ "content-type": "application/json-patch+json" })).status).toBe(400);
 		expect((await patch({ "content-type": "application/json; charset=utf-8" })).status).toBe(200);
 		expect((await patch({ "x-mock-ui": "true" })).status).toBe(403);
 		expect((await patch({ origin: "null" })).status).toBe(403);
+	});
+
+	it("私有网段来源只在 lan 开启时放行, 同一 IP 的其他端口始终放行", () => {
+		const { isTrustedOrigin } = loadSrc("security.ts");
+		const none = new Set();
+		expect(isTrustedOrigin("http://192.168.1.9:5173", "192.168.1.5:3000", none)).toBe(false);
+		expect(isTrustedOrigin("http://192.168.1.9:5173", "192.168.1.5:3000", none, true)).toBe(true);
+		expect(isTrustedOrigin("http://10.0.0.2", "localhost:3000", none, true)).toBe(true);
+		expect(isTrustedOrigin("http://192.168.1.5:5173", "192.168.1.5:3000", none)).toBe(true);
+		expect(isTrustedOrigin("http://[fd00::5]:5173", "[fd00::5]:3000", none)).toBe(true);
+		expect(isTrustedOrigin("http://8.8.8.8", "8.8.8.8:3000", none)).toBe(true); // 同机不同端口, 与公网与否无关
+		expect(isTrustedOrigin("http://evil.test:5173", "evil.test:3000", none)).toBe(false); // 域名仍要求 Host 完全一致
+		expect(isTrustedOrigin("http://8.8.8.8", "localhost:3000", none, true)).toBe(false);
 	});
 
 	it("hosts 含 * 时不校验", async () => {

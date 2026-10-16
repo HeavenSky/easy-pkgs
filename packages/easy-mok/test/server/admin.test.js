@@ -111,6 +111,48 @@ module.exports = {
 		expect((await ctx.api(`/routes/${idOf(USER)}/scenes/x`, { method: "PUT", json: { status: 999 } })).body.error.code).toBe("BAD_REQUEST");
 	});
 
+	it("脚本场景: 保存前编译检查, 回放时按处理函数执行, 状态码与响应头作为默认值", async () => {
+		fs.writeFileSync(path.join(ctx.dir, "mocks/_helper.js"), "module.exports = { twice: n => n * 2 };");
+		const url = `/routes/${idOf(USER)}/scenes/script`;
+		const script = `// 注释
+(req, res) => ({ id: req.params.id, q: req.query.q, twice: require("./_helper").twice(2) }); // 末尾分号与注释`;
+		const created = await ctx.api(url, { method: "PUT", json: { status: 202, headers: { "x-s": "1" }, body: { ignored: true }, script } });
+		expect(created.status).toBe(201);
+		expect(created.body).toMatchObject({ source: "json", kind: "script", editable: true, content: { script, body: null, status: 202 } });
+		const r = await ctx.fetch("/api/user/7?__scene=script&q=x");
+		expect(r.status).toBe(202);
+		expect(r.headers.get("x-s")).toBe("1");
+		expect(await r.json()).toEqual({ id: "7", q: "x", twice: 4 });
+		fs.writeFileSync(path.join(ctx.dir, "mocks/_helper.js"), "module.exports = { twice: n => n * 20 };"); // 脚本 require 的模块改动后热更新
+		await waitFor(async () => (await (await ctx.fetch("/api/user/7?__scene=script")).json()).twice === 40, 5000);
+		const own = await ctx.api(url, { method: "PUT", json: { script: "async (req, res) => { res.status(418).send('teapot'); }" }, headers: { "if-match": `"${created.body.etag}"` } });
+		expect(own.status).toBe(200);
+		const tea = await ctx.fetch("/api/user/7?__scene=script");
+		expect([tea.status, await tea.text()]).toEqual([418, "teapot"]);
+		for (const bad of ["(req) => {", "42", "   "]) {
+			const res = await ctx.api(`/routes/${idOf(USER)}/scenes/bad`, { method: "PUT", json: { script: bad } });
+			expect([bad, res.status, res.body.error.details.field]).toEqual([bad, 400, "script"]);
+		}
+		const created2 = await ctx.api("/routes", { method: "POST", json: { methods: ["POST"], path: "/api/scripted", response: { script: "req => ({ got: req.body })" } } });
+		expect(created2.status).toBe(201);
+		expect(await (await ctx.fetch("/api/scripted", { method: "POST", headers: { "content-type": "application/json" }, body: '{"a":1}' })).json()).toEqual({ got: { a: 1 } });
+		expect((await ctx.api(url, { method: "DELETE" })).status).toBe(204);
+		expect((await ctx.api(`/routes/${idOf("POST /api/scripted")}`, { method: "DELETE" })).status).toBe(204);
+	});
+
+	it("场景文件中无法编译的脚本记为诊断并忽略该场景", async () => {
+		const file = path.join(ctx.dir, "mocks/__scenes__/script-bad.json");
+		fs.writeFileSync(file, JSON.stringify({ key: USER, scenes: { broken: { script: "(req) => {" }, fine: { script: "() => 1" } } }));
+		ctx.mock.mock.registry.reload();
+		const diag = (await ctx.api("/meta")).body.diagnostics.find(d => d.type === "script-error");
+		expect(diag.message).toMatch(/场景 broken 的脚本无法编译/);
+		const scenes = (await ctx.api(`/routes/${idOf(USER)}`)).body.scenes.map(x => x.name);
+		expect(scenes).toContain("fine");
+		expect(scenes).not.toContain("broken");
+		fs.unlinkSync(file);
+		ctx.mock.mock.registry.reload();
+	});
+
 	it("新建与删除 GUI 路由", async () => {
 		const bad = await ctx.api("/routes", { method: "POST", json: { methods: ["GET"], path: "no-slash" } });
 		expect(bad.body.error.code).toBe("INVALID_ROUTE");
@@ -299,6 +341,21 @@ describe("空响应体", () => {
 		expect(await replayNull.text()).toBe("null");
 		expect(await (await ctx.fetch("/api/null")).text()).toBe("null");
 		expect((await ctx.api("/meta")).body.diagnostics).toEqual([]);
+	});
+
+	it("__gui__.json 不是合法 JSON 对象时拒绝写入, 不覆盖手改的内容", async () => {
+		const gui = path.join(ctx.dir, "mocks/__gui__.json");
+		const before = fs.readFileSync(gui, "utf8");
+		for (const broken of ['{ "GET /a": 1, }', "[1]"]) {
+			fs.writeFileSync(gui, broken);
+			const failed = await ctx.api("/routes", { method: "POST", json: { methods: ["GET"], path: "/api/guard", response: { body: 1 } } });
+			expect(failed.status).toBe(409);
+			expect(failed.body.error.code).toBe("GUI_FILE_INVALID");
+			expect(failed.body.error.message).toMatch(/拒绝写入/);
+			expect(fs.readFileSync(gui, "utf8")).toBe(broken);
+		}
+		fs.writeFileSync(gui, before);
+		ctx.mock.mock.registry.reload();
 	});
 
 	it("新建的路由未能加载时撤销写入并带出诊断", async () => {

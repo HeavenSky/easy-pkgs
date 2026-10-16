@@ -45,7 +45,7 @@ const listenError = (err: NodeJS.ErrnoException, host: string, port: number) => 
 
 /**
  * 独立启动 mock 服务. 未命中返回 404 JSON; 页面与 mock 不同源时跨域规则同挂载模式:
- * 本机, 私有网段 IP, 同 Host 与 hosts 中的来源才回显 access-control-allow-origin(未命中的 404 与预检同样适用).
+ * 本机, 同 Host, 同 IP 其他端口, hosts 与 lan 开启时私有网段 IP 的来源才回显 access-control-allow-origin(未命中的 404 与预检同样适用).
  */
 export const startMock = (options: StartOptions = {}): Promise<StartedMock> => {
 	const { port: portOpt, host: hostOpt, ...mockOptions } = options;
@@ -57,7 +57,7 @@ export const startMock = (options: StartOptions = {}): Promise<StartedMock> => {
 	const mock = createMock(mockOptions);
 	const trusted = new Set(mock.mock.options.hosts.map(h => h.toLowerCase()));
 	const server = http.createServer((req, res) => mock(req, res, () => {
-		setCors(req, res as any, trusted); // 让跨域页面读得到 404 说明, 预检直接放行
+		setCors(req, res as any, trusted, mock.mock.options.lan); // 让跨域页面读得到 404 说明, 预检直接放行
 		if (String(req.method).toUpperCase() === "OPTIONS" && req.headers["access-control-request-method"]) {
 			res.statusCode = 204;
 			res.end();
@@ -115,7 +115,7 @@ export const CLI_HELP = `用法: easy-mok [选项]
   --builtin <文件>    先于 mock 文件加载的内置路由, 支持 js / ts / esm (MOCK_BUILTIN)
   --no-ui             不提供管理页与管理接口 /__mock/              (MOCK_UI=0)
   --no-float          不提供页内悬浮条                           (MOCK_FLOAT=0)
-  --lan               允许私有网段访问管理接口                     (MOCK_LAN=1)
+  --lan               允许私有网段访问管理接口与跨域读取 mock        (MOCK_LAN=1)
   --hosts <a,b>       额外受信任的主机名, 逗号分隔                  (MOCK_HOSTS)
   --ignore <a,b>      追加请求忽略规则(不进请求日志), 逗号分隔      (MOCK_IGNORE)
   -h, --help          显示帮助
@@ -133,11 +133,8 @@ export const parseCliArgs = (argv: string[], env: NodeJS.ProcessEnv = process.en
 	const alias: Record<string, string> = { h: "help", v: "version" };
 	for (let i = 0; i < argv.length; i++) {
 		const arg = argv[i];
-		if (arg === "--") { // 结束选项解析; 之后都是位置参数, easy-mok 不接受
-			const rest = argv.slice(i + 1);
-			if (rest.length) { return { error: `不接受位置参数: ${rest.join(" ")}`, options: {} }; }
-			break;
-		}
+		// 忽略 --: pnpm run x -- --port 1 等会把 -- 原样传进来; easy-mok 没有位置参数, 不需要用它结束选项解析
+		if (arg === "--") { continue; }
 		const m = /^--?([\w-]+)(?:=(.*))?$/.exec(arg);
 		if (!m) { return { error: `无法识别的参数: ${arg}`, options: {} }; }
 		const name = arg.startsWith("--") ? m[1] : alias[m[1]];

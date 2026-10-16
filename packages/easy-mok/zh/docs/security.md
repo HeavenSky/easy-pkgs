@@ -20,6 +20,6 @@
 
 ## 让其他来源的页面读取 mock 响应
 
-mock 响应的跨域头只发给可信来源：`localhost` 与 `*.localhost`，回环与私有网段 IP，与请求同 Host 的页面，以及 `hosts` 中的主机名。easy-mok 不会回显任意 `Origin`。
+mock 响应的跨域头只发给可信来源：`localhost` 与 `*.localhost`，回环 IP，与请求同 Host 的页面，与请求同一 IP 但端口不同的页面，以及 `hosts` 中的主机名。私有网段 IP 只在开启 `lan`（`MOCK_LAN=1` 或 `--lan`）时才算可信，所以默认情况下局域网里其他机器提供的页面读不到 mock 响应。easy-mok 不会回显任意 `Origin`。
 
 其他网页拿不到 `access-control-allow-origin`，浏览器不允许它们读取响应。这样你随手打开的任意网站都无法带着你的凭证读取 mock 与代理响应。前端用自定义域名访问时，把它加进 `MOCK_HOSTS`。

@@ -33,6 +33,8 @@ module.exports = {
 	"OPTIONS /fn/opt": (req, res) => res.status(200).json({ own: true }),
 	"POST /fn/body": (req, res) => { global.__bodyHandled = (global.__bodyHandled || 0) + 1; res.json({ ok: 1 }); },
 	"GET /fn/opt": { opt: true },
+	"GET /n/nullish": null,
+	"GET /n/skipped": undefined,
 };
 `.replace(`"GET /api/dep": () => undefined,\n`, "");
 
@@ -99,6 +101,14 @@ describe.each(["express4", "express5"])("宿主 %s", hostName => {
 		expect(await (await ctx.fetch("/api/specific")).json()).toEqual({ generic: true });
 	});
 
+	it("代码中值为 null 的路由回放 null, undefined 的跳过", async () => {
+		const res = await ctx.fetch("/n/nullish");
+		expect(res.status).toBe(200);
+		expect(res.headers.get("content-type")).toMatch(/json/);
+		expect(await res.text()).toBe("null");
+		expect((await ctx.fetch("/n/skipped")).status).toBe(404);
+	});
+
 	it("同步与异步异常都返回 500 JSON", async () => {
 		const a = await ctx.fetch("/api/throw");
 		expect(a.status).toBe(500);
@@ -117,12 +127,12 @@ describe.each(["express4", "express5"])("宿主 %s", hostName => {
 		expect(miss.status).toBe(404);
 	});
 
-	it("跨域只放行本机, 私有网段与同 Host 来源, 不回显任意网页", async () => {
+	it("跨域只放行本机与同 Host 来源, 不回显任意网页; 私有网段来源默认不放行", async () => {
 		const acao = async origin => (await ctx.fetch("/api/text", { headers: { origin } })).headers.get("access-control-allow-origin");
 		expect(await acao("http://evil.test")).toBeNull();
 		expect(await acao("http://8.8.8.8")).toBeNull();
 		expect(await acao("null")).toBeNull();
-		expect(await acao("http://192.168.1.2:3000")).toBe("http://192.168.1.2:3000");
+		expect(await acao("http://192.168.1.2:3000")).toBeNull();
 		expect(await acao(ctx.base)).toBe(ctx.base);
 		expect((await ctx.fetch("/api/text")).headers.get("access-control-allow-origin")).toBe("*");
 	});

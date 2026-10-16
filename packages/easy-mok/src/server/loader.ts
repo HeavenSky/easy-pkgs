@@ -6,6 +6,7 @@ import { createJiti } from "jiti";
 import { compileRoute, matchRoute, parseKey, routeIdOf } from "./route";
 import type { CompiledRoute, ParsedKey } from "./route";
 import { codeScenes } from "./scene";
+import { compileScript } from "./script";
 import type { Scene } from "./scene";
 import { SCENES_DIR, GUI_FILE } from "./files";
 import type { SceneFile, createFileStore } from "./files";
@@ -13,7 +14,7 @@ import { etagOf, isPlainObject } from "./util";
 
 export type Diagnostic = {
 	type: "load-error" | "invalid-key" | "invalid-route" | "duplicate" | "missing-default"
-		| "orphan-scenes" | "broken-scene-file" | "state" | "stale-state",
+		| "orphan-scenes" | "broken-scene-file" | "script-error" | "state" | "stale-state",
 	message: string, file?: string, line?: number | null, key?: string, routeId?: string,
 };
 export type RouteEntry = {
@@ -50,6 +51,19 @@ export const isEntry = (folder: string, file: string) => {
 	if (!rel || rel.startsWith("..") || path.isAbsolute(rel)) { return false; }
 	if (rel === GUI_FILE) { return true; }
 	return isMockFile(file) && !CONFIG_JSON.test(path.basename(file)) && !rel.split(path.sep).some(skipName);
+};
+
+/** child 是 dir 本身或位于其下 */
+const isWithin = (dir: string, child: string) => {
+	const rel = path.relative(dir, child);
+	return !rel.startsWith("..") && !path.isAbsolute(rel);
+};
+
+/** dir 本身或最近的已存在祖先目录 */
+const nearestExisting = (dir: string) => {
+	let d = dir;
+	while (!fs.existsSync(d) && path.dirname(d) !== d) { d = path.dirname(d); }
+	return d;
 };
 
 /** 收集目录下的 mock 入口; 不跟随软链目录(软链环会无限递归), 目录不存在时返回空数组 */
@@ -175,9 +189,12 @@ export const createRegistry = (opt: {
 	const stats = new Map<string, { hits: number, lastHit: number | null }>();
 	const guiFile = path.join(folder, GUI_FILE);
 
-	const watcher = opt.watch === false ? null : watch(folder, {
+	// mock 目录不存在时监听最近的已存在祖先目录, 只放行通向 mock 目录的路径, 目录稍后创建(含多级)也能自动加载
+	const root = nearestExisting(folder);
+	const outside = (p: string) => root !== folder && !watchedDeps.has(p) && !isWithin(folder, p) && !isWithin(p, folder);
+	const watcher = opt.watch === false ? null : watch(root, {
 		ignoreInitial: true,
-		ignored: p => /[\\/]node_modules([\\/]|$)/.test(p),
+		ignored: p => /[\\/]node_modules([\\/]|$)/.test(p) || outside(p),
 		followSymlinks: false, // 与 walk 一致不跟随软链, 软链环会让 chokidar 报 ELOOP
 	});
 	// 未监听的 error 事件会让宿主进程退出; 权限, 句柄耗尽等错误只告警
@@ -204,9 +221,8 @@ export const createRegistry = (opt: {
 				diagnostics.push({ type: error.type, message: error.message, file: file || undefined, line, key });
 				return;
 			}
-			// 代码中值为 null / undefined 的 key 跳过; __gui__.json 由管理页写入, null 表示响应体为 null
-			const keep = values[key] != null || (values[key] === null && file === guiFile);
-			keep && snap.items.push({ key, value: values[key], parsed: parsed as ParsedKey, compiled: compiled as CompiledRoute, line });
+			// 值为 undefined 的 key 跳过(如 { "GET /x": process.env.X && ... }); null 与 __gui__.json 一致表示响应体为 null
+			values[key] !== undefined && snap.items.push({ key, value: values[key], parsed: parsed as ParsedKey, compiled: compiled as CompiledRoute, line });
 		});
 		return snap;
 	};
@@ -241,7 +257,14 @@ export const createRegistry = (opt: {
 		if (!watcher) { return; }
 		const want = new Set([...deps].filter(id => path.relative(folder, id).startsWith("..")));
 		watchedDeps.forEach(id => { if (!want.has(id)) { watcher.unwatch(id); watchedDeps.delete(id); } });
-		want.forEach(id => { if (!watchedDeps.has(id)) { watcher.add(id); watchedDeps.add(id); } });
+		want.forEach(id => { if (!watchedDeps.has(id)) { watchedDeps.add(id); watcher.add(id); } }); // 先登记, ignored 据此放行祖先目录监听下的依赖
+	};
+
+	/** 脚本场景运行时 require 的项目内模块并入依赖, 改动后与 mock 文件的依赖一样触发重载并清缓存 */
+	const trackScriptDep = (id: string) => {
+		if (!path.isAbsolute(id) || isForeign(id) || deps.has(id)) { return; }
+		[id, ...collectDeps(id)].forEach(dep => deps.add(dep));
+		syncWatch();
 	};
 
 	/** 诊断打印到终端: 按 类型 + 文件 + key 去重, 消息变化才再打印; 本轮不再出现的从记录中清除, 再次出现时重新打印 */
@@ -317,9 +340,16 @@ export const createRegistry = (opt: {
 			}
 			Object.entries(data.scenes).forEach(([name, env]) => {
 				const code = route.scenes.get(name);
+				let handler: Function | undefined;
+				if (env && typeof env.script === "string") {
+					try { handler = compileScript(env.script, folder, file, trackScriptDep); } catch (err) {
+						diagnostics.push({ type: "script-error", message: `场景 ${name} 的脚本无法编译, 已忽略该场景: ${(err as Error).message || err}`, file, key: data.key, routeId: route.id });
+						return;
+					}
+				}
 				route.scenes.set(name, {
 					name, source: "json", kind: "envelope", value: env, etag: etagOf(env),
-					overrides: !!code && code.source === "code",
+					overrides: !!code && code.source === "code", handler,
 				});
 			});
 		});
@@ -351,6 +381,7 @@ export const createRegistry = (opt: {
 			if (type === "add" && ownMock) { files.add(file); }
 			if (type === "unlink") { files.delete(file); }
 			if (type === "unlinkDir") { files.forEach(f => f.startsWith(file + path.sep) && files.delete(f)); }
+			if (type === "addDir" && file === folder) { walk(folder).forEach(f => files.add(f)); schedule(); } // 目录连同文件一起创建时补登已有入口
 			(ownMock || inScenes || deps.has(file) || type.startsWith("unlink")) && schedule();
 		});
 	}

@@ -9,7 +9,7 @@
 | 让 Vite、webpack-dev-server、Express、Connect、`node:http` 或 Fastify 提供 mock | [接入现有 dev server](connect.md) |
 | 不动任何 dev server 配置就跑起 mock | [独立运行 mock 服务](standalone.md) |
 | 编写 mock 文件、场景、处理函数与代理 | [编写 mock 文件](writing-mocks.md) |
-| 决定请求拿到哪个场景，设置延迟和状态码，或放行某个路由 | [切换场景与响应方式](scenes.md) |
+| 决定请求拿到哪个场景，用脚本写场景，设置延迟和状态码，或放行某个路由 | [切换场景与响应方式](scenes.md) |
 | 查看哪些请求走了 mock，把真实响应变成 mock | [查看请求并存为 mock](request-log.md) |
 | 不让浏览器探测和 dev server 内部请求刷屏 | [给请求日志降噪](ignore-rules.md) |
 | 判断哪些生成的文件该提交 | [提交管理页写入的文件](files.md) |

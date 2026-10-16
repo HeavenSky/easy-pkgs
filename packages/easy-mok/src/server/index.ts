@@ -32,7 +32,7 @@ export interface MockOptions {
 	ui?: boolean;
 	/** 是否提供页内悬浮条, 默认读 MOCK_FLOAT !== "0", ui 关闭时恒为 false */
 	float?: boolean;
-	/** 是否允许私有网段访问管理接口, 默认读 MOCK_LAN === "1" */
+	/** 是否允许私有网段访问管理接口, 并把私有网段 IP 来源当作可信跨域来源; 默认读 MOCK_LAN === "1" */
 	lan?: boolean;
 	/**
 	 * 额外受信任的 Host 名, 默认读 MOCK_HOSTS(逗号分隔); 以 . 开头时同时匹配子域名.
@@ -80,15 +80,10 @@ const resolveOptions = (options: MockOptions = {}) => {
 
 export type ResolvedOptions = ReturnType<typeof resolveOptions>;
 
-/**
- * mock 目录不存在时只警告不抛错, 否则之后的请求全部未命中而毫无提示.
- * chokidar 4 能监听到稍后创建的目录, 但要求上级目录已存在; 上级也不存在或关闭监听时需重启
- */
+/** mock 目录不存在时只警告不抛错, 否则之后的请求全部未命中而毫无提示; 关闭监听时创建后需重启 */
 const warnMissingFolder = (folder: string, watching: boolean) => {
 	if (fs.existsSync(folder)) { return; }
-	const later = watching && fs.existsSync(path.dirname(folder))
-		? "创建后自动加载, 无需重启"
-		: `创建后需重启 easy-mok 才能加载(${watching ? "上级目录也不存在, 无法监听" : "已关闭文件监听"})`;
+	const later = watching ? "创建后自动加载, 无需重启" : "创建后需重启 easy-mok 才能加载(已关闭文件监听)";
 	console.warn(`[easy-mok] mock 目录不存在: ${folder}\n  所有请求都不会命中 mock. 请创建该目录并放入 mock 文件(如 mkdir -p "${folder}"), ${later};`
 		+ " 或用 folder 选项 / --folder / MOCK_FOLDER 指向已有目录");
 };
@@ -127,7 +122,7 @@ export const createMock = (options?: MockOptions): MockApp => {
 	});
 	const journal = createJournal({ size: opt.logSize, onLog: entry => events.emit("log", entry) });
 	const ignore = createIgnore({ defaults: opt.ignoreDefaults, extra: opt.ignore, state: () => store.get().ignore });
-	const handler = createResponder({ registry, store, journal, hosts: opt.hosts, ignore });
+	const handler = createResponder({ registry, store, journal, hosts: opt.hosts, lan: opt.lan, ignore });
 	responder = handler;
 
 	const app = express();

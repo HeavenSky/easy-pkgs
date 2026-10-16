@@ -2,6 +2,7 @@
 import fs from "fs";
 import path from "path";
 import { MockError, isPlainObject, sha1, writeJsonAtomic } from "./util";
+import { SCRIPT_LIMIT } from "./script";
 import type { Envelope } from "./scene";
 
 export const SCENES_DIR = "__scenes__";
@@ -13,6 +14,16 @@ export type SceneFile = { key: string, scenes: Record<string, Envelope> };
 export const normalizeEnvelope = (raw: unknown): Envelope => {
 	if (!isPlainObject(raw)) { throw new MockError("BAD_REQUEST", 400, "响应必须是对象", { field: "response" }); }
 	const out: Envelope = { body: raw.body === undefined ? null : raw.body };
+	if (raw.script !== undefined && raw.script !== null) {
+		if (typeof raw.script !== "string" || !raw.script.trim()) {
+			throw new MockError("BAD_REQUEST", 400, "脚本必须是非空字符串", { field: "script" });
+		}
+		if (Buffer.byteLength(raw.script) > SCRIPT_LIMIT) {
+			throw new MockError("BAD_REQUEST", 400, `脚本不能超过 ${SCRIPT_LIMIT / 1024}KB`, { field: "script" });
+		}
+		out.body = null;
+		out.script = raw.script;
+	}
 	if (raw.status !== undefined && raw.status !== null) {
 		if (!Number.isInteger(raw.status) || (raw.status as number) < 100 || (raw.status as number) > 599) {
 			throw new MockError("BAD_REQUEST", 400, "状态码必须是 100-599 的整数", { field: "status" });
@@ -94,13 +105,20 @@ export const createFileStore = (folder: string) => {
 		}
 	};
 
+	/** 文件不存在时为空对象; 存在但不是 JSON 对象时抛 GUI_FILE_INVALID, 免得写入时整份覆盖手改的内容 */
 	const readGui = (): Record<string, unknown> => {
-		try {
-			const raw = JSON.parse(fs.readFileSync(guiFile, "utf8"));
-			return isPlainObject(raw) ? raw : {};
-		} catch (_error) {
-			return {};
+		let text: string;
+		try { text = fs.readFileSync(guiFile, "utf8"); } catch (err) {
+			if ((err as NodeJS.ErrnoException).code === "ENOENT") { return {}; }
+			throw new MockError("IO_ERROR", 500, "读取 __gui__.json 失败", undefined, { cause: err });
 		}
+		let raw: unknown;
+		let reason = "顶层必须是对象";
+		try { raw = text.trim() ? JSON.parse(text) : {}; } catch (err) { reason = (err as Error).message; }
+		if (!isPlainObject(raw)) {
+			throw new MockError("GUI_FILE_INVALID", 409, `${guiFile} 不是合法的 JSON 对象(${reason}), 为免覆盖其中内容已拒绝写入; 请先修复或删除该文件`, { file: guiFile });
+		}
+		return raw;
 	};
 
 	const updateGui = (mutate: (routes: Record<string, unknown>) => void) => {

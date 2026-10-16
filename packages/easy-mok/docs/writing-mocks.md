@@ -33,6 +33,8 @@ Each key is `METHOD[|METHOD][:weight] path`, and each value is either a single r
 module.exports = { "GET|POST /api/list": [] };
 ```
 
+A route whose value is `null` responds with a JSON `null` body. A route whose value is `undefined` is skipped, so `"GET /api/beta": process.env.BETA && handler` turns a route on only when `BETA` is set.
+
 ## Use JS, TS, ESM, or JSON
 
 Mock files can be `.js`, `.cjs`, `.mjs`, `.ts`, `.cts`, `.mts`, or `.json`, and `.d.ts` files are skipped. They load through [jiti](https://github.com/unjs/jiti), so CommonJS and ESM (`export default {...}`, `import { scenes } from "easy-mok"`) both work, and TS features such as `enum` need no extra config. Default imports of CommonJS modules work too.

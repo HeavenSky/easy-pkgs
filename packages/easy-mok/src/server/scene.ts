@@ -5,11 +5,13 @@ import type { MockState } from "./state";
 export const SCENES = Symbol.for("easy-mok.scenes");
 
 export type SceneKind = "data" | "function" | "proxy" | "envelope";
-/** 管理页展示的场景类型: 无参函数(内部 kind 为 proxy)尚未调用时为 nullary, 调用后按返回值为 function 或 proxy */
-export type DisplayKind = SceneKind | "nullary";
+/** 管理页展示的场景类型: 无参函数(内部 kind 为 proxy)尚未调用时为 nullary, 调用后按返回值为 function 或 proxy; 带脚本的信封为 script */
+export type DisplayKind = SceneKind | "nullary" | "script";
 export type SceneSource = "code" | "json";
-export type Envelope = { status?: number, headers?: Record<string, string>, body?: unknown, delay?: number };
-export type Scene = { name: string, source: SceneSource, kind: SceneKind, value: unknown, etag?: string, overrides?: boolean };
+/** script 为管理页写的处理函数源码; 有 script 时忽略 body */
+export type Envelope = { status?: number, headers?: Record<string, string>, body?: unknown, delay?: number, script?: string };
+/** handler 是 envelope 中 script 编译后的函数 */
+export type Scene = { name: string, source: SceneSource, kind: SceneKind, value: unknown, etag?: string, overrides?: boolean, handler?: Function };
 export type SceneLevel = "request" | "browser" | "route" | "group" | "default";
 export type ActiveScene = { name: string, level: SceneLevel, fallback: boolean };
 

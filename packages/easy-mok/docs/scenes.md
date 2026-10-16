@@ -31,6 +31,20 @@ The header and the query parameter select a scene for that request only and chan
 
 A scene group bundles one scene per route, for example "logged out" (`未登录`) or "VIP user" (`VIP 用户`). **Set as global** (`设为全局`) applies the group to everyone using this dev server. **Enable for this browser only** writes the `__mock_group` cookie instead, so teammates sharing the dev server keep their own scenes.
 
+## Write a scene as a script on the admin page
+
+When a fixed JSON body is not enough, choose **JS script** (`JS 脚本`) in the scene editor and write a handler function, the same way you write one in a mock file:
+
+```js
+// the last statement must be a function; helpers and comments may come before it
+const user = require("./_data/user.json"); // relative to the mock folder
+(req, res, next) => ({ ...user, id: req.params.id, page: req.query.page })
+```
+
+The function receives the parsed `req.params`, `req.query`, and `req.body`. Its return value becomes the response body, unless it responds itself with `res` or calls `next()` to hand the request to your dev server. The status code and headers in the editor are defaults the script can override. Local files the script requires reload on save, like those of mock files. The script is saved in the route's scene file under `__scenes__/`; a script that does not compile is rejected on save, and a hand-edited one that does not compile shows up on the diagnostics page.
+
+A script runs inside the mock server process with the same rights as your mock files, so easy-mok accepts script scenes only from the admin page on the same machine, even with `lan` on.
+
 ## Set delay, status code, or passthrough
 
 ![Behavior panel: delay, status code override, or passthrough to the real backend](images/behavior.png)

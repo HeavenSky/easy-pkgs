@@ -16,6 +16,7 @@ const TYPE_TEXT: Record<string, string> = {
 	"missing-default": "scenes() 缺少 default",
 	"orphan-scenes": "孤儿场景文件",
 	"broken-scene-file": "损坏的场景文件",
+	"script-error": "脚本无法编译",
 	state: "运行状态文件",
 	"stale-state": "失效的场景选择",
 };

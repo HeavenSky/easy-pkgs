@@ -73,6 +73,7 @@
     "multer": "^2.4.0"
   },
   "devDependencies": {
+    "@codemirror/lang-javascript": "^6.2.5",
     "@codemirror/lang-json": "^6.0.2",
     "@codemirror/lint": "^6.9.7",
     "@hookform/resolvers": "^5.9.1",

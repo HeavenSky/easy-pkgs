@@ -31,6 +31,20 @@ curl "http://127.0.0.1:4100/api/user/1?__scene=error"
 
 场景组为每个路由各选一个场景，打包在一起，例如「未登录」或「VIP 用户」。「设为全局」对所有使用这个 dev server 的人生效；「仅本浏览器启用」改为写 `__mock_group` cookie，共用 dev server 的同事保留各自的场景。
 
+## 在管理页用脚本写场景
+
+固定的 JSON 响应体不够用时，在场景编辑器里选「JS 脚本」，写一个处理函数，写法和 mock 文件里的一样：
+
+```js
+// 最后一条语句必须是函数；前面可以写辅助声明和注释
+const user = require("./_data/user.json"); // 相对 mock 目录
+(req, res, next) => ({ ...user, id: req.params.id, page: req.query.page })
+```
+
+函数拿到的 `req.params`、`req.query` 和 `req.body` 都已解析好。返回值就是响应体；也可以自己用 `res` 响应，或调用 `next()` 把请求交给 dev server。编辑器里的状态码和响应头是默认值，脚本可以覆盖。脚本 require 的本地文件保存后自动重新加载，和 mock 文件引用的文件一样。脚本保存在该路由 `__scenes__/` 下的场景文件里；无法编译的脚本在保存时就会被拒绝，手改后无法编译的会出现在诊断页。
+
+脚本在 mock 服务进程里运行，权限和 mock 文件相同，所以即使开启了 `lan`，easy-mok 也只接受本机管理页保存的脚本场景。
+
 ## 设置延迟、状态码或放行
 
 ![行为面板：设置延迟与状态码覆盖，或放行到真实后端](../../docs/images/behavior.png)

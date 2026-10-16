@@ -12,8 +12,11 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { ConfirmDialog } from "./ui/dialog";
 
-const KIND_TEXT: Record<SceneDetail["kind"], string> = { data: "数据", function: "函数", proxy: "代理", envelope: "JSON", nullary: "无参函数" };
-const KIND_TITLE: Partial<Record<SceneDetail["kind"], string>> = { nullary: "尚未被请求过; 首次请求后按返回值显示为「函数」(返回数据)或「代理」(返回含 target / router 的对象)" };
+const KIND_TEXT: Record<SceneDetail["kind"], string> = { data: "数据", function: "函数", proxy: "代理", envelope: "JSON", nullary: "无参函数", script: "脚本" };
+const KIND_TITLE: Partial<Record<SceneDetail["kind"], string>> = {
+	nullary: "尚未被请求过; 首次请求后按返回值显示为「函数」(返回数据)或「代理」(返回含 target / router 的对象)",
+	script: "在管理页编写的处理函数, 写法同 mock 文件中的 (req, res, next) => ...",
+};
 
 type Panel = { type: "view"; name: string } | { type: "edit"; name: string } | { type: "new"; initial?: Envelope; name?: string } | null;
 

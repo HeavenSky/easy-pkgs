@@ -25,7 +25,6 @@ export const main = async (argv: string[], env: NodeJS.ProcessEnv = process.env)
 			started.mock.mock.options.ui && !started.mock.mock.options.lan && lines.push("[easy-mok] 局域网访问管理页需加 --lan");
 		}
 		lines.push(`[easy-mok] mock 目录: ${started.mock.mock.options.folder}`);
-		console.log(lines.join("\n"));
 		let closing = false;
 		const stop = (signal: string) => {
 			if (closing) { return; }
@@ -33,8 +32,10 @@ export const main = async (argv: string[], env: NodeJS.ProcessEnv = process.env)
 			console.log(`[easy-mok] 收到 ${signal}, 正在关闭`);
 			started.close().then(() => process.exit(0), err => { console.error("[easy-mok] 关闭出错:", err); process.exit(1); });
 		};
+		// 先注册再打印就绪信息: 调用方看到就绪后立即发信号时, 未注册的信号会直接杀死进程且退出码为 null
 		process.once("SIGINT", () => stop("SIGINT"));
 		process.once("SIGTERM", () => stop("SIGTERM"));
+		console.log(lines.join("\n"));
 		return null;
 	} catch (err) {
 		console.error(`[easy-mok] 启动失败: ${(err as Error).message || err}`);

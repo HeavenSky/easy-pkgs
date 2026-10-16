@@ -33,6 +33,8 @@ module.exports = {
 module.exports = { "GET|POST /api/list": [] };
 ```
 
+值为 `null` 的路由返回 JSON `null` 响应体。值为 `undefined` 的路由会被跳过，所以写成 `"GET /api/beta": process.env.BETA && handler` 时，只有设置了 `BETA` 才启用这个路由。
+
 ## 用 JS、TS、ESM 或 JSON 写
 
 mock 文件可以是 `.js`、`.cjs`、`.mjs`、`.ts`、`.cts`、`.mts` 或 `.json`，`.d.ts` 不加载。文件经 [jiti](https://github.com/unjs/jiti) 加载，CommonJS 和 ESM（`export default {...}`、`import { scenes } from "easy-mok"`）都能用，`enum` 这类 TS 写法也无需额外配置。默认导入 CommonJS 模块同样可用。

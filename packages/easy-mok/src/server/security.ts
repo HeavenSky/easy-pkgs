@@ -35,14 +35,18 @@ export const hostListed = (hostname: string, hosts: Set<string>) => hosts.has(ho
 export const isTrustedHost = (hostname: string, hosts: Set<string>) => hostname === "localhost" || hostname.endsWith(".localhost")
 	|| net.isIP(hostname) > 0 || hostListed(hostname, hosts);
 
-/** mock 响应的跨域放行: 本机, 私有网段 IP, 与请求同 Host, 或 hosts 中的主机名; 其余来源不回显, 防止任意网页带凭证读取 */
-export const isTrustedOrigin = (origin: string, host: string | undefined, hosts: Set<string>) => {
+/**
+ * mock 响应的跨域放行: 本机, 与请求同 Host, 与请求同一 IP 的其他端口, hosts 中的主机名, lan 开启时再加私有网段 IP;
+ * 其余来源不回显, 防止任意网页(含同局域网其他机器上的页面)带凭证读取
+ */
+export const isTrustedOrigin = (origin: string, host: string | undefined, hosts: Set<string>, lan = false) => {
 	let url: URL;
 	try { url = new URL(origin); } catch (_error) { return false; }
 	const h = url.hostname.replace(/^\[|\]$/g, "").toLowerCase().replace(/\.$/, "");
 	// isLoopback 只认前缀, 必须先确认是 IP, 否则 127.0.0.1.nip.io 这类攻击者域名会被当成本机
-	return h === "localhost" || h.endsWith(".localhost") || (net.isIP(h) > 0 && (isLoopback(h) || isPrivate(h)))
-		|| url.host === String(host || "").toLowerCase() || hostListed(h, hosts);
+	const ip = net.isIP(h) > 0;
+	return h === "localhost" || h.endsWith(".localhost") || (ip && (isLoopback(h) || (lan && isPrivate(h))))
+		|| url.host === String(host || "").toLowerCase() || (ip && h === hostnameOf(host)) || hostListed(h, hosts);
 };
 
 export const createGuard = (opt: { lan: boolean, hosts: string[] }) => {

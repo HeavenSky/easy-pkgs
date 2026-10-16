@@ -4,7 +4,7 @@ const fs = require("fs");
 const http = require("http");
 const path = require("path");
 const { spawn } = require("child_process");
-const { listen, makeFixture, waitFor } = require("../helpers/server");
+const { listen, makeFixture, sleep, waitFor } = require("../helpers/server");
 const { loadSrc } = require("../helpers/src");
 
 const { startMock } = loadSrc();
@@ -53,12 +53,23 @@ describe("startMock", () => {
 			fs.writeFileSync(path.join(folder, "a.js"), "module.exports = { 'GET /api/later': { later: true } };");
 			await waitFor(async () => (await fetch(`${started.url}/api/later`)).status === 200, 5000);
 			await started.close();
+			// 上级目录也不存在: 监听最近的已存在祖先, 多级目录稍后创建同样自动加载
+			const deep = await startMock({ cwd: dir, folder: "x/y/mocks", stateFile: "state.json", port: 0 });
+			expect(warns.at(-1)).toMatch(/无需重启/);
+			fs.writeFileSync(path.join(dir, "sibling.js"), "module.exports = { 'GET /api/sibling': 1 };"); // 不在通往 mock 目录的路径上, 不加载
+			expect((await fetch(`${deep.url}/api/deep`)).status).toBe(404);
+			await sleep(300); // 等监听就绪
+			fs.mkdirSync(path.join(dir, "x/y/mocks"), { recursive: true });
+			fs.writeFileSync(path.join(dir, "x/y/mocks/a.js"), "module.exports = { 'GET /api/deep': { deep: true } };");
+			await waitFor(async () => (await fetch(`${deep.url}/api/deep`)).status === 200, 5000);
+			expect((await fetch(`${deep.url}/api/sibling`)).status).toBe(404);
+			await deep.close();
 			const nested = await startMock({ cwd: dir, folder: "no/such/mocks", stateFile: "state.json", port: 0, watch: false });
-			expect(warns.filter(w => w.includes("mock 目录不存在")).length).toBe(2);
+			expect(warns.filter(w => w.includes("mock 目录不存在")).length).toBe(3);
 			expect(warns.at(-1)).toMatch(/重启/);
 			await nested.close();
 			const ok = await startMock({ cwd: dir, folder: "mocks", stateFile: "state.json", port: 0, watch: false });
-			expect(warns.filter(w => w.includes("mock 目录不存在")).length).toBe(2);
+			expect(warns.filter(w => w.includes("mock 目录不存在")).length).toBe(3);
 			await ok.close();
 		} finally {
 			spy.mockRestore();
@@ -105,7 +116,8 @@ describe("命令行参数", () => {
 		expect(parseCliArgs(["--hosts", "--lan"], {}).error).toMatch(/参数 --hosts 缺少取值/);
 		expect(parseCliArgs(["--folder=-v"], {}).options).toEqual({ folder: "-v" });
 		expect(parseCliArgs(["--lan", "--"], {}).options).toEqual({ lan: true });
-		expect(parseCliArgs(["--", "--port", "1"], {}).error).toMatch(/不接受位置参数: --port/);
+		expect(parseCliArgs(["--", "--port", "1"], {}).options).toEqual({ port: 1 }); // pnpm run x -- --port 1 原样传入的 -- 被忽略
+		expect(parseCliArgs(["--", "extra"], {}).error).toMatch(/无法识别的参数: extra/);
 	});
 });
 

@@ -16,15 +16,26 @@ interface Form {
 	status: string;
 	delay: string;
 	headers: Array<{ k: string; v: string }>;
+	mode: "json" | "script";
 	body: string;
+	script: string;
 }
+
+const SCRIPT_TEMPLATE = `// 写法同 mock 文件中的场景函数: 可用 req.params / req.query / req.body, 返回值即响应体;
+// 也可以自行调用 res.status(...).json(...), 或调用 next() 交给真实服务. require 按 mock 目录解析.
+(req, res, next) => {
+  return { id: req.params.id, query: req.query };
+}
+`;
 
 const toForm = (name: string, env: Envelope | undefined): Form => ({
 	name,
 	status: env?.status ? String(env.status) : "200",
 	delay: env?.delay ? String(env.delay) : "",
 	headers: Object.entries(env?.headers || {}).map(([k, v]) => ({ k, v })),
-	body: env ? pretty(env.body ?? null) : "{\n  \n}",
+	mode: typeof env?.script === "string" ? "script" : "json",
+	body: env && typeof env.script !== "string" ? pretty(env.body ?? null) : "{\n  \n}",
+	script: typeof env?.script === "string" ? env.script : SCRIPT_TEMPLATE,
 });
 
 const HEADER_RE = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
@@ -71,15 +82,17 @@ export const SceneEditor = ({ route, scenes, scene, initial, initialName, onDone
 		status: Number.isInteger(status) && status >= 100 && status <= 599 ? "" : "请输入 100-599 的整数",
 		delay: Number.isInteger(delay) && delay >= 0 && delay <= 60000 ? "" : "请输入 0-60000 的整数",
 		headers: form.headers.some(h => h.k && !HEADER_RE.test(h.k)) ? "响应头名称含非法字符" : "",
-		body: body.ok ? "" : `JSON 语法错误: ${body.error}`,
+		body: form.mode === "script" || body.ok ? "" : `JSON 语法错误: ${body.error}`,
+		script: form.mode === "script" && !form.script.trim() ? "请填写脚本" : "",
 	};
 	const invalid = Object.values(errors).some(Boolean);
 
 	const envelope = (): Envelope => ({
 		status,
 		headers: Object.fromEntries(form.headers.filter(h => h.k.trim()).map(h => [h.k.trim().toLowerCase(), h.v])),
-		body: body.ok ? body.value : null,
+		body: form.mode === "json" && body.ok ? body.value : null,
 		...(delay ? { delay } : {}),
+		...(form.mode === "script" ? { script: form.script } : {}),
 	});
 
 	const submit = (etag: string | null) => {
@@ -149,9 +162,23 @@ export const SceneEditor = ({ route, scenes, scene, initial, initialName, onDone
 				<FieldError>{errors.headers}</FieldError>
 			</fieldset>
 			<div className="space-y-1">
-				<div className="text-xs font-medium text-zinc-600 dark:text-zinc-400">响应体(JSON; 写成字符串 "..." 时按文本返回)</div>
-				<JsonEditor label="响应体" value={form.body} onChange={v => set("body", v)} />
-				<FieldError>{errors.body}</FieldError>
+				<div role="radiogroup" aria-label="响应方式" className="flex items-center gap-3 text-xs font-medium text-zinc-600 dark:text-zinc-400">
+					<label className="flex items-center gap-1"><input type="radio" name="mode" checked={form.mode === "json"} onChange={() => set("mode", "json")} />JSON 响应体</label>
+					<label className="flex items-center gap-1"><input type="radio" name="mode" checked={form.mode === "script"} onChange={() => set("mode", "script")} />JS 脚本</label>
+				</div>
+				{form.mode === "json" ? (
+					<>
+						<div className="text-xs text-zinc-500">写成字符串 "..." 时按文本返回</div>
+						<JsonEditor label="响应体" value={form.body} onChange={v => set("body", v)} />
+						<FieldError>{errors.body}</FieldError>
+					</>
+				) : (
+					<>
+						<div className="text-xs text-zinc-500">一个处理函数, 在 mock 服务进程中执行; 上面的状态码与响应头作为默认值, 只能在本机保存</div>
+						<JsonEditor label="脚本" language="javascript" value={form.script} onChange={v => set("script", v)} />
+						<FieldError>{errors.script}</FieldError>
+					</>
+				)}
 			</div>
 			<div className="flex justify-end gap-2">
 				<Button disabled={!dirty} onClick={() => setForm(pristine)}>重置</Button>

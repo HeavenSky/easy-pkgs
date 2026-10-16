@@ -8,6 +8,8 @@ import { compileRoute, keyOfRouteId, parseKey, splitUrl } from "./route";
 import { resolveScene } from "./scene";
 import type { DisplayKind, Scene, Envelope } from "./scene";
 import { normalizeEnvelope } from "./files";
+import { compileScript } from "./script";
+import { isLoopback } from "./security";
 import type { createFileStore } from "./files";
 import { MockError, assertName, etagOf } from "./util";
 import { SECRET_HEADERS } from "./journal";
@@ -212,9 +214,21 @@ export const createAdmin = (ctx: AdminContext) => {
 		return summary(route);
 	}));
 
-	const writeScene = (route: RouteEntry, name: string, raw: unknown, ifMatch: string | null, force?: boolean) => {
+	/** 脚本在宿主进程中执行, 等同于改 mock 源文件: 即使开启 lan 也只接受本机写入, 并在写入前编译检查 */
+	const checkScript = (req: Req, key: string, envelope: Envelope) => {
+		if (envelope.script === undefined) { return; }
+		if (!isLoopback(req.socket.remoteAddress || "")) {
+			throw new MockError("FORBIDDEN", 403, "脚本场景只能在本机的管理页中保存", { field: "script" });
+		}
+		try { compileScript(envelope.script, ctx.folder, fileStore.sceneFileOf(key)); } catch (err) {
+			throw new MockError("BAD_REQUEST", 400, `脚本无法编译: ${(err as Error).message || err}`, { field: "script" });
+		}
+	};
+
+	const writeScene = (route: RouteEntry, name: string, raw: unknown, ifMatch: string | null, req: Req, force?: boolean) => {
 		assertName(name, "场景名");
 		const envelope = normalizeEnvelope(raw);
+		checkScript(req, route.key, envelope);
 		const current = route.scenes.get(name);
 		if (current && current.source === "json" && !force) {
 			if (!ifMatch) {
@@ -235,7 +249,7 @@ export const createAdmin = (ctx: AdminContext) => {
 		const route = routeOf(String(req.params.id));
 		const name = String(req.params.name);
 		const existed = route.scenes.get(name)?.source === "json";
-		const out = writeScene(route, name, req.body, parseIfMatch(req.headers["if-match"]));
+		const out = writeScene(route, name, req.body, parseIfMatch(req.headers["if-match"]), req);
 		res.status(existed ? 200 : 201);
 		return out;
 	}));
@@ -281,8 +295,8 @@ export const createAdmin = (ctx: AdminContext) => {
 		const restore = fileStore.snapshot(key);
 		try {
 			fileStore.updateGui(routes => { routes[key] = envelope.body === undefined ? null : envelope.body; });
-			const { status, headers, delay } = envelope;
-			if ((status && status !== 200) || (headers && Object.keys(headers).length) || delay) {
+			const { status, headers, delay, script } = envelope;
+			if ((status && status !== 200) || (headers && Object.keys(headers).length) || delay || script !== undefined) {
 				fileStore.updateScenes(key, map => { map.default = envelope; });
 			}
 		} catch (err) {
@@ -306,6 +320,7 @@ export const createAdmin = (ctx: AdminContext) => {
 	api.post("/routes", wrap((req, res) => {
 		const key = keyFromInput(req.body);
 		const envelope = normalizeEnvelope((req.body || {}).response || { body: null });
+		checkScript(req, key, envelope);
 		const route = createGuiRoute(key, envelope);
 		res.status(201);
 		return summary(route);
@@ -510,7 +525,7 @@ export const createAdmin = (ctx: AdminContext) => {
 			const key = keyFromInput(body.create || { methods: [entry.method], path: splitUrl(entry.url).pathname });
 			route = createGuiRoute(key, { body: responseBody });
 		}
-		const out = writeScene(route, name, envelope, null, !!body.overwrite);
+		const out = writeScene(route, name, envelope, null, req, !!body.overwrite);
 		res.status(201);
 		return { route: summary(routeOf(route.id)), scene: out };
 	}));

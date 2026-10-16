@@ -30,13 +30,14 @@ export const Envelope = z.object({
 	headers: z.record(z.string(), z.string()).optional(),
 	body: z.unknown(),
 	delay: z.number().min(0).max(60000).optional(),
+	script: z.string().optional(),
 });
 export type Envelope = z.infer<typeof Envelope>;
 
 export const SceneDetail = z.object({
 	name: z.string(),
 	source: z.enum(["code", "json"]),
-	kind: z.enum(["data", "function", "proxy", "envelope", "nullary"]),
+	kind: z.enum(["data", "function", "proxy", "envelope", "nullary", "script"]),
 	editable: z.boolean(),
 	overrides: z.boolean(),
 	content: z.unknown(),

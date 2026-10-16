@@ -37,7 +37,7 @@ npx easy-mok --folder -v     # error: --folder is missing a value; exits with co
 npx easy-mok --folder=-v     # uses the folder "-v"
 ```
 
-`--` ends option parsing. easy-mok takes no positional arguments, so anything after `--` is reported as an error. If the `--builtin` file does not exist, easy-mok reports the resolved path and exits with code 1; relative paths resolve from the current directory.
+A bare `--` is ignored, so `pnpm run mock -- --port 4000` passes `--port 4000` through even when the package manager keeps the `--`. easy-mok takes no positional arguments; any other bare word is reported as an error. If the `--builtin` file does not exist, easy-mok reports the resolved path and exits with code 1; relative paths resolve from the current directory.
 
 ## Start it from code
 

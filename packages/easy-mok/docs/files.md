@@ -16,6 +16,10 @@ The state file location can be changed with the `stateFile` option; see [Options
 
 A route in `__gui__.json` whose value is `null` replays a JSON `null` body. An empty response saved as a scene, such as a 204 or a DELETE without a body, replays an empty body.
 
+## Fix a hand-edited `__gui__.json`
+
+If `__gui__.json` is not a valid JSON object, for example after a hand edit left a trailing comma, the admin page refuses to change it instead of overwriting your edits. The admin API answers with the error code `GUI_FILE_INVALID`; fix or delete the file, then retry.
+
 ## Recover when a new route fails to load
 
 If a route created on the admin page fails to load, easy-mok rolls back `__gui__.json` and the route's scene file to their previous content, so no broken entry is left behind. The admin API answers with the error code `LOAD_ERROR`, a message with the reason, and the related diagnostics.

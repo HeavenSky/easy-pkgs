@@ -1,22 +1,29 @@
+import type { Extension } from "@codemirror/state";
 import { lazy, Suspense } from "react";
 import { Spinner } from "./ui/state";
 
+export type EditorLanguage = "json" | "javascript";
+
 // CodeMirror 体积较大, 只在打开编辑器时加载
 const CodeMirror = lazy(async () => {
-	const [{ default: Editor }, { json, jsonParseLinter }, { linter, lintGutter }] = await Promise.all([
+	const [{ default: Editor }, { json, jsonParseLinter }, { javascript }, { linter, lintGutter }] = await Promise.all([
 		import("@uiw/react-codemirror"),
 		import("@codemirror/lang-json"),
+		import("@codemirror/lang-javascript"),
 		import("@codemirror/lint"),
 	]);
-	const extensions = [json(), linter(jsonParseLinter()), lintGutter()];
-	const Lazy = (props: { value: string; onChange?: (v: string) => void; readOnly?: boolean; height: string; dark: boolean }) => (
+	const extensions: Record<EditorLanguage, Extension[]> = {
+		json: [json(), linter(jsonParseLinter()), lintGutter()],
+		javascript: [javascript()],
+	};
+	const Lazy = (props: { value: string; onChange?: (v: string) => void; readOnly?: boolean; height: string; dark: boolean; language: EditorLanguage }) => (
 		<Editor
 			value={props.value}
 			onChange={props.onChange}
 			readOnly={props.readOnly}
 			height={props.height}
 			theme={props.dark ? "dark" : "light"}
-			extensions={extensions}
+			extensions={extensions[props.language]}
 			basicSetup={{ foldGutter: true, highlightActiveLine: !props.readOnly }}
 		/>
 	);
@@ -29,14 +36,15 @@ interface JsonEditorProps {
 	readOnly?: boolean;
 	height?: string;
 	label: string;
+	language?: EditorLanguage;
 }
 
-export const JsonEditor = ({ value, onChange, readOnly, height = "280px", label }: JsonEditorProps) => {
+export const JsonEditor = ({ value, onChange, readOnly, height = "280px", label, language = "json" }: JsonEditorProps) => {
 	const dark = typeof matchMedia === "function" && matchMedia("(prefers-color-scheme: dark)").matches;
 	return (
 		<div aria-label={label} className="overflow-hidden rounded-md border border-zinc-300 text-xs dark:border-zinc-700">
 			<Suspense fallback={<Spinner label="加载编辑器" />}>
-				<CodeMirror value={value} onChange={onChange} readOnly={readOnly} height={height} dark={dark} />
+				<CodeMirror value={value} onChange={onChange} readOnly={readOnly} height={height} dark={dark} language={language} />
 			</Suspense>
 		</div>
 	);

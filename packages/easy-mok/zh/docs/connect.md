@@ -16,7 +16,7 @@ easy-mok 要求 Node.js 18 或更高版本。它自带 express 5 与 http-proxy-
 
 easy-mok 从 mock 目录加载 mock，默认是 `src/mocks`；目录不存在时，所有请求都不会命中 mock。此时 `createMock`、Vite 插件、`startMock` 和命令行都会警告一次，给出目录路径和创建方法。
 
-上级目录存在时，之后创建的目录会自动加载。上级目录也不存在，或 `watch` 为 `false` 时，创建目录后需要重启 easy-mok。
+之后创建的目录会自动加载，上级目录一并新建（`mkdir -p`）也一样。`watch` 为 `false` 时，创建目录后需要重启 easy-mok。
 
 ## 挂到宿主上
 

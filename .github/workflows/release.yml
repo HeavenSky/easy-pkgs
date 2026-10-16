@@ -95,6 +95,7 @@ jobs:
           package-manager-cache: false
 
       # 有 build 脚本的包(例如产物在 dist/ 的 TypeScript 包)先安装依赖并构建; 打包跳过 prepack 等生命周期脚本
+      # files 中声明了 npm-shrinkwrap.json 的包, 打包前由仓库脚本从 lockfile 生成(不执行依赖代码), 并确认已打进包
       - name: Build and pack
         working-directory: packages/${{ steps.pkg.outputs.name }}
         run: |
@@ -102,8 +103,17 @@ jobs:
             npm ci
             npm run build
           fi
+          shrinkwrap=false
+          if node -e "process.exit((require('./package.json').files || []).includes('npm-shrinkwrap.json') ? 0 : 1)"; then
+            shrinkwrap=true
+            node ../../scripts/shrinkwrap.mjs .
+          fi
           mkdir -p "$RUNNER_TEMP/pack"
           npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/pack"
+          if [ "$shrinkwrap" = true ] && ! tar tzf "$RUNNER_TEMP"/pack/*.tgz | grep -qx 'package/npm-shrinkwrap.json'; then
+            echo "::error::package.json 的 files 声明了 npm-shrinkwrap.json, 但包里没有"
+            exit 1
+          fi
           ls -l "$RUNNER_TEMP/pack"
 
       - uses: actions/upload-artifact@v7

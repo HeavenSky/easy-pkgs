@@ -61,7 +61,7 @@ npm run build
 
 ## 发布
 
-推送 `<包目录名>@<版本>` 形式的 tag 后, `.github/workflows/release.yml` 校验 tag 与 `packages/<包目录名>/package.json` 的 `version` 一致, 等待同一提交在 main 上的 CI 通过(不重复跑 lint 与单测, CI 未通过或该提交没推到 main 时不发布); 包有 `build` 脚本时先安装依赖并构建, 再发布到 npm, 并以 CHANGELOG 中该版本的段落创建 GitHub Release; 带 `-` 的预发布版本发布到 dist-tag `next`.
+推送 `<包目录名>@<版本>` 形式的 tag 后, `.github/workflows/release.yml` 校验 tag 与 `packages/<包目录名>/package.json` 的 `version` 一致, 等待同一提交在 main 上的 CI 通过(不重复跑 lint 与单测, CI 未通过或该提交没推到 main 时不发布); 包有 `build` 脚本时先安装依赖并构建; 打包用 `npm pack --ignore-scripts`, 不执行任何生命周期脚本; `files` 中声明了 `npm-shrinkwrap.json` 的包(easy-np, easy-npd)由 `scripts/shrinkwrap.mjs` 从 lockfile 去掉开发依赖后生成并打进包, 用户用 npm 安装时整棵依赖树按已测版本解析; 再发布到 npm, 并以 CHANGELOG 中该版本的段落创建 GitHub Release; 带 `-` 的预发布版本发布到 dist-tag `next`.
 
 ```bash
 # 先改好 version 与 CHANGELOG 并提交

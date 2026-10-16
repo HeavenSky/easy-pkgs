@@ -1,5 +1,6 @@
 import gonzales from 'easy-gonz';
 import type { Node } from 'easy-gonz';
+import { children, text } from '../node.ts';
 import { defineOption } from '../option.ts';
 
 // 属性在排序表中的位置: 组序号与组内序号.
@@ -140,7 +141,7 @@ export default defineOption({
     let containsOnlyLinebreaks = true;
 
     node.forEach((space) => {
-      if (!space.is('space') || !this._isLineBreak(space.content)) {
+      if (!space.is('space') || !this._isLineBreak(text(space))) {
         containsOnlyLinebreaks = false;
         return null;
       }
@@ -206,7 +207,7 @@ export default defineOption({
 
     // 缩进语法里结束语句的换行不一定是分隔符(`@extend` 后的换行, `;` 后的换行是独立的空白节点), 随语句一起移动,
     // 否则语句移走后会和下一行并成一行
-    if (block.syntax === 'sass' && !(extendedNode.delim && this._isLineBreak(extendedNode.delim.content)) &&
+    if (block.syntax === 'sass' && !(extendedNode.delim && this._isLineBreak(text(extendedNode.delim))) &&
         !this._endsWithLineBreak(extendedNode)) {
       let after: number[] = [];
       if (extendedNode.delim) {
@@ -214,7 +215,7 @@ export default defineOption({
         i += after.length;
       }
       // 块里最后一条语句后的换行留在原处(块末), 解析器对它的归属(块内或外层)不固定; 这条语句排到前面时再补换行
-      const isLast = block.content.slice(i + 1).every((n: Node) => this._isSpaceOrComment(n));
+      const isLast = children(block).slice(i + 1).every((n: Node) => this._isSpaceOrComment(n));
       const lineEnd = isLast ? -1 : this._takeLineEnd(block, i + 1);
       if (lineEnd !== -1) {
         i = lineEnd;
@@ -314,7 +315,7 @@ export default defineOption({
   },
 
   _collectLessMixins(ast: Node): void {
-    const add = (name: string, block: Node | null) => {
+    const add = (name: string, block: Node | null | undefined) => {
       if (!name || !block) return;
       const keys = [name];
       const last = name.match(/[.#][^.#]+$/);
@@ -446,16 +447,16 @@ export default defineOption({
 
     if (node.syntax === 'less') {
       // `node.first()` is class and `node.first().first()` is ident.
-      mixinName = node.first()!.first()!.content;
+      mixinName = text(node.first()!.first()!);
     } else if (node.syntax === 'sass' && node.first()!.content === '+') {
       // `node.first()` is `+` and `node.get(1)` is ident.
-      mixinName = node.get(1)!.content;
+      mixinName = text(node.get(1)!);
     } else {
       // `node.first()` is @-keyword, `node.get(1)` is space and
       // `node.get(2)` is ident, or a module namespace followed by ident
       // (`@include ns.foo` is configured as `$include ns.foo`).
       const name = node.get(2)!;
-      mixinName = name.is('module') ? name.toString() + node.get(3)!.content : name.content;
+      mixinName = name.is('module') ? name.toString() + text(node.get(3)!) : text(name);
     }
 
     let includeMixinName = '$include ' + mixinName;
@@ -476,10 +477,10 @@ export default defineOption({
   _getSortablePropertyName(node: Node): string | undefined {
     if (node.is('declaration')) {
       let property = node.first('property');
-      if (property === null) return this._getSortableCustomPropertyName(node);
+      if (!property) return this._getSortableCustomPropertyName(node);
 
       property = property.first()!;
-      return property.is('variable') ? '$variable' : property.content;
+      return property.is('variable') ? '$variable' : text(property);
     }
 
     let atkeyword = node.first('atkeyword');
@@ -529,14 +530,14 @@ export default defineOption({
       // and one with `\n` symbol and everything that goes after.
       // Combine the first one with declaration/@-rule's node:
       // 缩进语法还认单独的 `\r` 与 `\f` 换行
-      let linebreakIndex = currentNode.content.search(node.syntax === 'sass' ? /[\n\r\f]/ : /\r?\n/);
+      let linebreakIndex = text(currentNode).search(node.syntax === 'sass' ? /[\n\r\f]/ : /\r?\n/);
       if (linebreakIndex !== -1) {
-        const s: string = currentNode.content.substring(0, linebreakIndex);
+        const s: string = text(currentNode).substring(0, linebreakIndex);
         if (s === '') break;
         const space = gonzales.createNode({type: 'space', content: s, syntax: node.syntax});
         node.insert(i + 1, space);
         positions.push(i + 1);
-        currentNode.content = currentNode.content
+        currentNode.content = text(currentNode)
             .substring(linebreakIndex);
         break;
       }
@@ -575,7 +576,7 @@ export default defineOption({
 
   // 插到 block 的 at 位置; trailingDelimiter 表示后面还有语句, 最后一个声明缺分隔符时也要补.
   _insertSortablesToBlock(nodesToSort: ExtendedNode[], node: Node, at: number, trailingDelimiter = false): void {
-    const insert = (child: Node) => node.content.splice(at, 0, child);
+    const insert = (child: Node) => children(node).splice(at, 0, child);
     if (node.syntax === 'sass' && !trailingDelimiter) this._keepBlockEnd(node, nodesToSort);
     // 块里剩下的换行只有在最后一条语句自带结尾换行时才是多余的; 最后一条语句不带换行时它就是块末换行, 删了会和下一行并成一行
     // (文件末尾的块除外, 那里的换行由 eof-newline 处理)
@@ -595,7 +596,7 @@ export default defineOption({
 
       if (node.syntax === 'sass' && spacesBeforeNode.length) {
         let space = spacesBeforeNode[0];
-        space.content = space.content.replace(/\r\n|[\n\r\f]/, '');
+        space.content = text(space).replace(/\r\n|[\n\r\f]/, '');
       }
 
       // 块首(`{` 后)的空白属于块, 其中的空行由 space-after-opening-brace 决定, 不删(#459)
@@ -612,8 +613,8 @@ export default defineOption({
         let space = spacesBeforeNode[0];
         if (space && space.is('space') &&
             (space.syntax === 'sass' ||
-            space.content.match(/\n/g) &&
-            space.content.match(/\n/g).length < 2)) {
+            text(space).match(/\n/g) &&
+            text(space).match(/\n/g)!.length < 2)) {
           space.content = (space.syntax === 'sass' ? this._lineBreak : '\n') + space.content;
         }
       }
@@ -728,7 +729,7 @@ export default defineOption({
       if (k === 0) this._keepLeadingSpace(first, list[0]);
       else this._keepLeadingSpace(oldFirst, list[0]);
       if (k === 0) this._keepBlockLeadingSpace(block, list[0]);
-      let index = k === 0 ? 0 : block.content.indexOf(barriers[k - 1]) + 1;
+      let index = k === 0 ? 0 : children(block).indexOf(barriers[k - 1]) + 1;
       // `@content;` 等语句自带的分号留在语句后面
       if (k > 0 && block.get(index) && block.get(index)!.is('declarationDelimiter')) index++;
       this._insertSortablesToBlock(list, block, index, k < slots.length - 1);
@@ -741,11 +742,11 @@ export default defineOption({
   _keepBlockLeadingSpace(block: Node, newFirst: ExtendedNode): void {
     if (newFirst.origSlot === 0) return;
     const lead = block.get(0);
-    if (!lead || !lead.is('space') || lead.content.indexOf('\n') === -1) return;
+    if (!lead || !lead.is('space') || text(lead).indexOf('\n') === -1) return;
     const spaces = newFirst.spacesBeforeNode || [];
     if (!spaces.length) {
       newFirst.spacesBeforeNode = [gonzales.createNode({type: 'space', content: lead.content, syntax: block.syntax})];
-    } else if (spaces[0].is('space') && spaces[0].content.indexOf('\n') === -1) {
+    } else if (spaces[0].is('space') && text(spaces[0]).indexOf('\n') === -1) {
       // 后面可能还跟着注释, 只换掉开头的单行空白
       spaces[0].content = lead.content;
     }
@@ -911,7 +912,7 @@ export default defineOption({
     const spaces = oldFirst.spacesBeforeNode || [];
     const newSpaces = newFirst.spacesBeforeNode || [];
     if (!spaces.length || !spaces.every((n) => n.is('space'))) return;
-    const multiline = spaces.some((n) => n.content.indexOf('\n') !== -1);
+    const multiline = spaces.some((n) => text(n).indexOf('\n') !== -1);
     if (newSpaces.length) {
       // 块首(`{` 后)的空白属于块, 留在首位, 与排到块首的节点交换前导空白(#350); 带注释时注释随节点移动, 不交换
       if (oldFirst.node.syntax === 'sass' || !newSpaces.every((n) => n.is('space'))) return;
@@ -938,7 +939,7 @@ export default defineOption({
    * @param node Space node.
    */
   _removeEmptyLines(node: Node): void {
-    node.content = node.content.replace(/\n[\s\t\n\r]*\n/, '\n');
+    node.content = text(node).replace(/\n[\s\t\n\r]*\n/, '\n');
   },
 
   // barriers 收集块里不参与排序的语句(嵌套规则, 控制指令, 其他 @-规则等), 按原顺序.

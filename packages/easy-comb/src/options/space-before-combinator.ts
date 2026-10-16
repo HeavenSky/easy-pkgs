@@ -1,6 +1,7 @@
 import gonzales from 'easy-gonz';
 import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
+import { text } from '../node.ts';
 
 export default defineOption({
   name: 'space-before-combinator',
@@ -21,13 +22,13 @@ export default defineOption({
     const value = this.value;
 
     ast.traverseByType('combinator', function(combinator, i, parent) {
-      const previousNode = parent.get(i - 1);
+      const previousNode = parent!.get(i! - 1);
 
       if (!previousNode) return;
 
       // 缩进语法里换行结束语句, 不能并掉
       if (combinator.syntax === 'sass' && previousNode.is('space') &&
-          previousNode.content.indexOf('\n') !== -1) return;
+          text(previousNode).indexOf('\n') !== -1) return;
 
       if (previousNode.is('space')) {
         previousNode.content = value;
@@ -37,7 +38,7 @@ export default defineOption({
           content: value,
           syntax: ast.syntax
         });
-        parent.insert(i, space);
+        parent!.insert(i!, space);
       }
     });
   },
@@ -49,10 +50,10 @@ export default defineOption({
     const detected: string[] = [];
 
     ast.traverseByType('combinator', function(combinator, i, parent) {
-      const previousNode = parent.get(i - 1);
+      const previousNode = parent!.get(i! - 1);
 
       if (previousNode && previousNode.is('space')) {
-        detected.push(previousNode.content);
+        detected.push(text(previousNode));
       } else {
         detected.push('');
       }

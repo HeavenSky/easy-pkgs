@@ -1,6 +1,7 @@
 import gonzales from 'easy-gonz';
 import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
+import { text } from '../node.ts';
 
 export default defineOption({
   name: 'space-before-selector-delimiter',
@@ -21,9 +22,9 @@ export default defineOption({
     const value = this.value;
 
     ast.traverseByType('delimiter', function(delimiter, i, parent) {
-      if (parent.is('arguments')) return;
+      if (parent!.is('arguments')) return;
 
-      const previousNode = parent.get(i - 1);
+      const previousNode = parent!.get(i! - 1);
 
       if (previousNode && previousNode.is('space')) {
         previousNode.content = value;
@@ -33,7 +34,7 @@ export default defineOption({
           content: value,
           syntax: ast.syntax
         });
-        parent.insert(i, space);
+        parent!.insert(i!, space);
       }
     });
   },
@@ -45,12 +46,12 @@ export default defineOption({
     const detected: string[] = [];
 
     ast.traverseByType('delimiter', function(delimiter, i, parent) {
-      if (parent.is('arguments')) return;
+      if (parent!.is('arguments')) return;
 
-      const previousNode = parent.get(i - 1);
+      const previousNode = parent!.get(i! - 1);
 
       if (previousNode && previousNode.is('space')) {
-        detected.push(previousNode.content);
+        detected.push(text(previousNode));
       } else {
         detected.push('');
       }

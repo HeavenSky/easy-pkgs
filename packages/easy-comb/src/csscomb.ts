@@ -1,7 +1,7 @@
 // 对外入口: 预装全部内置选项的 Comb, 以及配置读取与选项检测的静态方法.
 import fs from 'node:fs';
 import gonzales from 'easy-gonz';
-import type { Node } from 'easy-gonz';
+import type { Node, Syntax } from 'easy-gonz';
 import Comb from './core.ts';
 import { findConfigFile, loadConfigFile } from './config.ts';
 import type { Config } from './config.ts';
@@ -143,7 +143,7 @@ function cssToAST(text: string, syntax?: string, filename?: string): Node {
   const fileInfo = filename ? ' at ' + filename : '';
 
   try {
-    return gonzales.parse(text, {syntax: syntax});
+    return gonzales.parse(text, {syntax: syntax as Syntax});
   } catch (e) {
     throw new Error('Parsing error' + fileInfo + ': ' + (e as Error).message);
   }

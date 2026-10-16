@@ -1,5 +1,6 @@
 import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
+import { text } from '../node.ts';
 
 export default defineOption({
   name: 'tab-size',
@@ -19,7 +20,7 @@ export default defineOption({
     const value = this.value;
 
     ast.traverseByType('space', function(space) {
-      space.content = space.content.replace(/\t/, value);
+      space.content = text(space).replace(/\t/, value);
     });
   },
 
@@ -47,7 +48,7 @@ export default defineOption({
               // block in the each ruleset where tabsize is not detected yet.
               if (tabsize !== 'detected') {
                 if (blockContent.is('space')) {
-                  spaces = blockContent.content.replace(/\n/g, '');
+                  spaces = text(blockContent).replace(/\n/g, '');
                   tabs = spaces.match(/\t/g);
                   spaces = spaces.match(/( )/g);
                   if (tabs) {

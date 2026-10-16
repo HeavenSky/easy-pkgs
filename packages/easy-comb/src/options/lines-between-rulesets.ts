@@ -1,6 +1,7 @@
 import gonzales from 'easy-gonz';
 import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
+import { text, children } from '../node.ts';
 
 const IMPORT_LIKE = ['import', 'use', 'forward', 'charset'];
 
@@ -45,7 +46,7 @@ export default defineOption({
     return value as number;
   },
 
-  buildSpacing(syntax: string): string {
+  buildSpacing(syntax: string | undefined): string {
     let spacing = '';
     let numNewLines = 0;
     let newLinesOffset = 1;
@@ -108,7 +109,7 @@ export default defineOption({
     if (!node || !node.is('atrule')) return false;
     let atkeyword = node.first('atkeyword');
     let ident = atkeyword && atkeyword.first('ident');
-    return Boolean(ident) && IMPORT_LIKE.indexOf(ident!.content) !== -1;
+    return Boolean(ident) && IMPORT_LIKE.indexOf(text(ident!)) !== -1;
   },
 
   findPrevStatement(parent: Node, index: number): Node | null {
@@ -185,10 +186,10 @@ export default defineOption({
       if (prevChild.is('space')) {
         // 缩进语法把空行与下一行的缩进解析成相邻的两个 space 节点(`\n`, `  `), 只改最后一个时前面的空行会留下来, 每格式化一次多一个空行;
         // 先把相邻的 space 并进最后一个再计算
-        let first = node.content.indexOf(prevChild);
+        let first = children(node).indexOf(prevChild);
         while (first > 0 && node.get(first - 1)!.is('space')) first--;
         let merged = '';
-        for (let i = first; i < node.content.indexOf(prevChild); i++) {
+        for (let i = first; i < children(node).indexOf(prevChild); i++) {
           const space = node.get(i)!;
           merged += space.content;
           space.content = '';
@@ -246,7 +247,7 @@ export default defineOption({
    * 缩进语法里上一条语句(注释, `;` 结尾的语句, 无子块的规则等)自身不以换行结尾时, 这里的第一个换行是它的结束符而不是空行,
    * 不能去掉, 否则下一行会并进上一条语句.
    */
-  spacing(content: string, before: Node | null, syntax: string, indent: string): string {
+  spacing(content: string, before: Node | null, syntax: string | undefined, indent: string): string {
     const lineEnd = content.match(/\r\n|[\n\r\f]/);
     const afterLineEnd = Boolean(before) && /[\n\r\f]$/.test(before!.toString());
     const keepLineEnd = syntax === 'sass' && Boolean(before) && lineEnd !== null && !afterLineEnd;
@@ -264,7 +265,7 @@ export default defineOption({
    */
   lineIndent(parent: Node, child: Node): string {
     let text = '';
-    for (let i = parent.content.indexOf(child) - 1; i >= 0; i--) {
+    for (let i = children(parent).indexOf(child) - 1; i >= 0; i--) {
       text = parent.get(i)!.toString() + text;
       if (/[\n\r\f]/.test(text)) break;
     }
@@ -282,8 +283,8 @@ export default defineOption({
 
     ast.forEach((node, index) => {
       if (ruleNode && node.is('space')) {
-        if (node.end.line && node.start.line) {
-          const lines = node.end.line - node.start.line;
+        if (node.end!.line && node.start!.line) {
+          const lines = node.end!.line - node.start!.line;
           if (lines > 0) {
             detected.push(lines);
           }

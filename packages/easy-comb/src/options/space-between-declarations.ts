@@ -1,6 +1,7 @@
 import gonzales from 'easy-gonz';
 import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
+import { text } from '../node.ts';
 
 // 声明之后可以跟的语句: 声明, 以及嵌套规则, Less mixin 调用, `@include` / `@extend` 等;
 // 紧凑写法里它们与上一条声明在同一行, 需要和声明一样换行.
@@ -23,7 +24,7 @@ function getDeclarationEnd(node: Node, i: number) {
     if (!node.get(i + 1) || typeof node.get(i + 1) === 'string') {
       return 0;
     } else if (node.get(i + 1)!.is('space')) {
-      if (node.get(i + 1)!.content.indexOf('\n') > -1) {
+      if (text(node.get(i + 1)!).indexOf('\n') > -1) {
         if (isStatement(node.get(i + 2))) {
           return i;
         } else {
@@ -85,17 +86,17 @@ export default defineOption({
       // Grom user's point of view "declaration" includes semicolons
       // and comments placed on the same line.
       // So group those things together:
-      const declarationEnd = getDeclarationEnd(parent, i);
+      const declarationEnd = getDeclarationEnd(parent!, i!);
       if (!declarationEnd) {
         return;
       } else {
         i = declarationEnd;
       }
 
-      const nextNode = parent.get(i + 1);
+      const nextNode = parent!.get(i + 1);
       // 非声明语句前已有换行时保留原样(例: 嵌套规则前的空行), 只拆开挤在同一行的情况
-      if (nextNode && nextNode.is('space') && nextNode.content.indexOf('\n') > -1 &&
-          !nextStatement(parent, i)?.is('declaration')) return;
+      if (nextNode && nextNode.is('space') && text(nextNode).indexOf('\n') > -1 &&
+          !nextStatement(parent!, i)?.is('declaration')) return;
 
       if (nextNode && nextNode.is('space')) {
         nextNode.content = value;
@@ -105,7 +106,7 @@ export default defineOption({
           content: value,
           syntax: ast.syntax
         });
-        parent.insert(i + 1, space);
+        parent!.insert(i + 1, space);
       }
     });
   },
@@ -137,7 +138,7 @@ export default defineOption({
             // comment keeping up the same characters after the comment.
             detected.splice(-1);
           } else if (blockContent.is('space')) {
-            detected.push(blockContent.content);
+            detected.push(text(blockContent));
           }
         }
       });

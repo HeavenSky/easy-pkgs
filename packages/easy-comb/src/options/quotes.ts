@@ -1,5 +1,6 @@
 import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
+import { text } from '../node.ts';
 
 /**
  * 跳过从 start(指向 `#{` 的 `#`)开始的插值, 返回插值结束后的位置; 插值里可以有嵌套的花括号, 字符串与插值.
@@ -61,7 +62,7 @@ export default defineOption({
     let to = this.value === 'single' ? '\'' : '"';
 
     ast.traverseByType('string', function(string) {
-      let from = string.content[0];
+      let from = text(string)[0];
       if (from === to || (from !== '"' && from !== '\'')) return;
 
       // 逐个处理转义序列: 原引号去转义, 其余转义(含 `\\`)原样保留,
@@ -72,7 +73,7 @@ export default defineOption({
             if (escaped !== undefined) return escaped === from ? escaped : match;
             return char === to ? '\\' + char : char;
           });
-      let inner = string.content.slice(1, -1);
+      let inner = text(string).slice(1, -1);
       // scss / sass 字符串里的 `#{...}` 是表达式, 其中的引号属于内层字符串, 原样保留
       const interpolated = (string.syntax === 'scss' || string.syntax === 'sass') && inner.indexOf('#{') !== -1;
       // 内容里有未转义的目标引号时, 换引号只会多出一串转义, 保持原引号(#645)

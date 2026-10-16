@@ -1,5 +1,6 @@
 import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
+import { text, children } from '../node.ts';
 
 function processNode(node: Node, targets: string[]) {
   // 只在删过规则集的节点里合并空白: 缩进 Sass 本来就会解析出相邻的空白节点,
@@ -72,7 +73,7 @@ function mergeAdjacentWhitespace(node: Node) {
   while (i-- > 0) {
     if (node.get(i)!.is('space') &&
         node.get(i + 1) && node.get(i + 1)!.is('space')) {
-      node.get(i)!.content += node.get(i + 1)!.content;
+      node.get(i)!.content = text(node.get(i)!) + text(node.get(i + 1)!);
       node.removeChild(i + 1);
     }
   }
@@ -84,7 +85,7 @@ function mergeAdjacentWhitespace(node: Node) {
 function isEmptyBlock(node: Node) {
   if (!node.length) return true;
 
-  return !node.content.some(function(node: Node) {
+  return !children(node).some(function(node: Node) {
     return !node.is('space');
   });
 }

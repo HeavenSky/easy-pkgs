@@ -1,5 +1,6 @@
 import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
+import { text, children } from '../node.ts';
 
 export default defineOption({
   name: 'leading-zero',
@@ -18,7 +19,7 @@ export default defineOption({
 
     const fix = (number: Node, prev: Node | undefined) => {
       if (!value) {
-        number.content = number.content.replace(/^0+(?=\.)/, '');
+        number.content = text(number).replace(/^0+(?=\.)/, '');
       } else if (number.content[0] === '.') {
         // 紧跟在数字或标识符后(`3e-2.1`)时补零会与前一个 token 粘连, 变成 `3e-20.1`
         if (prev && /\w$/.test(prev.toString())) return;
@@ -30,7 +31,7 @@ export default defineOption({
       // dimension 里的数字由其父节点处理, 那里才知道前一个 token
       if (!Array.isArray(node.content) || node.is('dimension')) return;
       node.content.forEach(function(child: Node, i: number) {
-        const prev = node.content[i - 1];
+        const prev = children(node)[i - 1];
         if (child.is('number')) fix(child, prev);
         else if (child.is('dimension')) {
           const number = child.first();
@@ -47,9 +48,9 @@ export default defineOption({
     const detected: boolean[] = [];
 
     ast.traverseByType('number', function(number) {
-      if (number.content.match(/^\.[0-9]+/)) {
+      if (text(number).match(/^\.[0-9]+/)) {
         detected.push(false);
-      } else if (number.content.match(/^0\.[0-9]+/)) {
+      } else if (text(number).match(/^0\.[0-9]+/)) {
         detected.push(true);
       }
     });

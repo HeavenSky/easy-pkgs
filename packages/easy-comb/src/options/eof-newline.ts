@@ -1,6 +1,7 @@
 import gonzales from 'easy-gonz';
 import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
+import { text, children } from '../node.ts';
 
 export default defineOption({
   name: 'eof-newline',
@@ -57,7 +58,7 @@ export default defineOption({
         /[\n\r\f]\s*$/.exec(last.content) : null;
 
     if (leafTail && this.value) {
-      if (!last!.is('declarationDelimiter')) last!.content = last!.content.replace(/\n\s*$/, '\n');
+      if (!last!.is('declarationDelimiter')) last!.content = text(last!).replace(/\n\s*$/, '\n');
       tail = '';
     } else {
       // 从末尾空白中的第一个换行起全部去掉(换行前的行尾空格保留), 再按需补一个换行; 只删一个 \n 时多余的换行要到下一次格式化才消失, 不幂等
@@ -65,7 +66,7 @@ export default defineOption({
     }
 
     if (!spaces.length) {
-      if (tail) ast.content.push(gonzales.createNode({type: 'space', content: tail, syntax: ast.syntax}));
+      if (tail) children(ast).push(gonzales.createNode({type: 'space', content: tail, syntax: ast.syntax}));
       return;
     }
     spaces.forEach((node, i) => {
@@ -80,7 +81,7 @@ export default defineOption({
   detect(ast: Node) {
     const lastChild = ast.last();
 
-    if (lastChild && lastChild.is('space') && lastChild.content.indexOf('\n') !== -1) {
+    if (lastChild && lastChild.is('space') && text(lastChild).indexOf('\n') !== -1) {
       return [true];
     } else {
       return [false];

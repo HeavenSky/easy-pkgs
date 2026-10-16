@@ -1,6 +1,7 @@
 import gonzales from 'easy-gonz';
 import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
+import { text, children } from '../node.ts';
 
 let valueFromSettings: string;
 let blockIndent: string | undefined;
@@ -54,7 +55,7 @@ function processBlock(x: Node, level?: number) {
         content: value,
         syntax: node.syntax
       });
-      node.content.push(space);
+      children(node).push(space);
     }
 
     processBlock(node, level);
@@ -94,7 +95,7 @@ export default defineOption({
       // For the block node, find its last (the deepest) child
       const whitespaceNode = getLastWhitespaceNode(node);
       if (whitespaceNode) {
-        detected.push(whitespaceNode.content);
+        detected.push(text(whitespaceNode));
       } else {
         detected.push('');
       }

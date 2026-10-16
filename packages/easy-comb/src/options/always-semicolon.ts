@@ -49,8 +49,8 @@ export default defineOption({
 
         errors.push({
           message: 'Missing semicolon',
-          line: nodeWithoutSemicolon.end.line,
-          column: nodeWithoutSemicolon.end.column + 1
+          line: nodeWithoutSemicolon.end!.line,
+          column: nodeWithoutSemicolon.end!.column + 1
         });
 
         // Stop looping through block's children:

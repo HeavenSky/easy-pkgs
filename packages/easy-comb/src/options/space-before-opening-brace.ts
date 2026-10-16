@@ -1,6 +1,7 @@
 import gonzales from 'easy-gonz';
 import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
+import { text } from '../node.ts';
 
 export default defineOption({
   name: 'space-before-opening-brace',
@@ -22,6 +23,7 @@ export default defineOption({
 
     // If found block node stop at the next one for space check.
     ast.traverseByTypes(['block', 'value'], function(block, i, parent) {
+      if (!parent || i === undefined) return;
       if (block.is('value') && !block.first()?.is('block')) return;
 
       const previousNode = parent.get(i - 1);
@@ -60,6 +62,7 @@ export default defineOption({
     const detected: string[] = [];
 
     ast.traverseByTypes(['block', 'value'], function(block, i, parent) {
+      if (!parent || i === undefined) return;
       if (block.is('value') && !block.first()?.is('block')) return;
 
       const previousNode = parent.get(i - 1);
@@ -69,7 +72,7 @@ export default defineOption({
       // If it's something different from spaces, add a space node to
       // the end:
       if (previousNode.is('space')) {
-        detected.push(previousNode.content);
+        detected.push(text(previousNode));
       } else {
         detected.push('');
       }

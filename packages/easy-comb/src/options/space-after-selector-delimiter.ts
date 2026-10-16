@@ -1,5 +1,6 @@
 import gonzales from 'easy-gonz';
 import type { Node } from 'easy-gonz';
+import { text } from '../node.ts';
 import { defineOption } from '../option.ts';
 
 export default defineOption({
@@ -21,6 +22,7 @@ export default defineOption({
     const value = this.value;
 
     ast.traverseByType('delimiter', function(delimiter, i, parent) {
+      if (!parent || i === undefined) return;
       if (parent.is('arguments')) return;
 
       const nextNode = parent.get(i + 1);
@@ -28,7 +30,7 @@ export default defineOption({
 
       // 缩进语法里 `@extend a,` 后的换行结束语句(下一行不属于 @extend), 不能并掉
       if (parent.is('extend') && parent.syntax === 'sass' && nextNode.is('space') &&
-          nextNode.content.indexOf('\n') !== -1) return;
+          text(nextNode).indexOf('\n') !== -1) return;
 
       if (nextNode.is('space')) {
         nextNode.content = value;
@@ -59,14 +61,15 @@ export default defineOption({
     const detected: string[] = [];
 
     ast.traverseByType('delimiter', function(delimiter, i, parent) {
+      if (!parent || i === undefined) return;
       if (parent.is('arguments')) return;
 
       const nextNode = parent.get(i + 1)!;
 
       if (nextNode && nextNode.is('space')) {
-        detected.push(nextNode.content);
+        detected.push(text(nextNode));
       } else if (nextNode.first() && nextNode.first()!.is('space')) {
-        detected.push(nextNode.first()!.content);
+        detected.push(text(nextNode.first()!));
       } else {
         detected.push('');
       }

@@ -1,6 +1,7 @@
 import gonzales from 'easy-gonz';
 import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
+import { text } from '../node.ts';
 
 export default defineOption({
   name: 'space-before-colon',
@@ -21,6 +22,7 @@ export default defineOption({
     const value = this.value;
 
     ast.traverseByType('propertyDelimiter', function(delimiter, i, parent) {
+      if (!parent || i === undefined) return;
       if (delimiter.syntax === 'sass' && !parent.get(i - 1))
         return;
 
@@ -52,10 +54,11 @@ export default defineOption({
     const detected: string[] = [];
 
     ast.traverseByType('propertyDelimiter', function(delimiter, i, parent) {
+      if (!parent || i === undefined) return;
       const previousNode = parent.get(i - 1);
 
       if (previousNode && previousNode.is('space')) {
-        detected.push(previousNode.content);
+        detected.push(text(previousNode));
       } else {
         detected.push('');
       }

@@ -1,6 +1,7 @@
 import gonzales from 'easy-gonz';
 import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
+import { text } from '../node.ts';
 
 export default defineOption({
   name: 'space-after-opening-brace',
@@ -51,7 +52,7 @@ export default defineOption({
       if (node.syntax === 'css' && parent && parent.is('value')) return;
 
       if (node.first()!.is('space')) {
-        detected.push(node.first()!.content);
+        detected.push(text(node.first()!));
       } else {
         detected.push('');
       }

@@ -10,6 +10,10 @@ easy-comb is based on [csscomb/csscomb.js](https://github.com/csscomb/csscomb.js
 
 - The CSS parser is now the [easy-gonz](https://www.npmjs.com/package/easy-gonz) package, installed as a dependency, instead of a copy bundled under `vendor/`; parsing results are unchanged, and parser fixes reach you through easy-gonz updates.
 
+### Fixed
+
+- `processString(text, {context})` parses the text as the given node type (such as `declaration` for a declaration list without a selector), instead of ignoring `context` and parsing it as a stylesheet.
+
 ## 0.0.2 (2026-10-16)
 
 ### Breaking changes

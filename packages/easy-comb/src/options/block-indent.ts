@@ -1,5 +1,6 @@
 import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
+import { text } from '../node.ts';
 
 export default defineOption({
   /**
@@ -30,7 +31,7 @@ export default defineOption({
    */
   process(ast: Node) {
     ast.eachFor('space', function(whitespaceNode, i) {
-      const spaces = whitespaceNode.content.replace(/\n[ \t]+/gm, '\n');
+      const spaces = text(whitespaceNode).replace(/\n[ \t]+/gm, '\n');
 
       if (spaces === '') {
         ast.removeChild(i);
@@ -55,7 +56,7 @@ export default defineOption({
         return;
 
       node.eachFor('space', function(whitespaceNode) {
-        const spaces: string = whitespaceNode.content;
+        const spaces: string = text(whitespaceNode);
         const lastIndex = spaces.lastIndexOf('\n');
 
         // Do not continue if there is no line break:
@@ -98,9 +99,9 @@ export default defineOption({
 
     node.eachFor('space', function(whitespaceNode) {
       // 只有一个换行的节点是语句的结束符(空行), 不是下一行的缩进; 缩进语法也认 `\r\n`, `\r`, `\f` 换行
-      if (/^(?:\r\n|[\n\r\f])$/.test(whitespaceNode.content)) return;
+      if (/^(?:\r\n|[\n\r\f])$/.test(text(whitespaceNode))) return;
 
-      let spaces: string = whitespaceNode.content.replace(/[ \t]/gm, '');
+      let spaces: string = text(whitespaceNode).replace(/[ \t]/gm, '');
       spaces += new Array(level + 2).join(value);
       whitespaceNode.content = spaces;
     });
@@ -110,7 +111,7 @@ export default defineOption({
     const value = this.value;
 
     // Remove all whitespaces and tabs, leave only new lines:
-    let spaces: string = node.content.replace(/[ \t]/gm, '');
+    let spaces: string = text(node).replace(/[ \t]/gm, '');
 
     if (!spaces) return;
 

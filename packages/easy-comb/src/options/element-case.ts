@@ -1,5 +1,6 @@
 import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
+import { text } from '../node.ts';
 
 // 参数是选择器的伪类; 其余伪类的参数(如 `:lang(EN)`, `:state(Foo)`)不是元素名
 const SELECTOR_ARGUMENTS = /^(?:not|is|where|has|matches|-(?:moz|webkit)-any|any|host|host-context|slotted|cue|current|past|future|nth-(?:last-)?(?:child|of-type))$/i;
@@ -47,7 +48,7 @@ function eachElementList(ast: Node, callback: (node: Node) => void) {
     if (node.is('arguments') && parent &&
         (parent.is('pseudoClass') || parent.is('pseudoElement'))) {
       const name = parent.first('ident');
-      if (name && !SELECTOR_ARGUMENTS.test(name.content)) {
+      if (name && !SELECTOR_ARGUMENTS.test(text(name))) {
         skipped.add(node);
         return;
       }
@@ -85,7 +86,7 @@ export default defineOption({
         if (selector.contains('interpolation')) return;
 
         selector.forEach('ident', (ident) => {
-          ident.content = convertCase(ident.content, value);
+          ident.content = convertCase(text(ident), value);
         });
       });
     });
@@ -104,9 +105,9 @@ export default defineOption({
         if (selector.contains('interpolation')) return;
 
         selector.forEach('ident', (ident) => {
-          if (ident.content.match(/^[a-z]+$/)) {
+          if (text(ident).match(/^[a-z]+$/)) {
             detected.push('lower');
-          } else if (ident.content.match(/^[A-Z]+$/)) {
+          } else if (text(ident).match(/^[A-Z]+$/)) {
             detected.push('upper');
           }
         });

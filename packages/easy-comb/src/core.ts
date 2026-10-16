@@ -5,7 +5,7 @@ import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
 import gonzales from 'easy-gonz';
-import type { Node } from 'easy-gonz';
+import type { Node, Syntax } from 'easy-gonz';
 import { escapePath, globSync } from 'tinyglobby';
 import type { Config } from './config.ts';
 import Errors from './errors.ts';
@@ -293,7 +293,7 @@ export default class Comb {
 
     let active = this.plugins.filter(plugin => {
       return plugin.value !== null &&
-             plugin.syntax.indexOf(ast.syntax) !== -1;
+             plugin.syntax.indexOf(ast.syntax!) !== -1;
     });
 
     active.forEach(plugin => {
@@ -302,7 +302,7 @@ export default class Comb {
     });
 
     if (text !== undefined)
-      errors = errors.concat(this._lintByProcess(active, text, ast.syntax, options));
+      errors = errors.concat(this._lintByProcess(active, text, ast.syntax!, options));
 
     if (filename) {
       errors.forEach(error => {
@@ -319,8 +319,8 @@ export default class Comb {
    * 全部选项处理后与输入相同时不报; 否则只报同时满足以下两点的选项, 位置取第一处交集:
    * 去掉该选项会改变全部选项处理的结果; 该选项的改动行与全部选项处理的改动行有交集.
    */
-  _lintByProcess(plugins: Plugin[], text: string, syntax: string, options?: StringOptions): LintError[] {
-    let parse = () => gonzales.parse(text, {syntax: syntax, rule: options && options.context});
+  _lintByProcess(plugins: Plugin[], text: string, syntax: Syntax, options?: StringOptions): LintError[] {
+    let parse = () => gonzales.parse(text, {syntax, context: options && options.context});
     let full = this._processTree(parse()).toString();
     if (full === text) return [];
 
@@ -379,7 +379,7 @@ export default class Comb {
     this.syntax = syntax;
 
     try {
-      return gonzales.parse(text, {syntax: syntax, rule: context});
+      return gonzales.parse(text, {syntax: syntax as Syntax, context});
     } catch (e) {
       let error = e as Error;
       let message = filename ? [filename] : [];
@@ -407,7 +407,7 @@ export default class Comb {
     this.plugins.filter(plugin => {
       return plugin.value !== null && plugin !== skip &&
              typeof plugin.process === 'function' &&
-             plugin.syntax.indexOf(ast.syntax) !== -1;
+             plugin.syntax.indexOf(ast.syntax!) !== -1;
     }).forEach(plugin => {
       plugin.process!(ast, config);
     });

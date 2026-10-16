@@ -1,5 +1,6 @@
 import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
+import { text } from '../node.ts';
 
 /**
  * Trim trailing spaces on each line.
@@ -21,8 +22,8 @@ function stripTrailing(node: Node, atLineEnd: boolean): void {
   for (let k = node.length - 1; k >= 0; k--) {
     const child = node.get(k)!;
     if (child.is('space')) {
-      if (atLineEnd) child.content = child.content.replace(/[ \t]+$/, '');
-      atLineEnd = /^[ \t]*(?:\n|$)/.test(child.content);
+      if (atLineEnd) child.content = text(child).replace(/[ \t]+$/, '');
+      atLineEnd = /^[ \t]*(?:\n|$)/.test(text(child));
       continue;
     }
     if (atLineEnd && OPEN_ENDED.indexOf(child.type) !== -1) stripTrailing(child, true);
@@ -45,17 +46,17 @@ export default defineOption({
   process(ast: Node) {
     const lastChild = ast.last();
     if (lastChild && lastChild.is('space')) {
-      lastChild.content = trim(lastChild.content)
+      lastChild.content = trim(text(lastChild))
           .replace(/[ \t]+$/, '')
           .replace(/[\n]+/g, '\n');
     }
 
     ast.traverseByType('space', function(space, index, parent) {
-      space.content = trim(space.content);
+      space.content = trim(text(space));
       // 排序等选项会把空白拆成相邻的两个节点, 换行落在后一个节点里时行尾空格在前一个节点.
-      const next = parent.get(index + 1);
-      if (next && next.is('space') && /^[ \t]*\n/.test(next.content))
-        space.content = space.content.replace(/[ \t]+$/, '');
+      const next = parent!.get(index! + 1);
+      if (next && next.is('space') && /^[ \t]*\n/.test(text(next)))
+        space.content = text(space).replace(/[ \t]+$/, '');
     });
 
     // 缩进语法的块没有收尾的 `}`, 文件末尾的空白可能落在最后一个语句的块里(如 `@for ... //\n  `), 也去掉其中的行尾空格
@@ -75,12 +76,12 @@ export default defineOption({
     const lastChild = ast.last();
     if (lastChild && lastChild.is('space') &&
         lastChild.content !== '\n' &&
-        lastChild.content.match(/^[ \n\t]+$/)) {
+        text(lastChild).match(/^[ \n\t]+$/)) {
       detected.push(false);
     }
 
     ast.traverseByType('space', function(space) {
-      if (space.content.match(/[ \t]\n/)) detected.push(false);
+      if (text(space).match(/[ \t]\n/)) detected.push(false);
     });
 
     return detected;

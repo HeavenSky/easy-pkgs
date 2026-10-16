@@ -1,6 +1,7 @@
 import gonzales from 'easy-gonz';
 import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
+import { text } from '../node.ts';
 
 // 属性名中厂商前缀的解析结果.
 interface PrefixInfo {
@@ -100,8 +101,8 @@ function extraIndent(nodes: Node[]): number | undefined {
     if (!node.content) {
       crPos = -1;
     } else {
-      crPos = node.content.lastIndexOf('\n');
-      tabPos = node.content.lastIndexOf('\t');
+      crPos = text(node).lastIndexOf('\n');
+      tabPos = text(node).lastIndexOf('\t');
       if (tabPos > crPos) crPos = tabPos;
     }
 
@@ -218,7 +219,7 @@ function getPropertyName(node: Node): string | undefined {
   // TODO: Check that it's not a variable
   // 只有 `--` 的空名字自定义属性没有子节点
   const name = node.get(0)!.get(0);
-  return name ? name.content : undefined;
+  return name ? text(name) : undefined;
 }
 
 /**
@@ -234,8 +235,8 @@ function getValName(node: Node): string | undefined {
 
   var first = node.first('value')!.get(0);
   if (!first) return;
-  if (first.is('ident')) return first.content;
-  if (first.is('function')) return first.get(0)!.content;
+  if (first.is('ident')) return text(first);
+  if (first.is('function')) return text(first.get(0)!);
 }
 
 /**
@@ -344,7 +345,7 @@ export default defineOption({
             ++x;
           }
 
-          let content = node.get(i)!.get(x - 1)!.content;
+          let content = text(node.get(i)!.get(x - 1)!);
           let updatedIndent = updateIndent(info, dict, content);
           node.get(i)!.get(x - 1)!.content = updatedIndent;
         }
@@ -369,7 +370,7 @@ export default defineOption({
             });
             node.insert(i - 1, whitespaceNode);
           }
-          let content = whitespaceNode.content;
+          let content = text(whitespaceNode);
           let updatedContent = updateIndent(info, dict, content);
           whitespaceNode.content = updatedContent;
         }
@@ -451,7 +452,7 @@ export default defineOption({
         getExtraSymbols: extraIndentProperty,
         payload: function(info, i) {
           if (node.get(i - 1) && node.get(i - 1)!.content) {
-            let nodeLength: number = node.get(i - 1)!.content
+            let nodeLength: number = text(node.get(i - 1)!)
                 .replace(/^[ \t]*\n+/, '').length;
             var sum = nodeLength + info.prefixLength;
             getResult({node: node, sum: sum, info: info, i: i});
@@ -470,7 +471,7 @@ export default defineOption({
           }
 
           if (node.get(i)!.get(x - 1)) {
-            let nodeLength: number = node.get(i)!.get(x - 1)!.content
+            let nodeLength: number = text(node.get(i)!.get(x - 1)!)
                 .replace(/^[ \t]*\n+/, '').length;
             var sum = nodeLength + info.prefixLength;
             getResult({node: node, sum: sum, info: info, i: i});

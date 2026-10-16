@@ -1,5 +1,6 @@
 import gonzales from 'easy-gonz';
 import type { Node } from 'easy-gonz';
+import { text } from '../node.ts';
 import { defineOption } from '../option.ts';
 
 export default defineOption({
@@ -21,6 +22,7 @@ export default defineOption({
     const value = this.value;
 
     ast.traverseByType('propertyDelimiter', function(delimiter, i, parent) {
+      if (!parent || i === undefined) return;
       if (delimiter.syntax === 'sass' && !parent.get(i - 1))
         return null;
 
@@ -39,7 +41,7 @@ export default defineOption({
         return null;
 
       // 缩进语法里冒号后换行表示值是嵌套属性块, 换行不能去掉
-      if (delimiter.syntax === 'sass' && next && next.is('space') && next.content.indexOf('\n') !== -1)
+      if (delimiter.syntax === 'sass' && next && next.is('space') && text(next).indexOf('\n') !== -1)
         return null;
 
       // Remove any spaces after colon:
@@ -66,10 +68,11 @@ export default defineOption({
     const detected: string[] = [];
 
     ast.traverseByType('propertyDelimiter', function(delimiter, i, parent) {
+      if (!parent || i === undefined) return;
       const nextNode = parent.get(i + 1)!;
 
       if (nextNode.is('space')) {
-        detected.push(nextNode.content);
+        detected.push(text(nextNode));
       } else {
         detected.push('');
       }

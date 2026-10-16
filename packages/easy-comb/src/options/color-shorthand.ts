@@ -1,5 +1,6 @@
 import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
+import { text } from '../node.ts';
 
 export default defineOption({
   name: 'color-shorthand',
@@ -19,9 +20,9 @@ export default defineOption({
     ast.traverseByType('color', function(color) {
       // 支持带 alpha 的 8 位/4 位写法, 必须整串匹配, 否则会截坏 `#0000004d`
       color.content = value ?
-          color.content.replace(/^(\w)\1(\w)\2(\w)\3(?:(\w)\4)?$/i,
+          text(color).replace(/^(\w)\1(\w)\2(\w)\3(?:(\w)\4)?$/i,
               '$1$2$3$4') :
-          color.content.replace(/^(\w)(\w)(\w)(\w)?$/,
+          text(color).replace(/^(\w)(\w)(\w)(\w)?$/,
               (m: string, r: string, g: string, b: string, a?: string) =>
                   r + r + g + g + b + b + (a ? a + a : ''));
     });
@@ -35,9 +36,9 @@ export default defineOption({
     const detected: boolean[] = [];
 
     ast.traverseByType('color', function(color) {
-      if (color.content.match(/^\w{3}(\w)?$/)) {
+      if (text(color).match(/^\w{3}(\w)?$/)) {
         detected.push(true);
-      } else if (color.content.match(/^(\w)\1(\w)\2(\w)\3(?:(\w)\4)?$/)) {
+      } else if (text(color).match(/^(\w)\1(\w)\2(\w)\3(?:(\w)\4)?$/)) {
         detected.push(false);
       }
     });

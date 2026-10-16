@@ -1,5 +1,6 @@
 import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
+import { text } from '../node.ts';
 
 export default defineOption({
   name: 'color-case',
@@ -18,8 +19,8 @@ export default defineOption({
 
     ast.traverseByType('color', function(color) {
       color.content = value === 'lower' ?
-          color.content.toLowerCase() :
-          color.content.toUpperCase();
+          text(color).toLowerCase() :
+          text(color).toUpperCase();
     });
   },
 
@@ -31,9 +32,9 @@ export default defineOption({
     const detected: string[] = [];
 
     ast.traverseByType('color', function(color) {
-      if (color.content.match(/^[^A-F]*[a-f][^A-F]*$/)) {
+      if (text(color).match(/^[^A-F]*[a-f][^A-F]*$/)) {
         detected.push('lower');
-      } else if (color.content.match(/^[^a-f]*[A-F][^a-f]*$/)) {
+      } else if (text(color).match(/^[^a-f]*[A-F][^a-f]*$/)) {
         detected.push('upper');
       }
     });

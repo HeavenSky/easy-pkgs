@@ -78,7 +78,7 @@ easy-comb 只调整属性顺序和各选项控制的细节，不会重新排版�
 - [使用指南](docs/README.md)：按你要做的事找到对应页面，从命令行用法到选项的完整规则
 - [从 CSScomb 4.3.0 迁移](docs/migrate-from-csscomb.md)，含逐项对比
 - [CHANGELOG](../CHANGELOG.md)（英文）
-- [easy-gonz](../../easy-gonz/README.md)：内置在 `vendor/gonzales-pe` 的解析器
+- [easy-gonz](../../easy-gonz/README.md)：easy-comb 使用的解析器
 
 ## 许可证
 

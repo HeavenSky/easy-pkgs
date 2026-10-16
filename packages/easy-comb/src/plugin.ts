@@ -1,5 +1,5 @@
 // 把选项定义包装成带取值校验的插件实例.
-import type { Node } from '#gonzales-pe';
+import type { Node } from 'easy-gonz';
 import Errors from './errors.ts';
 import type { Accepts, LintError, OptionDefinition } from './option.ts';
 

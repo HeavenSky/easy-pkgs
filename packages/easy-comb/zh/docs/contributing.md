@@ -46,13 +46,9 @@ node scripts/sort-order.ts --check    # 检查已提交的列表是否最新
 
 遇到无法自动安排位置的新属性时，脚本会失败并给出提示；把该属性加进脚本里的 `PLACEMENTS`。
 
-## 更新内置解析器
+## 用上解析器的修复
 
-```bash
-npm run vendor
-```
-
-这条命令把 `../easy-gonz` 中 [easy-gonz](../../../easy-gonz/README.md) 的源码复制到 `vendor/gonzales-pe`，并记录来源提交；easy-gonz 不需要构建。不要手改 `vendor/gonzales-pe`：先改 easy-gonz，再重新同步。
+easy-comb 依赖已发布的 [easy-gonz](../../../easy-gonz/README.md) 包。要发布解析器的修复，先发布 easy-gonz 新版本，再提高 `package.json` 中 `easy-gonz` 的版本范围并执行 `npm install`。
 
 ## 致谢
 

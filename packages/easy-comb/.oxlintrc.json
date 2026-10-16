@@ -6,8 +6,7 @@
     "mocha": true
   },
   "ignorePatterns": [
-    "dist/**",
-    "vendor/**"
+    "dist/**"
   ],
   "overrides": [
     {

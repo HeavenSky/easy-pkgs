@@ -179,7 +179,7 @@ export function compare(before, after, parser) {
 
 export async function setup({ config }) {
   const { default: Comb } = await import(pathToFileURL(path.join(pkg, 'src/csscomb.ts')));
-  const gonzales = require(path.join(pkg, 'vendor/gonzales-pe/src/gonzales.js'));
+  const gonzales = createRequire(path.join(pkg, 'package.json'))('easy-gonz'); // 与 easy-comb 运行时用同一份解析器
   const postcss = require('postcss');
   const parser = require('postcss-selector-parser');
   const sass = require('sass');

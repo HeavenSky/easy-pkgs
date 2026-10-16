@@ -1,5 +1,5 @@
-import gonzales from '#gonzales-pe';
-import type { Node } from '#gonzales-pe';
+import gonzales from 'easy-gonz';
+import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
 
 // 属性在排序表中的位置: 组序号与组内序号.

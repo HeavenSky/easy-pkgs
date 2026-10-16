@@ -46,13 +46,9 @@ node scripts/sort-order.ts --check    # verify the committed list is up to date
 
 When a new property can't be placed automatically, the script fails with a hint; add the property to `PLACEMENTS` in the script.
 
-## Update the bundled parser
+## Pick up a parser fix
 
-```bash
-npm run vendor
-```
-
-This copies the source of [easy-gonz](../../easy-gonz/README.md) from `../easy-gonz` into `vendor/gonzales-pe` and records the commit it came from; easy-gonz needs no build step. Never edit `vendor/gonzales-pe` by hand: change easy-gonz and sync again.
+easy-comb depends on the published [easy-gonz](../../easy-gonz/README.md) package. To ship a parser fix, release a new easy-gonz version first, then raise the `easy-gonz` range in `package.json` and run `npm install`.
 
 ## Credits
 

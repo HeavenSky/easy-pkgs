@@ -1,5 +1,5 @@
-import gonzales from '#gonzales-pe';
-import type { Node } from '#gonzales-pe';
+import gonzales from 'easy-gonz';
+import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
 
 // 声明之后可以跟的语句: 声明, 以及嵌套规则, Less mixin 调用, `@include` / `@extend` 等;

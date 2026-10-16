@@ -7,7 +7,7 @@
 | [`easy-np`](./packages/easy-np/README.md)     | npm 包安装工具(`np`, `np-x`), `.store` 布局, 支持 npm workspaces            |
 | [`easy-npd`](./packages/easy-npd/README.md)   | npm 包安装工具(`npd`, `npd-x`), `_name@version@name` 扁平布局              |
 | [`easy-comb`](./packages/easy-comb/README.md) | CSS / Less / Sass / SCSS 代码风格格式化与属性排序(csscomb)                 |
-| [`easy-gonz`](./packages/easy-gonz/README.md) | CSS / Less / Sass / SCSS 解析器(gonzales-pe), easy-comb 内置其构建产物     |
+| [`easy-gonz`](./packages/easy-gonz/README.md) | CSS / Less / Sass / SCSS 解析器(gonzales-pe), easy-comb 依赖它               |
 | [`easy-mok`](./packages/easy-mok/README.md) | 开发期 mock 中间件与图形化管理页(自研, 非接手项目)                    |
 
 ## 接手流程

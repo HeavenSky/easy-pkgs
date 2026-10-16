@@ -1,4 +1,4 @@
-// 内置 gonzales-pe 的类型声明, 只覆盖本项目用到的 API.
+// easy-comb 编译期使用的 easy-gonz 类型: 只覆盖本项目用到的 API, 比 easy-gonz 自带的 gonzales.d.ts 宽松; 运行时与发布产物都用 easy-gonz 本身.
 declare const gonzales: {
   createNode(options: gonzales.CreateNodeOptions): gonzales.Node;
   parse(css: string, options?: gonzales.ParseOptions): gonzales.Node;

@@ -11,7 +11,9 @@
     "verbatimModuleSyntax": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "types": ["node", "mocha"]
+    "types": ["node", "mocha"],
+    // easy-gonz 自带的类型更严格, 改用它需要逐个选项补判空与收窄; 在此之前编译期指向宽松声明, 删掉这行会出现约 200 个类型错误
+    "paths": { "easy-gonz": ["./types/easy-gonz.d.cts"] }
   },
   "include": ["src", "test", "scripts"]
 }

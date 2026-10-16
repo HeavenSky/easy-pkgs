@@ -1,5 +1,5 @@
-import gonzales from '#gonzales-pe';
-import type { Node } from '#gonzales-pe';
+import gonzales from 'easy-gonz';
+import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
 
 const IMPORT_LIKE = ['import', 'use', 'forward', 'charset'];

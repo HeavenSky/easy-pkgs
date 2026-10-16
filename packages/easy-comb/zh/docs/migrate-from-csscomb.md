@@ -33,7 +33,7 @@
 | | CSScomb 4.3.0 | easy-comb |
 | --- | --- | --- |
 | 是否维护 | 否 | 是 |
-| 解析器 | Gonzales PE（已停止维护） | [easy-gonz](../../../easy-gonz/README.md)（仍在维护的 fork，已内置） |
+| 解析器 | Gonzales PE（已停止维护） | [easy-gonz](../../../easy-gonz/README.md)（仍在维护的 fork） |
 | Less `padding-@{side}`、`.btn-@{size}` | 解析报错 | 支持 |
 | 未列出的带厂商前缀属性 | 排到末尾 | 排在标准属性前面 |
 | `sort-order` 中的自定义属性（`--foo`） | 不支持 | 支持 |
@@ -41,5 +41,5 @@
 | 内置配置 | `csscomb`、`zen`、`yandex` | `csscomb` |
 | 配置文件 | `.csscomb.json` | json、js、cjs、mjs、ts、cts、mts，支持 `defineConfig` |
 | 模块格式 | CommonJS | ESM，带 TypeScript 类型声明 |
-| 运行时依赖 | gonzales-pe、minimist、minimatch、vow、vow-fs、@babel/polyfill | tinyglobby |
+| 运行时依赖 | gonzales-pe、minimist、minimatch、vow、vow-fs、@babel/polyfill | easy-gonz、tinyglobby |
 | CSS、SCSS、Less、Sass 官方测试集 | 未检验 | 18,461 条合法用例全部通过（[复现方法](contributing.md#运行官方测试集)） |

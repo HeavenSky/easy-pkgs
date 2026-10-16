@@ -29,6 +29,7 @@
     "node": "^16.17.0 || >=18.3.0"
   },
   "dependencies": {
+    "easy-gonz": "^0.0.2",
     "tinyglobby": "^0.2.17"
   },
   "devDependencies": {
@@ -53,8 +54,7 @@
   "files": [
     "CHANGELOG.md",
     "bin",
-    "dist",
-    "vendor"
+    "dist"
   ],
   "bin": {
     "csscomb": "./bin/csscomb.js"
@@ -67,14 +67,7 @@
     "lint": "oxlint --fix",
     "lint:check": "oxlint",
     "sort-order": "node scripts/sort-order.ts",
-    "prepack": "npm run build",
-    "vendor": "node scripts/vendor-gonzales.ts"
-  },
-  "imports": {
-    "#gonzales-pe": {
-      "types": "./vendor/gonzales-pe/gonzales.d.cts",
-      "default": "./vendor/gonzales-pe/src/gonzales.js"
-    }
+    "prepack": "npm run build"
   },
   "bugs": {
     "url": "https://github.com/HeavenSky/easy-pkgs/issues"

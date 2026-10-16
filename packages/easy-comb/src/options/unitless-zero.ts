@@ -1,4 +1,4 @@
-import type { Node } from '#gonzales-pe';
+import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
 
 // 值里的 `0px` 能否换成 `0` 而不改语义: 自定义属性与预处理器变量的值会被原样代入别处(`calc()`, `==` 比较),

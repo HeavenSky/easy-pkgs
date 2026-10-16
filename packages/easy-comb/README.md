@@ -78,7 +78,7 @@ If you want every line reprinted in one canonical layout, use [Prettier](https:/
 - [Guide](docs/README.md): find the page for what you want to do, from the command line to the full option rules
 - [Switch from CSScomb 4.3.0](docs/migrate-from-csscomb.md), including a side-by-side comparison
 - [CHANGELOG](./CHANGELOG.md)
-- [easy-gonz](../easy-gonz/README.md), the parser bundled in `vendor/gonzales-pe`
+- [easy-gonz](../easy-gonz/README.md), the parser easy-comb uses
 
 ## License
 

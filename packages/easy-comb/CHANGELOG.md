@@ -4,6 +4,12 @@ easy-comb is based on [csscomb/csscomb.js](https://github.com/csscomb/csscomb.js
 
 0.0.1 lists all changes relative to csscomb 4.3.0; later versions list only the changes since the previous version.
 
+## Unreleased
+
+### Changed
+
+- The CSS parser is now the [easy-gonz](https://www.npmjs.com/package/easy-gonz) package, installed as a dependency, instead of a copy bundled under `vendor/`; parsing results are unchanged, and parser fixes reach you through easy-gonz updates.
+
 ## 0.0.2 (2026-10-16)
 
 ### Breaking changes

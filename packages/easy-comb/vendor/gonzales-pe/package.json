@@ -1,7 +1,0 @@
-{
-  "name": "easy-gonz",
-  "version": "0.0.2",
-  "private": true,
-  "type": "commonjs",
-  "description": "由 easy-pkgs 仓库 packages/easy-gonz 0.0.2 复制, src 内容 sha256 前 12 位 5634b44a648e; 不要手改, 修改 easy-gonz 后执行 node scripts/vendor-gonzales.ts 重新同步"
-}

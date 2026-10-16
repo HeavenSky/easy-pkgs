@@ -1,4 +1,4 @@
-import type { Node } from '#gonzales-pe';
+import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
 
 export default defineOption({

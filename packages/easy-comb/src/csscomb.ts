@@ -1,7 +1,7 @@
 // 对外入口: 预装全部内置选项的 Comb, 以及配置读取与选项检测的静态方法.
 import fs from 'node:fs';
-import gonzales from '#gonzales-pe';
-import type { Node } from '#gonzales-pe';
+import gonzales from 'easy-gonz';
+import type { Node } from 'easy-gonz';
 import Comb from './core.ts';
 import { findConfigFile, loadConfigFile } from './config.ts';
 import type { Config } from './config.ts';

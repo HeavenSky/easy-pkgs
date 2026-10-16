@@ -1,4 +1,4 @@
-import type { Node } from '#gonzales-pe';
+import type { Node } from 'easy-gonz';
 import { defineOption } from '../option.ts';
 
 // 参数是选择器的伪类; 其余伪类的参数(如 `:lang(EN)`, `:state(Foo)`)不是元素名

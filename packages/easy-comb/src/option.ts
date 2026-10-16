@@ -1,5 +1,5 @@
 // 选项插件的类型契约, 每个 src/options/*.ts 都用 defineOption 声明.
-import type { Node } from '#gonzales-pe';
+import type { Node } from 'easy-gonz';
 
 export interface LintError {
   message: string;

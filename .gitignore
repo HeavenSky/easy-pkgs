@@ -15,7 +15,6 @@ DONE.md
 !packages/*/test/fixtures/local/*.tgz
 # 全局规则常忽略 *-lock.json: 各包的 lockfile 入库, 保证 CI 与发布按同一份依赖版本安装与构建
 !packages/*/package-lock.json
-# 全局规则会忽略 vendor 与点目录: easy-comb 的内置 gonzales-pe 与目录遍历用例的 fixture 必须跟踪
-!packages/easy-comb/vendor/
+# 全局规则会忽略 vendor 与点目录: easy-comb 目录遍历用例的 fixture 必须跟踪
 !packages/easy-comb/test/core/process-directory/fixture/vendor/
 !packages/easy-comb/test/core/process-directory/fixture/.hidden/

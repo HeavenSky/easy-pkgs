@@ -33,7 +33,7 @@ The full list of changes is in the [CHANGELOG](../CHANGELOG.md).
 | | CSScomb 4.3.0 | easy-comb |
 | --- | --- | --- |
 | Maintained | No | Yes |
-| Parser | Gonzales PE (no longer maintained) | [easy-gonz](../../easy-gonz/README.md) (maintained fork, bundled) |
+| Parser | Gonzales PE (no longer maintained) | [easy-gonz](../../easy-gonz/README.md) (maintained fork) |
 | Less `padding-@{side}`, `.btn-@{size}` | Parse error | Supported |
 | Unlisted vendor-prefixed properties | Placed at the end | Placed before the standard property |
 | Custom properties (`--foo`) in `sort-order` | Not supported | Supported |
@@ -41,5 +41,5 @@ The full list of changes is in the [CHANGELOG](../CHANGELOG.md).
 | Built-in configs | `csscomb`, `zen`, `yandex` | `csscomb` |
 | Config files | `.csscomb.json` | json, js, cjs, mjs, ts, cts, mts, with `defineConfig` |
 | Module format | CommonJS | ESM with TypeScript declarations |
-| Runtime dependencies | gonzales-pe, minimist, minimatch, vow, vow-fs, @babel/polyfill | tinyglobby |
+| Runtime dependencies | gonzales-pe, minimist, minimatch, vow, vow-fs, @babel/polyfill | easy-gonz, tinyglobby |
 | Official CSS, SCSS, Less and Sass suites | Not checked | All 18,461 valid cases pass ([how to reproduce](contributing.md#run-the-official-test-suites)) |

@@ -1,7 +1,7 @@
 // 选项新建的节点必须带上所在语法树的 syntax, 否则对其 toString() 时解析器打出 `Syntax "undefined" is not supported yet`.
 import assert from 'node:assert/strict';
-import gonzales from '#gonzales-pe';
-import type { Node } from '#gonzales-pe';
+import gonzales from 'easy-gonz';
+import type { Node } from 'easy-gonz';
 import Comb from '../../../src/csscomb.ts';
 
 // 嵌套写法: 嵌套规则前要插入空行, sort-order 与 lines-between-rulesets 都会新建空白节点.

@@ -78,4 +78,22 @@ describe('CSScomb#configure', function() {
     assert.equal(comb._shouldProcess(path.join(process.cwd(), 'src/core.ts')),
         true);
   });
+
+  it('exclude passed to configure() stays relative to cwd', function() {
+    let dir = path.join(import.meta.dirname, '../process-directory/fixture');
+    let file = path.join(dir, 'vendor/lib/c.css');
+    let comb = new Comb();
+    comb._excludeBase = path.join(import.meta.dirname, 'elsewhere');
+    comb.configure({exclude: ['vendor/**']});
+    assert.equal(comb._excludeBase, undefined);
+    assert.equal(comb._shouldProcess(file), true);
+
+    let cwd = process.cwd();
+    process.chdir(dir);
+    try {
+      assert.equal(comb._shouldProcess(file), false);
+    } finally {
+      process.chdir(cwd);
+    }
+  });
 });

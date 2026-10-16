@@ -9,7 +9,10 @@ type Space = string | number;
 
 // 各选项默认关闭; 只接受 `true` 的选项通过不写来关闭, 写其他值会被告警并忽略.
 export interface Config {
-  /** 相对 cwd 的 glob, 命中的文件与目录不处理, 例如 `["node_modules/**"]`. */
+  /**
+   * 命中的文件与目录不处理的 glob, 例如 `["node_modules/**"]`.
+   * 写在配置文件里时相对配置文件所在目录; 经 `configure()` 直接传入时相对 cwd.
+   */
   exclude?: string[];
   /** 同 CLI 的 `--lint`: 只报告需要修改的文件, 不写回. */
   lint?: boolean;
@@ -17,7 +20,7 @@ export interface Config {
   verbose?: boolean;
   /** 额外的扩展名到语法的映射, 例如 `{".wxss": "css"}`; 默认处理 css/less/sass/scss. */
   syntax?: Record<string, string>;
-  /** 样式文件路径; 从中检测出的选项补齐本配置未设置的项. */
+  /** 样式文件路径, 写在配置文件里时相对配置文件所在目录; 从中检测出的选项补齐本配置未设置的项. 只有 CLI 读取. */
   template?: string;
 
   /** 在最后一条声明或 mixin 后补分号; Less/SCSS 的嵌套值 `}` 后不补. 对 .sass 无效. */

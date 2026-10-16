@@ -26,6 +26,8 @@ const CORE_CONFIG_KEYS = ['exclude', 'lint', 'verbose', 'syntax', 'template'];
 export default class Comb {
   config: Record<string, unknown> = {};
   exclude: string[] = [];
+  // exclude 的解析基准目录; 未设置时取查询时的 cwd. configure() 设置 exclude 时清空, 由加载配置文件的调用方再设为配置文件所在目录.
+  _excludeBase?: string;
   // Whether lint mode is on.
   lint = false;
   // List of used plugins.
@@ -49,8 +51,10 @@ export default class Comb {
     const conf = config as Record<string, any>;
     this.lint = Boolean(conf.lint);
     this.verbose = Boolean(conf.verbose);
-    if (conf.exclude)
+    if (conf.exclude) {
       this.exclude = conf.exclude;
+      this._excludeBase = undefined;
+    }
 
     if (conf.syntax) {
       for (let key in conf.syntax) {
@@ -266,7 +270,7 @@ export default class Comb {
    */
   _getAcceptableFilesFromDirectory(dir: string): string[] {
     let root = path.resolve(dir);
-    let scope = globScope(root);
+    let scope = globScope(root, this._excludeBase);
     let pattern = scope.pattern ? escapePath(scope.pattern) + '/**/*' : '**/*';
 
     return globSync(pattern, {
@@ -434,7 +438,7 @@ export default class Comb {
     if (!this.exclude.length) return true;
 
     // tinyglobby 没有单路径匹配接口: 以路径自身为 pattern 查询, 被 ignore 命中时结果为空.
-    let scope = globScope(path.resolve(file));
+    let scope = globScope(path.resolve(file), this._excludeBase);
     return globSync(escapePath(scope.pattern), {
       cwd: scope.cwd,
       ignore: this.exclude,
@@ -508,11 +512,11 @@ function changedLines(a: string[], b: string[]): number[] & { has(i: number): bo
 }
 
 /**
- * exclude 是相对 cwd 的 glob, 所以 cwd 内的路径以 cwd 为基准查询;
- * cwd 外的路径无法用相对 cwd 的 pattern 表达, 改以其所在目录为基准.
+ * exclude 是相对 `base`(缺省为 cwd)的 glob, 所以 `base` 内的路径以 `base` 为基准查询;
+ * `base` 外的路径无法用相对 `base` 的 pattern 表达, 改以其所在目录为基准.
  */
-function globScope(target: string): { cwd: string; pattern: string } {
-  let cwd = process.cwd();
+function globScope(target: string, base: string = process.cwd()): { cwd: string; pattern: string } {
+  let cwd = base;
   let relative = path.relative(cwd, target);
   if (relative.startsWith('..') || path.isAbsolute(relative))
     return { cwd: path.dirname(target), pattern: path.basename(target) };

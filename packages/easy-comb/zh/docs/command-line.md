@@ -22,7 +22,8 @@ cat main.css | csscomb -
 ```
 
 格式化结果输出到标准输出。
-标准输入一律按 CSS 解析，没有参数可以指定其他语法；要格式化 Less、SCSS 或 Sass，请改为传文件路径。
+标准输入默认按 CSS 解析；传 `--syntax scss`、`--syntax less` 或 `--syntax sass` 可改用对应语法，例如 `cat main.scss | csscomb --syntax scss -`。
+`--syntax` 只作用于标准输入，文件始终按扩展名决定语法。
 以下两种情况 easy-comb 会读标准输入：唯一的参数是 `-`；没有路径参数且标准输入不是终端。
 加 `-t`（`--tty-mode`）后永远不读标准输入。编辑器等工具通常通过管道启动 `csscomb`，这时应加 `-t`。
 
@@ -46,6 +47,7 @@ $ csscomb -lv assets/css
 | --- | --- |
 | `-c, --config <path>` | 用这份配置文件，不再自动查找。可以是任一种[配置文件格式](configuration.md#easy-comb-去哪里找配置)，也可以是 `.css` 文件，此时[检测它的风格作为配置](detect-config.md#把样式表直接当配置)。 |
 | `-d, --detect <file>` | 以 JSON 打印从样式表中检测到的选项后退出，见[从样式表生成配置](detect-config.md)。 |
+| `--syntax <name>` | 按 `css`（默认）、`scss`、`less` 或 `sass` 解析标准输入；文件仍按扩展名决定语法。 |
 | `-l, --lint` | 报告需要改动的文件，但不修改；有这样的文件时以 `1` 退出。 |
 | `-v, --verbose` | 打印每个处理过的文件和汇总。 |
 | `-t, --tty-mode` | 永远不读标准输入。 |
@@ -53,14 +55,14 @@ $ csscomb -lv assets/css
 | `-V, --version` | 打印 easy-comb 的版本号后退出。 |
 
 `--config` 指向的文件不存在时报 `Configuration file <path> was not found.` 并停止；文件加载失败时报 `Error parsing configuration file <path>.`，后面跟着原因。两种情况都以 `1` 退出。
-`--config` 或 `--detect` 没跟值时打印 `Option --config requires a <path> argument.`（`--detect` 则是 `<file>`），并以 `1` 退出。
+`--config`、`--detect` 或 `--syntax` 没跟值时打印 `Option --config requires a <path> argument.`（`--detect` 是 `<file>`，`--syntax` 是 `<name>`），并以 `1` 退出。
 
 ## 看懂退出码
 
 - `0`：运行成功；加 `--lint` 时表示没有文件需要改动。
 - `1`：加 `--lint` 时表示至少有一个文件需要改动；或者运行因错误中止，比如路径不存在、配置文件不存在或加载失败、参数缺少取值。
 - 标准输入是终端时不带路径运行 `csscomb`，也返回 `1`；此时打印帮助，而不是等待输入。
-- `2`：遇到未知参数，不处理任何文件。
+- `2`：遇到未知参数，或 `--syntax` 的取值不合法，不处理任何文件。
 
 easy-comb 在处理之前先检查所有路径是否存在，所以不会因为某个路径不存在而只处理了一半文件。
 
@@ -70,6 +72,11 @@ easy-comb 在处理之前先检查所有路径是否存在，所以不会因为�
 
 - 原因：参数拼错了，或者根本没有这个参数；easy-comb 以 `2` 退出，不处理任何文件。
 - 解决：改正参数；`csscomb --help` 列出了所有参数。
+
+**`Invalid value 'stylus' for option '--syntax'. Expected one of: css, scss, less, sass.`，后面跟着帮助文本**
+
+- 原因：`--syntax` 只接受 `css`、`scss`、`less` 和 `sass`；easy-comb 以 `2` 退出，不读标准输入。
+- 解决：改用其中一个取值；其他类型的文件请按路径格式化，并在配置里用 [`syntax`](configuration.md#选项之外的配置项) 映射它的扩展名。
 
 **`File or directory nope.css was not found.`**（加 `--detect` 时是 `File nope.css was not found.`）
 

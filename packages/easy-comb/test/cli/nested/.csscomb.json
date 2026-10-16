@@ -1,0 +1,4 @@
+{
+  "exclude": ["sub/vendor/**"],
+  "color-case": "lower"
+}

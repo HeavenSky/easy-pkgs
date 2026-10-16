@@ -30,5 +30,5 @@ npx csscomb -t path/to/file.scss
 
 In any editor or tool that can run a command when a file is saved, run this command with the saved file's path.
 Tools usually start `csscomb` with a pipe attached, so pass `-t` (`--tty-mode`): easy-comb then processes the given path and never waits for standard input.
-To format unsaved CSS from the editor instead, send it on standard input and pass `-`; standard input is always parsed as CSS, see [Format standard input](command-line.md#format-standard-input).
+To format unsaved code from the editor instead, send it on standard input and pass `-`; for SCSS, Less or Sass, also pass `--syntax scss`, `less` or `sass`, see [Format standard input](command-line.md#format-standard-input).
 To format from your own JavaScript, use the [Node.js API](node-api.md).

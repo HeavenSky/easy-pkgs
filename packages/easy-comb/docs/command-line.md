@@ -22,7 +22,8 @@ cat main.css | csscomb -
 ```
 
 The formatted result goes to standard output.
-Standard input is always parsed as CSS, and there is no option to choose another syntax; to format Less, SCSS or Sass, pass the file path instead.
+Standard input is parsed as CSS unless you pass `--syntax scss`, `--syntax less` or `--syntax sass`, e.g. `cat main.scss | csscomb --syntax scss -`.
+`--syntax` applies only to standard input; files are always parsed by their extension.
 easy-comb reads standard input when the only argument is `-`, or when there are no path arguments and standard input is not a terminal.
 With `-t` (`--tty-mode`) it never reads standard input. Editors usually spawn `csscomb` with a pipe attached, so they should pass `-t`.
 
@@ -46,6 +47,7 @@ With `--verbose` (`-v`), each processed file is printed: `!` marks a file that n
 | --- | --- |
 | `-c, --config <path>` | Use this config file instead of searching for one. It may be any [config file format](configuration.md#where-easy-comb-looks-for-a-config), or a `.css` file whose style is [detected and used as the config](detect-config.md#use-a-stylesheet-as-the-config). |
 | `-d, --detect <file>` | Print the options detected in a stylesheet as JSON and exit, see [Generate a config from a stylesheet](detect-config.md). |
+| `--syntax <name>` | Parse standard input as `css` (the default), `scss`, `less` or `sass`; files keep the syntax of their extension. |
 | `-l, --lint` | Report files that need changes without modifying them; exit with `1` if there are any. |
 | `-v, --verbose` | Print every processed file and a summary. |
 | `-t, --tty-mode` | Never read standard input. |
@@ -53,14 +55,14 @@ With `--verbose` (`-v`), each processed file is printed: `!` marks a file that n
 | `-V, --version` | Print the version of easy-comb and exit. |
 
 A `--config` file that doesn't exist stops the run with `Configuration file <path> was not found.`; a file that fails to load stops it with `Error parsing configuration file <path>.` followed by the cause. Both exit with `1`.
-`--config` or `--detect` without a value prints `Option --config requires a <path> argument.` (or `<file>` for `--detect`) and exits with `1`.
+`--config`, `--detect` or `--syntax` without a value prints `Option --config requires a <path> argument.` (`<file>` for `--detect`, `<name>` for `--syntax`) and exits with `1`.
 
 ## Read the exit code
 
 - `0`: the run succeeded; with `--lint`, no file needs changes.
 - `1`: with `--lint`, at least one file needs changes; or the run stopped on an error, such as a missing path, a missing or broken config file, or an option without its value.
 - `1` is also returned when you run `csscomb` without paths while standard input is a terminal; it then prints the help instead of waiting for input.
-- `2`: an unknown option; nothing is processed.
+- `2`: an unknown option or an invalid `--syntax` value; nothing is processed.
 
 Before processing anything, easy-comb checks that every path exists, so a missing path never leaves the other files half done.
 
@@ -70,6 +72,11 @@ Before processing anything, easy-comb checks that every path exists, so a missin
 
 - Cause: the option is misspelled or doesn't exist; easy-comb exits with `2` without processing any file.
 - Fix: correct the option; `csscomb --help` lists every option.
+
+**`Invalid value 'stylus' for option '--syntax'. Expected one of: css, scss, less, sass.` followed by the help text**
+
+- Cause: `--syntax` only accepts `css`, `scss`, `less` and `sass`; easy-comb exits with `2` without reading standard input.
+- Fix: pass one of these values; for another file type, format the file by path and map its extension with [`syntax`](configuration.md#settings-besides-options) in the config.
 
 **`File or directory nope.css was not found.`** (or `File nope.css was not found.` with `--detect`)
 

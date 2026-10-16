@@ -59,7 +59,7 @@ Besides the [options](options.md), a config may contain these keys:
 
 | Key | Effect |
 | --- | --- |
-| `exclude` | Globs relative to the current directory; matching files and directories are skipped, e.g. `["node_modules/**"]`. |
+| `exclude` | Globs relative to the directory of the config file; matching files and directories are skipped, e.g. `["node_modules/**"]`. In the built-in config and in a config passed to [`configure()`](node-api.md), they are relative to the current directory. |
 | `syntax` | Extra file extensions and the syntax to parse them with, e.g. `{".wxss": "css"}`. |
 | `template` | A stylesheet whose detected style fills in the options this config doesn't set, see [Fill unset options from a template stylesheet](detect-config.md#fill-unset-options-from-a-template-stylesheet). |
 | `lint` | Same as `--lint`. |

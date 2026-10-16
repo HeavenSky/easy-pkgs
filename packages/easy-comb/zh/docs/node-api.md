@@ -37,7 +37,7 @@ const css = await new Comb('csscomb').processString('a{color:#FFF}');
 | `processPath(path)`、`processDirectory(path)`、`processFile(path)` | 就地修复文件。`processFile` 在文件改动时返回 `1`，未改动返回 `0`，文件被跳过（扩展名不支持或命中 `exclude`）时返回 `undefined`；`processDirectory` 返回由 `1`/`0` 组成的数组，每个文件一项；`processPath` 对文件的返回同 `processFile`，对目录的返回同 `processDirectory`。 |
 | `processString(text, {syntax, filename})` | 返回修复后的字符串。`syntax` 取 `css`、`less`、`sass` 或 `scss`，默认 `css`。 |
 | `lintPath(path)`、`lintDirectory(path)`、`lintFile(path)`、`lintString(text, {syntax, filename})` | 返回错误数组；`lintDirectory` 以及对目录调用的 `lintPath` 返回每个文件一个这样的数组。见[读取 lint 错误](#读取-lint-错误)。 |
-| `configure(config)` | 应用一份配置。非法取值和未知选项用 `console.warn` 提示后忽略。 |
+| `configure(config)` | 应用一份配置。非法取值和未知选项用 `console.warn` 提示后忽略。`exclude` 相对当前目录。 |
 | `use(option)` | 注册自定义选项，见 [`OptionDefinition`](../../src/option.ts)。 |
 
 ## 静态方法

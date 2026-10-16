@@ -14,10 +14,13 @@ easy-comb is based on [csscomb/csscomb.js](https://github.com/csscomb/csscomb.js
 
 - `--version` (`-V`) prints the version of easy-comb ([guide](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-comb/docs/command-line.md#look-up-command-line-options)).
 - TypeScript config files that fail to load (no type stripping, non-erasable syntax, ESM syntax in a CommonJS project) explain the cause and suggest `.mts`, `.mjs` or `.json` ([guide](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-comb/docs/configuration.md#fix-a-typescript-config-that-fails-to-load)).
+- `--syntax <name>` parses standard input as `scss`, `less` or `sass` instead of CSS, e.g. `cat main.scss | csscomb --syntax scss -`; files keep the syntax of their extension, and an invalid value exits with `2` ([guide](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-comb/docs/command-line.md#format-standard-input)).
 
 ### Changed
 
 - Running `csscomb` without paths while standard input is a terminal prints the help text and exits with `1`, instead of doing nothing.
+- `exclude` in a config file, found automatically or passed with `--config`, is relative to the config file's directory instead of the current directory, so it also works when `csscomb` runs from a subdirectory or an editor; the built-in config and configs passed to `configure()` stay relative to the current directory. To migrate, rewrite globs written relative to the directory you ran `csscomb` from so that they are relative to the config file's directory ([guide](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-comb/docs/configuration.md#settings-besides-options)).
+- `template` in a config file is relative to the config file's directory instead of the current directory, like `exclude`. To migrate, rewrite a `template` path written relative to the directory you ran `csscomb` from so that it is relative to the config file's directory ([guide](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-comb/docs/detect-config.md#fill-unset-options-from-a-template-stylesheet)).
 
 ### Fixed
 

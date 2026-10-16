@@ -30,5 +30,5 @@ npx csscomb -t path/to/file.scss
 
 任何能在保存文件时运行命令的编辑器或工具，都可以用保存文件的路径运行这条命令。
 如果工具通过管道启动 `csscomb`，应传 `-t`（`--tty-mode`），这样 easy-comb 只处理给定路径，不会等待标准输入。
-要格式化编辑器里尚未保存的 CSS，就从标准输入传入并加 `-`；标准输入一律按 CSS 解析，见[格式化标准输入](command-line.md#格式化标准输入)。
+要格式化编辑器里尚未保存的代码，就从标准输入传入并加 `-`；SCSS、Less 或 Sass 再分别加 `--syntax scss`、`less` 或 `sass`，见[格式化标准输入](command-line.md#格式化标准输入)。
 在自己的 JavaScript 里格式化，用 [Node.js API](node-api.md)。

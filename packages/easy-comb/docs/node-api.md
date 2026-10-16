@@ -37,7 +37,7 @@ All instance methods return promises, except `configure` and `use`, which return
 | `processPath(path)`, `processDirectory(path)`, `processFile(path)` | Fix files in place. `processFile` resolves with `1` if the file changed, `0` if not, or `undefined` if the file is skipped (unsupported extension or `exclude`); `processDirectory` resolves with an array of `1`/`0`, one per file; `processPath` resolves like `processFile` for a file and like `processDirectory` for a directory. |
 | `processString(text, {syntax, filename})` | Resolve with the fixed string. `syntax` is `css`, `less`, `sass` or `scss` and defaults to `css`. |
 | `lintPath(path)`, `lintDirectory(path)`, `lintFile(path)`, `lintString(text, {syntax, filename})` | Resolve with an array of errors; `lintDirectory`, and `lintPath` on a directory, resolve with one such array per file. See [Read lint errors](#read-lint-errors). |
-| `configure(config)` | Apply a config. Invalid values and unknown options are reported with `console.warn` and ignored. |
+| `configure(config)` | Apply a config. Invalid values and unknown options are reported with `console.warn` and ignored. `exclude` globs are relative to the current directory. |
 | `use(option)` | Register a custom option, see [`OptionDefinition`](../src/option.ts). |
 
 ## Static methods

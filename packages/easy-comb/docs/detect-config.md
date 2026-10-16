@@ -32,5 +32,6 @@ When the `--config` path ends in `.css`, easy-comb detects its style on every ru
 ```
 
 With `template`, the options detected in that stylesheet fill in every option that the config doesn't set itself, so your config only lists the options you want to change.
+The `template` path is relative to the config file's directory, so it resolves the same wherever you run `csscomb`.
 A `template` file that doesn't exist stops the run with `Template configuration file <path> was not found.`
 Only the `csscomb` command reads `template`; the [Node.js API](node-api.md#static-methods) ignores it.

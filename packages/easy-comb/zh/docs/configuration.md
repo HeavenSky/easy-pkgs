@@ -59,7 +59,7 @@ TypeScript 配置依赖 Node 的类型剥离，因此需要 Node.js 22.18+，而
 
 | 键 | 作用 |
 | --- | --- |
-| `exclude` | 相对当前目录的 glob；匹配的文件和目录会被跳过，例如 `["node_modules/**"]`。 |
+| `exclude` | 相对配置文件所在目录的 glob；匹配的文件和目录会被跳过，例如 `["node_modules/**"]`。内置配置和传给 [`configure()`](node-api.md) 的配置里，`exclude` 相对当前目录。 |
 | `syntax` | 额外的扩展名及其解析语法，例如 `{".wxss": "css"}`。 |
 | `template` | 一份样式表，从中检测到的风格用来补齐本配置没设置的选项，见[用 template 补齐未设置的选项](detect-config.md#用-template-补齐未设置的选项)。 |
 | `lint` | 等同于 `--lint`。 |

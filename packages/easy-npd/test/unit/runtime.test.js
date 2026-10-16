@@ -13,10 +13,10 @@ describe('test/unit/runtime.test.js', () => {
       assert.deepEqual(runtime.nodeGypPackage(version), { name: 'node-gyp', spec: 'node-gyp' }, version);
     }
     const legacy = { name: '@electron/node-gyp', spec: '@electron/node-gyp@^10.2.0-electron.2' };
-    for (const version of ['v14.18.0', 'v16.13.2', 'v17.9.1']) {
+    for (const version of ['v14.19.3', 'v16.13.2', 'v17.9.1']) {
       assert.deepEqual(runtime.nodeGypPackage(version), legacy, version);
     }
-    for (const version of ['v14.18.0', 'v18.20.8']) {
+    for (const version of ['v14.19.3', 'v18.20.8']) {
       const message = runtime.warningMessage(version);
       assert.match(
         message,
@@ -27,7 +27,7 @@ describe('test/unit/runtime.test.js', () => {
 
   it('should compute the lowest higher version that restores every capability', () => {
     const range = runtime.CAPABILITIES.nodeGyp.modern.range;
-    for (const version of ['14.18.0', '18.20.8', '20.16.0']) {
+    for (const version of ['14.19.3', '18.20.8', '20.16.0']) {
       assert.equal(runtime.restoreVersion([range], version), '20.17.0', version);
     }
     for (const version of ['21.7.3', '22.0.0', '22.8.0', '22.9.0-pre']) {

@@ -2,14 +2,14 @@
 
 **English** · [简体中文](../zh/docs/node-versions.md)
 
-easy-np runs on Node.js >= 14.18.0 and installs a compatible node-gyp the first time a native module is built; for native modules you also need Python 3 and a C/C++ toolchain.
+easy-np runs on Node.js >= 14.19.3 and installs a compatible node-gyp the first time a native module is built; for native modules you also need Python 3 and a C/C++ toolchain.
 
 ## Install on Node.js 14 and 16
 
-tar 7 and its dependencies (`@isaacs/fs-minipass`, `minizlib`, `chownr`, `yallist`) declare Node >= 18, so installing easy-np on Node.js 14 or 16 prints engine warnings: `npm WARN EBADENGINE` with npm 7 and later, `npm WARN notsup` with npm 6.
+Installing easy-np on Node.js 14 or 16 prints engine warnings that do not affect how easy-np runs: `npm WARN EBADENGINE` with npm 7 and later, `npm WARN notsup` with npm 6. They come from tar 7 and its dependencies (`@isaacs/fs-minipass`, `minizlib`, `chownr`, `yallist`), which declare Node >= 18, and from `type-fest` 4 (used by urllib), which declares Node >= 16.
 
-- The warnings are expected: easy-np works on Node 14.18 and 16 in testing; below 16.6, [`lib/runtime.js`](../lib/runtime.js) adds the built-in methods tar 7 needs.
-- With `engine-strict` enabled in npm, the install fails instead; turn it off for this install, for example `npm i -g easy-np --engine-strict=false`.
+- The warnings are expected: easy-np works on Node 14.19.3 and 16 in testing; below 16.6, [`lib/runtime.js`](../lib/runtime.js) adds the built-in methods tar 7 needs. The package ships an `npm-shrinkwrap.json`, so npm installs the whole dependency tree at the versions tested on these Node.js versions; pnpm and Yarn ignore that file and may resolve newer minor versions.
+- With `engine-strict` enabled in npm, the install fails instead (`npm ERR! code EBADENGINE`, or `npm ERR! code ENOTSUP` with npm 6). Turn it off for this install, for example `npm i -g easy-np --engine-strict=false`, or use Node.js 18 or later.
 
 ## Read the downgrade warning
 
@@ -18,7 +18,7 @@ On older Node.js, easy-np switches a feature to a compatible older implementatio
 | Node.js                          | Line printed                                                                                                  |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | 20.17 ~ 20.x, >= 22.9            | none                                                                                                          |
-| 14.18 ~ 20.16, 21.x, 22.0 ~ 22.8 | `np WARN Node vX: node-gyp < 12 (Visual Studio 2026 is unsupported), upgrade to Node >= <version> to restore` |
+| 14.19 ~ 20.16, 21.x, 22.0 ~ 22.8 | `np WARN Node vX: node-gyp < 12 (Visual Studio 2026 is unsupported), upgrade to Node >= <version> to restore` |
 
 - node-gyp is currently the only feature that is reduced.
 - Set `np_node_warning=false` to turn the line off.
@@ -37,7 +37,7 @@ node-gyp is not installed with easy-np. The first time a native module is compil
 | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | 20.17 ~ 20.x, >= 22.9                         | the newest `node-gyp` whose `engines.node` matches the current Node.js (>= 12)                                  | none                                                                                                                                      |
 | 16.14 ~ 16.x, 18.x ~ 20.16, 21.x, 22.0 ~ 22.8 | same rule, which gives 10 or 11: Visual Studio 2026 is not recognized                                           | with 10 (16.14 ~ 16.x, 18.0 ~ 18.16), node-gyp also pulls in tar 6 through make-fetch-happen / cacache, see the next row                  |
-| 14.18 ~ 16.13, 17.x                           | `@electron/node-gyp` 10.2 (the node-gyp 10 branch maintained by Electron): Visual Studio 2026 is not recognized | the tar 6 it pulls in through make-fetch-happen / cacache has unfixed advisories; it is used only when node-gyp downloads Node.js headers |
+| 14.19 ~ 16.13, 17.x                           | `@electron/node-gyp` 10.2 (the node-gyp 10 branch maintained by Electron): Visual Studio 2026 is not recognized | the tar 6 it pulls in through make-fetch-happen / cacache has unfixed advisories; it is used only when node-gyp downloads Node.js headers |
 
 ## Weigh the shared security advisories
 

@@ -25,6 +25,24 @@ npm error code EEXIST
 - 原因：另一个全局包已占用 `npd` 命令，通常是 npm 包 `npd`。
 - 解决：运行 `npm i -g easy-npd --force`，见[安装 npd 并选择入口](install.md#安装命令)。
 
+## 安装 easy-npd 时 npm 报 EBADENGINE 警告
+
+```text
+npm WARN EBADENGINE Unsupported engine
+```
+
+- 原因：在 Node.js 14 或 16 上，tar 7 及其依赖声明需要 Node 18 及以上，`type-fest` 4 声明需要 Node 16 及以上；npm 6 打印的是 `npm WARN notsup`。
+- 解决：无需处理；该警告属预期，不影响 npd 运行，见[在旧版 Node.js 上运行与编译原生模块](node-versions.md#了解旧版-nodejs-上的变化)。
+
+## 安装 easy-npd 时 npm 因 EBADENGINE 中止
+
+```text
+npm ERR! code EBADENGINE
+```
+
+- 原因：npm 开启了 `engine-strict`，上面的 engine 警告变成错误并中止安装；npm 6 打印的是 `npm ERR! code ENOTSUP`。
+- 解决：运行 `npm i -g easy-npd --engine-strict=false`，或改用 Node.js 18 及以上版本。
+
 ## npd 拒绝未知参数
 
 ```text

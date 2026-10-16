@@ -46,3 +46,5 @@ package-lock.json
 !test/fixtures/lockfile/package-lock.json
 # 包根目录的 lockfile 入库; 上一行只忽略测试运行时在 fixture 目录里生成的
 !/package-lock.json
+# 发布时由 scripts/shrinkwrap.mjs 生成, 不入库
+npm-shrinkwrap.json

@@ -11,6 +11,16 @@
 - 原因：执行 `npm i -g easy-np` 时，全局已装 sindresorhus 的 [`np`](https://www.npmjs.com/package/np)，`np` 命令被它占用；npm 10 之前的版本打印 `npm ERR! code EEXIST`。
 - 解决：卸载两者之一，或加 `--force` 覆盖该命令；见[避免 np 命令重名](install.md#避免-np-命令重名)。
 
+### `npm WARN EBADENGINE Unsupported engine`
+
+- 原因：在 Node.js 14 或 16 上，tar 7 及其依赖声明需要 Node >= 18，`type-fest` 4 声明需要 Node >= 16；npm 6 打印的是 `npm WARN notsup`。该警告属预期，不影响 easy-np 运行。
+- 解决：无需处理；见[在 Node.js 14 与 16 上安装](node-versions.md#在-nodejs-14-与-16-上安装)。
+
+### `npm ERR! code EBADENGINE`
+
+- 原因：npm 开启了 `engine-strict`，上面的 engine 警告变成错误并中止安装；npm 6 打印的是 `npm ERR! code ENOTSUP`。
+- 解决：运行 `npm i -g easy-np --engine-strict=false`，或改用 Node.js 18 及以上版本。
+
 ## 参数相关的报错
 
 ### `unknown option --prodd (did you mean --prod?), run np -h to list the options`

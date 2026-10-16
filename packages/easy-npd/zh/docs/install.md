@@ -2,7 +2,7 @@
 
 [English](../../docs/install.md) · **简体中文**
 
-全局安装 easy-npd 后得到两个命令：保持 npminstall 习惯的 `npd`，和贴近 npm / pnpm 默认行为的 `npd-x`；需要 Node.js 14.18.0 或更高版本。
+全局安装 easy-npd 后得到两个命令：保持 npminstall 习惯的 `npd`，和贴近 npm / pnpm 默认行为的 `npd-x`；需要 Node.js 14.19.3 或更高版本。
 最短路径见[快速开始](../README.md#快速开始)，本页讲完整的安装步骤。
 
 ## 安装命令

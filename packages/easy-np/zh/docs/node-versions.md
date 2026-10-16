@@ -2,14 +2,14 @@
 
 [English](../../docs/node-versions.md) · **简体中文**
 
-easy-np 可在 Node.js >= 14.18.0 上运行，首次编译原生模块时自动安装兼容的 node-gyp，以免构建半路失败；编译原生模块还需要 Python 3 与 C/C++ 编译工具链。
+easy-np 可在 Node.js >= 14.19.3 上运行，首次编译原生模块时自动安装兼容的 node-gyp，以免构建半路失败；编译原生模块还需要 Python 3 与 C/C++ 编译工具链。
 
 ## 在 Node.js 14 与 16 上安装
 
-tar 7 及其依赖（`@isaacs/fs-minipass`、`minizlib`、`chownr`、`yallist`）声明需要 Node >= 18，因此在 Node.js 14 或 16 上安装 easy-np 会打印 engine 警告：npm 7 及以上为 `npm WARN EBADENGINE`，npm 6 为 `npm WARN notsup`。
+在 Node.js 14 或 16 上安装 easy-np 会打印 engine 警告，不影响 easy-np 运行：npm 7 及以上为 `npm WARN EBADENGINE`，npm 6 为 `npm WARN notsup`。警告来自 tar 7 及其依赖（`@isaacs/fs-minipass`、`minizlib`、`chownr`、`yallist`）声明的 Node >= 18，以及 urllib 引入的 `type-fest` 4 声明的 Node >= 16。
 
-- 这些警告属预期：easy-np 在 Node 14.18 与 16 上实测可用；低于 16.6 时由 [`lib/runtime.js`](../../lib/runtime.js) 补齐 tar 7 需要的内置方法。
-- npm 开启了 `engine-strict` 时安装会直接失败；本次安装临时关闭它，例如 `npm i -g easy-np --engine-strict=false`。
+- 这些警告属预期：easy-np 在 Node 14.19.3 与 16 上实测可用；低于 16.6 时由 [`lib/runtime.js`](../../lib/runtime.js) 补齐 tar 7 需要的内置方法。包里附带 `npm-shrinkwrap.json`，用 npm 安装时整棵依赖树都按在这些 Node.js 版本上实测过的版本安装；pnpm 与 Yarn 不读这个文件，可能装到更新的小版本。
+- npm 开启了 `engine-strict` 时安装会直接失败（`npm ERR! code EBADENGINE`，npm 6 为 `npm ERR! code ENOTSUP`）。本次安装临时关闭它，例如 `npm i -g easy-np --engine-strict=false`，或改用 Node.js 18 及以上版本。
 
 ## 读懂降级提示
 
@@ -18,7 +18,7 @@ tar 7 及其依赖（`@isaacs/fs-minipass`、`minizlib`、`chownr`、`yallist`�
 | Node.js                          | 打印的提示                                                                                                    |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | 20.17 ~ 20.x、>= 22.9            | 无                                                                                                            |
-| 14.18 ~ 20.16、21.x、22.0 ~ 22.8 | `np WARN Node vX: node-gyp < 12 (Visual Studio 2026 is unsupported), upgrade to Node >= <version> to restore` |
+| 14.19 ~ 20.16、21.x、22.0 ~ 22.8 | `np WARN Node vX: node-gyp < 12 (Visual Studio 2026 is unsupported), upgrade to Node >= <version> to restore` |
 
 - 目前只有 node-gyp 这一项会降级。
 - 设 `np_node_warning=false` 关闭这行提示。
@@ -37,7 +37,7 @@ node-gyp 不随 easy-np 安装。首次编译原生模块时，easy-np 联网安
 | --------------------------------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | 20.17 ~ 20.x、>= 22.9                         | `engines.node` 兼容当前 Node.js 的最新 `node-gyp`（>= 12）                               | 无                                                                                                         |
 | 16.14 ~ 16.x、18.x ~ 20.16、21.x、22.0 ~ 22.8 | 同上规则，实际为 10 或 11：不识别 Visual Studio 2026                                     | 装到 10 时（16.14 ~ 16.x、18.0 ~ 18.16），node-gyp 还会经 make-fetch-happen / cacache 引入 tar 6，见下一行 |
-| 14.18 ~ 16.13、17.x                           | `@electron/node-gyp` 10.2（Electron 维护的 node-gyp 10 分支）：不识别 Visual Studio 2026 | 它经 make-fetch-happen / cacache 引入的 tar 6 有未修复的安全公告，只在 node-gyp 下载 Node.js 头文件时使用  |
+| 14.19 ~ 16.13、17.x                           | `@electron/node-gyp` 10.2（Electron 维护的 node-gyp 10 分支）：不识别 Visual Studio 2026 | 它经 make-fetch-happen / cacache 引入的 tar 6 有未修复的安全公告，只在 node-gyp 下载 Node.js 头文件时使用  |
 
 ## 评估共有的依赖安全公告
 

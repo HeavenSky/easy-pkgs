@@ -34,7 +34,7 @@ ms
 
 ## Get started
 
-You need Node.js 14.18.0 or later.
+You need Node.js 14.19.3 or later.
 
 1. Install the commands: `npm i -g easy-npd`
 2. Go to your project: `cd <your-project>`

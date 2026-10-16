@@ -36,7 +36,7 @@ ms
 
 ## 快速开始
 
-需要 Node.js 14.18.0 或更高版本。
+需要 Node.js 14.19.3 或更高版本。
 
 1. 安装命令：`npm i -g easy-npd`
 2. 进入项目目录：`cd <your-project>`

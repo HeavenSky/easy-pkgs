@@ -2,7 +2,7 @@
 
 **English** · [简体中文](../zh/docs/install.md)
 
-One global install gives you both `np` and `np-x`; you need Node.js >= 14.18.0 with npm. The shortest path is [Get started](../README.md#get-started) in the README.
+One global install gives you both `np` and `np-x`; you need Node.js >= 14.19.3 with npm. The shortest path is [Get started](../README.md#get-started) in the README.
 
 ## Install the package
 

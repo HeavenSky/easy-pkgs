@@ -15,6 +15,8 @@ easy-npd starts from [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.8.0
 - Usage and config errors print only the message, the npd version and the command line, not a stack trace.
 - `npd-x install` without `package.json` and without package names fails and writes nothing, like npm.
 - Documentation is now in English, with a Chinese translation under `zh/`; the guide is split into [one page per task](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-npd/docs/README.md).
+- npd now requires Node.js 14.19.3 or later (up from 14.18.0), the minimum urllib 3.27.3 declares; on Node.js 14.18 upgrade Node.js first.
+- The package now ships an `npm-shrinkwrap.json`, and tar and urllib are pinned to the tested versions (7.5.22 and 3.27.3), so installing with npm resolves the whole dependency tree at tested versions and a later minor release cannot pull in APIs that Node.js 14 and 16 lack. On Node.js 14 and 16, `EBADENGINE` warnings during install are expected and harmless; with `engine-strict` on, install with `--engine-strict=false` or use Node.js 18 or later. [Run on older Node.js and build native modules](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-npd/docs/node-versions.md)
 
 ### Fixed
 

@@ -45,7 +45,7 @@ $ npx esbuild --version
 
 ## 开始使用
 
-三条命令从零跑到放行脚本；需要 Node.js >= 14.18.0。
+三条命令从零跑到放行脚本；需要 Node.js >= 14.19.3。
 
 1. 安装 `np` 与 `np-x` 两个命令：`npm i -g easy-np`
 2. 安装项目依赖：`np-x install`
@@ -61,7 +61,7 @@ $ npx esbuild --version
 - **依赖的安装脚本经你批准才执行**：`np-x install` 只为 `allowScripts` 中的条目执行 `preinstall`、`install` 与 `postinstall`，每个条目可精确到版本、git commit 或 tarball URL；tarball 冒充其他包名时告警 `manifest mismatch`，也无法沿用被冒充包的放行（[详情](docs/allow-scripts.md)）。
 - 不用配置就有快的公共源：easy-np 对 npm、yarn、alibaba（npmmirror）、tencent 与 huawei 测速，用最快的 3 个，下载失败换下一个重试，镜像缺刚发布的版本时回 npm 官方源取；配了私有源就只用私有源（[详情](docs/registry.md)）。
 - 现有的 npm 与 pnpm 配置照常生效：npm workspaces 与 `workspace:` 协议、`.npmrc`、`pnpm-workspace.yaml`、`onlyBuiltDependencies` 无需改写；`.store` 布局让根 `node_modules` 只放直接依赖与你提升的包（[详情](docs/workspaces.md)）。
-- 老版本 Node.js 上也能复现安装：`np-lock.json` 锁定 git commit 与 tarball 的 sha512 integrity，CI 用 `--frozen-lockfile` 在缺条目时失败；本仓库 CI 在 Node.js 14.18.0、16、18 与 22 上跑全量用例（[ci.yml](../../../.github/workflows/ci.yml)）。
+- 老版本 Node.js 上也能复现安装：`np-lock.json` 锁定 git commit 与 tarball 的 sha512 integrity，CI 用 `--frozen-lockfile` 在缺条目时失败；本仓库 CI 在 Node.js 14.19.3、16、18 与 22 上跑全量用例（[ci.yml](../../../.github/workflows/ci.yml)）。
 
 ## 什么时候换别的工具
 

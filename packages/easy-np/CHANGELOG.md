@@ -15,6 +15,8 @@ easy-np started from [cnpm/npminstall](https://github.com/cnpm/npminstall) 8.0.1
 - Usage and config errors print only the message, followed by `np version` and `np argv`, without a stack trace.
 - `np-x install` without `package.json` and without package names fails and writes nothing, like npm.
 - The documentation is now in English with a Chinese translation, and the guide is split into one page per task: see the [guide index](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-np/docs/README.md).
+- easy-np now requires Node.js 14.19.3 or later (up from 14.18.0), the minimum urllib 3.27.3 declares; on Node.js 14.18 upgrade Node.js first.
+- The package now ships an `npm-shrinkwrap.json`, and tar and urllib are pinned to the tested versions (7.5.22 and 3.27.3), so installing with npm resolves the whole dependency tree at tested versions and a later minor release cannot pull in APIs that Node.js 14 and 16 lack. On Node.js 14 and 16, `EBADENGINE` warnings during install are expected and harmless; with `engine-strict` on, install with `--engine-strict=false` or use Node.js 18 or later ([details](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-np/docs/node-versions.md#install-on-nodejs-14-and-16)).
 
 ### Fixed
 

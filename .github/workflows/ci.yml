@@ -161,14 +161,14 @@ jobs:
       - run: npm ci
       - run: npm run lint:check
 
-  # engines 下限 Node 14.18: mocha 11 不支持, 用 mocha 10 跑全量用例
+  # engines 下限 Node 14.19.3: mocha 11 不支持, 用 mocha 10 跑全量用例
   # Node 14 自带的 npm 6 不认 npx -y, mocha 10 改为全局安装
   test-legacy-node:
     strategy:
       fail-fast: false
       matrix:
         package: [easy-np, easy-npd]
-        node-version: [14.18.0, 16.x]
+        node-version: [14.19.3, 16.x]
     runs-on: ubuntu-latest
     timeout-minutes: 45
     defaults:

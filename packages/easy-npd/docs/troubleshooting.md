@@ -25,6 +25,24 @@ npm error code EEXIST
 - Cause: another global package, usually the npm package `npd`, already owns the `npd` command.
 - Fix: run `npm i -g easy-npd --force`, see [Install npd and pick an entry point](install.md#install-the-commands).
 
+## npm warns about EBADENGINE when installing easy-npd
+
+```text
+npm WARN EBADENGINE Unsupported engine
+```
+
+- Cause: on Node.js 14 or 16, tar 7 and its dependencies declare Node 18 or later and `type-fest` 4 declares Node 16 or later; npm 6 prints `npm WARN notsup` instead.
+- Fix: nothing to do; the warning is expected and does not affect how npd runs, see [Run on older Node.js and build native modules](node-versions.md#know-what-changes-on-older-nodejs).
+
+## npm stops with EBADENGINE when installing easy-npd
+
+```text
+npm ERR! code EBADENGINE
+```
+
+- Cause: npm's `engine-strict` is on, so the engine warnings above stop the install; npm 6 prints `npm ERR! code ENOTSUP`.
+- Fix: run `npm i -g easy-npd --engine-strict=false`, or use Node.js 18 or later.
+
 ## npd rejects an unknown option
 
 ```text

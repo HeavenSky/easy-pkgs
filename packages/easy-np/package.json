@@ -28,6 +28,7 @@
     "np-x": "bin/x.js"
   },
   "files": [
+    "npm-shrinkwrap.json",
     "lib",
     "bin",
     "node-gyp-bin",
@@ -74,8 +75,8 @@
     "p-map": "^2.1.0",
     "rc": "^1.2.8",
     "semver": "^7.0.0",
-    "tar": "^7.5.22",
-    "urllib": "^3.27.3"
+    "tar": "7.5.22",
+    "urllib": "3.27.3"
   },
   "devDependencies": {
     "assert-file": "^1.0.0",
@@ -87,6 +88,6 @@
     "oxlint": "^1.85.0"
   },
   "engines": {
-    "node": ">=14.18.0"
+    "node": ">=14.19.3"
   }
 }

@@ -11,6 +11,16 @@ Search this page for the error text you see. Messages are quoted as printed, wit
 - Cause: when you run `npm i -g easy-np`, sindresorhus's [`np`](https://www.npmjs.com/package/np) is installed globally and owns the `np` command; npm before version 10 prints `npm ERR! code EEXIST`.
 - Fix: uninstall one of the two, or add `--force` to overwrite the command; see [Avoid the np name clash](install.md#avoid-the-np-name-clash).
 
+### `npm WARN EBADENGINE Unsupported engine`
+
+- Cause: on Node.js 14 or 16, tar 7 and its dependencies declare Node >= 18 and `type-fest` 4 declares Node >= 16; npm 6 prints `npm WARN notsup` instead. The warning is expected and does not affect how easy-np runs.
+- Fix: nothing to do; see [Install on Node.js 14 and 16](node-versions.md#install-on-nodejs-14-and-16).
+
+### `npm ERR! code EBADENGINE`
+
+- Cause: npm's `engine-strict` is on, so the engine warnings above stop the install; npm 6 prints `npm ERR! code ENOTSUP`.
+- Fix: run `npm i -g easy-np --engine-strict=false`, or use Node.js 18 or later.
+
 ## Errors about options
 
 ### `unknown option --prodd (did you mean --prod?), run np -h to list the options`

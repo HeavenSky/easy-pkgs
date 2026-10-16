@@ -2,7 +2,7 @@
 
 [English](../../docs/install.md) · **简体中文**
 
-全局安装一次就同时得到 `np` 与 `np-x`；需要 Node.js >= 14.18.0 与 npm。最短路径见 README 的[开始使用](../README.md#开始使用)。
+全局安装一次就同时得到 `np` 与 `np-x`；需要 Node.js >= 14.19.3 与 npm。最短路径见 README 的[开始使用](../README.md#开始使用)。
 
 ## 安装本包
 

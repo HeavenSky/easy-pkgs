@@ -2,7 +2,7 @@
 
 **English** · [简体中文](../zh/docs/install.md)
 
-Installing easy-npd globally gives you two commands: `npd`, which keeps npminstall's habits, and `npd-x`, which follows npm / pnpm defaults; you need Node.js 14.18.0 or later.
+Installing easy-npd globally gives you two commands: `npd`, which keeps npminstall's habits, and `npd-x`, which follows npm / pnpm defaults; you need Node.js 14.19.3 or later.
 The shortest path is the [quick start](../README.md#get-started); this page covers the full install.
 
 ## Install the commands

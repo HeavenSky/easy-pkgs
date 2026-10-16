@@ -43,7 +43,7 @@ After these commands `package.json` contains `"allowScripts": { "esbuild@0.28.2"
 
 ## Get started
 
-Three commands take you from nothing to an approved install script; you need Node.js >= 14.18.0.
+Three commands take you from nothing to an approved install script; you need Node.js >= 14.19.3.
 
 1. Install the two commands `np` and `np-x`: `npm i -g easy-np`
 2. Install your project's dependencies: `np-x install`
@@ -59,7 +59,7 @@ Prefer npminstall's defaults? `np` is `np-x install --no-lockfile --dangerously-
 - **Dependency install scripts run only after you approve them**: `np-x install` runs `preinstall`, `install` and `postinstall` only for entries in `allowScripts`, and each entry can be pinned to a version, a git commit, or a tarball URL; a tarball that claims another package name gets a `manifest mismatch` warning and cannot reuse that package's approval ([details](docs/allow-scripts.md)).
 - A fast public registry without configuration: easy-np probes npm, yarn, alibaba (npmmirror), tencent and huawei, uses the fastest three, retries a failed download on the next one, and fetches from npm when a mirror lacks a new version; with a private registry configured it uses only that registry ([details](docs/registry.md)).
 - Your npm and pnpm setup keeps working: npm workspaces with the `workspace:` protocol, `.npmrc`, `pnpm-workspace.yaml` and `onlyBuiltDependencies` apply without changes, and the `.store` layout limits the root `node_modules` to your direct dependencies and the packages you hoist ([details](docs/workspaces.md)).
-- Reproducible installs, even on old Node.js: `np-lock.json` locks git commits and tarball sha512 integrity, `--frozen-lockfile` fails CI on a missing entry, and CI runs the full test suite on Node.js 14.18.0, 16, 18 and 22 ([ci.yml](../../.github/workflows/ci.yml)).
+- Reproducible installs, even on old Node.js: `np-lock.json` locks git commits and tarball sha512 integrity, `--frozen-lockfile` fails CI on a missing entry, and CI runs the full test suite on Node.js 14.19.3, 16, 18 and 22 ([ci.yml](../../.github/workflows/ci.yml)).
 
 ## When to use something else
 

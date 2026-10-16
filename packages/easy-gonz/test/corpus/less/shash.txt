@@ -1,0 +1,6 @@
+=== issue-103
+#@{panda}
+---
+id 1:1-1:9 {less}
+  interpolatedVariable 1:2-1:9
+    ident 1:4-1:8 "panda"

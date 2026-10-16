@@ -1,0 +1,4 @@
+=== 0 [sass scss]
+&
+---
+parentSelector 1:1-1:1 {*} "&"

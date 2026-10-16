@@ -1,0 +1,41 @@
+=== 0 [css less sass scss]
+expression()
+---
+expression 1:1-1:12 {*} ""
+
+=== 1 [css less sass scss]
+expression(())
+---
+expression 1:1-1:14 {*} "()"
+
+=== 2 [css less sass scss]
+expression(expression())
+---
+expression 1:1-1:24 {*} "expression()"
+
+=== 3 [css less scss]
+expression(/*)*/)
+---
+expression 1:1-1:17 {*} "/*)*/"
+
+=== 4 [css less sass scss]
+expression(")")
+---
+expression 1:1-1:15 {*} "\")\""
+
+=== 5 [css less sass scss]
+expression(')')
+---
+expression 1:1-1:15 {*} "')'"
+
+=== 6 [css less sass scss]
+expression(()())
+---
+expression 1:1-1:16 {*} "()()"
+
+=== 7 [css less sass scss]
+expression(
+// )
+)
+---
+expression 1:1-3:1 {*} "\n// )\n"

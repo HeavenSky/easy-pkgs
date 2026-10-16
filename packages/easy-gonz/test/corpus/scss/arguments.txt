@@ -1,0 +1,136 @@
+=== 6
+(lighten($grey, 30%), $primary)
+---
+arguments 1:1-1:31 {scss}
+  function 1:2-1:20
+    ident 1:2-1:8 "lighten"
+    arguments 1:9-1:20
+      variable 1:10-1:14
+        ident 1:11-1:14 "grey"
+      delimiter 1:15-1:15 ","
+      space 1:16-1:16 " "
+      percentage 1:17-1:19
+        number 1:17-1:18 "30"
+  delimiter 1:21-1:21 ","
+  space 1:22-1:22 " "
+  variable 1:23-1:30
+    ident 1:24-1:30 "primary"
+
+=== 7
+(-90deg)
+---
+arguments 1:1-1:8 {scss}
+  operator 1:2-1:2 "-"
+  dimension 1:3-1:7
+    number 1:3-1:4 "90"
+    ident 1:5-1:7 "deg"
+
+=== 8
+((10))
+---
+arguments 1:1-1:6 {scss}
+  parentheses 1:2-1:5
+    number 1:3-1:4 "10"
+
+=== 9
+(foo($bar))
+---
+arguments 1:1-1:11 {scss}
+  function 1:2-1:10
+    ident 1:2-1:4 "foo"
+    arguments 1:5-1:10
+      variable 1:6-1:9
+        ident 1:7-1:9 "bar"
+
+=== 10
+(foo($bar)...)
+---
+arguments 1:1-1:14 {scss}
+  functionsList 1:2-1:13
+    function 1:2-1:10
+      ident 1:2-1:4 "foo"
+      arguments 1:5-1:10
+        variable 1:6-1:9
+          ident 1:7-1:9 "bar"
+
+=== issue-219
+(
+  $transition-duration: default,
+  $transition-timing-function: default,
+  $transition-property...
+)
+---
+arguments 1:1-5:1 {scss}
+  space 1:2-2:2 "\n  "
+  declaration 2:3-2:31
+    property 2:3-2:22
+      variable 2:3-2:22
+        ident 2:4-2:22 "transition-duration"
+    propertyDelimiter 2:23-2:23 ":"
+    space 2:24-2:24 " "
+    value 2:25-2:31
+      ident 2:25-2:31 "default"
+  delimiter 2:32-2:32 ","
+  space 2:33-3:2 "\n  "
+  declaration 3:3-3:38
+    property 3:3-3:29
+      variable 3:3-3:29
+        ident 3:4-3:29 "transition-timing-function"
+    propertyDelimiter 3:30-3:30 ":"
+    space 3:31-3:31 " "
+    value 3:32-3:38
+      ident 3:32-3:38 "default"
+  delimiter 3:39-3:39 ","
+  space 3:40-4:2 "\n  "
+  variablesList 4:3-4:25
+    variable 4:3-4:22
+      ident 4:4-4:22 "transition-property"
+  space 4:26-4:26 "\n"
+
+=== rest.number
+(1..., (c: 2)..., )
+---
+arguments 1:1-1:19 {scss}
+  number 1:2-1:2 "1"
+  operator 1:3-1:5 "..."
+  delimiter 1:6-1:6 ","
+  space 1:7-1:7 " "
+  parentheses 1:8-1:13
+    ident 1:9-1:9 "c"
+    operator 1:10-1:10 ":"
+    space 1:11-1:11 " "
+    number 1:12-1:12 "2"
+  operator 1:14-1:16 "..."
+  delimiter 1:17-1:17 ","
+  space 1:18-1:18 " "
+
+=== rest.list
+([1, 2]..., $c: 3)
+---
+arguments 1:1-1:18 {scss}
+  brackets 1:2-1:7
+    number 1:3-1:3 "1"
+    operator 1:4-1:4 ","
+    space 1:5-1:5 " "
+    number 1:6-1:6 "2"
+  operator 1:8-1:10 "..."
+  delimiter 1:11-1:11 ","
+  space 1:12-1:12 " "
+  declaration 1:13-1:17
+    property 1:13-1:14
+      variable 1:13-1:14
+        ident 1:14-1:14 "c"
+    propertyDelimiter 1:15-1:15 ":"
+    space 1:16-1:16 " "
+    value 1:17-1:17
+      number 1:17-1:17 "3"
+
+=== rest.newline
+($b
+  ...)
+---
+arguments 1:1-2:6 {scss}
+  variable 1:2-1:3
+    ident 1:3-1:3 "b"
+  space 1:4-2:2 "\n  "
+  operator 2:3-2:5 "..."

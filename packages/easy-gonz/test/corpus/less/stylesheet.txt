@@ -1,0 +1,5991 @@
+=== 6
+a { color: tomato; span:first-child {color: blue;} }
+---
+stylesheet 1:1-1:52 {less}
+  ruleset 1:1-1:52
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-1:52
+      space 1:4-1:4 " "
+      declaration 1:5-1:17
+        property 1:5-1:9
+          ident 1:5-1:9 "color"
+        propertyDelimiter 1:10-1:10 ":"
+        space 1:11-1:11 " "
+        value 1:12-1:17
+          ident 1:12-1:17 "tomato"
+      declarationDelimiter 1:18-1:18 ";"
+      space 1:19-1:19 " "
+      ruleset 1:20-1:50
+        selector 1:20-1:35
+          typeSelector 1:20-1:23
+            ident 1:20-1:23 "span"
+          pseudoClass 1:24-1:35
+            ident 1:25-1:35 "first-child"
+        space 1:36-1:36 " "
+        block 1:37-1:50
+          declaration 1:38-1:48
+            property 1:38-1:42
+              ident 1:38-1:42 "color"
+            propertyDelimiter 1:43-1:43 ":"
+            space 1:44-1:44 " "
+            value 1:45-1:48
+              ident 1:45-1:48 "blue"
+          declarationDelimiter 1:49-1:49 ";"
+      space 1:51-1:51 " "
+
+=== issue-15
+.foo {
+    &:extend(.bar) {
+        color: panda;
+    }
+}
+---
+stylesheet 1:1-5:1 {less}
+  ruleset 1:1-5:1
+    selector 1:1-1:4
+      class 1:1-1:4
+        ident 1:2-1:4 "foo"
+    space 1:5-1:5 " "
+    block 1:6-5:1
+      space 1:7-2:4 "\n    "
+      extend 2:5-4:5
+        parentSelector 2:5-2:5 "&"
+        pseudoClass 2:6-2:18
+          ident 2:7-2:12 "extend"
+          arguments 2:13-2:18
+            selector 2:14-2:17
+              class 2:14-2:17
+                ident 2:15-2:17 "bar"
+        space 2:19-2:19 " "
+        block 2:20-4:5
+          space 2:21-3:8 "\n        "
+          declaration 3:9-3:20
+            property 3:9-3:13
+              ident 3:9-3:13 "color"
+            propertyDelimiter 3:14-3:14 ":"
+            space 3:15-3:15 " "
+            value 3:16-3:20
+              ident 3:16-3:20 "panda"
+          declarationDelimiter 3:21-3:21 ";"
+          space 3:22-4:4 "\n    "
+      space 4:6-4:6 "\n"
+
+=== issue104
+@image-url: '../image';
+// Comment
+---
+stylesheet 1:1-2:10 {less}
+  declaration 1:1-1:22
+    property 1:1-1:10
+      variable 1:1-1:10
+        ident 1:2-1:10 "image-url"
+    propertyDelimiter 1:11-1:11 ":"
+    space 1:12-1:12 " "
+    value 1:13-1:22
+      string 1:13-1:22 "'../image'"
+  declarationDelimiter 1:23-1:23 ";"
+  space 1:24-1:24 "\n"
+  singlelineComment 2:1-2:10 " Comment"
+
+=== compress.less21.part15.6.test1
+a {
+    font-weight: bold
+}
+
+b {
+    font-weight: normal
+}
+
+c {
+    font-weight: bolder
+}
+---
+stylesheet 1:1-11:1 {less}
+  ruleset 1:1-3:1
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-3:1
+      space 1:4-2:4 "\n    "
+      declaration 2:5-2:21
+        property 2:5-2:15
+          ident 2:5-2:15 "font-weight"
+        propertyDelimiter 2:16-2:16 ":"
+        space 2:17-2:17 " "
+        value 2:18-2:21
+          ident 2:18-2:21 "bold"
+      space 2:22-2:22 "\n"
+  space 3:2-4:4 "\n\n"
+  ruleset 5:1-7:1
+    selector 5:1-5:1
+      typeSelector 5:1-5:1
+        ident 5:1-5:1 "b"
+    space 5:2-5:2 " "
+    block 5:3-7:1
+      space 5:4-6:4 "\n    "
+      declaration 6:5-6:23
+        property 6:5-6:15
+          ident 6:5-6:15 "font-weight"
+        propertyDelimiter 6:16-6:16 ":"
+        space 6:17-6:17 " "
+        value 6:18-6:23
+          ident 6:18-6:23 "normal"
+      space 6:24-6:24 "\n"
+  space 7:2-8:4 "\n\n"
+  ruleset 9:1-11:1
+    selector 9:1-9:1
+      typeSelector 9:1-9:1
+        ident 9:1-9:1 "c"
+    space 9:2-9:2 " "
+    block 9:3-11:1
+      space 9:4-10:4 "\n    "
+      declaration 10:5-10:23
+        property 10:5-10:15
+          ident 10:5-10:15 "font-weight"
+        propertyDelimiter 10:16-10:16 ":"
+        space 10:17-10:17 " "
+        value 10:18-10:23
+          ident 10:18-10:23 "bolder"
+      space 10:24-10:24 "\n"
+
+=== compress.less21.part4.3.2.test1
+h1 { margin: 0.5em }
+---
+stylesheet 1:1-1:20 {less}
+  ruleset 1:1-1:20
+    selector 1:1-1:2
+      typeSelector 1:1-1:2
+        ident 1:1-1:2 "h1"
+    space 1:3-1:3 " "
+    block 1:4-1:20
+      space 1:5-1:5 " "
+      declaration 1:6-1:18
+        property 1:6-1:11
+          ident 1:6-1:11 "margin"
+        propertyDelimiter 1:12-1:12 ":"
+        space 1:13-1:13 " "
+        value 1:14-1:18
+          dimension 1:14-1:18
+            number 1:14-1:16 "0.5"
+            ident 1:17-1:18 "em"
+      space 1:19-1:19 " "
+
+=== compress.less21.part4.3.2.test10
+a {
+    b: (0.1em) (0.2ex) (0.3px) (0.4in) (0.5cm) (0.6mm) (0.7pt) (0.8px);
+    c: (000.001em) (000.002ex) (000.003px) (000.004in) (000.005cm) (000.006mm) (000.007pt) (000.008px);
+    d: (8.0em) (7.1ex) (6.2px) (5.3in) (4.4cm) (3.5mm) (2.6pt) (1.7px);
+    e: (0.0) (0.) (0.0000) (.0) (.000) (000);
+    f: (0.0em) (0em) (0%) (000%) (00.00%) (0.0000em) (000em) (.0em) (.000em);
+    g: (0.0px) (0px) (0.0000px) (000px) (.0px) (.000px);
+    h: (0.0s) (0s) (0.0000s) (000s) (.0s) (.000s) (0.2s) (010.01s);
+    i: (010.0px) (010.00);
+}
+---
+stylesheet 1:1-10:1 {less}
+  ruleset 1:1-10:1
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-10:1
+      space 1:4-2:4 "\n    "
+      declaration 2:5-2:70
+        property 2:5-2:5
+          ident 2:5-2:5 "b"
+        propertyDelimiter 2:6-2:6 ":"
+        space 2:7-2:7 " "
+        value 2:8-2:70
+          parentheses 2:8-2:14
+            dimension 2:9-2:13
+              number 2:9-2:11 "0.1"
+              ident 2:12-2:13 "em"
+          space 2:15-2:15 " "
+          parentheses 2:16-2:22
+            dimension 2:17-2:21
+              number 2:17-2:19 "0.2"
+              ident 2:20-2:21 "ex"
+          space 2:23-2:23 " "
+          parentheses 2:24-2:30
+            dimension 2:25-2:29
+              number 2:25-2:27 "0.3"
+              ident 2:28-2:29 "px"
+          space 2:31-2:31 " "
+          parentheses 2:32-2:38
+            dimension 2:33-2:37
+              number 2:33-2:35 "0.4"
+              ident 2:36-2:37 "in"
+          space 2:39-2:39 " "
+          parentheses 2:40-2:46
+            dimension 2:41-2:45
+              number 2:41-2:43 "0.5"
+              ident 2:44-2:45 "cm"
+          space 2:47-2:47 " "
+          parentheses 2:48-2:54
+            dimension 2:49-2:53
+              number 2:49-2:51 "0.6"
+              ident 2:52-2:53 "mm"
+          space 2:55-2:55 " "
+          parentheses 2:56-2:62
+            dimension 2:57-2:61
+              number 2:57-2:59 "0.7"
+              ident 2:60-2:61 "pt"
+          space 2:63-2:63 " "
+          parentheses 2:64-2:70
+            dimension 2:65-2:69
+              number 2:65-2:67 "0.8"
+              ident 2:68-2:69 "px"
+      declarationDelimiter 2:71-2:71 ";"
+      space 2:72-3:4 "\n    "
+      declaration 3:5-3:102
+        property 3:5-3:5
+          ident 3:5-3:5 "c"
+        propertyDelimiter 3:6-3:6 ":"
+        space 3:7-3:7 " "
+        value 3:8-3:102
+          parentheses 3:8-3:18
+            dimension 3:9-3:17
+              number 3:9-3:15 "000.001"
+              ident 3:16-3:17 "em"
+          space 3:19-3:19 " "
+          parentheses 3:20-3:30
+            dimension 3:21-3:29
+              number 3:21-3:27 "000.002"
+              ident 3:28-3:29 "ex"
+          space 3:31-3:31 " "
+          parentheses 3:32-3:42
+            dimension 3:33-3:41
+              number 3:33-3:39 "000.003"
+              ident 3:40-3:41 "px"
+          space 3:43-3:43 " "
+          parentheses 3:44-3:54
+            dimension 3:45-3:53
+              number 3:45-3:51 "000.004"
+              ident 3:52-3:53 "in"
+          space 3:55-3:55 " "
+          parentheses 3:56-3:66
+            dimension 3:57-3:65
+              number 3:57-3:63 "000.005"
+              ident 3:64-3:65 "cm"
+          space 3:67-3:67 " "
+          parentheses 3:68-3:78
+            dimension 3:69-3:77
+              number 3:69-3:75 "000.006"
+              ident 3:76-3:77 "mm"
+          space 3:79-3:79 " "
+          parentheses 3:80-3:90
+            dimension 3:81-3:89
+              number 3:81-3:87 "000.007"
+              ident 3:88-3:89 "pt"
+          space 3:91-3:91 " "
+          parentheses 3:92-3:102
+            dimension 3:93-3:101
+              number 3:93-3:99 "000.008"
+              ident 3:100-3:101 "px"
+      declarationDelimiter 3:103-3:103 ";"
+      space 3:104-4:4 "\n    "
+      declaration 4:5-4:70
+        property 4:5-4:5
+          ident 4:5-4:5 "d"
+        propertyDelimiter 4:6-4:6 ":"
+        space 4:7-4:7 " "
+        value 4:8-4:70
+          parentheses 4:8-4:14
+            dimension 4:9-4:13
+              number 4:9-4:11 "8.0"
+              ident 4:12-4:13 "em"
+          space 4:15-4:15 " "
+          parentheses 4:16-4:22
+            dimension 4:17-4:21
+              number 4:17-4:19 "7.1"
+              ident 4:20-4:21 "ex"
+          space 4:23-4:23 " "
+          parentheses 4:24-4:30
+            dimension 4:25-4:29
+              number 4:25-4:27 "6.2"
+              ident 4:28-4:29 "px"
+          space 4:31-4:31 " "
+          parentheses 4:32-4:38
+            dimension 4:33-4:37
+              number 4:33-4:35 "5.3"
+              ident 4:36-4:37 "in"
+          space 4:39-4:39 " "
+          parentheses 4:40-4:46
+            dimension 4:41-4:45
+              number 4:41-4:43 "4.4"
+              ident 4:44-4:45 "cm"
+          space 4:47-4:47 " "
+          parentheses 4:48-4:54
+            dimension 4:49-4:53
+              number 4:49-4:51 "3.5"
+              ident 4:52-4:53 "mm"
+          space 4:55-4:55 " "
+          parentheses 4:56-4:62
+            dimension 4:57-4:61
+              number 4:57-4:59 "2.6"
+              ident 4:60-4:61 "pt"
+          space 4:63-4:63 " "
+          parentheses 4:64-4:70
+            dimension 4:65-4:69
+              number 4:65-4:67 "1.7"
+              ident 4:68-4:69 "px"
+      declarationDelimiter 4:71-4:71 ";"
+      space 4:72-5:4 "\n    "
+      declaration 5:5-5:44
+        property 5:5-5:5
+          ident 5:5-5:5 "e"
+        propertyDelimiter 5:6-5:6 ":"
+        space 5:7-5:7 " "
+        value 5:8-5:44
+          parentheses 5:8-5:12
+            number 5:9-5:11 "0.0"
+          space 5:13-5:13 " "
+          parentheses 5:14-5:17
+            number 5:15-5:16 "0."
+          space 5:18-5:18 " "
+          parentheses 5:19-5:26
+            number 5:20-5:25 "0.0000"
+          space 5:27-5:27 " "
+          parentheses 5:28-5:31
+            number 5:29-5:30 ".0"
+          space 5:32-5:32 " "
+          parentheses 5:33-5:38
+            number 5:34-5:37 ".000"
+          space 5:39-5:39 " "
+          parentheses 5:40-5:44
+            number 5:41-5:43 "000"
+      declarationDelimiter 5:45-5:45 ";"
+      space 5:46-6:4 "\n    "
+      declaration 6:5-6:76
+        property 6:5-6:5
+          ident 6:5-6:5 "f"
+        propertyDelimiter 6:6-6:6 ":"
+        space 6:7-6:7 " "
+        value 6:8-6:76
+          parentheses 6:8-6:14
+            dimension 6:9-6:13
+              number 6:9-6:11 "0.0"
+              ident 6:12-6:13 "em"
+          space 6:15-6:15 " "
+          parentheses 6:16-6:20
+            dimension 6:17-6:19
+              number 6:17-6:17 "0"
+              ident 6:18-6:19 "em"
+          space 6:21-6:21 " "
+          parentheses 6:22-6:25
+            percentage 6:23-6:24
+              number 6:23-6:23 "0"
+          space 6:26-6:26 " "
+          parentheses 6:27-6:32
+            percentage 6:28-6:31
+              number 6:28-6:30 "000"
+          space 6:33-6:33 " "
+          parentheses 6:34-6:41
+            percentage 6:35-6:40
+              number 6:35-6:39 "00.00"
+          space 6:42-6:42 " "
+          parentheses 6:43-6:52
+            dimension 6:44-6:51
+              number 6:44-6:49 "0.0000"
+              ident 6:50-6:51 "em"
+          space 6:53-6:53 " "
+          parentheses 6:54-6:60
+            dimension 6:55-6:59
+              number 6:55-6:57 "000"
+              ident 6:58-6:59 "em"
+          space 6:61-6:61 " "
+          parentheses 6:62-6:67
+            dimension 6:63-6:66
+              number 6:63-6:64 ".0"
+              ident 6:65-6:66 "em"
+          space 6:68-6:68 " "
+          parentheses 6:69-6:76
+            dimension 6:70-6:75
+              number 6:70-6:73 ".000"
+              ident 6:74-6:75 "em"
+      declarationDelimiter 6:77-6:77 ";"
+      space 6:78-7:4 "\n    "
+      declaration 7:5-7:55
+        property 7:5-7:5
+          ident 7:5-7:5 "g"
+        propertyDelimiter 7:6-7:6 ":"
+        space 7:7-7:7 " "
+        value 7:8-7:55
+          parentheses 7:8-7:14
+            dimension 7:9-7:13
+              number 7:9-7:11 "0.0"
+              ident 7:12-7:13 "px"
+          space 7:15-7:15 " "
+          parentheses 7:16-7:20
+            dimension 7:17-7:19
+              number 7:17-7:17 "0"
+              ident 7:18-7:19 "px"
+          space 7:21-7:21 " "
+          parentheses 7:22-7:31
+            dimension 7:23-7:30
+              number 7:23-7:28 "0.0000"
+              ident 7:29-7:30 "px"
+          space 7:32-7:32 " "
+          parentheses 7:33-7:39
+            dimension 7:34-7:38
+              number 7:34-7:36 "000"
+              ident 7:37-7:38 "px"
+          space 7:40-7:40 " "
+          parentheses 7:41-7:46
+            dimension 7:42-7:45
+              number 7:42-7:43 ".0"
+              ident 7:44-7:45 "px"
+          space 7:47-7:47 " "
+          parentheses 7:48-7:55
+            dimension 7:49-7:54
+              number 7:49-7:52 ".000"
+              ident 7:53-7:54 "px"
+      declarationDelimiter 7:56-7:56 ";"
+      space 7:57-8:4 "\n    "
+      declaration 8:5-8:66
+        property 8:5-8:5
+          ident 8:5-8:5 "h"
+        propertyDelimiter 8:6-8:6 ":"
+        space 8:7-8:7 " "
+        value 8:8-8:66
+          parentheses 8:8-8:13
+            dimension 8:9-8:12
+              number 8:9-8:11 "0.0"
+              ident 8:12-8:12 "s"
+          space 8:14-8:14 " "
+          parentheses 8:15-8:18
+            dimension 8:16-8:17
+              number 8:16-8:16 "0"
+              ident 8:17-8:17 "s"
+          space 8:19-8:19 " "
+          parentheses 8:20-8:28
+            dimension 8:21-8:27
+              number 8:21-8:26 "0.0000"
+              ident 8:27-8:27 "s"
+          space 8:29-8:29 " "
+          parentheses 8:30-8:35
+            dimension 8:31-8:34
+              number 8:31-8:33 "000"
+              ident 8:34-8:34 "s"
+          space 8:36-8:36 " "
+          parentheses 8:37-8:41
+            dimension 8:38-8:40
+              number 8:38-8:39 ".0"
+              ident 8:40-8:40 "s"
+          space 8:42-8:42 " "
+          parentheses 8:43-8:49
+            dimension 8:44-8:48
+              number 8:44-8:47 ".000"
+              ident 8:48-8:48 "s"
+          space 8:50-8:50 " "
+          parentheses 8:51-8:56
+            dimension 8:52-8:55
+              number 8:52-8:54 "0.2"
+              ident 8:55-8:55 "s"
+          space 8:57-8:57 " "
+          parentheses 8:58-8:66
+            dimension 8:59-8:65
+              number 8:59-8:64 "010.01"
+              ident 8:65-8:65 "s"
+      declarationDelimiter 8:67-8:67 ";"
+      space 8:68-9:4 "\n    "
+      declaration 9:5-9:25
+        property 9:5-9:5
+          ident 9:5-9:5 "i"
+        propertyDelimiter 9:6-9:6 ":"
+        space 9:7-9:7 " "
+        value 9:8-9:25
+          parentheses 9:8-9:16
+            dimension 9:9-9:15
+              number 9:9-9:13 "010.0"
+              ident 9:14-9:15 "px"
+          space 9:17-9:17 " "
+          parentheses 9:18-9:25
+            number 9:19-9:24 "010.00"
+      declarationDelimiter 9:26-9:26 ";"
+      space 9:27-9:27 "\n"
+
+=== compress.less21.part4.3.2.test2
+h1 { margin: 1ex }
+---
+stylesheet 1:1-1:18 {less}
+  ruleset 1:1-1:18
+    selector 1:1-1:2
+      typeSelector 1:1-1:2
+        ident 1:1-1:2 "h1"
+    space 1:3-1:3 " "
+    block 1:4-1:18
+      space 1:5-1:5 " "
+      declaration 1:6-1:16
+        property 1:6-1:11
+          ident 1:6-1:11 "margin"
+        propertyDelimiter 1:12-1:12 ":"
+        space 1:13-1:13 " "
+        value 1:14-1:16
+          dimension 1:14-1:16
+            number 1:14-1:14 "1"
+            ident 1:15-1:16 "ex"
+      space 1:17-1:17 " "
+
+=== compress.less21.part4.3.2.test3
+p { font-size: 12px }
+---
+stylesheet 1:1-1:21 {less}
+  ruleset 1:1-1:21
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "p"
+    space 1:2-1:2 " "
+    block 1:3-1:21
+      space 1:4-1:4 " "
+      declaration 1:5-1:19
+        property 1:5-1:13
+          ident 1:5-1:13 "font-size"
+        propertyDelimiter 1:14-1:14 ":"
+        space 1:15-1:15 " "
+        value 1:16-1:19
+          dimension 1:16-1:19
+            number 1:16-1:17 "12"
+            ident 1:18-1:19 "px"
+      space 1:20-1:20 " "
+
+=== compress.less21.part4.3.2.test4
+h1 { margin: 0.5in }
+---
+stylesheet 1:1-1:20 {less}
+  ruleset 1:1-1:20
+    selector 1:1-1:2
+      typeSelector 1:1-1:2
+        ident 1:1-1:2 "h1"
+    space 1:3-1:3 " "
+    block 1:4-1:20
+      space 1:5-1:5 " "
+      declaration 1:6-1:18
+        property 1:6-1:11
+          ident 1:6-1:11 "margin"
+        propertyDelimiter 1:12-1:12 ":"
+        space 1:13-1:13 " "
+        value 1:14-1:18
+          dimension 1:14-1:18
+            number 1:14-1:16 "0.5"
+            ident 1:17-1:18 "in"
+      space 1:19-1:19 " "
+
+=== compress.less21.part4.3.2.test5
+h2 { line-height: 3cm }
+---
+stylesheet 1:1-1:23 {less}
+  ruleset 1:1-1:23
+    selector 1:1-1:2
+      typeSelector 1:1-1:2
+        ident 1:1-1:2 "h2"
+    space 1:3-1:3 " "
+    block 1:4-1:23
+      space 1:5-1:5 " "
+      declaration 1:6-1:21
+        property 1:6-1:16
+          ident 1:6-1:16 "line-height"
+        propertyDelimiter 1:17-1:17 ":"
+        space 1:18-1:18 " "
+        value 1:19-1:21
+          dimension 1:19-1:21
+            number 1:19-1:19 "3"
+            ident 1:20-1:21 "cm"
+      space 1:22-1:22 " "
+
+=== compress.less21.part4.3.2.test6
+h3 { word-spacing: 4mm }
+---
+stylesheet 1:1-1:24 {less}
+  ruleset 1:1-1:24
+    selector 1:1-1:2
+      typeSelector 1:1-1:2
+        ident 1:1-1:2 "h3"
+    space 1:3-1:3 " "
+    block 1:4-1:24
+      space 1:5-1:5 " "
+      declaration 1:6-1:22
+        property 1:6-1:17
+          ident 1:6-1:17 "word-spacing"
+        propertyDelimiter 1:18-1:18 ":"
+        space 1:19-1:19 " "
+        value 1:20-1:22
+          dimension 1:20-1:22
+            number 1:20-1:20 "4"
+            ident 1:21-1:22 "mm"
+      space 1:23-1:23 " "
+
+=== compress.less21.part4.3.2.test7
+h4 { font-size: 12pt }
+---
+stylesheet 1:1-1:22 {less}
+  ruleset 1:1-1:22
+    selector 1:1-1:2
+      typeSelector 1:1-1:2
+        ident 1:1-1:2 "h4"
+    space 1:3-1:3 " "
+    block 1:4-1:22
+      space 1:5-1:5 " "
+      declaration 1:6-1:20
+        property 1:6-1:14
+          ident 1:6-1:14 "font-size"
+        propertyDelimiter 1:15-1:15 ":"
+        space 1:16-1:16 " "
+        value 1:17-1:20
+          dimension 1:17-1:20
+            number 1:17-1:18 "12"
+            ident 1:19-1:20 "pt"
+      space 1:21-1:21 " "
+
+=== compress.less21.part4.3.2.test8
+h4 { font-size: 1pc }
+---
+stylesheet 1:1-1:21 {less}
+  ruleset 1:1-1:21
+    selector 1:1-1:2
+      typeSelector 1:1-1:2
+        ident 1:1-1:2 "h4"
+    space 1:3-1:3 " "
+    block 1:4-1:21
+      space 1:5-1:5 " "
+      declaration 1:6-1:19
+        property 1:6-1:14
+          ident 1:6-1:14 "font-size"
+        propertyDelimiter 1:15-1:15 ":"
+        space 1:16-1:16 " "
+        value 1:17-1:19
+          dimension 1:17-1:19
+            number 1:17-1:17 "1"
+            ident 1:18-1:19 "pc"
+      space 1:20-1:20 " "
+
+=== compress.less21.part4.3.2.test9
+a {
+    b: 0.1em 0.2ex 0.3px 0.4in 0.5cm 0.6mm 0.7pt 0.8px;
+    c: 000.001em 000.002ex 000.003px 000.004in 000.005cm 000.006mm 000.007pt 000.008px;
+    d: 8.0em 7.1ex 6.2px 5.3in 4.4cm 3.5mm 2.6pt 1.7px;
+    e: 0.0 0. 0.0000 .0 .000 000;
+    f: 0.0em 0em 0% 000% 00.00% 0.0000em 000em .0em .000em;
+    g: 0.0px 0px 0.0000px 000px .0px .000px;
+    h: 0.0s 0s 0.0000s 000s .0s .000s 0.2s 010.01s;
+    i: 010.0px 010.00;
+}
+---
+stylesheet 1:1-10:1 {less}
+  ruleset 1:1-10:1
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-10:1
+      space 1:4-2:4 "\n    "
+      declaration 2:5-2:54
+        property 2:5-2:5
+          ident 2:5-2:5 "b"
+        propertyDelimiter 2:6-2:6 ":"
+        space 2:7-2:7 " "
+        value 2:8-2:54
+          dimension 2:8-2:12
+            number 2:8-2:10 "0.1"
+            ident 2:11-2:12 "em"
+          space 2:13-2:13 " "
+          dimension 2:14-2:18
+            number 2:14-2:16 "0.2"
+            ident 2:17-2:18 "ex"
+          space 2:19-2:19 " "
+          dimension 2:20-2:24
+            number 2:20-2:22 "0.3"
+            ident 2:23-2:24 "px"
+          space 2:25-2:25 " "
+          dimension 2:26-2:30
+            number 2:26-2:28 "0.4"
+            ident 2:29-2:30 "in"
+          space 2:31-2:31 " "
+          dimension 2:32-2:36
+            number 2:32-2:34 "0.5"
+            ident 2:35-2:36 "cm"
+          space 2:37-2:37 " "
+          dimension 2:38-2:42
+            number 2:38-2:40 "0.6"
+            ident 2:41-2:42 "mm"
+          space 2:43-2:43 " "
+          dimension 2:44-2:48
+            number 2:44-2:46 "0.7"
+            ident 2:47-2:48 "pt"
+          space 2:49-2:49 " "
+          dimension 2:50-2:54
+            number 2:50-2:52 "0.8"
+            ident 2:53-2:54 "px"
+      declarationDelimiter 2:55-2:55 ";"
+      space 2:56-3:4 "\n    "
+      declaration 3:5-3:86
+        property 3:5-3:5
+          ident 3:5-3:5 "c"
+        propertyDelimiter 3:6-3:6 ":"
+        space 3:7-3:7 " "
+        value 3:8-3:86
+          dimension 3:8-3:16
+            number 3:8-3:14 "000.001"
+            ident 3:15-3:16 "em"
+          space 3:17-3:17 " "
+          dimension 3:18-3:26
+            number 3:18-3:24 "000.002"
+            ident 3:25-3:26 "ex"
+          space 3:27-3:27 " "
+          dimension 3:28-3:36
+            number 3:28-3:34 "000.003"
+            ident 3:35-3:36 "px"
+          space 3:37-3:37 " "
+          dimension 3:38-3:46
+            number 3:38-3:44 "000.004"
+            ident 3:45-3:46 "in"
+          space 3:47-3:47 " "
+          dimension 3:48-3:56
+            number 3:48-3:54 "000.005"
+            ident 3:55-3:56 "cm"
+          space 3:57-3:57 " "
+          dimension 3:58-3:66
+            number 3:58-3:64 "000.006"
+            ident 3:65-3:66 "mm"
+          space 3:67-3:67 " "
+          dimension 3:68-3:76
+            number 3:68-3:74 "000.007"
+            ident 3:75-3:76 "pt"
+          space 3:77-3:77 " "
+          dimension 3:78-3:86
+            number 3:78-3:84 "000.008"
+            ident 3:85-3:86 "px"
+      declarationDelimiter 3:87-3:87 ";"
+      space 3:88-4:4 "\n    "
+      declaration 4:5-4:54
+        property 4:5-4:5
+          ident 4:5-4:5 "d"
+        propertyDelimiter 4:6-4:6 ":"
+        space 4:7-4:7 " "
+        value 4:8-4:54
+          dimension 4:8-4:12
+            number 4:8-4:10 "8.0"
+            ident 4:11-4:12 "em"
+          space 4:13-4:13 " "
+          dimension 4:14-4:18
+            number 4:14-4:16 "7.1"
+            ident 4:17-4:18 "ex"
+          space 4:19-4:19 " "
+          dimension 4:20-4:24
+            number 4:20-4:22 "6.2"
+            ident 4:23-4:24 "px"
+          space 4:25-4:25 " "
+          dimension 4:26-4:30
+            number 4:26-4:28 "5.3"
+            ident 4:29-4:30 "in"
+          space 4:31-4:31 " "
+          dimension 4:32-4:36
+            number 4:32-4:34 "4.4"
+            ident 4:35-4:36 "cm"
+          space 4:37-4:37 " "
+          dimension 4:38-4:42
+            number 4:38-4:40 "3.5"
+            ident 4:41-4:42 "mm"
+          space 4:43-4:43 " "
+          dimension 4:44-4:48
+            number 4:44-4:46 "2.6"
+            ident 4:47-4:48 "pt"
+          space 4:49-4:49 " "
+          dimension 4:50-4:54
+            number 4:50-4:52 "1.7"
+            ident 4:53-4:54 "px"
+      declarationDelimiter 4:55-4:55 ";"
+      space 4:56-5:4 "\n    "
+      declaration 5:5-5:32
+        property 5:5-5:5
+          ident 5:5-5:5 "e"
+        propertyDelimiter 5:6-5:6 ":"
+        space 5:7-5:7 " "
+        value 5:8-5:32
+          number 5:8-5:10 "0.0"
+          space 5:11-5:11 " "
+          number 5:12-5:13 "0."
+          space 5:14-5:14 " "
+          number 5:15-5:20 "0.0000"
+          space 5:21-5:21 " "
+          number 5:22-5:23 ".0"
+          space 5:24-5:24 " "
+          number 5:25-5:28 ".000"
+          space 5:29-5:29 " "
+          number 5:30-5:32 "000"
+      declarationDelimiter 5:33-5:33 ";"
+      space 5:34-6:4 "\n    "
+      declaration 6:5-6:58
+        property 6:5-6:5
+          ident 6:5-6:5 "f"
+        propertyDelimiter 6:6-6:6 ":"
+        space 6:7-6:7 " "
+        value 6:8-6:58
+          dimension 6:8-6:12
+            number 6:8-6:10 "0.0"
+            ident 6:11-6:12 "em"
+          space 6:13-6:13 " "
+          dimension 6:14-6:16
+            number 6:14-6:14 "0"
+            ident 6:15-6:16 "em"
+          space 6:17-6:17 " "
+          percentage 6:18-6:19
+            number 6:18-6:18 "0"
+          space 6:20-6:20 " "
+          percentage 6:21-6:24
+            number 6:21-6:23 "000"
+          space 6:25-6:25 " "
+          percentage 6:26-6:31
+            number 6:26-6:30 "00.00"
+          space 6:32-6:32 " "
+          dimension 6:33-6:40
+            number 6:33-6:38 "0.0000"
+            ident 6:39-6:40 "em"
+          space 6:41-6:41 " "
+          dimension 6:42-6:46
+            number 6:42-6:44 "000"
+            ident 6:45-6:46 "em"
+          space 6:47-6:47 " "
+          dimension 6:48-6:51
+            number 6:48-6:49 ".0"
+            ident 6:50-6:51 "em"
+          space 6:52-6:52 " "
+          dimension 6:53-6:58
+            number 6:53-6:56 ".000"
+            ident 6:57-6:58 "em"
+      declarationDelimiter 6:59-6:59 ";"
+      space 6:60-7:4 "\n    "
+      declaration 7:5-7:43
+        property 7:5-7:5
+          ident 7:5-7:5 "g"
+        propertyDelimiter 7:6-7:6 ":"
+        space 7:7-7:7 " "
+        value 7:8-7:43
+          dimension 7:8-7:12
+            number 7:8-7:10 "0.0"
+            ident 7:11-7:12 "px"
+          space 7:13-7:13 " "
+          dimension 7:14-7:16
+            number 7:14-7:14 "0"
+            ident 7:15-7:16 "px"
+          space 7:17-7:17 " "
+          dimension 7:18-7:25
+            number 7:18-7:23 "0.0000"
+            ident 7:24-7:25 "px"
+          space 7:26-7:26 " "
+          dimension 7:27-7:31
+            number 7:27-7:29 "000"
+            ident 7:30-7:31 "px"
+          space 7:32-7:32 " "
+          dimension 7:33-7:36
+            number 7:33-7:34 ".0"
+            ident 7:35-7:36 "px"
+          space 7:37-7:37 " "
+          dimension 7:38-7:43
+            number 7:38-7:41 ".000"
+            ident 7:42-7:43 "px"
+      declarationDelimiter 7:44-7:44 ";"
+      space 7:45-8:4 "\n    "
+      declaration 8:5-8:50
+        property 8:5-8:5
+          ident 8:5-8:5 "h"
+        propertyDelimiter 8:6-8:6 ":"
+        space 8:7-8:7 " "
+        value 8:8-8:50
+          dimension 8:8-8:11
+            number 8:8-8:10 "0.0"
+            ident 8:11-8:11 "s"
+          space 8:12-8:12 " "
+          dimension 8:13-8:14
+            number 8:13-8:13 "0"
+            ident 8:14-8:14 "s"
+          space 8:15-8:15 " "
+          dimension 8:16-8:22
+            number 8:16-8:21 "0.0000"
+            ident 8:22-8:22 "s"
+          space 8:23-8:23 " "
+          dimension 8:24-8:27
+            number 8:24-8:26 "000"
+            ident 8:27-8:27 "s"
+          space 8:28-8:28 " "
+          dimension 8:29-8:31
+            number 8:29-8:30 ".0"
+            ident 8:31-8:31 "s"
+          space 8:32-8:32 " "
+          dimension 8:33-8:37
+            number 8:33-8:36 ".000"
+            ident 8:37-8:37 "s"
+          space 8:38-8:38 " "
+          dimension 8:39-8:42
+            number 8:39-8:41 "0.2"
+            ident 8:42-8:42 "s"
+          space 8:43-8:43 " "
+          dimension 8:44-8:50
+            number 8:44-8:49 "010.01"
+            ident 8:50-8:50 "s"
+      declarationDelimiter 8:51-8:51 ";"
+      space 8:52-9:4 "\n    "
+      declaration 9:5-9:21
+        property 9:5-9:5
+          ident 9:5-9:5 "i"
+        propertyDelimiter 9:6-9:6 ":"
+        space 9:7-9:7 " "
+        value 9:8-9:21
+          dimension 9:8-9:14
+            number 9:8-9:12 "010.0"
+            ident 9:13-9:14 "px"
+          space 9:15-9:15 " "
+          number 9:16-9:21 "010.00"
+      declarationDelimiter 9:22-9:22 ";"
+      space 9:23-9:23 "\n"
+
+=== compress.less21.part4.3.4.test1
+@import url(test.gif);
+E { p: url(test.gif) }
+---
+stylesheet 1:1-2:22 {less}
+  atrule 1:1-1:21
+    atkeyword 1:1-1:7
+      ident 1:2-1:7 "import"
+    space 1:8-1:8 " "
+    uri 1:9-1:21
+      raw 1:13-1:20 "test.gif"
+  declarationDelimiter 1:22-1:22 ";"
+  space 1:23-1:23 "\n"
+  ruleset 2:1-2:22
+    selector 2:1-2:1
+      typeSelector 2:1-2:1
+        ident 2:1-2:1 "E"
+    space 2:2-2:2 " "
+    block 2:3-2:22
+      space 2:4-2:4 " "
+      declaration 2:5-2:20
+        property 2:5-2:5
+          ident 2:5-2:5 "p"
+        propertyDelimiter 2:6-2:6 ":"
+        space 2:7-2:7 " "
+        value 2:8-2:20
+          uri 2:8-2:20
+            raw 2:12-2:19 "test.gif"
+      space 2:21-2:21 " "
+
+=== compress.less21.part4.3.4.test2
+@import url(a/test.gif);
+E { p: url(a/test.gif) }
+---
+stylesheet 1:1-2:24 {less}
+  atrule 1:1-1:23
+    atkeyword 1:1-1:7
+      ident 1:2-1:7 "import"
+    space 1:8-1:8 " "
+    uri 1:9-1:23
+      raw 1:13-1:22 "a/test.gif"
+  declarationDelimiter 1:24-1:24 ";"
+  space 1:25-1:25 "\n"
+  ruleset 2:1-2:24
+    selector 2:1-2:1
+      typeSelector 2:1-2:1
+        ident 2:1-2:1 "E"
+    space 2:2-2:2 " "
+    block 2:3-2:24
+      space 2:4-2:4 " "
+      declaration 2:5-2:22
+        property 2:5-2:5
+          ident 2:5-2:5 "p"
+        propertyDelimiter 2:6-2:6 ":"
+        space 2:7-2:7 " "
+        value 2:8-2:22
+          uri 2:8-2:22
+            raw 2:12-2:21 "a/test.gif"
+      space 2:23-2:23 " "
+
+=== compress.less21.part4.3.4.test3
+@import url(../a/b/test.gif);
+E { p: url(../a/b/test.gif) }
+---
+stylesheet 1:1-2:29 {less}
+  atrule 1:1-1:28
+    atkeyword 1:1-1:7
+      ident 1:2-1:7 "import"
+    space 1:8-1:8 " "
+    uri 1:9-1:28
+      raw 1:13-1:27 "../a/b/test.gif"
+  declarationDelimiter 1:29-1:29 ";"
+  space 1:30-1:30 "\n"
+  ruleset 2:1-2:29
+    selector 2:1-2:1
+      typeSelector 2:1-2:1
+        ident 2:1-2:1 "E"
+    space 2:2-2:2 " "
+    block 2:3-2:29
+      space 2:4-2:4 " "
+      declaration 2:5-2:27
+        property 2:5-2:5
+          ident 2:5-2:5 "p"
+        propertyDelimiter 2:6-2:6 ":"
+        space 2:7-2:7 " "
+        value 2:8-2:27
+          uri 2:8-2:27
+            raw 2:12-2:26 "../a/b/test.gif"
+      space 2:28-2:28 " "
+
+=== compress.less21.part4.3.4.test4
+@import url(http://www.a.com/test.gif);
+E { p: url(http://www.a.com/test.gif) }
+---
+stylesheet 1:1-2:39 {less}
+  atrule 1:1-1:38
+    atkeyword 1:1-1:7
+      ident 1:2-1:7 "import"
+    space 1:8-1:8 " "
+    uri 1:9-1:38
+      raw 1:13-1:37 "http://www.a.com/test.gif"
+  declarationDelimiter 1:39-1:39 ";"
+  space 1:40-1:40 "\n"
+  ruleset 2:1-2:39
+    selector 2:1-2:1
+      typeSelector 2:1-2:1
+        ident 2:1-2:1 "E"
+    space 2:2-2:2 " "
+    block 2:3-2:39
+      space 2:4-2:4 " "
+      declaration 2:5-2:37
+        property 2:5-2:5
+          ident 2:5-2:5 "p"
+        propertyDelimiter 2:6-2:6 ":"
+        space 2:7-2:7 " "
+        value 2:8-2:37
+          uri 2:8-2:37
+            raw 2:12-2:36 "http://www.a.com/test.gif"
+      space 2:38-2:38 " "
+
+=== compress.less21.part4.3.4.test5
+@import url( test.gif );
+E { p: url( test.gif ) }
+---
+stylesheet 1:1-2:24 {less}
+  atrule 1:1-1:23
+    atkeyword 1:1-1:7
+      ident 1:2-1:7 "import"
+    space 1:8-1:8 " "
+    uri 1:9-1:23
+      space 1:13-1:13 " "
+      raw 1:14-1:21 "test.gif"
+      space 1:22-1:22 " "
+  declarationDelimiter 1:24-1:24 ";"
+  space 1:25-1:25 "\n"
+  ruleset 2:1-2:24
+    selector 2:1-2:1
+      typeSelector 2:1-2:1
+        ident 2:1-2:1 "E"
+    space 2:2-2:2 " "
+    block 2:3-2:24
+      space 2:4-2:4 " "
+      declaration 2:5-2:22
+        property 2:5-2:5
+          ident 2:5-2:5 "p"
+        propertyDelimiter 2:6-2:6 ":"
+        space 2:7-2:7 " "
+        value 2:8-2:22
+          uri 2:8-2:22
+            space 2:12-2:12 " "
+            raw 2:13-2:20 "test.gif"
+            space 2:21-2:21 " "
+      space 2:23-2:23 " "
+
+=== compress.less21.part4.3.4.test6
+@import url("test.gif");
+E { p: url("test.gif") }
+---
+stylesheet 1:1-2:24 {less}
+  atrule 1:1-1:23
+    atkeyword 1:1-1:7
+      ident 1:2-1:7 "import"
+    space 1:8-1:8 " "
+    uri 1:9-1:23
+      string 1:13-1:22 "\"test.gif\""
+  declarationDelimiter 1:24-1:24 ";"
+  space 1:25-1:25 "\n"
+  ruleset 2:1-2:24
+    selector 2:1-2:1
+      typeSelector 2:1-2:1
+        ident 2:1-2:1 "E"
+    space 2:2-2:2 " "
+    block 2:3-2:24
+      space 2:4-2:4 " "
+      declaration 2:5-2:22
+        property 2:5-2:5
+          ident 2:5-2:5 "p"
+        propertyDelimiter 2:6-2:6 ":"
+        space 2:7-2:7 " "
+        value 2:8-2:22
+          uri 2:8-2:22
+            string 2:12-2:21 "\"test.gif\""
+      space 2:23-2:23 " "
+
+=== compress.less21.part4.3.4.test7
+@import url(\\"test\\".gif);
+E { p: url(\\"test\\".gif) }
+---
+stylesheet 1:1-2:28 {less}
+  atrule 1:1-1:27
+    atkeyword 1:1-1:7
+      ident 1:2-1:7 "import"
+    space 1:8-1:8 " "
+    uri 1:9-1:27
+      raw 1:13-1:26 "\\\\\"test\\\\\".gif"
+  declarationDelimiter 1:28-1:28 ";"
+  space 1:29-1:29 "\n"
+  ruleset 2:1-2:28
+    selector 2:1-2:1
+      typeSelector 2:1-2:1
+        ident 2:1-2:1 "E"
+    space 2:2-2:2 " "
+    block 2:3-2:28
+      space 2:4-2:4 " "
+      declaration 2:5-2:26
+        property 2:5-2:5
+          ident 2:5-2:5 "p"
+        propertyDelimiter 2:6-2:6 ":"
+        space 2:7-2:7 " "
+        value 2:8-2:26
+          uri 2:8-2:26
+            raw 2:12-2:25 "\\\\\"test\\\\\".gif"
+      space 2:27-2:27 " "
+
+=== compress.less21.part4.3.4.test8
+@import url(http://a.com/?x+y+\"+#blah\'test);
+E { p: url(http://a.com/?x+y+\"+#blah\'test) }
+---
+stylesheet 1:1-2:46 {less}
+  atrule 1:1-1:45
+    atkeyword 1:1-1:7
+      ident 1:2-1:7 "import"
+    space 1:8-1:8 " "
+    uri 1:9-1:45
+      raw 1:13-1:44 "http://a.com/?x+y+\\\"+#blah\\'test"
+  declarationDelimiter 1:46-1:46 ";"
+  space 1:47-1:47 "\n"
+  ruleset 2:1-2:46
+    selector 2:1-2:1
+      typeSelector 2:1-2:1
+        ident 2:1-2:1 "E"
+    space 2:2-2:2 " "
+    block 2:3-2:46
+      space 2:4-2:4 " "
+      declaration 2:5-2:44
+        property 2:5-2:5
+          ident 2:5-2:5 "p"
+        propertyDelimiter 2:6-2:6 ":"
+        space 2:7-2:7 " "
+        value 2:8-2:44
+          uri 2:8-2:44
+            raw 2:12-2:43 "http://a.com/?x+y+\\\"+#blah\\'test"
+      space 2:45-2:45 " "
+
+=== compress.less21.part4.3.4.test9
+@import url(0.0);
+E { p: url(0.0) }
+---
+stylesheet 1:1-2:17 {less}
+  atrule 1:1-1:16
+    atkeyword 1:1-1:7
+      ident 1:2-1:7 "import"
+    space 1:8-1:8 " "
+    uri 1:9-1:16
+      raw 1:13-1:15 "0.0"
+  declarationDelimiter 1:17-1:17 ";"
+  space 1:18-1:18 "\n"
+  ruleset 2:1-2:17
+    selector 2:1-2:1
+      typeSelector 2:1-2:1
+        ident 2:1-2:1 "E"
+    space 2:2-2:2 " "
+    block 2:3-2:17
+      space 2:4-2:4 " "
+      declaration 2:5-2:15
+        property 2:5-2:5
+          ident 2:5-2:5 "p"
+        propertyDelimiter 2:6-2:6 ":"
+        space 2:7-2:7 " "
+        value 2:8-2:15
+          uri 2:8-2:15
+            raw 2:12-2:14 "0.0"
+      space 2:16-2:16 " "
+
+=== compress.less21.part4.3.6.test1
+em { color: #f00 }
+---
+stylesheet 1:1-1:18 {less}
+  ruleset 1:1-1:18
+    selector 1:1-1:2
+      typeSelector 1:1-1:2
+        ident 1:1-1:2 "em"
+    space 1:3-1:3 " "
+    block 1:4-1:18
+      space 1:5-1:5 " "
+      declaration 1:6-1:16
+        property 1:6-1:10
+          ident 1:6-1:10 "color"
+        propertyDelimiter 1:11-1:11 ":"
+        space 1:12-1:12 " "
+        value 1:13-1:16
+          color 1:13-1:16 "f00"
+      space 1:17-1:17 " "
+
+=== compress.less21.part4.3.6.test2
+em { color: #ff0000 }
+---
+stylesheet 1:1-1:21 {less}
+  ruleset 1:1-1:21
+    selector 1:1-1:2
+      typeSelector 1:1-1:2
+        ident 1:1-1:2 "em"
+    space 1:3-1:3 " "
+    block 1:4-1:21
+      space 1:5-1:5 " "
+      declaration 1:6-1:19
+        property 1:6-1:10
+          ident 1:6-1:10 "color"
+        propertyDelimiter 1:11-1:11 ":"
+        space 1:12-1:12 " "
+        value 1:13-1:19
+          color 1:13-1:19 "ff0000"
+      space 1:20-1:20 " "
+
+=== compress.less21.part4.3.6.test3
+em { color: rgb(255,0,0) }
+---
+stylesheet 1:1-1:26 {less}
+  ruleset 1:1-1:26
+    selector 1:1-1:2
+      typeSelector 1:1-1:2
+        ident 1:1-1:2 "em"
+    space 1:3-1:3 " "
+    block 1:4-1:26
+      space 1:5-1:5 " "
+      declaration 1:6-1:24
+        property 1:6-1:10
+          ident 1:6-1:10 "color"
+        propertyDelimiter 1:11-1:11 ":"
+        space 1:12-1:12 " "
+        value 1:13-1:24
+          function 1:13-1:24
+            ident 1:13-1:15 "rgb"
+            arguments 1:16-1:24
+              number 1:17-1:19 "255"
+              operator 1:20-1:20 ","
+              number 1:21-1:21 "0"
+              operator 1:22-1:22 ","
+              number 1:23-1:23 "0"
+      space 1:25-1:25 " "
+
+=== compress.less21.part4.3.6.test4
+em { color: rgb(100%, 0%, 0%) }
+---
+stylesheet 1:1-1:31 {less}
+  ruleset 1:1-1:31
+    selector 1:1-1:2
+      typeSelector 1:1-1:2
+        ident 1:1-1:2 "em"
+    space 1:3-1:3 " "
+    block 1:4-1:31
+      space 1:5-1:5 " "
+      declaration 1:6-1:29
+        property 1:6-1:10
+          ident 1:6-1:10 "color"
+        propertyDelimiter 1:11-1:11 ":"
+        space 1:12-1:12 " "
+        value 1:13-1:29
+          function 1:13-1:29
+            ident 1:13-1:15 "rgb"
+            arguments 1:16-1:29
+              percentage 1:17-1:20
+                number 1:17-1:19 "100"
+              operator 1:21-1:21 ","
+              space 1:22-1:22 " "
+              percentage 1:23-1:24
+                number 1:23-1:23 "0"
+              operator 1:25-1:25 ","
+              space 1:26-1:26 " "
+              percentage 1:27-1:28
+                number 1:27-1:27 "0"
+      space 1:30-1:30 " "
+
+=== compress.less21.part4.3.6.test5
+em { color: rgb(255,-10,0) }
+---
+stylesheet 1:1-1:28 {less}
+  ruleset 1:1-1:28
+    selector 1:1-1:2
+      typeSelector 1:1-1:2
+        ident 1:1-1:2 "em"
+    space 1:3-1:3 " "
+    block 1:4-1:28
+      space 1:5-1:5 " "
+      declaration 1:6-1:26
+        property 1:6-1:10
+          ident 1:6-1:10 "color"
+        propertyDelimiter 1:11-1:11 ":"
+        space 1:12-1:12 " "
+        value 1:13-1:26
+          function 1:13-1:26
+            ident 1:13-1:15 "rgb"
+            arguments 1:16-1:26
+              number 1:17-1:19 "255"
+              operator 1:20-1:20 ","
+              operator 1:21-1:21 "-"
+              number 1:22-1:23 "10"
+              operator 1:24-1:24 ","
+              number 1:25-1:25 "0"
+      space 1:27-1:27 " "
+
+=== compress.less21.part4.3.6.test6
+a {
+    color0 : yellow 'yellow';
+    color1 : fuchsia 'fuchsia';
+    color2 : white 'white';
+    color3 : black 'black';
+    color4 : blue 'blue';
+    color5 : aqua 'aqua';
+    color6 : #f00 '#f00';
+    color7 : #c0c0c0 '#c0c0c0';
+    color8 : #808080 '#808080';
+    color9 : #800000 '#800000';
+    color10 : #800080 '#800080';
+    color11 : #008000 '#008000';
+    color12 : #808000 '#808000';
+    color13 : #000080 '#000080';
+    color14 : #008080 '#008080';
+    color15 : YELLOW 'yellow';
+    color16 : FUCHSIA 'fuchsia';
+    color17 : WHITE 'white';
+    color18 : BLACK 'black';
+    color19 : BLUE 'blue';
+    color20 : AQUA 'aqua';
+    color21 : #F00 '#f00';
+    color22 : #C0C0C0 '#c0c0c0';
+}
+---
+stylesheet 1:1-25:1 {less}
+  ruleset 1:1-25:1
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-25:1
+      space 1:4-2:4 "\n    "
+      declaration 2:5-2:28
+        property 2:5-2:10
+          ident 2:5-2:10 "color0"
+        space 2:11-2:11 " "
+        propertyDelimiter 2:12-2:12 ":"
+        space 2:13-2:13 " "
+        value 2:14-2:28
+          ident 2:14-2:19 "yellow"
+          space 2:20-2:20 " "
+          string 2:21-2:28 "'yellow'"
+      declarationDelimiter 2:29-2:29 ";"
+      space 2:30-3:4 "\n    "
+      declaration 3:5-3:30
+        property 3:5-3:10
+          ident 3:5-3:10 "color1"
+        space 3:11-3:11 " "
+        propertyDelimiter 3:12-3:12 ":"
+        space 3:13-3:13 " "
+        value 3:14-3:30
+          ident 3:14-3:20 "fuchsia"
+          space 3:21-3:21 " "
+          string 3:22-3:30 "'fuchsia'"
+      declarationDelimiter 3:31-3:31 ";"
+      space 3:32-4:4 "\n    "
+      declaration 4:5-4:26
+        property 4:5-4:10
+          ident 4:5-4:10 "color2"
+        space 4:11-4:11 " "
+        propertyDelimiter 4:12-4:12 ":"
+        space 4:13-4:13 " "
+        value 4:14-4:26
+          ident 4:14-4:18 "white"
+          space 4:19-4:19 " "
+          string 4:20-4:26 "'white'"
+      declarationDelimiter 4:27-4:27 ";"
+      space 4:28-5:4 "\n    "
+      declaration 5:5-5:26
+        property 5:5-5:10
+          ident 5:5-5:10 "color3"
+        space 5:11-5:11 " "
+        propertyDelimiter 5:12-5:12 ":"
+        space 5:13-5:13 " "
+        value 5:14-5:26
+          ident 5:14-5:18 "black"
+          space 5:19-5:19 " "
+          string 5:20-5:26 "'black'"
+      declarationDelimiter 5:27-5:27 ";"
+      space 5:28-6:4 "\n    "
+      declaration 6:5-6:24
+        property 6:5-6:10
+          ident 6:5-6:10 "color4"
+        space 6:11-6:11 " "
+        propertyDelimiter 6:12-6:12 ":"
+        space 6:13-6:13 " "
+        value 6:14-6:24
+          ident 6:14-6:17 "blue"
+          space 6:18-6:18 " "
+          string 6:19-6:24 "'blue'"
+      declarationDelimiter 6:25-6:25 ";"
+      space 6:26-7:4 "\n    "
+      declaration 7:5-7:24
+        property 7:5-7:10
+          ident 7:5-7:10 "color5"
+        space 7:11-7:11 " "
+        propertyDelimiter 7:12-7:12 ":"
+        space 7:13-7:13 " "
+        value 7:14-7:24
+          ident 7:14-7:17 "aqua"
+          space 7:18-7:18 " "
+          string 7:19-7:24 "'aqua'"
+      declarationDelimiter 7:25-7:25 ";"
+      space 7:26-8:4 "\n    "
+      declaration 8:5-8:24
+        property 8:5-8:10
+          ident 8:5-8:10 "color6"
+        space 8:11-8:11 " "
+        propertyDelimiter 8:12-8:12 ":"
+        space 8:13-8:13 " "
+        value 8:14-8:24
+          color 8:14-8:17 "f00"
+          space 8:18-8:18 " "
+          string 8:19-8:24 "'#f00'"
+      declarationDelimiter 8:25-8:25 ";"
+      space 8:26-9:4 "\n    "
+      declaration 9:5-9:30
+        property 9:5-9:10
+          ident 9:5-9:10 "color7"
+        space 9:11-9:11 " "
+        propertyDelimiter 9:12-9:12 ":"
+        space 9:13-9:13 " "
+        value 9:14-9:30
+          color 9:14-9:20 "c0c0c0"
+          space 9:21-9:21 " "
+          string 9:22-9:30 "'#c0c0c0'"
+      declarationDelimiter 9:31-9:31 ";"
+      space 9:32-10:4 "\n    "
+      declaration 10:5-10:30
+        property 10:5-10:10
+          ident 10:5-10:10 "color8"
+        space 10:11-10:11 " "
+        propertyDelimiter 10:12-10:12 ":"
+        space 10:13-10:13 " "
+        value 10:14-10:30
+          color 10:14-10:20 "808080"
+          space 10:21-10:21 " "
+          string 10:22-10:30 "'#808080'"
+      declarationDelimiter 10:31-10:31 ";"
+      space 10:32-11:4 "\n    "
+      declaration 11:5-11:30
+        property 11:5-11:10
+          ident 11:5-11:10 "color9"
+        space 11:11-11:11 " "
+        propertyDelimiter 11:12-11:12 ":"
+        space 11:13-11:13 " "
+        value 11:14-11:30
+          color 11:14-11:20 "800000"
+          space 11:21-11:21 " "
+          string 11:22-11:30 "'#800000'"
+      declarationDelimiter 11:31-11:31 ";"
+      space 11:32-12:4 "\n    "
+      declaration 12:5-12:31
+        property 12:5-12:11
+          ident 12:5-12:11 "color10"
+        space 12:12-12:12 " "
+        propertyDelimiter 12:13-12:13 ":"
+        space 12:14-12:14 " "
+        value 12:15-12:31
+          color 12:15-12:21 "800080"
+          space 12:22-12:22 " "
+          string 12:23-12:31 "'#800080'"
+      declarationDelimiter 12:32-12:32 ";"
+      space 12:33-13:4 "\n    "
+      declaration 13:5-13:31
+        property 13:5-13:11
+          ident 13:5-13:11 "color11"
+        space 13:12-13:12 " "
+        propertyDelimiter 13:13-13:13 ":"
+        space 13:14-13:14 " "
+        value 13:15-13:31
+          color 13:15-13:21 "008000"
+          space 13:22-13:22 " "
+          string 13:23-13:31 "'#008000'"
+      declarationDelimiter 13:32-13:32 ";"
+      space 13:33-14:4 "\n    "
+      declaration 14:5-14:31
+        property 14:5-14:11
+          ident 14:5-14:11 "color12"
+        space 14:12-14:12 " "
+        propertyDelimiter 14:13-14:13 ":"
+        space 14:14-14:14 " "
+        value 14:15-14:31
+          color 14:15-14:21 "808000"
+          space 14:22-14:22 " "
+          string 14:23-14:31 "'#808000'"
+      declarationDelimiter 14:32-14:32 ";"
+      space 14:33-15:4 "\n    "
+      declaration 15:5-15:31
+        property 15:5-15:11
+          ident 15:5-15:11 "color13"
+        space 15:12-15:12 " "
+        propertyDelimiter 15:13-15:13 ":"
+        space 15:14-15:14 " "
+        value 15:15-15:31
+          color 15:15-15:21 "000080"
+          space 15:22-15:22 " "
+          string 15:23-15:31 "'#000080'"
+      declarationDelimiter 15:32-15:32 ";"
+      space 15:33-16:4 "\n    "
+      declaration 16:5-16:31
+        property 16:5-16:11
+          ident 16:5-16:11 "color14"
+        space 16:12-16:12 " "
+        propertyDelimiter 16:13-16:13 ":"
+        space 16:14-16:14 " "
+        value 16:15-16:31
+          color 16:15-16:21 "008080"
+          space 16:22-16:22 " "
+          string 16:23-16:31 "'#008080'"
+      declarationDelimiter 16:32-16:32 ";"
+      space 16:33-17:4 "\n    "
+      declaration 17:5-17:29
+        property 17:5-17:11
+          ident 17:5-17:11 "color15"
+        space 17:12-17:12 " "
+        propertyDelimiter 17:13-17:13 ":"
+        space 17:14-17:14 " "
+        value 17:15-17:29
+          ident 17:15-17:20 "YELLOW"
+          space 17:21-17:21 " "
+          string 17:22-17:29 "'yellow'"
+      declarationDelimiter 17:30-17:30 ";"
+      space 17:31-18:4 "\n    "
+      declaration 18:5-18:31
+        property 18:5-18:11
+          ident 18:5-18:11 "color16"
+        space 18:12-18:12 " "
+        propertyDelimiter 18:13-18:13 ":"
+        space 18:14-18:14 " "
+        value 18:15-18:31
+          ident 18:15-18:21 "FUCHSIA"
+          space 18:22-18:22 " "
+          string 18:23-18:31 "'fuchsia'"
+      declarationDelimiter 18:32-18:32 ";"
+      space 18:33-19:4 "\n    "
+      declaration 19:5-19:27
+        property 19:5-19:11
+          ident 19:5-19:11 "color17"
+        space 19:12-19:12 " "
+        propertyDelimiter 19:13-19:13 ":"
+        space 19:14-19:14 " "
+        value 19:15-19:27
+          ident 19:15-19:19 "WHITE"
+          space 19:20-19:20 " "
+          string 19:21-19:27 "'white'"
+      declarationDelimiter 19:28-19:28 ";"
+      space 19:29-20:4 "\n    "
+      declaration 20:5-20:27
+        property 20:5-20:11
+          ident 20:5-20:11 "color18"
+        space 20:12-20:12 " "
+        propertyDelimiter 20:13-20:13 ":"
+        space 20:14-20:14 " "
+        value 20:15-20:27
+          ident 20:15-20:19 "BLACK"
+          space 20:20-20:20 " "
+          string 20:21-20:27 "'black'"
+      declarationDelimiter 20:28-20:28 ";"
+      space 20:29-21:4 "\n    "
+      declaration 21:5-21:25
+        property 21:5-21:11
+          ident 21:5-21:11 "color19"
+        space 21:12-21:12 " "
+        propertyDelimiter 21:13-21:13 ":"
+        space 21:14-21:14 " "
+        value 21:15-21:25
+          ident 21:15-21:18 "BLUE"
+          space 21:19-21:19 " "
+          string 21:20-21:25 "'blue'"
+      declarationDelimiter 21:26-21:26 ";"
+      space 21:27-22:4 "\n    "
+      declaration 22:5-22:25
+        property 22:5-22:11
+          ident 22:5-22:11 "color20"
+        space 22:12-22:12 " "
+        propertyDelimiter 22:13-22:13 ":"
+        space 22:14-22:14 " "
+        value 22:15-22:25
+          ident 22:15-22:18 "AQUA"
+          space 22:19-22:19 " "
+          string 22:20-22:25 "'aqua'"
+      declarationDelimiter 22:26-22:26 ";"
+      space 22:27-23:4 "\n    "
+      declaration 23:5-23:25
+        property 23:5-23:11
+          ident 23:5-23:11 "color21"
+        space 23:12-23:12 " "
+        propertyDelimiter 23:13-23:13 ":"
+        space 23:14-23:14 " "
+        value 23:15-23:25
+          color 23:15-23:18 "F00"
+          space 23:19-23:19 " "
+          string 23:20-23:25 "'#f00'"
+      declarationDelimiter 23:26-23:26 ";"
+      space 23:27-24:4 "\n    "
+      declaration 24:5-24:31
+        property 24:5-24:11
+          ident 24:5-24:11 "color22"
+        space 24:12-24:12 " "
+        propertyDelimiter 24:13-24:13 ":"
+        space 24:14-24:14 " "
+        value 24:15-24:31
+          color 24:15-24:21 "C0C0C0"
+          space 24:22-24:22 " "
+          string 24:23-24:31 "'#c0c0c0'"
+      declarationDelimiter 24:32-24:32 ";"
+      space 24:33-24:33 "\n"
+
+=== compress.less21.part4.3.6.test7
+color {
+    a0 : #000000;
+    a1 : #111111;
+    a2 : #222222;
+    a3 : #333333;
+    a4 : #444444;
+    a5 : #555555;
+    a6 : #666666;
+    a7 : #777777;
+    a8 : #888888;
+    a9 : #999999;
+    a10 : #aaaaaa;
+    a11 : #bbbbbb;
+    a12 : #cccccc;
+    a13 : #dddddd;
+    a14 : #eeeeee;
+    a15 : #ffffff;
+}
+---
+stylesheet 1:1-18:1 {less}
+  ruleset 1:1-18:1
+    selector 1:1-1:5
+      typeSelector 1:1-1:5
+        ident 1:1-1:5 "color"
+    space 1:6-1:6 " "
+    block 1:7-18:1
+      space 1:8-2:4 "\n    "
+      declaration 2:5-2:16
+        property 2:5-2:6
+          ident 2:5-2:6 "a0"
+        space 2:7-2:7 " "
+        propertyDelimiter 2:8-2:8 ":"
+        space 2:9-2:9 " "
+        value 2:10-2:16
+          color 2:10-2:16 "000000"
+      declarationDelimiter 2:17-2:17 ";"
+      space 2:18-3:4 "\n    "
+      declaration 3:5-3:16
+        property 3:5-3:6
+          ident 3:5-3:6 "a1"
+        space 3:7-3:7 " "
+        propertyDelimiter 3:8-3:8 ":"
+        space 3:9-3:9 " "
+        value 3:10-3:16
+          color 3:10-3:16 "111111"
+      declarationDelimiter 3:17-3:17 ";"
+      space 3:18-4:4 "\n    "
+      declaration 4:5-4:16
+        property 4:5-4:6
+          ident 4:5-4:6 "a2"
+        space 4:7-4:7 " "
+        propertyDelimiter 4:8-4:8 ":"
+        space 4:9-4:9 " "
+        value 4:10-4:16
+          color 4:10-4:16 "222222"
+      declarationDelimiter 4:17-4:17 ";"
+      space 4:18-5:4 "\n    "
+      declaration 5:5-5:16
+        property 5:5-5:6
+          ident 5:5-5:6 "a3"
+        space 5:7-5:7 " "
+        propertyDelimiter 5:8-5:8 ":"
+        space 5:9-5:9 " "
+        value 5:10-5:16
+          color 5:10-5:16 "333333"
+      declarationDelimiter 5:17-5:17 ";"
+      space 5:18-6:4 "\n    "
+      declaration 6:5-6:16
+        property 6:5-6:6
+          ident 6:5-6:6 "a4"
+        space 6:7-6:7 " "
+        propertyDelimiter 6:8-6:8 ":"
+        space 6:9-6:9 " "
+        value 6:10-6:16
+          color 6:10-6:16 "444444"
+      declarationDelimiter 6:17-6:17 ";"
+      space 6:18-7:4 "\n    "
+      declaration 7:5-7:16
+        property 7:5-7:6
+          ident 7:5-7:6 "a5"
+        space 7:7-7:7 " "
+        propertyDelimiter 7:8-7:8 ":"
+        space 7:9-7:9 " "
+        value 7:10-7:16
+          color 7:10-7:16 "555555"
+      declarationDelimiter 7:17-7:17 ";"
+      space 7:18-8:4 "\n    "
+      declaration 8:5-8:16
+        property 8:5-8:6
+          ident 8:5-8:6 "a6"
+        space 8:7-8:7 " "
+        propertyDelimiter 8:8-8:8 ":"
+        space 8:9-8:9 " "
+        value 8:10-8:16
+          color 8:10-8:16 "666666"
+      declarationDelimiter 8:17-8:17 ";"
+      space 8:18-9:4 "\n    "
+      declaration 9:5-9:16
+        property 9:5-9:6
+          ident 9:5-9:6 "a7"
+        space 9:7-9:7 " "
+        propertyDelimiter 9:8-9:8 ":"
+        space 9:9-9:9 " "
+        value 9:10-9:16
+          color 9:10-9:16 "777777"
+      declarationDelimiter 9:17-9:17 ";"
+      space 9:18-10:4 "\n    "
+      declaration 10:5-10:16
+        property 10:5-10:6
+          ident 10:5-10:6 "a8"
+        space 10:7-10:7 " "
+        propertyDelimiter 10:8-10:8 ":"
+        space 10:9-10:9 " "
+        value 10:10-10:16
+          color 10:10-10:16 "888888"
+      declarationDelimiter 10:17-10:17 ";"
+      space 10:18-11:4 "\n    "
+      declaration 11:5-11:16
+        property 11:5-11:6
+          ident 11:5-11:6 "a9"
+        space 11:7-11:7 " "
+        propertyDelimiter 11:8-11:8 ":"
+        space 11:9-11:9 " "
+        value 11:10-11:16
+          color 11:10-11:16 "999999"
+      declarationDelimiter 11:17-11:17 ";"
+      space 11:18-12:4 "\n    "
+      declaration 12:5-12:17
+        property 12:5-12:7
+          ident 12:5-12:7 "a10"
+        space 12:8-12:8 " "
+        propertyDelimiter 12:9-12:9 ":"
+        space 12:10-12:10 " "
+        value 12:11-12:17
+          color 12:11-12:17 "aaaaaa"
+      declarationDelimiter 12:18-12:18 ";"
+      space 12:19-13:4 "\n    "
+      declaration 13:5-13:17
+        property 13:5-13:7
+          ident 13:5-13:7 "a11"
+        space 13:8-13:8 " "
+        propertyDelimiter 13:9-13:9 ":"
+        space 13:10-13:10 " "
+        value 13:11-13:17
+          color 13:11-13:17 "bbbbbb"
+      declarationDelimiter 13:18-13:18 ";"
+      space 13:19-14:4 "\n    "
+      declaration 14:5-14:17
+        property 14:5-14:7
+          ident 14:5-14:7 "a12"
+        space 14:8-14:8 " "
+        propertyDelimiter 14:9-14:9 ":"
+        space 14:10-14:10 " "
+        value 14:11-14:17
+          color 14:11-14:17 "cccccc"
+      declarationDelimiter 14:18-14:18 ";"
+      space 14:19-15:4 "\n    "
+      declaration 15:5-15:17
+        property 15:5-15:7
+          ident 15:5-15:7 "a13"
+        space 15:8-15:8 " "
+        propertyDelimiter 15:9-15:9 ":"
+        space 15:10-15:10 " "
+        value 15:11-15:17
+          color 15:11-15:17 "dddddd"
+      declarationDelimiter 15:18-15:18 ";"
+      space 15:19-16:4 "\n    "
+      declaration 16:5-16:17
+        property 16:5-16:7
+          ident 16:5-16:7 "a14"
+        space 16:8-16:8 " "
+        propertyDelimiter 16:9-16:9 ":"
+        space 16:10-16:10 " "
+        value 16:11-16:17
+          color 16:11-16:17 "eeeeee"
+      declarationDelimiter 16:18-16:18 ";"
+      space 16:19-17:4 "\n    "
+      declaration 17:5-17:17
+        property 17:5-17:7
+          ident 17:5-17:7 "a15"
+        space 17:8-17:8 " "
+        propertyDelimiter 17:9-17:9 ":"
+        space 17:10-17:10 " "
+        value 17:11-17:17
+          color 17:11-17:17 "ffffff"
+      declarationDelimiter 17:18-17:18 ";"
+      space 17:19-17:19 "\n"
+
+=== compress.less21.part4.3.6.test8
+a {
+    color0: rgb(0, 0, 0);
+    color1: rgb(0, 0, 255);
+    color2: rgb(0, 255, 0);
+    color3: rgb(255, 0, 0);
+    color4: rgb(0, 255, 255);
+    color5: rgb(255, 255, 0);
+    color6: rgb(255, 0, 255);
+    color7: rgb(255, 255, 255);
+    color8: rgb(128, 128, 128);
+    color9: rgb(192, 192, 192);
+    color10: rgb(1, 1, 1);
+    color11: rgb(256, 256, 256);
+}
+---
+stylesheet 1:1-14:1 {less}
+  ruleset 1:1-14:1
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-14:1
+      space 1:4-2:4 "\n    "
+      declaration 2:5-2:24
+        property 2:5-2:10
+          ident 2:5-2:10 "color0"
+        propertyDelimiter 2:11-2:11 ":"
+        space 2:12-2:12 " "
+        value 2:13-2:24
+          function 2:13-2:24
+            ident 2:13-2:15 "rgb"
+            arguments 2:16-2:24
+              number 2:17-2:17 "0"
+              operator 2:18-2:18 ","
+              space 2:19-2:19 " "
+              number 2:20-2:20 "0"
+              operator 2:21-2:21 ","
+              space 2:22-2:22 " "
+              number 2:23-2:23 "0"
+      declarationDelimiter 2:25-2:25 ";"
+      space 2:26-3:4 "\n    "
+      declaration 3:5-3:26
+        property 3:5-3:10
+          ident 3:5-3:10 "color1"
+        propertyDelimiter 3:11-3:11 ":"
+        space 3:12-3:12 " "
+        value 3:13-3:26
+          function 3:13-3:26
+            ident 3:13-3:15 "rgb"
+            arguments 3:16-3:26
+              number 3:17-3:17 "0"
+              operator 3:18-3:18 ","
+              space 3:19-3:19 " "
+              number 3:20-3:20 "0"
+              operator 3:21-3:21 ","
+              space 3:22-3:22 " "
+              number 3:23-3:25 "255"
+      declarationDelimiter 3:27-3:27 ";"
+      space 3:28-4:4 "\n    "
+      declaration 4:5-4:26
+        property 4:5-4:10
+          ident 4:5-4:10 "color2"
+        propertyDelimiter 4:11-4:11 ":"
+        space 4:12-4:12 " "
+        value 4:13-4:26
+          function 4:13-4:26
+            ident 4:13-4:15 "rgb"
+            arguments 4:16-4:26
+              number 4:17-4:17 "0"
+              operator 4:18-4:18 ","
+              space 4:19-4:19 " "
+              number 4:20-4:22 "255"
+              operator 4:23-4:23 ","
+              space 4:24-4:24 " "
+              number 4:25-4:25 "0"
+      declarationDelimiter 4:27-4:27 ";"
+      space 4:28-5:4 "\n    "
+      declaration 5:5-5:26
+        property 5:5-5:10
+          ident 5:5-5:10 "color3"
+        propertyDelimiter 5:11-5:11 ":"
+        space 5:12-5:12 " "
+        value 5:13-5:26
+          function 5:13-5:26
+            ident 5:13-5:15 "rgb"
+            arguments 5:16-5:26
+              number 5:17-5:19 "255"
+              operator 5:20-5:20 ","
+              space 5:21-5:21 " "
+              number 5:22-5:22 "0"
+              operator 5:23-5:23 ","
+              space 5:24-5:24 " "
+              number 5:25-5:25 "0"
+      declarationDelimiter 5:27-5:27 ";"
+      space 5:28-6:4 "\n    "
+      declaration 6:5-6:28
+        property 6:5-6:10
+          ident 6:5-6:10 "color4"
+        propertyDelimiter 6:11-6:11 ":"
+        space 6:12-6:12 " "
+        value 6:13-6:28
+          function 6:13-6:28
+            ident 6:13-6:15 "rgb"
+            arguments 6:16-6:28
+              number 6:17-6:17 "0"
+              operator 6:18-6:18 ","
+              space 6:19-6:19 " "
+              number 6:20-6:22 "255"
+              operator 6:23-6:23 ","
+              space 6:24-6:24 " "
+              number 6:25-6:27 "255"
+      declarationDelimiter 6:29-6:29 ";"
+      space 6:30-7:4 "\n    "
+      declaration 7:5-7:28
+        property 7:5-7:10
+          ident 7:5-7:10 "color5"
+        propertyDelimiter 7:11-7:11 ":"
+        space 7:12-7:12 " "
+        value 7:13-7:28
+          function 7:13-7:28
+            ident 7:13-7:15 "rgb"
+            arguments 7:16-7:28
+              number 7:17-7:19 "255"
+              operator 7:20-7:20 ","
+              space 7:21-7:21 " "
+              number 7:22-7:24 "255"
+              operator 7:25-7:25 ","
+              space 7:26-7:26 " "
+              number 7:27-7:27 "0"
+      declarationDelimiter 7:29-7:29 ";"
+      space 7:30-8:4 "\n    "
+      declaration 8:5-8:28
+        property 8:5-8:10
+          ident 8:5-8:10 "color6"
+        propertyDelimiter 8:11-8:11 ":"
+        space 8:12-8:12 " "
+        value 8:13-8:28
+          function 8:13-8:28
+            ident 8:13-8:15 "rgb"
+            arguments 8:16-8:28
+              number 8:17-8:19 "255"
+              operator 8:20-8:20 ","
+              space 8:21-8:21 " "
+              number 8:22-8:22 "0"
+              operator 8:23-8:23 ","
+              space 8:24-8:24 " "
+              number 8:25-8:27 "255"
+      declarationDelimiter 8:29-8:29 ";"
+      space 8:30-9:4 "\n    "
+      declaration 9:5-9:30
+        property 9:5-9:10
+          ident 9:5-9:10 "color7"
+        propertyDelimiter 9:11-9:11 ":"
+        space 9:12-9:12 " "
+        value 9:13-9:30
+          function 9:13-9:30
+            ident 9:13-9:15 "rgb"
+            arguments 9:16-9:30
+              number 9:17-9:19 "255"
+              operator 9:20-9:20 ","
+              space 9:21-9:21 " "
+              number 9:22-9:24 "255"
+              operator 9:25-9:25 ","
+              space 9:26-9:26 " "
+              number 9:27-9:29 "255"
+      declarationDelimiter 9:31-9:31 ";"
+      space 9:32-10:4 "\n    "
+      declaration 10:5-10:30
+        property 10:5-10:10
+          ident 10:5-10:10 "color8"
+        propertyDelimiter 10:11-10:11 ":"
+        space 10:12-10:12 " "
+        value 10:13-10:30
+          function 10:13-10:30
+            ident 10:13-10:15 "rgb"
+            arguments 10:16-10:30
+              number 10:17-10:19 "128"
+              operator 10:20-10:20 ","
+              space 10:21-10:21 " "
+              number 10:22-10:24 "128"
+              operator 10:25-10:25 ","
+              space 10:26-10:26 " "
+              number 10:27-10:29 "128"
+      declarationDelimiter 10:31-10:31 ";"
+      space 10:32-11:4 "\n    "
+      declaration 11:5-11:30
+        property 11:5-11:10
+          ident 11:5-11:10 "color9"
+        propertyDelimiter 11:11-11:11 ":"
+        space 11:12-11:12 " "
+        value 11:13-11:30
+          function 11:13-11:30
+            ident 11:13-11:15 "rgb"
+            arguments 11:16-11:30
+              number 11:17-11:19 "192"
+              operator 11:20-11:20 ","
+              space 11:21-11:21 " "
+              number 11:22-11:24 "192"
+              operator 11:25-11:25 ","
+              space 11:26-11:26 " "
+              number 11:27-11:29 "192"
+      declarationDelimiter 11:31-11:31 ";"
+      space 11:32-12:4 "\n    "
+      declaration 12:5-12:25
+        property 12:5-12:11
+          ident 12:5-12:11 "color10"
+        propertyDelimiter 12:12-12:12 ":"
+        space 12:13-12:13 " "
+        value 12:14-12:25
+          function 12:14-12:25
+            ident 12:14-12:16 "rgb"
+            arguments 12:17-12:25
+              number 12:18-12:18 "1"
+              operator 12:19-12:19 ","
+              space 12:20-12:20 " "
+              number 12:21-12:21 "1"
+              operator 12:22-12:22 ","
+              space 12:23-12:23 " "
+              number 12:24-12:24 "1"
+      declarationDelimiter 12:26-12:26 ";"
+      space 12:27-13:4 "\n    "
+      declaration 13:5-13:31
+        property 13:5-13:11
+          ident 13:5-13:11 "color11"
+        propertyDelimiter 13:12-13:12 ":"
+        space 13:13-13:13 " "
+        value 13:14-13:31
+          function 13:14-13:31
+            ident 13:14-13:16 "rgb"
+            arguments 13:17-13:31
+              number 13:18-13:20 "256"
+              operator 13:21-13:21 ","
+              space 13:22-13:22 " "
+              number 13:23-13:25 "256"
+              operator 13:26-13:26 ","
+              space 13:27-13:27 " "
+              number 13:28-13:30 "256"
+      declarationDelimiter 13:32-13:32 ";"
+      space 13:33-13:33 "\n"
+
+=== compress.less21.part4.3.7.test1
+a { b : "this is a 'string'" }
+---
+stylesheet 1:1-1:30 {less}
+  ruleset 1:1-1:30
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-1:30
+      space 1:4-1:4 " "
+      declaration 1:5-1:28
+        property 1:5-1:5
+          ident 1:5-1:5 "b"
+        space 1:6-1:6 " "
+        propertyDelimiter 1:7-1:7 ":"
+        space 1:8-1:8 " "
+        value 1:9-1:28
+          string 1:9-1:28 "\"this is a 'string'\""
+      space 1:29-1:29 " "
+
+=== compress.less21.part4.3.7.test2
+a { b : "this is a \"string\"" }
+---
+stylesheet 1:1-1:32 {less}
+  ruleset 1:1-1:32
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-1:32
+      space 1:4-1:4 " "
+      declaration 1:5-1:30
+        property 1:5-1:5
+          ident 1:5-1:5 "b"
+        space 1:6-1:6 " "
+        propertyDelimiter 1:7-1:7 ":"
+        space 1:8-1:8 " "
+        value 1:9-1:30
+          string 1:9-1:30 "\"this is a \\\"string\\\"\""
+      space 1:31-1:31 " "
+
+=== compress.less21.part4.3.7.test3
+a { b : 'this is a "string"' }
+---
+stylesheet 1:1-1:30 {less}
+  ruleset 1:1-1:30
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-1:30
+      space 1:4-1:4 " "
+      declaration 1:5-1:28
+        property 1:5-1:5
+          ident 1:5-1:5 "b"
+        space 1:6-1:6 " "
+        propertyDelimiter 1:7-1:7 ":"
+        space 1:8-1:8 " "
+        value 1:9-1:28
+          string 1:9-1:28 "'this is a \"string\"'"
+      space 1:29-1:29 " "
+
+=== compress.less21.part4.3.7.test4
+a { b : 'this is a \'string\'' }
+---
+stylesheet 1:1-1:32 {less}
+  ruleset 1:1-1:32
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-1:32
+      space 1:4-1:4 " "
+      declaration 1:5-1:30
+        property 1:5-1:5
+          ident 1:5-1:5 "b"
+        space 1:6-1:6 " "
+        propertyDelimiter 1:7-1:7 ":"
+        space 1:8-1:8 " "
+        value 1:9-1:30
+          string 1:9-1:30 "'this is a \\'string\\''"
+      space 1:31-1:31 " "
+
+=== compress.less21.part4.3.7.test5
+a {
+    b : "abcd\
+efg"
+}
+---
+stylesheet 1:1-3:1 {less}
+  ruleset 1:1-3:1
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-3:1
+      space 1:4-2:4 "\n    "
+      declaration 2:5-3:4
+        property 2:5-2:5
+          ident 2:5-2:5 "b"
+        space 2:6-2:6 " "
+        propertyDelimiter 2:7-2:7 ":"
+        space 2:8-2:8 " "
+        value 2:9-3:4
+          string 2:9-3:4 "\"abcd\\\nefg\""
+      space 2:20-2:20 "\n"
+
+=== compress.less21.part4.3.7.test6
+a[b="ab cd\
+efg"] {
+    b : c
+}
+---
+stylesheet 1:1-3:1 {less}
+  ruleset 1:1-3:1
+    selector 1:1-2:5
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+      attributeSelector 1:2-2:5
+        attributeName 1:3-1:3
+          ident 1:3-1:3 "b"
+        attributeMatch 1:4-1:4 "="
+        attributeValue 1:5-2:4
+          string 1:5-2:4 "\"ab cd\\\nefg\""
+    space 1:18-1:18 " "
+    block 1:19-3:1
+      space 1:20-2:4 "\n    "
+      declaration 2:5-2:9
+        property 2:5-2:5
+          ident 2:5-2:5 "b"
+        space 2:6-2:6 " "
+        propertyDelimiter 2:7-2:7 ":"
+        space 2:8-2:8 " "
+        value 2:9-2:9
+          ident 2:9-2:9 "c"
+      space 2:10-2:10 "\n"
+
+=== compress.less21.part4.4.test1
+@charset "ISO-8859-1";
+---
+stylesheet 1:1-1:22 {less}
+  atrule 1:1-1:21
+    atkeyword 1:1-1:8
+      ident 1:2-1:8 "charset"
+    space 1:9-1:9 " "
+    string 1:10-1:21 "\"ISO-8859-1\""
+  declarationDelimiter 1:22-1:22 ";"
+
+=== compress.less21.part4.4.test2
+@charset "test";
+E { p: v }
+---
+stylesheet 1:1-2:10 {less}
+  atrule 1:1-1:15
+    atkeyword 1:1-1:8
+      ident 1:2-1:8 "charset"
+    space 1:9-1:9 " "
+    string 1:10-1:15 "\"test\""
+  declarationDelimiter 1:16-1:16 ";"
+  space 1:17-1:17 "\n"
+  ruleset 2:1-2:10
+    selector 2:1-2:1
+      typeSelector 2:1-2:1
+        ident 2:1-2:1 "E"
+    space 2:2-2:2 " "
+    block 2:3-2:10
+      space 2:4-2:4 " "
+      declaration 2:5-2:8
+        property 2:5-2:5
+          ident 2:5-2:5 "p"
+        propertyDelimiter 2:6-2:6 ":"
+        space 2:7-2:7 " "
+        value 2:8-2:8
+          ident 2:8-2:8 "v"
+      space 2:9-2:9 " "
+
+=== compress.less21.part4.4.test3
+@charset "test0";
+@charset "test1";
+---
+stylesheet 1:1-2:17 {less}
+  atrule 1:1-1:16
+    atkeyword 1:1-1:8
+      ident 1:2-1:8 "charset"
+    space 1:9-1:9 " "
+    string 1:10-1:16 "\"test0\""
+  declarationDelimiter 1:17-1:17 ";"
+  space 1:18-1:18 "\n"
+  atrule 2:1-2:16
+    atkeyword 2:1-2:8
+      ident 2:2-2:8 "charset"
+    space 2:9-2:9 " "
+    string 2:10-2:16 "\"test1\""
+  declarationDelimiter 2:17-2:17 ";"
+
+=== compress.less21.part6.3.test1
+@import "mystyle.css";
+---
+stylesheet 1:1-1:22 {less}
+  atrule 1:1-1:21
+    atkeyword 1:1-1:7
+      ident 1:2-1:7 "import"
+    space 1:8-1:8 " "
+    string 1:9-1:21 "\"mystyle.css\""
+  declarationDelimiter 1:22-1:22 ";"
+
+=== compress.less21.part6.3.test2
+@import url("mystyle.css");
+---
+stylesheet 1:1-1:27 {less}
+  atrule 1:1-1:26
+    atkeyword 1:1-1:7
+      ident 1:2-1:7 "import"
+    space 1:8-1:8 " "
+    uri 1:9-1:26
+      string 1:13-1:25 "\"mystyle.css\""
+  declarationDelimiter 1:27-1:27 ";"
+
+=== compress.less21.part6.3.test3
+@import url("fineprint.css") print;
+---
+stylesheet 1:1-1:35 {less}
+  atrule 1:1-1:34
+    atkeyword 1:1-1:7
+      ident 1:2-1:7 "import"
+    space 1:8-1:8 " "
+    uri 1:9-1:28
+      string 1:13-1:27 "\"fineprint.css\""
+    space 1:29-1:29 " "
+    ident 1:30-1:34 "print"
+  declarationDelimiter 1:35-1:35 ";"
+
+=== compress.less21.part6.3.test4
+@import url("bluish.css") projection, tv;
+---
+stylesheet 1:1-1:41 {less}
+  atrule 1:1-1:40
+    atkeyword 1:1-1:7
+      ident 1:2-1:7 "import"
+    space 1:8-1:8 " "
+    uri 1:9-1:25
+      string 1:13-1:24 "\"bluish.css\""
+    space 1:26-1:26 " "
+    ident 1:27-1:36 "projection"
+    operator 1:37-1:37 ","
+    space 1:38-1:38 " "
+    ident 1:39-1:40 "tv"
+  declarationDelimiter 1:41-1:41 ";"
+
+=== compress.less21.part6.3.test5
+@import "mystyle.css";
+@import "mystyle.css";
+---
+stylesheet 1:1-2:22 {less}
+  atrule 1:1-1:21
+    atkeyword 1:1-1:7
+      ident 1:2-1:7 "import"
+    space 1:8-1:8 " "
+    string 1:9-1:21 "\"mystyle.css\""
+  declarationDelimiter 1:22-1:22 ";"
+  space 1:23-1:23 "\n"
+  atrule 2:1-2:21
+    atkeyword 2:1-2:7
+      ident 2:2-2:7 "import"
+    space 2:8-2:8 " "
+    string 2:9-2:21 "\"mystyle.css\""
+  declarationDelimiter 2:22-2:22 ";"
+
+=== compress.less21.part6.3.test6
+@import "mystyle1.css";
+a { p0: v }
+@import "mystyle2.css";
+b { p1: v }
+@import "mystyle1.css";
+---
+stylesheet 1:1-5:23 {less}
+  atrule 1:1-1:22
+    atkeyword 1:1-1:7
+      ident 1:2-1:7 "import"
+    space 1:8-1:8 " "
+    string 1:9-1:22 "\"mystyle1.css\""
+  declarationDelimiter 1:23-1:23 ";"
+  space 1:24-1:24 "\n"
+  ruleset 2:1-2:11
+    selector 2:1-2:1
+      typeSelector 2:1-2:1
+        ident 2:1-2:1 "a"
+    space 2:2-2:2 " "
+    block 2:3-2:11
+      space 2:4-2:4 " "
+      declaration 2:5-2:9
+        property 2:5-2:6
+          ident 2:5-2:6 "p0"
+        propertyDelimiter 2:7-2:7 ":"
+        space 2:8-2:8 " "
+        value 2:9-2:9
+          ident 2:9-2:9 "v"
+      space 2:10-2:10 " "
+  space 2:12-2:12 "\n"
+  atrule 3:1-3:22
+    atkeyword 3:1-3:7
+      ident 3:2-3:7 "import"
+    space 3:8-3:8 " "
+    string 3:9-3:22 "\"mystyle2.css\""
+  declarationDelimiter 3:23-3:23 ";"
+  space 3:24-3:24 "\n"
+  ruleset 4:1-4:11
+    selector 4:1-4:1
+      typeSelector 4:1-4:1
+        ident 4:1-4:1 "b"
+    space 4:2-4:2 " "
+    block 4:3-4:11
+      space 4:4-4:4 " "
+      declaration 4:5-4:9
+        property 4:5-4:6
+          ident 4:5-4:6 "p1"
+        propertyDelimiter 4:7-4:7 ":"
+        space 4:8-4:8 " "
+        value 4:9-4:9
+          ident 4:9-4:9 "v"
+      space 4:10-4:10 " "
+  space 4:12-4:12 "\n"
+  atrule 5:1-5:22
+    atkeyword 5:1-5:7
+      ident 5:2-5:7 "import"
+    space 5:8-5:8 " "
+    string 5:9-5:22 "\"mystyle1.css\""
+  declarationDelimiter 5:23-5:23 ";"
+
+=== compress.less21.part6.4.2.test1
+a { p: v !important }
+---
+stylesheet 1:1-1:21 {less}
+  ruleset 1:1-1:21
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-1:21
+      space 1:4-1:4 " "
+      declaration 1:5-1:19
+        property 1:5-1:5
+          ident 1:5-1:5 "p"
+        propertyDelimiter 1:6-1:6 ":"
+        space 1:7-1:7 " "
+        value 1:8-1:19
+          ident 1:8-1:8 "v"
+          space 1:9-1:9 " "
+          important 1:10-1:19 "!important"
+      space 1:20-1:20 " "
+
+=== compress.less21.part6.4.2.test2
+a {
+    p: v0 !important;
+    p: v
+}
+---
+stylesheet 1:1-4:1 {less}
+  ruleset 1:1-4:1
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-4:1
+      space 1:4-2:4 "\n    "
+      declaration 2:5-2:20
+        property 2:5-2:5
+          ident 2:5-2:5 "p"
+        propertyDelimiter 2:6-2:6 ":"
+        space 2:7-2:7 " "
+        value 2:8-2:20
+          ident 2:8-2:9 "v0"
+          space 2:10-2:10 " "
+          important 2:11-2:20 "!important"
+      declarationDelimiter 2:21-2:21 ";"
+      space 2:22-3:4 "\n    "
+      declaration 3:5-3:8
+        property 3:5-3:5
+          ident 3:5-3:5 "p"
+        propertyDelimiter 3:6-3:6 ":"
+        space 3:7-3:7 " "
+        value 3:8-3:8
+          ident 3:8-3:8 "v"
+      space 3:9-3:9 "\n"
+
+=== compress.less21.part6.4.2.test3
+a {
+    p0: v0 !important;
+    p1: v1
+}
+
+a {
+    p0: v1;
+    p1: v2 !important
+}
+---
+stylesheet 1:1-9:1 {less}
+  ruleset 1:1-4:1
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-4:1
+      space 1:4-2:4 "\n    "
+      declaration 2:5-2:21
+        property 2:5-2:6
+          ident 2:5-2:6 "p0"
+        propertyDelimiter 2:7-2:7 ":"
+        space 2:8-2:8 " "
+        value 2:9-2:21
+          ident 2:9-2:10 "v0"
+          space 2:11-2:11 " "
+          important 2:12-2:21 "!important"
+      declarationDelimiter 2:22-2:22 ";"
+      space 2:23-3:4 "\n    "
+      declaration 3:5-3:10
+        property 3:5-3:6
+          ident 3:5-3:6 "p1"
+        propertyDelimiter 3:7-3:7 ":"
+        space 3:8-3:8 " "
+        value 3:9-3:10
+          ident 3:9-3:10 "v1"
+      space 3:11-3:11 "\n"
+  space 4:2-5:4 "\n\n"
+  ruleset 6:1-9:1
+    selector 6:1-6:1
+      typeSelector 6:1-6:1
+        ident 6:1-6:1 "a"
+    space 6:2-6:2 " "
+    block 6:3-9:1
+      space 6:4-7:4 "\n    "
+      declaration 7:5-7:10
+        property 7:5-7:6
+          ident 7:5-7:6 "p0"
+        propertyDelimiter 7:7-7:7 ":"
+        space 7:8-7:8 " "
+        value 7:9-7:10
+          ident 7:9-7:10 "v1"
+      declarationDelimiter 7:11-7:11 ";"
+      space 7:12-8:4 "\n    "
+      declaration 8:5-8:21
+        property 8:5-8:6
+          ident 8:5-8:6 "p1"
+        propertyDelimiter 8:7-8:7 ":"
+        space 8:8-8:8 " "
+        value 8:9-8:21
+          ident 8:9-8:10 "v2"
+          space 8:11-8:11 " "
+          important 8:12-8:21 "!important"
+      space 8:22-8:22 "\n"
+
+=== compress.less21.part7.test1
+@media screen { E { p: v } }
+---
+stylesheet 1:1-1:28 {less}
+  atrule 1:1-1:28
+    atkeyword 1:1-1:6
+      ident 1:2-1:6 "media"
+    space 1:7-1:7 " "
+    ident 1:8-1:13 "screen"
+    space 1:14-1:14 " "
+    block 1:15-1:28
+      space 1:16-1:16 " "
+      ruleset 1:17-1:26
+        selector 1:17-1:17
+          typeSelector 1:17-1:17
+            ident 1:17-1:17 "E"
+        space 1:18-1:18 " "
+        block 1:19-1:26
+          space 1:20-1:20 " "
+          declaration 1:21-1:24
+            property 1:21-1:21
+              ident 1:21-1:21 "p"
+            propertyDelimiter 1:22-1:22 ":"
+            space 1:23-1:23 " "
+            value 1:24-1:24
+              ident 1:24-1:24 "v"
+          space 1:25-1:25 " "
+      space 1:27-1:27 " "
+
+=== compress.less21.part7.test2
+@media screen, 3D { E { p: v } }
+---
+stylesheet 1:1-1:32 {less}
+  atrule 1:1-1:32
+    atkeyword 1:1-1:6
+      ident 1:2-1:6 "media"
+    space 1:7-1:7 " "
+    ident 1:8-1:13 "screen"
+    operator 1:14-1:14 ","
+    space 1:15-1:15 " "
+    number 1:16-1:16 "3"
+    ident 1:17-1:17 "D"
+    space 1:18-1:18 " "
+    block 1:19-1:32
+      space 1:20-1:20 " "
+      ruleset 1:21-1:30
+        selector 1:21-1:21
+          typeSelector 1:21-1:21
+            ident 1:21-1:21 "E"
+        space 1:22-1:22 " "
+        block 1:23-1:30
+          space 1:24-1:24 " "
+          declaration 1:25-1:28
+            property 1:25-1:25
+              ident 1:25-1:25 "p"
+            propertyDelimiter 1:26-1:26 ":"
+            space 1:27-1:27 " "
+            value 1:28-1:28
+              ident 1:28-1:28 "v"
+          space 1:29-1:29 " "
+      space 1:31-1:31 " "
+
+=== compress.less3.selectors.part2.test1.c
+/*test*/*/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:62 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:54
+    selector 1:9-1:9
+      universalSelector 1:9-1:9
+    multilineComment 1:10-1:17 "test"
+    block 1:18-1:54
+      multilineComment 1:19-1:26 "test"
+      declaration 1:27-1:45
+        property 1:27-1:27
+          ident 1:27-1:27 "p"
+        multilineComment 1:28-1:35 "test"
+        propertyDelimiter 1:36-1:36 ":"
+        multilineComment 1:37-1:44 "test"
+        value 1:45-1:45
+          ident 1:45-1:45 "v"
+      multilineComment 1:46-1:53 "test"
+  multilineComment 1:55-1:62 "test"
+
+=== compress.less3.selectors.part2.test1
+* { p : v }
+---
+stylesheet 1:1-1:11 {less}
+  ruleset 1:1-1:11
+    selector 1:1-1:1
+      universalSelector 1:1-1:1
+    space 1:2-1:2 " "
+    block 1:3-1:11
+      space 1:4-1:4 " "
+      declaration 1:5-1:9
+        property 1:5-1:5
+          ident 1:5-1:5 "p"
+        space 1:6-1:6 " "
+        propertyDelimiter 1:7-1:7 ":"
+        space 1:8-1:8 " "
+        value 1:9-1:9
+          ident 1:9-1:9 "v"
+      space 1:10-1:10 " "
+
+=== compress.less3.selectors.part2.test10.c
+/*test*/E:root/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:67 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:59
+    selector 1:9-1:14
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoClass 1:10-1:14
+        ident 1:11-1:14 "root"
+    multilineComment 1:15-1:22 "test"
+    block 1:23-1:59
+      multilineComment 1:24-1:31 "test"
+      declaration 1:32-1:50
+        property 1:32-1:32
+          ident 1:32-1:32 "p"
+        multilineComment 1:33-1:40 "test"
+        propertyDelimiter 1:41-1:41 ":"
+        multilineComment 1:42-1:49 "test"
+        value 1:50-1:50
+          ident 1:50-1:50 "v"
+      multilineComment 1:51-1:58 "test"
+  multilineComment 1:60-1:67 "test"
+
+=== compress.less3.selectors.part2.test10
+E:root { p : v }
+---
+stylesheet 1:1-1:16 {less}
+  ruleset 1:1-1:16
+    selector 1:1-1:6
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoClass 1:2-1:6
+        ident 1:3-1:6 "root"
+    space 1:7-1:7 " "
+    block 1:8-1:16
+      space 1:9-1:9 " "
+      declaration 1:10-1:14
+        property 1:10-1:10
+          ident 1:10-1:10 "p"
+        space 1:11-1:11 " "
+        propertyDelimiter 1:12-1:12 ":"
+        space 1:13-1:13 " "
+        value 1:14-1:14
+          ident 1:14-1:14 "v"
+      space 1:15-1:15 " "
+
+=== compress.less3.selectors.part2.test11.c
+/*test*/E:nth-child(/*test*/n/*test*/)/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:91 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:83
+    selector 1:9-1:38
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoClass 1:10-1:38
+        ident 1:11-1:19 "nth-child"
+        arguments 1:20-1:38
+          multilineComment 1:21-1:28 "test"
+          ident 1:29-1:29 "n"
+          multilineComment 1:30-1:37 "test"
+    multilineComment 1:39-1:46 "test"
+    block 1:47-1:83
+      multilineComment 1:48-1:55 "test"
+      declaration 1:56-1:74
+        property 1:56-1:56
+          ident 1:56-1:56 "p"
+        multilineComment 1:57-1:64 "test"
+        propertyDelimiter 1:65-1:65 ":"
+        multilineComment 1:66-1:73 "test"
+        value 1:74-1:74
+          ident 1:74-1:74 "v"
+      multilineComment 1:75-1:82 "test"
+  multilineComment 1:84-1:91 "test"
+
+=== compress.less3.selectors.part2.test11
+E:nth-child( n ) { p : v }
+---
+stylesheet 1:1-1:26 {less}
+  ruleset 1:1-1:26
+    selector 1:1-1:16
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoClass 1:2-1:16
+        ident 1:3-1:11 "nth-child"
+        arguments 1:12-1:16
+          space 1:13-1:13 " "
+          ident 1:14-1:14 "n"
+          space 1:15-1:15 " "
+    space 1:17-1:17 " "
+    block 1:18-1:26
+      space 1:19-1:19 " "
+      declaration 1:20-1:24
+        property 1:20-1:20
+          ident 1:20-1:20 "p"
+        space 1:21-1:21 " "
+        propertyDelimiter 1:22-1:22 ":"
+        space 1:23-1:23 " "
+        value 1:24-1:24
+          ident 1:24-1:24 "v"
+      space 1:25-1:25 " "
+
+=== compress.less3.selectors.part2.test12.c
+/*test*/E:nth-last-child(/*test*/n/*test*/)/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:96 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:88
+    selector 1:9-1:43
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoClass 1:10-1:43
+        ident 1:11-1:24 "nth-last-child"
+        arguments 1:25-1:43
+          multilineComment 1:26-1:33 "test"
+          ident 1:34-1:34 "n"
+          multilineComment 1:35-1:42 "test"
+    multilineComment 1:44-1:51 "test"
+    block 1:52-1:88
+      multilineComment 1:53-1:60 "test"
+      declaration 1:61-1:79
+        property 1:61-1:61
+          ident 1:61-1:61 "p"
+        multilineComment 1:62-1:69 "test"
+        propertyDelimiter 1:70-1:70 ":"
+        multilineComment 1:71-1:78 "test"
+        value 1:79-1:79
+          ident 1:79-1:79 "v"
+      multilineComment 1:80-1:87 "test"
+  multilineComment 1:89-1:96 "test"
+
+=== compress.less3.selectors.part2.test12
+E:nth-last-child( n ) { p : v }
+---
+stylesheet 1:1-1:31 {less}
+  ruleset 1:1-1:31
+    selector 1:1-1:21
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoClass 1:2-1:21
+        ident 1:3-1:16 "nth-last-child"
+        arguments 1:17-1:21
+          space 1:18-1:18 " "
+          ident 1:19-1:19 "n"
+          space 1:20-1:20 " "
+    space 1:22-1:22 " "
+    block 1:23-1:31
+      space 1:24-1:24 " "
+      declaration 1:25-1:29
+        property 1:25-1:25
+          ident 1:25-1:25 "p"
+        space 1:26-1:26 " "
+        propertyDelimiter 1:27-1:27 ":"
+        space 1:28-1:28 " "
+        value 1:29-1:29
+          ident 1:29-1:29 "v"
+      space 1:30-1:30 " "
+
+=== compress.less3.selectors.part2.test13.c
+/*test*/E:nth-of-type(/*test*/n/*test*/)/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:93 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:85
+    selector 1:9-1:40
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoClass 1:10-1:40
+        ident 1:11-1:21 "nth-of-type"
+        arguments 1:22-1:40
+          multilineComment 1:23-1:30 "test"
+          ident 1:31-1:31 "n"
+          multilineComment 1:32-1:39 "test"
+    multilineComment 1:41-1:48 "test"
+    block 1:49-1:85
+      multilineComment 1:50-1:57 "test"
+      declaration 1:58-1:76
+        property 1:58-1:58
+          ident 1:58-1:58 "p"
+        multilineComment 1:59-1:66 "test"
+        propertyDelimiter 1:67-1:67 ":"
+        multilineComment 1:68-1:75 "test"
+        value 1:76-1:76
+          ident 1:76-1:76 "v"
+      multilineComment 1:77-1:84 "test"
+  multilineComment 1:86-1:93 "test"
+
+=== compress.less3.selectors.part2.test13
+E:nth-of-type( n ) { p : v }
+---
+stylesheet 1:1-1:28 {less}
+  ruleset 1:1-1:28
+    selector 1:1-1:18
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoClass 1:2-1:18
+        ident 1:3-1:13 "nth-of-type"
+        arguments 1:14-1:18
+          space 1:15-1:15 " "
+          ident 1:16-1:16 "n"
+          space 1:17-1:17 " "
+    space 1:19-1:19 " "
+    block 1:20-1:28
+      space 1:21-1:21 " "
+      declaration 1:22-1:26
+        property 1:22-1:22
+          ident 1:22-1:22 "p"
+        space 1:23-1:23 " "
+        propertyDelimiter 1:24-1:24 ":"
+        space 1:25-1:25 " "
+        value 1:26-1:26
+          ident 1:26-1:26 "v"
+      space 1:27-1:27 " "
+
+=== compress.less3.selectors.part2.test14.c
+/*test*/E:nth-last-of-type(/*test*/n/*test*/)/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:98 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:90
+    selector 1:9-1:45
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoClass 1:10-1:45
+        ident 1:11-1:26 "nth-last-of-type"
+        arguments 1:27-1:45
+          multilineComment 1:28-1:35 "test"
+          ident 1:36-1:36 "n"
+          multilineComment 1:37-1:44 "test"
+    multilineComment 1:46-1:53 "test"
+    block 1:54-1:90
+      multilineComment 1:55-1:62 "test"
+      declaration 1:63-1:81
+        property 1:63-1:63
+          ident 1:63-1:63 "p"
+        multilineComment 1:64-1:71 "test"
+        propertyDelimiter 1:72-1:72 ":"
+        multilineComment 1:73-1:80 "test"
+        value 1:81-1:81
+          ident 1:81-1:81 "v"
+      multilineComment 1:82-1:89 "test"
+  multilineComment 1:91-1:98 "test"
+
+=== compress.less3.selectors.part2.test14
+E:nth-last-of-type( n ) { p : v }
+---
+stylesheet 1:1-1:33 {less}
+  ruleset 1:1-1:33
+    selector 1:1-1:23
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoClass 1:2-1:23
+        ident 1:3-1:18 "nth-last-of-type"
+        arguments 1:19-1:23
+          space 1:20-1:20 " "
+          ident 1:21-1:21 "n"
+          space 1:22-1:22 " "
+    space 1:24-1:24 " "
+    block 1:25-1:33
+      space 1:26-1:26 " "
+      declaration 1:27-1:31
+        property 1:27-1:27
+          ident 1:27-1:27 "p"
+        space 1:28-1:28 " "
+        propertyDelimiter 1:29-1:29 ":"
+        space 1:30-1:30 " "
+        value 1:31-1:31
+          ident 1:31-1:31 "v"
+      space 1:32-1:32 " "
+
+=== compress.less3.selectors.part2.test15.c
+/*test*/E:first-child/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:74 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:66
+    selector 1:9-1:21
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoClass 1:10-1:21
+        ident 1:11-1:21 "first-child"
+    multilineComment 1:22-1:29 "test"
+    block 1:30-1:66
+      multilineComment 1:31-1:38 "test"
+      declaration 1:39-1:57
+        property 1:39-1:39
+          ident 1:39-1:39 "p"
+        multilineComment 1:40-1:47 "test"
+        propertyDelimiter 1:48-1:48 ":"
+        multilineComment 1:49-1:56 "test"
+        value 1:57-1:57
+          ident 1:57-1:57 "v"
+      multilineComment 1:58-1:65 "test"
+  multilineComment 1:67-1:74 "test"
+
+=== compress.less3.selectors.part2.test15
+E:first-child { p : v }
+---
+stylesheet 1:1-1:23 {less}
+  ruleset 1:1-1:23
+    selector 1:1-1:13
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoClass 1:2-1:13
+        ident 1:3-1:13 "first-child"
+    space 1:14-1:14 " "
+    block 1:15-1:23
+      space 1:16-1:16 " "
+      declaration 1:17-1:21
+        property 1:17-1:17
+          ident 1:17-1:17 "p"
+        space 1:18-1:18 " "
+        propertyDelimiter 1:19-1:19 ":"
+        space 1:20-1:20 " "
+        value 1:21-1:21
+          ident 1:21-1:21 "v"
+      space 1:22-1:22 " "
+
+=== compress.less3.selectors.part2.test16.c
+/*test*/E:last-child/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:73 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:65
+    selector 1:9-1:20
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoClass 1:10-1:20
+        ident 1:11-1:20 "last-child"
+    multilineComment 1:21-1:28 "test"
+    block 1:29-1:65
+      multilineComment 1:30-1:37 "test"
+      declaration 1:38-1:56
+        property 1:38-1:38
+          ident 1:38-1:38 "p"
+        multilineComment 1:39-1:46 "test"
+        propertyDelimiter 1:47-1:47 ":"
+        multilineComment 1:48-1:55 "test"
+        value 1:56-1:56
+          ident 1:56-1:56 "v"
+      multilineComment 1:57-1:64 "test"
+  multilineComment 1:66-1:73 "test"
+
+=== compress.less3.selectors.part2.test16
+E:last-child { p : v }
+---
+stylesheet 1:1-1:22 {less}
+  ruleset 1:1-1:22
+    selector 1:1-1:12
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoClass 1:2-1:12
+        ident 1:3-1:12 "last-child"
+    space 1:13-1:13 " "
+    block 1:14-1:22
+      space 1:15-1:15 " "
+      declaration 1:16-1:20
+        property 1:16-1:16
+          ident 1:16-1:16 "p"
+        space 1:17-1:17 " "
+        propertyDelimiter 1:18-1:18 ":"
+        space 1:19-1:19 " "
+        value 1:20-1:20
+          ident 1:20-1:20 "v"
+      space 1:21-1:21 " "
+
+=== compress.less3.selectors.part2.test17.c
+/*test*/E:first-of-type/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:76 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:68
+    selector 1:9-1:23
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoClass 1:10-1:23
+        ident 1:11-1:23 "first-of-type"
+    multilineComment 1:24-1:31 "test"
+    block 1:32-1:68
+      multilineComment 1:33-1:40 "test"
+      declaration 1:41-1:59
+        property 1:41-1:41
+          ident 1:41-1:41 "p"
+        multilineComment 1:42-1:49 "test"
+        propertyDelimiter 1:50-1:50 ":"
+        multilineComment 1:51-1:58 "test"
+        value 1:59-1:59
+          ident 1:59-1:59 "v"
+      multilineComment 1:60-1:67 "test"
+  multilineComment 1:69-1:76 "test"
+
+=== compress.less3.selectors.part2.test17
+E:first-of-type { p : v }
+---
+stylesheet 1:1-1:25 {less}
+  ruleset 1:1-1:25
+    selector 1:1-1:15
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoClass 1:2-1:15
+        ident 1:3-1:15 "first-of-type"
+    space 1:16-1:16 " "
+    block 1:17-1:25
+      space 1:18-1:18 " "
+      declaration 1:19-1:23
+        property 1:19-1:19
+          ident 1:19-1:19 "p"
+        space 1:20-1:20 " "
+        propertyDelimiter 1:21-1:21 ":"
+        space 1:22-1:22 " "
+        value 1:23-1:23
+          ident 1:23-1:23 "v"
+      space 1:24-1:24 " "
+
+=== compress.less3.selectors.part2.test18.c
+/*test*/E:last-of-type/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:75 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:67
+    selector 1:9-1:22
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoClass 1:10-1:22
+        ident 1:11-1:22 "last-of-type"
+    multilineComment 1:23-1:30 "test"
+    block 1:31-1:67
+      multilineComment 1:32-1:39 "test"
+      declaration 1:40-1:58
+        property 1:40-1:40
+          ident 1:40-1:40 "p"
+        multilineComment 1:41-1:48 "test"
+        propertyDelimiter 1:49-1:49 ":"
+        multilineComment 1:50-1:57 "test"
+        value 1:58-1:58
+          ident 1:58-1:58 "v"
+      multilineComment 1:59-1:66 "test"
+  multilineComment 1:68-1:75 "test"
+
+=== compress.less3.selectors.part2.test18
+E:last-of-type { p : v }
+---
+stylesheet 1:1-1:24 {less}
+  ruleset 1:1-1:24
+    selector 1:1-1:14
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoClass 1:2-1:14
+        ident 1:3-1:14 "last-of-type"
+    space 1:15-1:15 " "
+    block 1:16-1:24
+      space 1:17-1:17 " "
+      declaration 1:18-1:22
+        property 1:18-1:18
+          ident 1:18-1:18 "p"
+        space 1:19-1:19 " "
+        propertyDelimiter 1:20-1:20 ":"
+        space 1:21-1:21 " "
+        value 1:22-1:22
+          ident 1:22-1:22 "v"
+      space 1:23-1:23 " "
+
+=== compress.less3.selectors.part2.test19.c
+/*test*/E:only-child/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:73 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:65
+    selector 1:9-1:20
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoClass 1:10-1:20
+        ident 1:11-1:20 "only-child"
+    multilineComment 1:21-1:28 "test"
+    block 1:29-1:65
+      multilineComment 1:30-1:37 "test"
+      declaration 1:38-1:56
+        property 1:38-1:38
+          ident 1:38-1:38 "p"
+        multilineComment 1:39-1:46 "test"
+        propertyDelimiter 1:47-1:47 ":"
+        multilineComment 1:48-1:55 "test"
+        value 1:56-1:56
+          ident 1:56-1:56 "v"
+      multilineComment 1:57-1:64 "test"
+  multilineComment 1:66-1:73 "test"
+
+=== compress.less3.selectors.part2.test19
+E:only-child { p : v }
+---
+stylesheet 1:1-1:22 {less}
+  ruleset 1:1-1:22
+    selector 1:1-1:12
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoClass 1:2-1:12
+        ident 1:3-1:12 "only-child"
+    space 1:13-1:13 " "
+    block 1:14-1:22
+      space 1:15-1:15 " "
+      declaration 1:16-1:20
+        property 1:16-1:16
+          ident 1:16-1:16 "p"
+        space 1:17-1:17 " "
+        propertyDelimiter 1:18-1:18 ":"
+        space 1:19-1:19 " "
+        value 1:20-1:20
+          ident 1:20-1:20 "v"
+      space 1:21-1:21 " "
+
+=== compress.less3.selectors.part2.test2.c
+/*test*/E/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:62 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:54
+    selector 1:9-1:9
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+    multilineComment 1:10-1:17 "test"
+    block 1:18-1:54
+      multilineComment 1:19-1:26 "test"
+      declaration 1:27-1:45
+        property 1:27-1:27
+          ident 1:27-1:27 "p"
+        multilineComment 1:28-1:35 "test"
+        propertyDelimiter 1:36-1:36 ":"
+        multilineComment 1:37-1:44 "test"
+        value 1:45-1:45
+          ident 1:45-1:45 "v"
+      multilineComment 1:46-1:53 "test"
+  multilineComment 1:55-1:62 "test"
+
+=== compress.less3.selectors.part2.test2
+E { p : v }
+---
+stylesheet 1:1-1:11 {less}
+  ruleset 1:1-1:11
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+    space 1:2-1:2 " "
+    block 1:3-1:11
+      space 1:4-1:4 " "
+      declaration 1:5-1:9
+        property 1:5-1:5
+          ident 1:5-1:5 "p"
+        space 1:6-1:6 " "
+        propertyDelimiter 1:7-1:7 ":"
+        space 1:8-1:8 " "
+        value 1:9-1:9
+          ident 1:9-1:9 "v"
+      space 1:10-1:10 " "
+
+=== compress.less3.selectors.part2.test20.c
+/*test*/E:only-of-type/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:75 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:67
+    selector 1:9-1:22
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoClass 1:10-1:22
+        ident 1:11-1:22 "only-of-type"
+    multilineComment 1:23-1:30 "test"
+    block 1:31-1:67
+      multilineComment 1:32-1:39 "test"
+      declaration 1:40-1:58
+        property 1:40-1:40
+          ident 1:40-1:40 "p"
+        multilineComment 1:41-1:48 "test"
+        propertyDelimiter 1:49-1:49 ":"
+        multilineComment 1:50-1:57 "test"
+        value 1:58-1:58
+          ident 1:58-1:58 "v"
+      multilineComment 1:59-1:66 "test"
+  multilineComment 1:68-1:75 "test"
+
+=== compress.less3.selectors.part2.test20
+E:only-of-type { p : v }
+---
+stylesheet 1:1-1:24 {less}
+  ruleset 1:1-1:24
+    selector 1:1-1:14
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoClass 1:2-1:14
+        ident 1:3-1:14 "only-of-type"
+    space 1:15-1:15 " "
+    block 1:16-1:24
+      space 1:17-1:17 " "
+      declaration 1:18-1:22
+        property 1:18-1:18
+          ident 1:18-1:18 "p"
+        space 1:19-1:19 " "
+        propertyDelimiter 1:20-1:20 ":"
+        space 1:21-1:21 " "
+        value 1:22-1:22
+          ident 1:22-1:22 "v"
+      space 1:23-1:23 " "
+
+=== compress.less3.selectors.part2.test21.c
+/*test*/E:empty/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:68 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:60
+    selector 1:9-1:15
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoClass 1:10-1:15
+        ident 1:11-1:15 "empty"
+    multilineComment 1:16-1:23 "test"
+    block 1:24-1:60
+      multilineComment 1:25-1:32 "test"
+      declaration 1:33-1:51
+        property 1:33-1:33
+          ident 1:33-1:33 "p"
+        multilineComment 1:34-1:41 "test"
+        propertyDelimiter 1:42-1:42 ":"
+        multilineComment 1:43-1:50 "test"
+        value 1:51-1:51
+          ident 1:51-1:51 "v"
+      multilineComment 1:52-1:59 "test"
+  multilineComment 1:61-1:68 "test"
+
+=== compress.less3.selectors.part2.test21
+E:empty { p : v }
+---
+stylesheet 1:1-1:17 {less}
+  ruleset 1:1-1:17
+    selector 1:1-1:7
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoClass 1:2-1:7
+        ident 1:3-1:7 "empty"
+    space 1:8-1:8 " "
+    block 1:9-1:17
+      space 1:10-1:10 " "
+      declaration 1:11-1:15
+        property 1:11-1:11
+          ident 1:11-1:11 "p"
+        space 1:12-1:12 " "
+        propertyDelimiter 1:13-1:13 ":"
+        space 1:14-1:14 " "
+        value 1:15-1:15
+          ident 1:15-1:15 "v"
+      space 1:16-1:16 " "
+
+=== compress.less3.selectors.part2.test22.c
+/*test*/E:link/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:67 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:59
+    selector 1:9-1:14
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoClass 1:10-1:14
+        ident 1:11-1:14 "link"
+    multilineComment 1:15-1:22 "test"
+    block 1:23-1:59
+      multilineComment 1:24-1:31 "test"
+      declaration 1:32-1:50
+        property 1:32-1:32
+          ident 1:32-1:32 "p"
+        multilineComment 1:33-1:40 "test"
+        propertyDelimiter 1:41-1:41 ":"
+        multilineComment 1:42-1:49 "test"
+        value 1:50-1:50
+          ident 1:50-1:50 "v"
+      multilineComment 1:51-1:58 "test"
+  multilineComment 1:60-1:67 "test"
+
+=== compress.less3.selectors.part2.test22
+E:link { p : v }
+---
+stylesheet 1:1-1:16 {less}
+  ruleset 1:1-1:16
+    selector 1:1-1:6
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoClass 1:2-1:6
+        ident 1:3-1:6 "link"
+    space 1:7-1:7 " "
+    block 1:8-1:16
+      space 1:9-1:9 " "
+      declaration 1:10-1:14
+        property 1:10-1:10
+          ident 1:10-1:10 "p"
+        space 1:11-1:11 " "
+        propertyDelimiter 1:12-1:12 ":"
+        space 1:13-1:13 " "
+        value 1:14-1:14
+          ident 1:14-1:14 "v"
+      space 1:15-1:15 " "
+
+=== compress.less3.selectors.part2.test23.c
+/*test*/E:visited/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:70 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:62
+    selector 1:9-1:17
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoClass 1:10-1:17
+        ident 1:11-1:17 "visited"
+    multilineComment 1:18-1:25 "test"
+    block 1:26-1:62
+      multilineComment 1:27-1:34 "test"
+      declaration 1:35-1:53
+        property 1:35-1:35
+          ident 1:35-1:35 "p"
+        multilineComment 1:36-1:43 "test"
+        propertyDelimiter 1:44-1:44 ":"
+        multilineComment 1:45-1:52 "test"
+        value 1:53-1:53
+          ident 1:53-1:53 "v"
+      multilineComment 1:54-1:61 "test"
+  multilineComment 1:63-1:70 "test"
+
+=== compress.less3.selectors.part2.test23
+E:visited { p : v }
+---
+stylesheet 1:1-1:19 {less}
+  ruleset 1:1-1:19
+    selector 1:1-1:9
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoClass 1:2-1:9
+        ident 1:3-1:9 "visited"
+    space 1:10-1:10 " "
+    block 1:11-1:19
+      space 1:12-1:12 " "
+      declaration 1:13-1:17
+        property 1:13-1:13
+          ident 1:13-1:13 "p"
+        space 1:14-1:14 " "
+        propertyDelimiter 1:15-1:15 ":"
+        space 1:16-1:16 " "
+        value 1:17-1:17
+          ident 1:17-1:17 "v"
+      space 1:18-1:18 " "
+
+=== compress.less3.selectors.part2.test24.c
+/*test*/E:active/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:69 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:61
+    selector 1:9-1:16
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoClass 1:10-1:16
+        ident 1:11-1:16 "active"
+    multilineComment 1:17-1:24 "test"
+    block 1:25-1:61
+      multilineComment 1:26-1:33 "test"
+      declaration 1:34-1:52
+        property 1:34-1:34
+          ident 1:34-1:34 "p"
+        multilineComment 1:35-1:42 "test"
+        propertyDelimiter 1:43-1:43 ":"
+        multilineComment 1:44-1:51 "test"
+        value 1:52-1:52
+          ident 1:52-1:52 "v"
+      multilineComment 1:53-1:60 "test"
+  multilineComment 1:62-1:69 "test"
+
+=== compress.less3.selectors.part2.test24
+E:active { p : v }
+---
+stylesheet 1:1-1:18 {less}
+  ruleset 1:1-1:18
+    selector 1:1-1:8
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoClass 1:2-1:8
+        ident 1:3-1:8 "active"
+    space 1:9-1:9 " "
+    block 1:10-1:18
+      space 1:11-1:11 " "
+      declaration 1:12-1:16
+        property 1:12-1:12
+          ident 1:12-1:12 "p"
+        space 1:13-1:13 " "
+        propertyDelimiter 1:14-1:14 ":"
+        space 1:15-1:15 " "
+        value 1:16-1:16
+          ident 1:16-1:16 "v"
+      space 1:17-1:17 " "
+
+=== compress.less3.selectors.part2.test25.c
+/*test*/E:hover/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:68 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:60
+    selector 1:9-1:15
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoClass 1:10-1:15
+        ident 1:11-1:15 "hover"
+    multilineComment 1:16-1:23 "test"
+    block 1:24-1:60
+      multilineComment 1:25-1:32 "test"
+      declaration 1:33-1:51
+        property 1:33-1:33
+          ident 1:33-1:33 "p"
+        multilineComment 1:34-1:41 "test"
+        propertyDelimiter 1:42-1:42 ":"
+        multilineComment 1:43-1:50 "test"
+        value 1:51-1:51
+          ident 1:51-1:51 "v"
+      multilineComment 1:52-1:59 "test"
+  multilineComment 1:61-1:68 "test"
+
+=== compress.less3.selectors.part2.test25
+E:hover { p : v }
+---
+stylesheet 1:1-1:17 {less}
+  ruleset 1:1-1:17
+    selector 1:1-1:7
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoClass 1:2-1:7
+        ident 1:3-1:7 "hover"
+    space 1:8-1:8 " "
+    block 1:9-1:17
+      space 1:10-1:10 " "
+      declaration 1:11-1:15
+        property 1:11-1:11
+          ident 1:11-1:11 "p"
+        space 1:12-1:12 " "
+        propertyDelimiter 1:13-1:13 ":"
+        space 1:14-1:14 " "
+        value 1:15-1:15
+          ident 1:15-1:15 "v"
+      space 1:16-1:16 " "
+
+=== compress.less3.selectors.part2.test26.c
+/*test*/E:focus/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:68 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:60
+    selector 1:9-1:15
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoClass 1:10-1:15
+        ident 1:11-1:15 "focus"
+    multilineComment 1:16-1:23 "test"
+    block 1:24-1:60
+      multilineComment 1:25-1:32 "test"
+      declaration 1:33-1:51
+        property 1:33-1:33
+          ident 1:33-1:33 "p"
+        multilineComment 1:34-1:41 "test"
+        propertyDelimiter 1:42-1:42 ":"
+        multilineComment 1:43-1:50 "test"
+        value 1:51-1:51
+          ident 1:51-1:51 "v"
+      multilineComment 1:52-1:59 "test"
+  multilineComment 1:61-1:68 "test"
+
+=== compress.less3.selectors.part2.test26
+E:focus { p : v }
+---
+stylesheet 1:1-1:17 {less}
+  ruleset 1:1-1:17
+    selector 1:1-1:7
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoClass 1:2-1:7
+        ident 1:3-1:7 "focus"
+    space 1:8-1:8 " "
+    block 1:9-1:17
+      space 1:10-1:10 " "
+      declaration 1:11-1:15
+        property 1:11-1:11
+          ident 1:11-1:11 "p"
+        space 1:12-1:12 " "
+        propertyDelimiter 1:13-1:13 ":"
+        space 1:14-1:14 " "
+        value 1:15-1:15
+          ident 1:15-1:15 "v"
+      space 1:16-1:16 " "
+
+=== compress.less3.selectors.part2.test27.c
+/*test*/E:target/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:69 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:61
+    selector 1:9-1:16
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoClass 1:10-1:16
+        ident 1:11-1:16 "target"
+    multilineComment 1:17-1:24 "test"
+    block 1:25-1:61
+      multilineComment 1:26-1:33 "test"
+      declaration 1:34-1:52
+        property 1:34-1:34
+          ident 1:34-1:34 "p"
+        multilineComment 1:35-1:42 "test"
+        propertyDelimiter 1:43-1:43 ":"
+        multilineComment 1:44-1:51 "test"
+        value 1:52-1:52
+          ident 1:52-1:52 "v"
+      multilineComment 1:53-1:60 "test"
+  multilineComment 1:62-1:69 "test"
+
+=== compress.less3.selectors.part2.test27
+E:target { p : v }
+---
+stylesheet 1:1-1:18 {less}
+  ruleset 1:1-1:18
+    selector 1:1-1:8
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoClass 1:2-1:8
+        ident 1:3-1:8 "target"
+    space 1:9-1:9 " "
+    block 1:10-1:18
+      space 1:11-1:11 " "
+      declaration 1:12-1:16
+        property 1:12-1:12
+          ident 1:12-1:12 "p"
+        space 1:13-1:13 " "
+        propertyDelimiter 1:14-1:14 ":"
+        space 1:15-1:15 " "
+        value 1:16-1:16
+          ident 1:16-1:16 "v"
+      space 1:17-1:17 " "
+
+=== compress.less3.selectors.part2.test28.c
+/*test*/E:lang(/*test*/fr/*test*/)/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:87 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:79
+    selector 1:9-1:34
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoClass 1:10-1:34
+        ident 1:11-1:14 "lang"
+        arguments 1:15-1:34
+          multilineComment 1:16-1:23 "test"
+          selector 1:24-1:25
+            typeSelector 1:24-1:25
+              ident 1:24-1:25 "fr"
+          multilineComment 1:26-1:33 "test"
+    multilineComment 1:35-1:42 "test"
+    block 1:43-1:79
+      multilineComment 1:44-1:51 "test"
+      declaration 1:52-1:70
+        property 1:52-1:52
+          ident 1:52-1:52 "p"
+        multilineComment 1:53-1:60 "test"
+        propertyDelimiter 1:61-1:61 ":"
+        multilineComment 1:62-1:69 "test"
+        value 1:70-1:70
+          ident 1:70-1:70 "v"
+      multilineComment 1:71-1:78 "test"
+  multilineComment 1:80-1:87 "test"
+
+=== compress.less3.selectors.part2.test28
+E:lang( fr ) { p : v }
+---
+stylesheet 1:1-1:22 {less}
+  ruleset 1:1-1:22
+    selector 1:1-1:12
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoClass 1:2-1:12
+        ident 1:3-1:6 "lang"
+        arguments 1:7-1:12
+          space 1:8-1:8 " "
+          selector 1:9-1:10
+            typeSelector 1:9-1:10
+              ident 1:9-1:10 "fr"
+          space 1:11-1:11 " "
+    space 1:13-1:13 " "
+    block 1:14-1:22
+      space 1:15-1:15 " "
+      declaration 1:16-1:20
+        property 1:16-1:16
+          ident 1:16-1:16 "p"
+        space 1:17-1:17 " "
+        propertyDelimiter 1:18-1:18 ":"
+        space 1:19-1:19 " "
+        value 1:20-1:20
+          ident 1:20-1:20 "v"
+      space 1:21-1:21 " "
+
+=== compress.less3.selectors.part2.test29.c
+/*test*/E:enabled/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:70 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:62
+    selector 1:9-1:17
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoClass 1:10-1:17
+        ident 1:11-1:17 "enabled"
+    multilineComment 1:18-1:25 "test"
+    block 1:26-1:62
+      multilineComment 1:27-1:34 "test"
+      declaration 1:35-1:53
+        property 1:35-1:35
+          ident 1:35-1:35 "p"
+        multilineComment 1:36-1:43 "test"
+        propertyDelimiter 1:44-1:44 ":"
+        multilineComment 1:45-1:52 "test"
+        value 1:53-1:53
+          ident 1:53-1:53 "v"
+      multilineComment 1:54-1:61 "test"
+  multilineComment 1:63-1:70 "test"
+
+=== compress.less3.selectors.part2.test29
+E:enabled { p : v }
+---
+stylesheet 1:1-1:19 {less}
+  ruleset 1:1-1:19
+    selector 1:1-1:9
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoClass 1:2-1:9
+        ident 1:3-1:9 "enabled"
+    space 1:10-1:10 " "
+    block 1:11-1:19
+      space 1:12-1:12 " "
+      declaration 1:13-1:17
+        property 1:13-1:13
+          ident 1:13-1:13 "p"
+        space 1:14-1:14 " "
+        propertyDelimiter 1:15-1:15 ":"
+        space 1:16-1:16 " "
+        value 1:17-1:17
+          ident 1:17-1:17 "v"
+      space 1:18-1:18 " "
+
+=== compress.less3.selectors.part2.test3.c
+/*test*/E[/*test*/foo/*test*/]/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:83 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:75
+    selector 1:9-1:30
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      attributeSelector 1:10-1:30
+        multilineComment 1:11-1:18 "test"
+        attributeName 1:19-1:21
+          ident 1:19-1:21 "foo"
+        multilineComment 1:22-1:29 "test"
+    multilineComment 1:31-1:38 "test"
+    block 1:39-1:75
+      multilineComment 1:40-1:47 "test"
+      declaration 1:48-1:66
+        property 1:48-1:48
+          ident 1:48-1:48 "p"
+        multilineComment 1:49-1:56 "test"
+        propertyDelimiter 1:57-1:57 ":"
+        multilineComment 1:58-1:65 "test"
+        value 1:66-1:66
+          ident 1:66-1:66 "v"
+      multilineComment 1:67-1:74 "test"
+  multilineComment 1:76-1:83 "test"
+
+=== compress.less3.selectors.part2.test3
+E[ foo ] { p : v }
+---
+stylesheet 1:1-1:18 {less}
+  ruleset 1:1-1:18
+    selector 1:1-1:8
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      attributeSelector 1:2-1:8
+        space 1:3-1:3 " "
+        attributeName 1:4-1:6
+          ident 1:4-1:6 "foo"
+        space 1:7-1:7 " "
+    space 1:9-1:9 " "
+    block 1:10-1:18
+      space 1:11-1:11 " "
+      declaration 1:12-1:16
+        property 1:12-1:12
+          ident 1:12-1:12 "p"
+        space 1:13-1:13 " "
+        propertyDelimiter 1:14-1:14 ":"
+        space 1:15-1:15 " "
+        value 1:16-1:16
+          ident 1:16-1:16 "v"
+      space 1:17-1:17 " "
+
+=== compress.less3.selectors.part2.test30.c
+/*test*/E:disabled/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:71 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:63
+    selector 1:9-1:18
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoClass 1:10-1:18
+        ident 1:11-1:18 "disabled"
+    multilineComment 1:19-1:26 "test"
+    block 1:27-1:63
+      multilineComment 1:28-1:35 "test"
+      declaration 1:36-1:54
+        property 1:36-1:36
+          ident 1:36-1:36 "p"
+        multilineComment 1:37-1:44 "test"
+        propertyDelimiter 1:45-1:45 ":"
+        multilineComment 1:46-1:53 "test"
+        value 1:54-1:54
+          ident 1:54-1:54 "v"
+      multilineComment 1:55-1:62 "test"
+  multilineComment 1:64-1:71 "test"
+
+=== compress.less3.selectors.part2.test30
+E:disabled { p : v }
+---
+stylesheet 1:1-1:20 {less}
+  ruleset 1:1-1:20
+    selector 1:1-1:10
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoClass 1:2-1:10
+        ident 1:3-1:10 "disabled"
+    space 1:11-1:11 " "
+    block 1:12-1:20
+      space 1:13-1:13 " "
+      declaration 1:14-1:18
+        property 1:14-1:14
+          ident 1:14-1:14 "p"
+        space 1:15-1:15 " "
+        propertyDelimiter 1:16-1:16 ":"
+        space 1:17-1:17 " "
+        value 1:18-1:18
+          ident 1:18-1:18 "v"
+      space 1:19-1:19 " "
+
+=== compress.less3.selectors.part2.test31.c
+/*test*/E:checked/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:70 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:62
+    selector 1:9-1:17
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoClass 1:10-1:17
+        ident 1:11-1:17 "checked"
+    multilineComment 1:18-1:25 "test"
+    block 1:26-1:62
+      multilineComment 1:27-1:34 "test"
+      declaration 1:35-1:53
+        property 1:35-1:35
+          ident 1:35-1:35 "p"
+        multilineComment 1:36-1:43 "test"
+        propertyDelimiter 1:44-1:44 ":"
+        multilineComment 1:45-1:52 "test"
+        value 1:53-1:53
+          ident 1:53-1:53 "v"
+      multilineComment 1:54-1:61 "test"
+  multilineComment 1:63-1:70 "test"
+
+=== compress.less3.selectors.part2.test31
+E:checked { p : v }
+---
+stylesheet 1:1-1:19 {less}
+  ruleset 1:1-1:19
+    selector 1:1-1:9
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoClass 1:2-1:9
+        ident 1:3-1:9 "checked"
+    space 1:10-1:10 " "
+    block 1:11-1:19
+      space 1:12-1:12 " "
+      declaration 1:13-1:17
+        property 1:13-1:13
+          ident 1:13-1:13 "p"
+        space 1:14-1:14 " "
+        propertyDelimiter 1:15-1:15 ":"
+        space 1:16-1:16 " "
+        value 1:17-1:17
+          ident 1:17-1:17 "v"
+      space 1:18-1:18 " "
+
+=== compress.less3.selectors.part2.test32.c
+/*test*/E::first-line/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:74 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:66
+    selector 1:9-1:21
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoElement 1:10-1:21
+        ident 1:12-1:21 "first-line"
+    multilineComment 1:22-1:29 "test"
+    block 1:30-1:66
+      multilineComment 1:31-1:38 "test"
+      declaration 1:39-1:57
+        property 1:39-1:39
+          ident 1:39-1:39 "p"
+        multilineComment 1:40-1:47 "test"
+        propertyDelimiter 1:48-1:48 ":"
+        multilineComment 1:49-1:56 "test"
+        value 1:57-1:57
+          ident 1:57-1:57 "v"
+      multilineComment 1:58-1:65 "test"
+  multilineComment 1:67-1:74 "test"
+
+=== compress.less3.selectors.part2.test32
+E::first-line { p : v }
+---
+stylesheet 1:1-1:23 {less}
+  ruleset 1:1-1:23
+    selector 1:1-1:13
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoElement 1:2-1:13
+        ident 1:4-1:13 "first-line"
+    space 1:14-1:14 " "
+    block 1:15-1:23
+      space 1:16-1:16 " "
+      declaration 1:17-1:21
+        property 1:17-1:17
+          ident 1:17-1:17 "p"
+        space 1:18-1:18 " "
+        propertyDelimiter 1:19-1:19 ":"
+        space 1:20-1:20 " "
+        value 1:21-1:21
+          ident 1:21-1:21 "v"
+      space 1:22-1:22 " "
+
+=== compress.less3.selectors.part2.test33.c
+/*test*/E::first-letter/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:76 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:68
+    selector 1:9-1:23
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoElement 1:10-1:23
+        ident 1:12-1:23 "first-letter"
+    multilineComment 1:24-1:31 "test"
+    block 1:32-1:68
+      multilineComment 1:33-1:40 "test"
+      declaration 1:41-1:59
+        property 1:41-1:41
+          ident 1:41-1:41 "p"
+        multilineComment 1:42-1:49 "test"
+        propertyDelimiter 1:50-1:50 ":"
+        multilineComment 1:51-1:58 "test"
+        value 1:59-1:59
+          ident 1:59-1:59 "v"
+      multilineComment 1:60-1:67 "test"
+  multilineComment 1:69-1:76 "test"
+
+=== compress.less3.selectors.part2.test33
+E::first-letter { p : v }
+---
+stylesheet 1:1-1:25 {less}
+  ruleset 1:1-1:25
+    selector 1:1-1:15
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoElement 1:2-1:15
+        ident 1:4-1:15 "first-letter"
+    space 1:16-1:16 " "
+    block 1:17-1:25
+      space 1:18-1:18 " "
+      declaration 1:19-1:23
+        property 1:19-1:19
+          ident 1:19-1:19 "p"
+        space 1:20-1:20 " "
+        propertyDelimiter 1:21-1:21 ":"
+        space 1:22-1:22 " "
+        value 1:23-1:23
+          ident 1:23-1:23 "v"
+      space 1:24-1:24 " "
+
+=== compress.less3.selectors.part2.test34.c
+/*test*/E::before/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:70 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:62
+    selector 1:9-1:17
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoElement 1:10-1:17
+        ident 1:12-1:17 "before"
+    multilineComment 1:18-1:25 "test"
+    block 1:26-1:62
+      multilineComment 1:27-1:34 "test"
+      declaration 1:35-1:53
+        property 1:35-1:35
+          ident 1:35-1:35 "p"
+        multilineComment 1:36-1:43 "test"
+        propertyDelimiter 1:44-1:44 ":"
+        multilineComment 1:45-1:52 "test"
+        value 1:53-1:53
+          ident 1:53-1:53 "v"
+      multilineComment 1:54-1:61 "test"
+  multilineComment 1:63-1:70 "test"
+
+=== compress.less3.selectors.part2.test34
+E::before { p : v }
+---
+stylesheet 1:1-1:19 {less}
+  ruleset 1:1-1:19
+    selector 1:1-1:9
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoElement 1:2-1:9
+        ident 1:4-1:9 "before"
+    space 1:10-1:10 " "
+    block 1:11-1:19
+      space 1:12-1:12 " "
+      declaration 1:13-1:17
+        property 1:13-1:13
+          ident 1:13-1:13 "p"
+        space 1:14-1:14 " "
+        propertyDelimiter 1:15-1:15 ":"
+        space 1:16-1:16 " "
+        value 1:17-1:17
+          ident 1:17-1:17 "v"
+      space 1:18-1:18 " "
+
+=== compress.less3.selectors.part2.test35.c
+/*test*/E::after/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:69 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:61
+    selector 1:9-1:16
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoElement 1:10-1:16
+        ident 1:12-1:16 "after"
+    multilineComment 1:17-1:24 "test"
+    block 1:25-1:61
+      multilineComment 1:26-1:33 "test"
+      declaration 1:34-1:52
+        property 1:34-1:34
+          ident 1:34-1:34 "p"
+        multilineComment 1:35-1:42 "test"
+        propertyDelimiter 1:43-1:43 ":"
+        multilineComment 1:44-1:51 "test"
+        value 1:52-1:52
+          ident 1:52-1:52 "v"
+      multilineComment 1:53-1:60 "test"
+  multilineComment 1:62-1:69 "test"
+
+=== compress.less3.selectors.part2.test35
+E::after { p : v }
+---
+stylesheet 1:1-1:18 {less}
+  ruleset 1:1-1:18
+    selector 1:1-1:8
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoElement 1:2-1:8
+        ident 1:4-1:8 "after"
+    space 1:9-1:9 " "
+    block 1:10-1:18
+      space 1:11-1:11 " "
+      declaration 1:12-1:16
+        property 1:12-1:12
+          ident 1:12-1:12 "p"
+        space 1:13-1:13 " "
+        propertyDelimiter 1:14-1:14 ":"
+        space 1:15-1:15 " "
+        value 1:16-1:16
+          ident 1:16-1:16 "v"
+      space 1:17-1:17 " "
+
+=== compress.less3.selectors.part2.test36.c
+/*test*/E.warning/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:70 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:62
+    selector 1:9-1:17
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      class 1:10-1:17
+        ident 1:11-1:17 "warning"
+    multilineComment 1:18-1:25 "test"
+    block 1:26-1:62
+      multilineComment 1:27-1:34 "test"
+      declaration 1:35-1:53
+        property 1:35-1:35
+          ident 1:35-1:35 "p"
+        multilineComment 1:36-1:43 "test"
+        propertyDelimiter 1:44-1:44 ":"
+        multilineComment 1:45-1:52 "test"
+        value 1:53-1:53
+          ident 1:53-1:53 "v"
+      multilineComment 1:54-1:61 "test"
+  multilineComment 1:63-1:70 "test"
+
+=== compress.less3.selectors.part2.test36
+E.warning { p : v }
+---
+stylesheet 1:1-1:19 {less}
+  ruleset 1:1-1:19
+    selector 1:1-1:9
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      class 1:2-1:9
+        ident 1:3-1:9 "warning"
+    space 1:10-1:10 " "
+    block 1:11-1:19
+      space 1:12-1:12 " "
+      declaration 1:13-1:17
+        property 1:13-1:13
+          ident 1:13-1:13 "p"
+        space 1:14-1:14 " "
+        propertyDelimiter 1:15-1:15 ":"
+        space 1:16-1:16 " "
+        value 1:17-1:17
+          ident 1:17-1:17 "v"
+      space 1:18-1:18 " "
+
+=== compress.less3.selectors.part2.test37.c
+/*test*/E#myid/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:67 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:59
+    selector 1:9-1:14
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      id 1:10-1:14
+        ident 1:11-1:14 "myid"
+    multilineComment 1:15-1:22 "test"
+    block 1:23-1:59
+      multilineComment 1:24-1:31 "test"
+      declaration 1:32-1:50
+        property 1:32-1:32
+          ident 1:32-1:32 "p"
+        multilineComment 1:33-1:40 "test"
+        propertyDelimiter 1:41-1:41 ":"
+        multilineComment 1:42-1:49 "test"
+        value 1:50-1:50
+          ident 1:50-1:50 "v"
+      multilineComment 1:51-1:58 "test"
+  multilineComment 1:60-1:67 "test"
+
+=== compress.less3.selectors.part2.test37
+E#myid { p : v }
+---
+stylesheet 1:1-1:16 {less}
+  ruleset 1:1-1:16
+    selector 1:1-1:6
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      id 1:2-1:6
+        ident 1:3-1:6 "myid"
+    space 1:7-1:7 " "
+    block 1:8-1:16
+      space 1:9-1:9 " "
+      declaration 1:10-1:14
+        property 1:10-1:10
+          ident 1:10-1:10 "p"
+        space 1:11-1:11 " "
+        propertyDelimiter 1:12-1:12 ":"
+        space 1:13-1:13 " "
+        value 1:14-1:14
+          ident 1:14-1:14 "v"
+      space 1:15-1:15 " "
+
+=== compress.less3.selectors.part2.test38.c
+/*test*/E:not(/*test*/s/*test*/)/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:85 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:77
+    selector 1:9-1:32
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      pseudoClass 1:10-1:32
+        ident 1:11-1:13 "not"
+        arguments 1:14-1:32
+          multilineComment 1:15-1:22 "test"
+          selector 1:23-1:23
+            typeSelector 1:23-1:23
+              ident 1:23-1:23 "s"
+          multilineComment 1:24-1:31 "test"
+    multilineComment 1:33-1:40 "test"
+    block 1:41-1:77
+      multilineComment 1:42-1:49 "test"
+      declaration 1:50-1:68
+        property 1:50-1:50
+          ident 1:50-1:50 "p"
+        multilineComment 1:51-1:58 "test"
+        propertyDelimiter 1:59-1:59 ":"
+        multilineComment 1:60-1:67 "test"
+        value 1:68-1:68
+          ident 1:68-1:68 "v"
+      multilineComment 1:69-1:76 "test"
+  multilineComment 1:78-1:85 "test"
+
+=== compress.less3.selectors.part2.test38
+E:not( s ) { p : v }
+---
+stylesheet 1:1-1:20 {less}
+  ruleset 1:1-1:20
+    selector 1:1-1:10
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      pseudoClass 1:2-1:10
+        ident 1:3-1:5 "not"
+        arguments 1:6-1:10
+          space 1:7-1:7 " "
+          selector 1:8-1:8
+            typeSelector 1:8-1:8
+              ident 1:8-1:8 "s"
+          space 1:9-1:9 " "
+    space 1:11-1:11 " "
+    block 1:12-1:20
+      space 1:13-1:13 " "
+      declaration 1:14-1:18
+        property 1:14-1:14
+          ident 1:14-1:14 "p"
+        space 1:15-1:15 " "
+        propertyDelimiter 1:16-1:16 ":"
+        space 1:17-1:17 " "
+        value 1:18-1:18
+          ident 1:18-1:18 "v"
+      space 1:19-1:19 " "
+
+=== compress.less3.selectors.part2.test39.c
+/*test*/E /*test*/F/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:72 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:64
+    selector 1:9-1:19
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      space 1:10-1:10 " "
+      multilineComment 1:11-1:18 "test"
+      typeSelector 1:19-1:19
+        ident 1:19-1:19 "F"
+    multilineComment 1:20-1:27 "test"
+    block 1:28-1:64
+      multilineComment 1:29-1:36 "test"
+      declaration 1:37-1:55
+        property 1:37-1:37
+          ident 1:37-1:37 "p"
+        multilineComment 1:38-1:45 "test"
+        propertyDelimiter 1:46-1:46 ":"
+        multilineComment 1:47-1:54 "test"
+        value 1:55-1:55
+          ident 1:55-1:55 "v"
+      multilineComment 1:56-1:63 "test"
+  multilineComment 1:65-1:72 "test"
+
+=== compress.less3.selectors.part2.test39
+E  F { p : v }
+---
+stylesheet 1:1-1:14 {less}
+  ruleset 1:1-1:14
+    selector 1:1-1:4
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      space 1:2-1:3 "  "
+      typeSelector 1:4-1:4
+        ident 1:4-1:4 "F"
+    space 1:5-1:5 " "
+    block 1:6-1:14
+      space 1:7-1:7 " "
+      declaration 1:8-1:12
+        property 1:8-1:8
+          ident 1:8-1:8 "p"
+        space 1:9-1:9 " "
+        propertyDelimiter 1:10-1:10 ":"
+        space 1:11-1:11 " "
+        value 1:12-1:12
+          ident 1:12-1:12 "v"
+      space 1:13-1:13 " "
+
+=== compress.less3.selectors.part2.test4.c
+/*test*/E[/*test*/foo/*test*/=/*test*/"b ar"/*test*/]/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:106 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:98
+    selector 1:9-1:53
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      attributeSelector 1:10-1:53
+        multilineComment 1:11-1:18 "test"
+        attributeName 1:19-1:21
+          ident 1:19-1:21 "foo"
+        multilineComment 1:22-1:29 "test"
+        attributeMatch 1:30-1:30 "="
+        multilineComment 1:31-1:38 "test"
+        attributeValue 1:39-1:44
+          string 1:39-1:44 "\"b ar\""
+        multilineComment 1:45-1:52 "test"
+    multilineComment 1:54-1:61 "test"
+    block 1:62-1:98
+      multilineComment 1:63-1:70 "test"
+      declaration 1:71-1:89
+        property 1:71-1:71
+          ident 1:71-1:71 "p"
+        multilineComment 1:72-1:79 "test"
+        propertyDelimiter 1:80-1:80 ":"
+        multilineComment 1:81-1:88 "test"
+        value 1:89-1:89
+          ident 1:89-1:89 "v"
+      multilineComment 1:90-1:97 "test"
+  multilineComment 1:99-1:106 "test"
+
+=== compress.less3.selectors.part2.test4
+E[ foo = "b ar" ] { p : v }
+---
+stylesheet 1:1-1:27 {less}
+  ruleset 1:1-1:27
+    selector 1:1-1:17
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      attributeSelector 1:2-1:17
+        space 1:3-1:3 " "
+        attributeName 1:4-1:6
+          ident 1:4-1:6 "foo"
+        space 1:7-1:7 " "
+        attributeMatch 1:8-1:8 "="
+        space 1:9-1:9 " "
+        attributeValue 1:10-1:15
+          string 1:10-1:15 "\"b ar\""
+        space 1:16-1:16 " "
+    space 1:18-1:18 " "
+    block 1:19-1:27
+      space 1:20-1:20 " "
+      declaration 1:21-1:25
+        property 1:21-1:21
+          ident 1:21-1:21 "p"
+        space 1:22-1:22 " "
+        propertyDelimiter 1:23-1:23 ":"
+        space 1:24-1:24 " "
+        value 1:25-1:25
+          ident 1:25-1:25 "v"
+      space 1:26-1:26 " "
+
+=== compress.less3.selectors.part2.test40.c
+/*test*/E/*test*/>/*test*/F/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:80 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:72
+    selector 1:9-1:27
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      multilineComment 1:10-1:17 "test"
+      combinator 1:18-1:18 ">"
+      multilineComment 1:19-1:26 "test"
+      typeSelector 1:27-1:27
+        ident 1:27-1:27 "F"
+    multilineComment 1:28-1:35 "test"
+    block 1:36-1:72
+      multilineComment 1:37-1:44 "test"
+      declaration 1:45-1:63
+        property 1:45-1:45
+          ident 1:45-1:45 "p"
+        multilineComment 1:46-1:53 "test"
+        propertyDelimiter 1:54-1:54 ":"
+        multilineComment 1:55-1:62 "test"
+        value 1:63-1:63
+          ident 1:63-1:63 "v"
+      multilineComment 1:64-1:71 "test"
+  multilineComment 1:73-1:80 "test"
+
+=== compress.less3.selectors.part2.test40
+E > F { p : v }
+---
+stylesheet 1:1-1:15 {less}
+  ruleset 1:1-1:15
+    selector 1:1-1:5
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      space 1:2-1:2 " "
+      combinator 1:3-1:3 ">"
+      space 1:4-1:4 " "
+      typeSelector 1:5-1:5
+        ident 1:5-1:5 "F"
+    space 1:6-1:6 " "
+    block 1:7-1:15
+      space 1:8-1:8 " "
+      declaration 1:9-1:13
+        property 1:9-1:9
+          ident 1:9-1:9 "p"
+        space 1:10-1:10 " "
+        propertyDelimiter 1:11-1:11 ":"
+        space 1:12-1:12 " "
+        value 1:13-1:13
+          ident 1:13-1:13 "v"
+      space 1:14-1:14 " "
+
+=== compress.less3.selectors.part2.test41.c
+/*test*/E/*test*/+/*test*/F/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:80 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:72
+    selector 1:9-1:27
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      multilineComment 1:10-1:17 "test"
+      combinator 1:18-1:18 "+"
+      multilineComment 1:19-1:26 "test"
+      typeSelector 1:27-1:27
+        ident 1:27-1:27 "F"
+    multilineComment 1:28-1:35 "test"
+    block 1:36-1:72
+      multilineComment 1:37-1:44 "test"
+      declaration 1:45-1:63
+        property 1:45-1:45
+          ident 1:45-1:45 "p"
+        multilineComment 1:46-1:53 "test"
+        propertyDelimiter 1:54-1:54 ":"
+        multilineComment 1:55-1:62 "test"
+        value 1:63-1:63
+          ident 1:63-1:63 "v"
+      multilineComment 1:64-1:71 "test"
+  multilineComment 1:73-1:80 "test"
+
+=== compress.less3.selectors.part2.test41
+E + F { p : v }
+---
+stylesheet 1:1-1:15 {less}
+  ruleset 1:1-1:15
+    selector 1:1-1:5
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      space 1:2-1:2 " "
+      combinator 1:3-1:3 "+"
+      space 1:4-1:4 " "
+      typeSelector 1:5-1:5
+        ident 1:5-1:5 "F"
+    space 1:6-1:6 " "
+    block 1:7-1:15
+      space 1:8-1:8 " "
+      declaration 1:9-1:13
+        property 1:9-1:9
+          ident 1:9-1:9 "p"
+        space 1:10-1:10 " "
+        propertyDelimiter 1:11-1:11 ":"
+        space 1:12-1:12 " "
+        value 1:13-1:13
+          ident 1:13-1:13 "v"
+      space 1:14-1:14 " "
+
+=== compress.less3.selectors.part2.test42.c
+/*test*/E/*test*/~/*test*/F/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:80 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:72
+    selector 1:9-1:27
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      multilineComment 1:10-1:17 "test"
+      combinator 1:18-1:18 "~"
+      multilineComment 1:19-1:26 "test"
+      typeSelector 1:27-1:27
+        ident 1:27-1:27 "F"
+    multilineComment 1:28-1:35 "test"
+    block 1:36-1:72
+      multilineComment 1:37-1:44 "test"
+      declaration 1:45-1:63
+        property 1:45-1:45
+          ident 1:45-1:45 "p"
+        multilineComment 1:46-1:53 "test"
+        propertyDelimiter 1:54-1:54 ":"
+        multilineComment 1:55-1:62 "test"
+        value 1:63-1:63
+          ident 1:63-1:63 "v"
+      multilineComment 1:64-1:71 "test"
+  multilineComment 1:73-1:80 "test"
+
+=== compress.less3.selectors.part2.test42
+E ~ F { p : v }
+---
+stylesheet 1:1-1:15 {less}
+  ruleset 1:1-1:15
+    selector 1:1-1:5
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      space 1:2-1:2 " "
+      combinator 1:3-1:3 "~"
+      space 1:4-1:4 " "
+      typeSelector 1:5-1:5
+        ident 1:5-1:5 "F"
+    space 1:6-1:6 " "
+    block 1:7-1:15
+      space 1:8-1:8 " "
+      declaration 1:9-1:13
+        property 1:9-1:9
+          ident 1:9-1:9 "p"
+        space 1:10-1:10 " "
+        propertyDelimiter 1:11-1:11 ":"
+        space 1:12-1:12 " "
+        value 1:13-1:13
+          ident 1:13-1:13 "v"
+      space 1:14-1:14 " "
+
+=== compress.less3.selectors.part2.test5.c
+/*test*/E[/*test*/foo/*test*/~=/*test*/"b ar"/*test*/]/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:107 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:99
+    selector 1:9-1:54
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      attributeSelector 1:10-1:54
+        multilineComment 1:11-1:18 "test"
+        attributeName 1:19-1:21
+          ident 1:19-1:21 "foo"
+        multilineComment 1:22-1:29 "test"
+        attributeMatch 1:30-1:31 "~="
+        multilineComment 1:32-1:39 "test"
+        attributeValue 1:40-1:45
+          string 1:40-1:45 "\"b ar\""
+        multilineComment 1:46-1:53 "test"
+    multilineComment 1:55-1:62 "test"
+    block 1:63-1:99
+      multilineComment 1:64-1:71 "test"
+      declaration 1:72-1:90
+        property 1:72-1:72
+          ident 1:72-1:72 "p"
+        multilineComment 1:73-1:80 "test"
+        propertyDelimiter 1:81-1:81 ":"
+        multilineComment 1:82-1:89 "test"
+        value 1:90-1:90
+          ident 1:90-1:90 "v"
+      multilineComment 1:91-1:98 "test"
+  multilineComment 1:100-1:107 "test"
+
+=== compress.less3.selectors.part2.test5
+E[ foo ~= "b ar" ] { p : v }
+---
+stylesheet 1:1-1:28 {less}
+  ruleset 1:1-1:28
+    selector 1:1-1:18
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      attributeSelector 1:2-1:18
+        space 1:3-1:3 " "
+        attributeName 1:4-1:6
+          ident 1:4-1:6 "foo"
+        space 1:7-1:7 " "
+        attributeMatch 1:8-1:9 "~="
+        space 1:10-1:10 " "
+        attributeValue 1:11-1:16
+          string 1:11-1:16 "\"b ar\""
+        space 1:17-1:17 " "
+    space 1:19-1:19 " "
+    block 1:20-1:28
+      space 1:21-1:21 " "
+      declaration 1:22-1:26
+        property 1:22-1:22
+          ident 1:22-1:22 "p"
+        space 1:23-1:23 " "
+        propertyDelimiter 1:24-1:24 ":"
+        space 1:25-1:25 " "
+        value 1:26-1:26
+          ident 1:26-1:26 "v"
+      space 1:27-1:27 " "
+
+=== compress.less3.selectors.part2.test6.c
+/*test*/E[/*test*/foo/*test*/^=/*test*/"b ar"/*test*/]/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:107 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:99
+    selector 1:9-1:54
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      attributeSelector 1:10-1:54
+        multilineComment 1:11-1:18 "test"
+        attributeName 1:19-1:21
+          ident 1:19-1:21 "foo"
+        multilineComment 1:22-1:29 "test"
+        attributeMatch 1:30-1:31 "^="
+        multilineComment 1:32-1:39 "test"
+        attributeValue 1:40-1:45
+          string 1:40-1:45 "\"b ar\""
+        multilineComment 1:46-1:53 "test"
+    multilineComment 1:55-1:62 "test"
+    block 1:63-1:99
+      multilineComment 1:64-1:71 "test"
+      declaration 1:72-1:90
+        property 1:72-1:72
+          ident 1:72-1:72 "p"
+        multilineComment 1:73-1:80 "test"
+        propertyDelimiter 1:81-1:81 ":"
+        multilineComment 1:82-1:89 "test"
+        value 1:90-1:90
+          ident 1:90-1:90 "v"
+      multilineComment 1:91-1:98 "test"
+  multilineComment 1:100-1:107 "test"
+
+=== compress.less3.selectors.part2.test6
+E[ foo ^= "b ar" ] { p : v }
+---
+stylesheet 1:1-1:28 {less}
+  ruleset 1:1-1:28
+    selector 1:1-1:18
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      attributeSelector 1:2-1:18
+        space 1:3-1:3 " "
+        attributeName 1:4-1:6
+          ident 1:4-1:6 "foo"
+        space 1:7-1:7 " "
+        attributeMatch 1:8-1:9 "^="
+        space 1:10-1:10 " "
+        attributeValue 1:11-1:16
+          string 1:11-1:16 "\"b ar\""
+        space 1:17-1:17 " "
+    space 1:19-1:19 " "
+    block 1:20-1:28
+      space 1:21-1:21 " "
+      declaration 1:22-1:26
+        property 1:22-1:22
+          ident 1:22-1:22 "p"
+        space 1:23-1:23 " "
+        propertyDelimiter 1:24-1:24 ":"
+        space 1:25-1:25 " "
+        value 1:26-1:26
+          ident 1:26-1:26 "v"
+      space 1:27-1:27 " "
+
+=== compress.less3.selectors.part2.test7.c
+/*test*/E[/*test*/foo/*test*/$=/*test*/"b ar"/*test*/]/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:107 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:99
+    selector 1:9-1:54
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      attributeSelector 1:10-1:54
+        multilineComment 1:11-1:18 "test"
+        attributeName 1:19-1:21
+          ident 1:19-1:21 "foo"
+        multilineComment 1:22-1:29 "test"
+        attributeMatch 1:30-1:31 "$="
+        multilineComment 1:32-1:39 "test"
+        attributeValue 1:40-1:45
+          string 1:40-1:45 "\"b ar\""
+        multilineComment 1:46-1:53 "test"
+    multilineComment 1:55-1:62 "test"
+    block 1:63-1:99
+      multilineComment 1:64-1:71 "test"
+      declaration 1:72-1:90
+        property 1:72-1:72
+          ident 1:72-1:72 "p"
+        multilineComment 1:73-1:80 "test"
+        propertyDelimiter 1:81-1:81 ":"
+        multilineComment 1:82-1:89 "test"
+        value 1:90-1:90
+          ident 1:90-1:90 "v"
+      multilineComment 1:91-1:98 "test"
+  multilineComment 1:100-1:107 "test"
+
+=== compress.less3.selectors.part2.test7
+E[ foo $= "b ar" ] { p : v }
+---
+stylesheet 1:1-1:28 {less}
+  ruleset 1:1-1:28
+    selector 1:1-1:18
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      attributeSelector 1:2-1:18
+        space 1:3-1:3 " "
+        attributeName 1:4-1:6
+          ident 1:4-1:6 "foo"
+        space 1:7-1:7 " "
+        attributeMatch 1:8-1:9 "$="
+        space 1:10-1:10 " "
+        attributeValue 1:11-1:16
+          string 1:11-1:16 "\"b ar\""
+        space 1:17-1:17 " "
+    space 1:19-1:19 " "
+    block 1:20-1:28
+      space 1:21-1:21 " "
+      declaration 1:22-1:26
+        property 1:22-1:22
+          ident 1:22-1:22 "p"
+        space 1:23-1:23 " "
+        propertyDelimiter 1:24-1:24 ":"
+        space 1:25-1:25 " "
+        value 1:26-1:26
+          ident 1:26-1:26 "v"
+      space 1:27-1:27 " "
+
+=== compress.less3.selectors.part2.test8.c
+/*test*/E[/*test*/foo/*test*/*=/*test*/"b ar"/*test*/]/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:107 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:99
+    selector 1:9-1:54
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      attributeSelector 1:10-1:54
+        multilineComment 1:11-1:18 "test"
+        attributeName 1:19-1:21
+          ident 1:19-1:21 "foo"
+        multilineComment 1:22-1:29 "test"
+        attributeMatch 1:30-1:31 "*="
+        multilineComment 1:32-1:39 "test"
+        attributeValue 1:40-1:45
+          string 1:40-1:45 "\"b ar\""
+        multilineComment 1:46-1:53 "test"
+    multilineComment 1:55-1:62 "test"
+    block 1:63-1:99
+      multilineComment 1:64-1:71 "test"
+      declaration 1:72-1:90
+        property 1:72-1:72
+          ident 1:72-1:72 "p"
+        multilineComment 1:73-1:80 "test"
+        propertyDelimiter 1:81-1:81 ":"
+        multilineComment 1:82-1:89 "test"
+        value 1:90-1:90
+          ident 1:90-1:90 "v"
+      multilineComment 1:91-1:98 "test"
+  multilineComment 1:100-1:107 "test"
+
+=== compress.less3.selectors.part2.test8
+E[ foo *= "b ar" ] { p : v }
+---
+stylesheet 1:1-1:28 {less}
+  ruleset 1:1-1:28
+    selector 1:1-1:18
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      attributeSelector 1:2-1:18
+        space 1:3-1:3 " "
+        attributeName 1:4-1:6
+          ident 1:4-1:6 "foo"
+        space 1:7-1:7 " "
+        attributeMatch 1:8-1:9 "*="
+        space 1:10-1:10 " "
+        attributeValue 1:11-1:16
+          string 1:11-1:16 "\"b ar\""
+        space 1:17-1:17 " "
+    space 1:19-1:19 " "
+    block 1:20-1:28
+      space 1:21-1:21 " "
+      declaration 1:22-1:26
+        property 1:22-1:22
+          ident 1:22-1:22 "p"
+        space 1:23-1:23 " "
+        propertyDelimiter 1:24-1:24 ":"
+        space 1:25-1:25 " "
+        value 1:26-1:26
+          ident 1:26-1:26 "v"
+      space 1:27-1:27 " "
+
+=== compress.less3.selectors.part2.test9.c
+/*test*/E[/*test*/foo/*test*/|=/*test*/"e n"/*test*/]/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}/*test*/
+---
+stylesheet 1:1-1:106 {less}
+  multilineComment 1:1-1:8 "test"
+  ruleset 1:9-1:98
+    selector 1:9-1:53
+      typeSelector 1:9-1:9
+        ident 1:9-1:9 "E"
+      attributeSelector 1:10-1:53
+        multilineComment 1:11-1:18 "test"
+        attributeName 1:19-1:21
+          ident 1:19-1:21 "foo"
+        multilineComment 1:22-1:29 "test"
+        attributeMatch 1:30-1:31 "|="
+        multilineComment 1:32-1:39 "test"
+        attributeValue 1:40-1:44
+          string 1:40-1:44 "\"e n\""
+        multilineComment 1:45-1:52 "test"
+    multilineComment 1:54-1:61 "test"
+    block 1:62-1:98
+      multilineComment 1:63-1:70 "test"
+      declaration 1:71-1:89
+        property 1:71-1:71
+          ident 1:71-1:71 "p"
+        multilineComment 1:72-1:79 "test"
+        propertyDelimiter 1:80-1:80 ":"
+        multilineComment 1:81-1:88 "test"
+        value 1:89-1:89
+          ident 1:89-1:89 "v"
+      multilineComment 1:90-1:97 "test"
+  multilineComment 1:99-1:106 "test"
+
+=== compress.less3.selectors.part2.test9
+E[ foo |= "e n" ] { p : v }
+---
+stylesheet 1:1-1:27 {less}
+  ruleset 1:1-1:27
+    selector 1:1-1:17
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "E"
+      attributeSelector 1:2-1:17
+        space 1:3-1:3 " "
+        attributeName 1:4-1:6
+          ident 1:4-1:6 "foo"
+        space 1:7-1:7 " "
+        attributeMatch 1:8-1:9 "|="
+        space 1:10-1:10 " "
+        attributeValue 1:11-1:15
+          string 1:11-1:15 "\"e n\""
+        space 1:16-1:16 " "
+    space 1:18-1:18 " "
+    block 1:19-1:27
+      space 1:20-1:20 " "
+      declaration 1:21-1:25
+        property 1:21-1:21
+          ident 1:21-1:21 "p"
+        space 1:22-1:22 " "
+        propertyDelimiter 1:23-1:23 ":"
+        space 1:24-1:24 " "
+        value 1:25-1:25
+          ident 1:25-1:25 "v"
+      space 1:26-1:26 " "
+
+=== compress.mess.test3
+// /*
+// .a { color: rgb(255, 255, 255) }
+
+.a { color: red }
+
+/*test*/
+// */
+/*test*/
+
+.b { color: red }
+
+// something strange
+---
+stylesheet 1:1-12:20 {less}
+  singlelineComment 1:1-1:5 " /*"
+  space 1:6-1:6 "\n"
+  singlelineComment 2:1-2:35 " .a { color: rgb(255, 255, 255) }"
+  space 2:36-3:38 "\n\n"
+  ruleset 4:1-4:17
+    selector 4:1-4:2
+      class 4:1-4:2
+        ident 4:2-4:2 "a"
+    space 4:3-4:3 " "
+    block 4:4-4:17
+      space 4:5-4:5 " "
+      declaration 4:6-4:15
+        property 4:6-4:10
+          ident 4:6-4:10 "color"
+        propertyDelimiter 4:11-4:11 ":"
+        space 4:12-4:12 " "
+        value 4:13-4:15
+          ident 4:13-4:15 "red"
+      space 4:16-4:16 " "
+  space 4:18-5:20 "\n\n"
+  multilineComment 6:1-6:8 "test"
+  space 6:9-6:9 "\n"
+  singlelineComment 7:1-7:5 " */"
+  space 7:6-7:6 "\n"
+  multilineComment 8:1-8:8 "test"
+  space 8:9-9:11 "\n\n"
+  ruleset 10:1-10:17
+    selector 10:1-10:2
+      class 10:1-10:2
+        ident 10:2-10:2 "b"
+    space 10:3-10:3 " "
+    block 10:4-10:17
+      space 10:5-10:5 " "
+      declaration 10:6-10:15
+        property 10:6-10:10
+          ident 10:6-10:10 "color"
+        propertyDelimiter 10:11-10:11 ":"
+        space 10:12-10:12 " "
+        value 10:13-10:15
+          ident 10:13-10:15 "red"
+      space 10:16-10:16 " "
+  space 10:18-11:20 "\n\n"
+  singlelineComment 12:1-12:20 " something strange"
+
+=== compress.restructure.margin.test3
+.a {
+    _margin-top: 1;
+    _margin: 2;
+    margin-top: 3;
+    margin: 4;
+}
+.b {
+    *margin-top: 5;
+    *margin: 6;
+    margin-top: 7;
+    margin: 8;
+}
+.c {
+    //margin-top: 9;
+    //margin: 10;
+    margin-top: 11;
+    margin: 12;
+}
+---
+stylesheet 1:1-18:1 {less}
+  ruleset 1:1-6:1
+    selector 1:1-1:2
+      class 1:1-1:2
+        ident 1:2-1:2 "a"
+    space 1:3-1:3 " "
+    block 1:4-6:1
+      space 1:5-2:4 "\n    "
+      declaration 2:5-2:18
+        property 2:5-2:15
+          ident 2:5-2:15 "_margin-top"
+        propertyDelimiter 2:16-2:16 ":"
+        space 2:17-2:17 " "
+        value 2:18-2:18
+          number 2:18-2:18 "1"
+      declarationDelimiter 2:19-2:19 ";"
+      space 2:20-3:4 "\n    "
+      declaration 3:5-3:14
+        property 3:5-3:11
+          ident 3:5-3:11 "_margin"
+        propertyDelimiter 3:12-3:12 ":"
+        space 3:13-3:13 " "
+        value 3:14-3:14
+          number 3:14-3:14 "2"
+      declarationDelimiter 3:15-3:15 ";"
+      space 3:16-4:4 "\n    "
+      declaration 4:5-4:17
+        property 4:5-4:14
+          ident 4:5-4:14 "margin-top"
+        propertyDelimiter 4:15-4:15 ":"
+        space 4:16-4:16 " "
+        value 4:17-4:17
+          number 4:17-4:17 "3"
+      declarationDelimiter 4:18-4:18 ";"
+      space 4:19-5:4 "\n    "
+      declaration 5:5-5:13
+        property 5:5-5:10
+          ident 5:5-5:10 "margin"
+        propertyDelimiter 5:11-5:11 ":"
+        space 5:12-5:12 " "
+        value 5:13-5:13
+          number 5:13-5:13 "4"
+      declarationDelimiter 5:14-5:14 ";"
+      space 5:15-5:15 "\n"
+  space 6:2-6:2 "\n"
+  ruleset 7:1-12:1
+    selector 7:1-7:2
+      class 7:1-7:2
+        ident 7:2-7:2 "b"
+    space 7:3-7:3 " "
+    block 7:4-12:1
+      space 7:5-8:4 "\n    "
+      declaration 8:5-8:18
+        property 8:5-8:15
+          ident 8:5-8:15 "*margin-top"
+        propertyDelimiter 8:16-8:16 ":"
+        space 8:17-8:17 " "
+        value 8:18-8:18
+          number 8:18-8:18 "5"
+      declarationDelimiter 8:19-8:19 ";"
+      space 8:20-9:4 "\n    "
+      declaration 9:5-9:14
+        property 9:5-9:11
+          ident 9:5-9:11 "*margin"
+        propertyDelimiter 9:12-9:12 ":"
+        space 9:13-9:13 " "
+        value 9:14-9:14
+          number 9:14-9:14 "6"
+      declarationDelimiter 9:15-9:15 ";"
+      space 9:16-10:4 "\n    "
+      declaration 10:5-10:17
+        property 10:5-10:14
+          ident 10:5-10:14 "margin-top"
+        propertyDelimiter 10:15-10:15 ":"
+        space 10:16-10:16 " "
+        value 10:17-10:17
+          number 10:17-10:17 "7"
+      declarationDelimiter 10:18-10:18 ";"
+      space 10:19-11:4 "\n    "
+      declaration 11:5-11:13
+        property 11:5-11:10
+          ident 11:5-11:10 "margin"
+        propertyDelimiter 11:11-11:11 ":"
+        space 11:12-11:12 " "
+        value 11:13-11:13
+          number 11:13-11:13 "8"
+      declarationDelimiter 11:14-11:14 ";"
+      space 11:15-11:15 "\n"
+  space 12:2-12:2 "\n"
+  ruleset 13:1-18:1
+    selector 13:1-13:2
+      class 13:1-13:2
+        ident 13:2-13:2 "c"
+    space 13:3-13:3 " "
+    block 13:4-18:1
+      space 13:5-14:4 "\n    "
+      singlelineComment 14:5-14:20 "margin-top: 9;"
+      space 14:21-15:4 "\n    "
+      singlelineComment 15:5-15:17 "margin: 10;"
+      space 15:18-16:4 "\n    "
+      declaration 16:5-16:18
+        property 16:5-16:14
+          ident 16:5-16:14 "margin-top"
+        propertyDelimiter 16:15-16:15 ":"
+        space 16:16-16:16 " "
+        value 16:17-16:18
+          number 16:17-16:18 "11"
+      declarationDelimiter 16:19-16:19 ";"
+      space 16:20-17:4 "\n    "
+      declaration 17:5-17:14
+        property 17:5-17:10
+          ident 17:5-17:10 "margin"
+        propertyDelimiter 17:11-17:11 ":"
+        space 17:12-17:12 " "
+        value 17:13-17:14
+          number 17:13-17:14 "12"
+      declarationDelimiter 17:15-17:15 ";"
+      space 17:16-17:16 "\n"
+
+=== css.0
+@import url('foo.css');
+---
+stylesheet 1:1-1:23 {less}
+  atrule 1:1-1:22
+    atkeyword 1:1-1:7
+      ident 1:2-1:7 "import"
+    space 1:8-1:8 " "
+    uri 1:9-1:22
+      string 1:13-1:21 "'foo.css'"
+  declarationDelimiter 1:23-1:23 ";"
+
+=== issue17.test1
+@widthSmall:    ~"(max-width: 1300px)";
+
+.Foo {
+  @media @widthSmall {
+      width:    400px;
+  }
+}
+---
+stylesheet 1:1-7:1 {less}
+  declaration 1:1-1:38
+    property 1:1-1:11
+      variable 1:1-1:11
+        ident 1:2-1:11 "widthSmall"
+    propertyDelimiter 1:12-1:12 ":"
+    space 1:13-1:16 "    "
+    value 1:17-1:38
+      escapedString 1:17-1:38 "\"(max-width: 1300px)\""
+  declarationDelimiter 1:39-1:39 ";"
+  space 1:40-2:42 "\n\n"
+  ruleset 3:1-7:1
+    selector 3:1-3:4
+      class 3:1-3:4
+        ident 3:2-3:4 "Foo"
+    space 3:5-3:5 " "
+    block 3:6-7:1
+      space 3:7-4:2 "\n  "
+      atrule 4:3-6:3
+        atkeyword 4:3-4:8
+          ident 4:4-4:8 "media"
+        space 4:9-4:9 " "
+        variable 4:10-4:20
+          ident 4:11-4:20 "widthSmall"
+        space 4:21-4:21 " "
+        block 4:22-6:3
+          space 4:23-5:6 "\n      "
+          declaration 5:7-5:21
+            property 5:7-5:11
+              ident 5:7-5:11 "width"
+            propertyDelimiter 5:12-5:12 ":"
+            space 5:13-5:16 "    "
+            value 5:17-5:21
+              dimension 5:17-5:21
+                number 5:17-5:19 "400"
+                ident 5:20-5:21 "px"
+          declarationDelimiter 5:22-5:22 ";"
+          space 5:23-6:2 "\n  "
+      space 6:4-6:4 "\n"
+
+=== official.mixin-in-block
+.a {
+  .m(@x; ...) when (default()) { b: @x }
+}
+---
+stylesheet 1:1-3:1 {less}
+  ruleset 1:1-3:1
+    selector 1:1-1:2
+      class 1:1-1:2
+        ident 1:2-1:2 "a"
+    space 1:3-1:3 " "
+    block 1:4-3:1
+      space 1:5-2:2 "\n  "
+      mixin 2:3-2:40
+        class 2:3-2:4
+          ident 2:4-2:4 "m"
+        arguments 2:5-2:13
+          variable 2:6-2:7
+            ident 2:7-2:7 "x"
+          declarationDelimiter 2:8-2:8 ";"
+          space 2:9-2:9 " "
+          variablesList 2:10-2:12
+        space 2:14-2:14 " "
+        condition 2:15-2:31
+          ident 2:15-2:18 "when"
+          space 2:19-2:19 " "
+          parentheses 2:20-2:30
+            function 2:21-2:29
+              ident 2:21-2:27 "default"
+              arguments 2:28-2:29
+          space 2:31-2:31 " "
+        block 2:32-2:40
+          space 2:33-2:33 " "
+          declaration 2:34-2:38
+            property 2:34-2:34
+              ident 2:34-2:34 "b"
+            propertyDelimiter 2:35-2:35 ":"
+            space 2:36-2:36 " "
+            value 2:37-2:38
+              variable 2:37-2:38
+                ident 2:38-2:38 "x"
+          space 2:39-2:39 " "
+      space 2:41-2:41 "\n"
+
+=== official.anonymous-mixin
+each(@list, .(@v, @k) { a: @v; });
+---
+stylesheet 1:1-1:34 {less}
+  function 1:1-1:33
+    ident 1:1-1:4 "each"
+    arguments 1:5-1:33
+      variable 1:6-1:10
+        ident 1:7-1:10 "list"
+      operator 1:11-1:11 ","
+      space 1:12-1:12 " "
+      mixin 1:13-1:32
+        class 1:13-1:13
+        arguments 1:14-1:21
+          variable 1:15-1:16
+            ident 1:16-1:16 "v"
+          operator 1:17-1:17 ","
+          space 1:18-1:18 " "
+          variable 1:19-1:20
+            ident 1:20-1:20 "k"
+        space 1:22-1:22 " "
+        block 1:23-1:32
+          space 1:24-1:24 " "
+          declaration 1:25-1:29
+            property 1:25-1:25
+              ident 1:25-1:25 "a"
+            propertyDelimiter 1:26-1:26 ":"
+            space 1:27-1:27 " "
+            value 1:28-1:29
+              variable 1:28-1:29
+                ident 1:29-1:29 "v"
+          declarationDelimiter 1:30-1:30 ";"
+          space 1:31-1:31 " "
+  declarationDelimiter 1:34-1:34 ";"
+
+=== official.function-statement
+foo();
+.a { each(@l, { b: @value; }); }
+---
+stylesheet 1:1-2:32 {less}
+  function 1:1-1:5
+    ident 1:1-1:3 "foo"
+    arguments 1:4-1:5
+  declarationDelimiter 1:6-1:6 ";"
+  space 1:7-1:7 "\n"
+  ruleset 2:1-2:32
+    selector 2:1-2:2
+      class 2:1-2:2
+        ident 2:2-2:2 "a"
+    space 2:3-2:3 " "
+    block 2:4-2:32
+      space 2:5-2:5 " "
+      function 2:6-2:29
+        ident 2:6-2:9 "each"
+        arguments 2:10-2:29
+          variable 2:11-2:12
+            ident 2:12-2:12 "l"
+          operator 2:13-2:13 ","
+          space 2:14-2:14 " "
+          block 2:15-2:28
+            space 2:16-2:16 " "
+            declaration 2:17-2:25
+              property 2:17-2:17
+                ident 2:17-2:17 "b"
+              propertyDelimiter 2:18-2:18 ":"
+              space 2:19-2:19 " "
+              value 2:20-2:25
+                variable 2:20-2:25
+                  ident 2:21-2:25 "value"
+            declarationDelimiter 2:26-2:26 ";"
+            space 2:27-2:27 " "
+      declarationDelimiter 2:30-2:30 ";"
+      space 2:31-2:31 " "
+
+=== official.mixin-call-arguments
+.a { .w(.b(c)); .m(#lookup[@p]); }
+#ns > .m(1);
+---
+stylesheet 1:1-2:12 {less}
+  ruleset 1:1-1:34
+    selector 1:1-1:2
+      class 1:1-1:2
+        ident 1:2-1:2 "a"
+    space 1:3-1:3 " "
+    block 1:4-1:34
+      space 1:5-1:5 " "
+      include 1:6-1:14
+        class 1:6-1:7
+          ident 1:7-1:7 "w"
+        arguments 1:8-1:14
+          include 1:9-1:13
+            class 1:9-1:10
+              ident 1:10-1:10 "b"
+            arguments 1:11-1:13
+              ident 1:12-1:12 "c"
+      declarationDelimiter 1:15-1:15 ";"
+      space 1:16-1:16 " "
+      include 1:17-1:31
+        class 1:17-1:18
+          ident 1:18-1:18 "m"
+        arguments 1:19-1:31
+          color 1:20-1:26 "lookup"
+          brackets 1:27-1:30
+            variable 1:28-1:29
+              ident 1:29-1:29 "p"
+      declarationDelimiter 1:32-1:32 ";"
+      space 1:33-1:33 " "
+  space 1:35-1:35 "\n"
+  include 2:1-2:11
+    id 2:1-2:3
+      ident 2:2-2:3 "ns"
+    space 2:4-2:4 " "
+    operator 2:5-2:5 ">"
+    space 2:6-2:6 " "
+    class 2:7-2:8
+      ident 2:8-2:8 "m"
+    arguments 2:9-2:11
+      number 2:10-2:10 "1"
+  declarationDelimiter 2:12-2:12 ";"
+
+=== official.keyframes-list
+@keyframes @{name} { 0%, 100% { a: b } }
+.m() { 50% { a: b } }
+---
+stylesheet 1:1-2:21 {less}
+  atrule 1:1-1:40
+    atkeyword 1:1-1:10
+      ident 1:2-1:10 "keyframes"
+    space 1:11-1:11 " "
+    interpolatedVariable 1:12-1:18
+      ident 1:14-1:17 "name"
+    space 1:19-1:19 " "
+    block 1:20-1:40
+      space 1:21-1:21 " "
+      ruleset 1:22-1:38
+        selector 1:22-1:23
+          keyframesSelector 1:22-1:23
+            percentage 1:22-1:23
+              number 1:22-1:22 "0"
+        delimiter 1:24-1:24 ","
+        space 1:25-1:25 " "
+        selector 1:26-1:29
+          keyframesSelector 1:26-1:29
+            percentage 1:26-1:29
+              number 1:26-1:28 "100"
+        space 1:30-1:30 " "
+        block 1:31-1:38
+          space 1:32-1:32 " "
+          declaration 1:33-1:36
+            property 1:33-1:33
+              ident 1:33-1:33 "a"
+            propertyDelimiter 1:34-1:34 ":"
+            space 1:35-1:35 " "
+            value 1:36-1:36
+              ident 1:36-1:36 "b"
+          space 1:37-1:37 " "
+      space 1:39-1:39 " "
+  space 1:41-1:41 "\n"
+  mixin 2:1-2:21
+    class 2:1-2:2
+      ident 2:2-2:2 "m"
+    arguments 2:3-2:4
+    space 2:5-2:5 " "
+    block 2:6-2:21
+      space 2:7-2:7 " "
+      ruleset 2:8-2:19
+        selector 2:8-2:10
+          keyframesSelector 2:8-2:10
+            percentage 2:8-2:10
+              number 2:8-2:9 "50"
+        space 2:11-2:11 " "
+        block 2:12-2:19
+          space 2:13-2:13 " "
+          declaration 2:14-2:17
+            property 2:14-2:14
+              ident 2:14-2:14 "a"
+            propertyDelimiter 2:15-2:15 ":"
+            space 2:16-2:16 " "
+            value 2:17-2:17
+              ident 2:17-2:17 "b"
+          space 2:18-2:18 " "
+      space 2:20-2:20 " "
+
+=== official.atrule-interpolation
+@media @{q}, print { a { b: c } }
+@namespace @{ns} "x";
+---
+stylesheet 1:1-2:21 {less}
+  atrule 1:1-1:33
+    atkeyword 1:1-1:6
+      ident 1:2-1:6 "media"
+    space 1:7-1:7 " "
+    interpolatedVariable 1:8-1:11
+      ident 1:10-1:10 "q"
+    operator 1:12-1:12 ","
+    space 1:13-1:13 " "
+    ident 1:14-1:18 "print"
+    space 1:19-1:19 " "
+    block 1:20-1:33
+      space 1:21-1:21 " "
+      ruleset 1:22-1:31
+        selector 1:22-1:22
+          typeSelector 1:22-1:22
+            ident 1:22-1:22 "a"
+        space 1:23-1:23 " "
+        block 1:24-1:31
+          space 1:25-1:25 " "
+          declaration 1:26-1:29
+            property 1:26-1:26
+              ident 1:26-1:26 "b"
+            propertyDelimiter 1:27-1:27 ":"
+            space 1:28-1:28 " "
+            value 1:29-1:29
+              ident 1:29-1:29 "c"
+          space 1:30-1:30 " "
+      space 1:32-1:32 " "
+  space 1:34-1:34 "\n"
+  atrule 2:1-2:20
+    atkeyword 2:1-2:10
+      ident 2:2-2:10 "namespace"
+    space 2:11-2:11 " "
+    interpolatedVariable 2:12-2:16
+      ident 2:14-2:15 "ns"
+    space 2:17-2:17 " "
+    string 2:18-2:20 "\"x\""
+  declarationDelimiter 2:21-2:21 ";"
+
+=== official.selector-interpolation
+@{s}red, #@{c}-foo, &-bar@{3} {}
+[@{p}=@{v}]:nth-child(@{n}) {}
+---
+stylesheet 1:1-2:30 {less}
+  ruleset 1:1-1:32
+    selector 1:1-1:7
+      typeSelector 1:1-1:7
+        interpolatedVariable 1:1-1:4
+          ident 1:3-1:3 "s"
+        ident 1:5-1:7 "red"
+    delimiter 1:8-1:8 ","
+    space 1:9-1:9 " "
+    selector 1:10-1:18
+      id 1:10-1:18
+        interpolatedVariable 1:11-1:14
+          ident 1:13-1:13 "c"
+        ident 1:15-1:18 "-foo"
+    delimiter 1:19-1:19 ","
+    space 1:20-1:20 " "
+    selector 1:21-1:29
+      parentSelector 1:21-1:21 "&"
+      parentSelectorExtension 1:22-1:25
+        ident 1:22-1:25 "-bar"
+      interpolatedVariable 1:26-1:29
+        ident 1:28-1:28 "3"
+    space 1:30-1:30 " "
+    block 1:31-1:32
+  space 1:33-1:33 "\n"
+  ruleset 2:1-2:30
+    selector 2:1-2:27
+      attributeSelector 2:1-2:11
+        attributeName 2:2-2:5
+          interpolatedVariable 2:2-2:5
+            ident 2:4-2:4 "p"
+        attributeMatch 2:6-2:6 "="
+        attributeValue 2:7-2:10
+          interpolatedVariable 2:7-2:10
+            ident 2:9-2:9 "v"
+      pseudoClass 2:12-2:27
+        ident 2:13-2:21 "nth-child"
+        arguments 2:22-2:27
+          selector 2:23-2:26
+            typeSelector 2:23-2:26
+              interpolatedVariable 2:23-2:26
+                ident 2:25-2:25 "n"
+    space 2:28-2:28 " "
+    block 2:29-2:30
+
+=== official.interpolation-lookup
+.@{t[@n][name]} { @{m[k]}: 1 }
+---
+stylesheet 1:1-1:30 {less}
+  ruleset 1:1-1:30
+    selector 1:1-1:15
+      class 1:1-1:15
+        interpolatedVariable 1:2-1:15
+          ident 1:4-1:4 "t"
+          brackets 1:5-1:8
+            variable 1:6-1:7
+              ident 1:7-1:7 "n"
+          brackets 1:9-1:14
+            ident 1:10-1:13 "name"
+    space 1:16-1:16 " "
+    block 1:17-1:30
+      space 1:18-1:18 " "
+      declaration 1:19-1:28
+        property 1:19-1:25
+          interpolatedVariable 1:19-1:25
+            ident 1:21-1:21 "m"
+            brackets 1:22-1:24
+              ident 1:23-1:23 "k"
+        propertyDelimiter 1:26-1:26 ":"
+        space 1:27-1:27 " "
+        value 1:28-1:28
+          number 1:28-1:28 "1"
+      space 1:29-1:29 " "
+
+=== official.property-accessor
+a { b: $color; c: $@p; d: #ns[$e]; }
+---
+stylesheet 1:1-1:36 {less}
+  ruleset 1:1-1:36
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-1:36
+      space 1:4-1:4 " "
+      declaration 1:5-1:13
+        property 1:5-1:5
+          ident 1:5-1:5 "b"
+        propertyDelimiter 1:6-1:6 ":"
+        space 1:7-1:7 " "
+        value 1:8-1:13
+          ident 1:8-1:13 "$color"
+      declarationDelimiter 1:14-1:14 ";"
+      space 1:15-1:15 " "
+      declaration 1:16-1:21
+        property 1:16-1:16
+          ident 1:16-1:16 "c"
+        propertyDelimiter 1:17-1:17 ":"
+        space 1:18-1:18 " "
+        value 1:19-1:21
+          ident 1:19-1:21 "$@p"
+      declarationDelimiter 1:22-1:22 ";"
+      space 1:23-1:23 " "
+      declaration 1:24-1:33
+        property 1:24-1:24
+          ident 1:24-1:24 "d"
+        propertyDelimiter 1:25-1:25 ":"
+        space 1:26-1:26 " "
+        value 1:27-1:33
+          color 1:27-1:29 "ns"
+          brackets 1:30-1:33
+            ident 1:31-1:32 "$e"
+      declarationDelimiter 1:34-1:34 ";"
+      space 1:35-1:35 " "
+
+=== official.custom-property
+a { --x: a { b: c } d; --y: ; --@{k}: v }
+---
+stylesheet 1:1-1:41 {less}
+  ruleset 1:1-1:41
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-1:41
+      space 1:4-1:4 " "
+      declaration 1:5-1:21
+        customProperty 1:5-1:7
+          ident 1:7-1:7 "x"
+        propertyDelimiter 1:8-1:8 ":"
+        space 1:9-1:9 " "
+        value 1:10-1:21
+          ident 1:10-1:10 "a"
+          space 1:11-1:11 " "
+          block 1:12-1:19
+            space 1:13-1:13 " "
+            declaration 1:14-1:17
+              property 1:14-1:14
+                ident 1:14-1:14 "b"
+              propertyDelimiter 1:15-1:15 ":"
+              space 1:16-1:16 " "
+              value 1:17-1:17
+                ident 1:17-1:17 "c"
+            space 1:18-1:18 " "
+          space 1:20-1:20 " "
+          ident 1:21-1:21 "d"
+      declarationDelimiter 1:22-1:22 ";"
+      space 1:23-1:23 " "
+      declaration 1:24-1:28
+        customProperty 1:24-1:26
+          ident 1:26-1:26 "y"
+        propertyDelimiter 1:27-1:27 ":"
+        space 1:28-1:28 " "
+        value 1:29-1:28
+      declarationDelimiter 1:29-1:29 ";"
+      space 1:30-1:30 " "
+      declaration 1:31-1:39
+        customProperty 1:31-1:36
+          interpolatedVariable 1:33-1:36
+            ident 1:35-1:35 "k"
+        propertyDelimiter 1:37-1:37 ":"
+        space 1:38-1:38 " "
+        value 1:39-1:39
+          ident 1:39-1:39 "v"
+      space 1:40-1:40 " "
+
+=== official.merge
+a { b+: c; d+_: e; f + : g }
+---
+stylesheet 1:1-1:28 {less}
+  ruleset 1:1-1:28
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-1:28
+      space 1:4-1:4 " "
+      declaration 1:5-1:9
+        property 1:5-1:5
+          ident 1:5-1:5 "b"
+        operator 1:6-1:6 "+"
+        propertyDelimiter 1:7-1:7 ":"
+        space 1:8-1:8 " "
+        value 1:9-1:9
+          ident 1:9-1:9 "c"
+      declarationDelimiter 1:10-1:10 ";"
+      space 1:11-1:11 " "
+      declaration 1:12-1:17
+        property 1:12-1:12
+          ident 1:12-1:12 "d"
+        operator 1:13-1:14 "+_"
+        propertyDelimiter 1:15-1:15 ":"
+        space 1:16-1:16 " "
+        value 1:17-1:17
+          ident 1:17-1:17 "e"
+      declarationDelimiter 1:18-1:18 ";"
+      space 1:19-1:19 " "
+      declaration 1:20-1:26
+        property 1:20-1:20
+          ident 1:20-1:20 "f"
+        space 1:21-1:21 " "
+        operator 1:22-1:22 "+"
+        space 1:23-1:23 " "
+        propertyDelimiter 1:24-1:24 ":"
+        space 1:25-1:25 " "
+        value 1:26-1:26
+          ident 1:26-1:26 "g"
+      space 1:27-1:27 " "
+
+=== official.property-hacks
+a { *zoom: 1; 5: -; ${p}-x: red }
+---
+stylesheet 1:1-1:33 {less}
+  ruleset 1:1-1:33
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-1:33
+      space 1:4-1:4 " "
+      declaration 1:5-1:12
+        property 1:5-1:9
+          ident 1:5-1:9 "*zoom"
+        propertyDelimiter 1:10-1:10 ":"
+        space 1:11-1:11 " "
+        value 1:12-1:12
+          number 1:12-1:12 "1"
+      declarationDelimiter 1:13-1:13 ";"
+      space 1:14-1:14 " "
+      declaration 1:15-1:18
+        property 1:15-1:15
+          ident 1:15-1:15 "5"
+        propertyDelimiter 1:16-1:16 ":"
+        space 1:17-1:17 " "
+        value 1:18-1:18
+          operator 1:18-1:18 "-"
+      declarationDelimiter 1:19-1:19 ";"
+      space 1:20-1:20 " "
+      declaration 1:21-1:31
+        property 1:21-1:26
+          interpolation 1:21-1:24
+            ident 1:23-1:23 "p"
+          ident 1:25-1:26 "-x"
+        propertyDelimiter 1:27-1:27 ":"
+        space 1:28-1:28 " "
+        value 1:29-1:31
+          ident 1:29-1:31 "red"
+      space 1:32-1:32 " "
+
+=== official.value-misc
+a { b: 2px ./ 2; c: unit(1, %); d: repeat(2, [a] 1px); e: ~(1; 2) }
+---
+stylesheet 1:1-1:67 {less}
+  ruleset 1:1-1:67
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-1:67
+      space 1:4-1:4 " "
+      declaration 1:5-1:15
+        property 1:5-1:5
+          ident 1:5-1:5 "b"
+        propertyDelimiter 1:6-1:6 ":"
+        space 1:7-1:7 " "
+        value 1:8-1:15
+          dimension 1:8-1:10
+            number 1:8-1:8 "2"
+            ident 1:9-1:10 "px"
+          space 1:11-1:11 " "
+          operator 1:12-1:13 "./"
+          space 1:14-1:14 " "
+          number 1:15-1:15 "2"
+      declarationDelimiter 1:16-1:16 ";"
+      space 1:17-1:17 " "
+      declaration 1:18-1:30
+        property 1:18-1:18
+          ident 1:18-1:18 "c"
+        propertyDelimiter 1:19-1:19 ":"
+        space 1:20-1:20 " "
+        value 1:21-1:30
+          function 1:21-1:30
+            ident 1:21-1:24 "unit"
+            arguments 1:25-1:30
+              number 1:26-1:26 "1"
+              operator 1:27-1:27 ","
+              space 1:28-1:28 " "
+              operator 1:29-1:29 "%"
+      declarationDelimiter 1:31-1:31 ";"
+      space 1:32-1:32 " "
+      declaration 1:33-1:53
+        property 1:33-1:33
+          ident 1:33-1:33 "d"
+        propertyDelimiter 1:34-1:34 ":"
+        space 1:35-1:35 " "
+        value 1:36-1:53
+          function 1:36-1:53
+            ident 1:36-1:41 "repeat"
+            arguments 1:42-1:53
+              number 1:43-1:43 "2"
+              operator 1:44-1:44 ","
+              space 1:45-1:45 " "
+              brackets 1:46-1:48
+                ident 1:47-1:47 "a"
+              space 1:49-1:49 " "
+              dimension 1:50-1:52
+                number 1:50-1:50 "1"
+                ident 1:51-1:52 "px"
+      declarationDelimiter 1:54-1:54 ";"
+      space 1:55-1:55 " "
+      declaration 1:56-1:65
+        property 1:56-1:56
+          ident 1:56-1:56 "e"
+        propertyDelimiter 1:57-1:57 ":"
+        space 1:58-1:58 " "
+        value 1:59-1:65
+          operator 1:59-1:59 "~"
+          parentheses 1:60-1:65
+            number 1:61-1:61 "1"
+            declarationDelimiter 1:62-1:62 ";"
+            space 1:63-1:63 " "
+            number 1:64-1:64 "2"
+      space 1:66-1:66 " "
+
+=== official.javascript
+a { b: `1 + 1`; c: ~`"@{d}"` }
+---
+stylesheet 1:1-1:30 {less}
+  ruleset 1:1-1:30
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-1:30
+      space 1:4-1:4 " "
+      declaration 1:5-1:14
+        property 1:5-1:5
+          ident 1:5-1:5 "b"
+        propertyDelimiter 1:6-1:6 ":"
+        space 1:7-1:7 " "
+        value 1:8-1:14
+          ident 1:8-1:14 "`1 + 1`"
+      declarationDelimiter 1:15-1:15 ";"
+      space 1:16-1:16 " "
+      declaration 1:17-1:28
+        property 1:17-1:17
+          ident 1:17-1:17 "c"
+        propertyDelimiter 1:18-1:18 ":"
+        space 1:19-1:19 " "
+        value 1:20-1:28
+          escapedString 1:20-1:28 "`\"@{d}\"`"
+      space 1:29-1:29 " "
+
+=== official.css-escape
+.\34 04 {}
+---
+stylesheet 1:1-1:10 {less}
+  ruleset 1:1-1:10
+    selector 1:1-1:7
+      class 1:1-1:7
+        ident 1:2-1:7 "\\34 04"
+    space 1:8-1:8 " "
+    block 1:9-1:10
+
+=== official.combinators
+a ^ b, c ^^ d {}
+---
+stylesheet 1:1-1:16 {less}
+  ruleset 1:1-1:16
+    selector 1:1-1:5
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+      space 1:2-1:2 " "
+      combinator 1:3-1:3 "^"
+      space 1:4-1:4 " "
+      typeSelector 1:5-1:5
+        ident 1:5-1:5 "b"
+    delimiter 1:6-1:6 ","
+    space 1:7-1:7 " "
+    selector 1:8-1:13
+      typeSelector 1:8-1:8
+        ident 1:8-1:8 "c"
+      space 1:9-1:9 " "
+      combinator 1:10-1:11 "^^"
+      space 1:12-1:12 " "
+      typeSelector 1:13-1:13
+        ident 1:13-1:13 "d"
+    space 1:14-1:14 " "
+    block 1:15-1:16
+
+=== official.guards
+.a when (@b), .c when (~"x" = @d) {}
+---
+stylesheet 1:1-1:36 {less}
+  ruleset 1:1-1:36
+    selector 1:1-1:2
+      class 1:1-1:2
+        ident 1:2-1:2 "a"
+    space 1:3-1:3 " "
+    condition 1:4-1:12
+      ident 1:4-1:7 "when"
+      space 1:8-1:8 " "
+      parentheses 1:9-1:12
+        variable 1:10-1:11
+          ident 1:11-1:11 "b"
+    delimiter 1:13-1:13 ","
+    space 1:14-1:14 " "
+    selector 1:15-1:16
+      class 1:15-1:16
+        ident 1:16-1:16 "c"
+    space 1:17-1:17 " "
+    condition 1:18-1:34
+      ident 1:18-1:21 "when"
+      space 1:22-1:22 " "
+      parentheses 1:23-1:33
+        escapedString 1:24-1:27 "\"x\""
+        space 1:28-1:28 " "
+        operator 1:29-1:29 "="
+        space 1:30-1:30 " "
+        variable 1:31-1:32
+          ident 1:32-1:32 "d"
+      space 1:34-1:34 " "
+    block 1:35-1:36
+
+=== official.variable-names
+a { @3: x; @-: -; @1(); }
+---
+stylesheet 1:1-1:25 {less}
+  ruleset 1:1-1:25
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-1:25
+      space 1:4-1:4 " "
+      declaration 1:5-1:9
+        property 1:5-1:6
+          variable 1:5-1:6
+            ident 1:6-1:6 "3"
+        propertyDelimiter 1:7-1:7 ":"
+        space 1:8-1:8 " "
+        value 1:9-1:9
+          ident 1:9-1:9 "x"
+      declarationDelimiter 1:10-1:10 ";"
+      space 1:11-1:11 " "
+      declaration 1:12-1:16
+        property 1:12-1:13
+          variable 1:12-1:13
+            ident 1:13-1:13 "-"
+        propertyDelimiter 1:14-1:14 ":"
+        space 1:15-1:15 " "
+        value 1:16-1:16
+          operator 1:16-1:16 "-"
+      declarationDelimiter 1:17-1:17 ";"
+      space 1:18-1:18 " "
+      atrule 1:19-1:22
+        atkeyword 1:19-1:20
+          ident 1:20-1:20 "1"
+        parentheses 1:21-1:22
+      declarationDelimiter 1:23-1:23 ";"
+      space 1:24-1:24 " "
+
+=== official.empty-value
+a { b: ; }
+---
+stylesheet 1:1-1:10 {less}
+  ruleset 1:1-1:10
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-1:10
+      space 1:4-1:4 " "
+      declaration 1:5-1:7
+        property 1:5-1:5
+          ident 1:5-1:5 "b"
+        propertyDelimiter 1:6-1:6 ":"
+        space 1:7-1:7 " "
+        value 1:8-1:7
+      declarationDelimiter 1:8-1:8 ";"
+      space 1:9-1:9 " "
+
+=== official.page-pseudo
+@page :first { a: b }
+.m() { @page :first { a: b } }
+---
+stylesheet 1:1-2:30 {less}
+  atrule 1:1-1:21
+    atkeyword 1:1-1:5
+      ident 1:2-1:5 "page"
+    space 1:6-1:6 " "
+    operator 1:7-1:7 ":"
+    ident 1:8-1:12 "first"
+    space 1:13-1:13 " "
+    block 1:14-1:21
+      space 1:15-1:15 " "
+      declaration 1:16-1:19
+        property 1:16-1:16
+          ident 1:16-1:16 "a"
+        propertyDelimiter 1:17-1:17 ":"
+        space 1:18-1:18 " "
+        value 1:19-1:19
+          ident 1:19-1:19 "b"
+      space 1:20-1:20 " "
+  space 1:22-1:22 "\n"
+  mixin 2:1-2:30
+    class 2:1-2:2
+      ident 2:2-2:2 "m"
+    arguments 2:3-2:4
+    space 2:5-2:5 " "
+    block 2:6-2:30
+      space 2:7-2:7 " "
+      atrule 2:8-2:28
+        atkeyword 2:8-2:12
+          ident 2:9-2:12 "page"
+        space 2:13-2:13 " "
+        operator 2:14-2:14 ":"
+        ident 2:15-2:19 "first"
+        space 2:20-2:20 " "
+        block 2:21-2:28
+          space 2:22-2:22 " "
+          declaration 2:23-2:26
+            property 2:23-2:23
+              ident 2:23-2:23 "a"
+            propertyDelimiter 2:24-2:24 ":"
+            space 2:25-2:25 " "
+            value 2:26-2:26
+              ident 2:26-2:26 "b"
+          space 2:27-2:27 " "
+      space 2:29-2:29 " "
+
+=== official.url-newline
+a { b: url(data:x,
+  yz); }
+---
+stylesheet 1:1-2:8 {less}
+  ruleset 1:1-2:8
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-2:8
+      space 1:4-1:4 " "
+      declaration 1:5-2:5
+        property 1:5-1:5
+          ident 1:5-1:5 "b"
+        propertyDelimiter 1:6-1:6 ":"
+        space 1:7-1:7 " "
+        value 1:8-2:5
+          uri 1:8-2:5
+            raw 1:12-2:4 "data:x,\n  yz"
+      declarationDelimiter 2:6-2:6 ";"
+      space 2:7-2:7 " "
+
+=== official.digit-mixin
+.3D(...) {}
+a { .3D(); }
+---
+stylesheet 1:1-2:12 {less}
+  mixin 1:1-1:11
+    class 1:1-1:3
+      ident 1:2-1:3 "3D"
+    arguments 1:4-1:8
+      variablesList 1:5-1:7
+    space 1:9-1:9 " "
+    block 1:10-1:11
+  space 1:12-1:12 "\n"
+  ruleset 2:1-2:12
+    selector 2:1-2:1
+      typeSelector 2:1-2:1
+        ident 2:1-2:1 "a"
+    space 2:2-2:2 " "
+    block 2:3-2:12
+      space 2:4-2:4 " "
+      include 2:5-2:9
+        class 2:5-2:7
+          ident 2:6-2:7 "3D"
+        arguments 2:8-2:9
+      declarationDelimiter 2:10-2:10 ";"
+      space 2:11-2:11 " "
+
+=== fallback.statement
+this is not css;
+a { b c d; e: f g(; }
+---
+stylesheet 1:1-2:21 {less}
+  include 1:1-1:15
+    raw 1:1-1:15 "this is not css"
+  declarationDelimiter 1:16-1:16 ";"
+  space 1:17-1:17 "\n"
+  ruleset 2:1-2:21
+    selector 2:1-2:1
+      typeSelector 2:1-2:1
+        ident 2:1-2:1 "a"
+    space 2:2-2:2 " "
+    block 2:3-2:21
+      space 2:4-2:4 " "
+      include 2:5-2:9
+        raw 2:5-2:9 "b c d"
+      declarationDelimiter 2:10-2:10 ";"
+      space 2:11-2:11 " "
+      declaration 2:12-2:18
+        property 2:12-2:12
+          raw 2:12-2:12 "e"
+        propertyDelimiter 2:13-2:13 ":"
+        space 2:14-2:14 " "
+        value 2:15-2:18
+          raw 2:15-2:18 "f g("
+      declarationDelimiter 2:19-2:19 ";"
+      space 2:20-2:20 " "
+
+=== fallback.block
+x ! y { a: b }
+@x y( { a: b }
+---
+stylesheet 1:1-2:14 {less}
+  ruleset 1:1-1:14
+    raw 1:1-1:5 "x ! y"
+    space 1:6-1:6 " "
+    block 1:7-1:14
+      space 1:8-1:8 " "
+      declaration 1:9-1:12
+        property 1:9-1:9
+          ident 1:9-1:9 "a"
+        propertyDelimiter 1:10-1:10 ":"
+        space 1:11-1:11 " "
+        value 1:12-1:12
+          ident 1:12-1:12 "b"
+      space 1:13-1:13 " "
+  space 1:15-1:15 "\n"
+  atrule 2:1-2:14
+    raw 2:1-2:5 "@x y("
+    space 2:6-2:6 " "
+    block 2:7-2:14
+      space 2:8-2:8 " "
+      declaration 2:9-2:12
+        property 2:9-2:9
+          ident 2:9-2:9 "a"
+        propertyDelimiter 2:10-2:10 ":"
+        space 2:11-2:11 " "
+        value 2:12-2:12
+          ident 2:12-2:12 "b"
+      space 2:13-2:13 " "
+
+=== fallback.unpaired
+a { b: c } }
+d {
+---
+stylesheet 1:1-2:3 {less}
+  ruleset 1:1-1:10
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-1:10
+      space 1:4-1:4 " "
+      declaration 1:5-1:8
+        property 1:5-1:5
+          ident 1:5-1:5 "b"
+        propertyDelimiter 1:6-1:6 ":"
+        space 1:7-1:7 " "
+        value 1:8-1:8
+          ident 1:8-1:8 "c"
+      space 1:9-1:9 " "
+  space 1:11-1:11 " "
+  include 1:12-1:12
+    raw 1:12-1:12 "}"
+  space 1:13-1:13 "\n"
+  include 2:1-2:3
+    raw 2:1-2:3 "d {"

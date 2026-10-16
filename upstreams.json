@@ -1,0 +1,30 @@
+{
+  "easy-np": {
+    "repo": "cnpm/npminstall",
+    "base": "aaf25fd65b679e422d019b7c19e515c7d3173052",
+    "adopted": "2026-09-28",
+    "checked": "2026-09-28"
+  },
+  "easy-npd": {
+    "repo": "cnpm/npminstall",
+    "base": "3d6e6b7b47b2b507eb9759556a1bcee4101a5fca",
+    "adopted": "2026-09-28",
+    "checked": "2026-09-28"
+  },
+  "easy-comb": {
+    "repo": "csscomb/csscomb.js",
+    "base": "ce7ad831bd9b7fddb660c59afbbaf183c98d6ca7",
+    "adopted": "2026-10-13",
+    "checked": "2026-10-13"
+  },
+  "easy-gonz": {
+    "repo": "tonyganch/gonzales-pe",
+    "base": "ab2e8ae6142d6fa95b77864f608a8add8abffaec",
+    "adopted": "2026-10-13",
+    "checked": "2026-10-13"
+  },
+  "easy-mok": {
+    "repo": null,
+    "note": "自研包, 没有上游"
+  }
+}

@@ -1,0 +1,21 @@
+# Commit what the admin page writes
+
+**English** · [简体中文](../zh/docs/files.md)
+
+By the end of this page, you know which files the admin page creates and which belong in version control. Scenes and routes you create in the browser are written to your mock folder so they can be shared; runtime state stays out of the repository.
+
+| File | Contents | Commit it? |
+|---|---|---|
+| `<mock folder>/__scenes__/*.json` | Scenes created or recorded on the admin page, one file per route | Yes, recommended |
+| `<mock folder>/__gui__.json` | Routes created on the admin page | Yes, recommended |
+| `node_modules/.cache/easy-mok/state.json` | Picked scenes, delays, status codes, scene groups, the global switch, and ignore rules | No; it resets when you delete `node_modules` |
+
+The state file location can be changed with the `stateFile` option; see [Options and environment variables](options.md).
+
+## Replay saved routes and scenes
+
+A route in `__gui__.json` whose value is `null` replays a JSON `null` body. An empty response saved as a scene, such as a 204 or a DELETE without a body, replays an empty body.
+
+## Recover when a new route fails to load
+
+If a route created on the admin page fails to load, easy-mok rolls back `__gui__.json` and the route's scene file to their previous content, so no broken entry is left behind. The admin API answers with the error code `LOAD_ERROR`, a message with the reason, and the related diagnostics.

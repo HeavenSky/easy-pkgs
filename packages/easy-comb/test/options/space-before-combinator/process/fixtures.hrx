@@ -1,0 +1,95 @@
+<===> css/test-2.expected.css
+a  >b { color: red }
+a  > b { color: red }
+a  >b { color: red }
+a  +b { color: red }
+a  + b { color: red }
+a  +b { color: red }
+a  ~b { color: red }
+a  ~ b { color: red }
+a  ~b { color: red }
+a  ~b  + c  >d { color: red }
+
+<===> css/test-3.expected.css
+a
+    >b { color: red }
+a
+    > b { color: red }
+a
+    >b { color: red }
+a
+    +b { color: red }
+a
+    + b { color: red }
+a
+    +b { color: red }
+a
+    ~b { color: red }
+a
+    ~ b { color: red }
+a
+    ~b { color: red }
+a
+    ~b
+    + c
+    >d { color: red }
+
+<===> css/test.css
+a>b { color: red }
+a> b { color: red }
+a >b { color: red }
+a+b { color: red }
+a+ b { color: red }
+a +b { color: red }
+a~b { color: red }
+a~ b { color: red }
+a ~b { color: red }
+a ~b+ c>d { color: red }
+
+<===> css/test.expected.css
+a>b { color: red }
+a> b { color: red }
+a>b { color: red }
+a+b { color: red }
+a+ b { color: red }
+a+b { color: red }
+a~b { color: red }
+a~ b { color: red }
+a~b { color: red }
+a~b+ c>d { color: red }
+
+<===> scss/test.expected.scss
+a  >b {
+  color: red;
+
+  &  >c {
+    color: red;
+  }
+}
+
+a {
+  color: red;
+
+  >c {
+    color: red;
+  }
+}
+
+<===> scss/test.scss
+a>b {
+  color: red;
+
+  &>c {
+    color: red;
+  }
+}
+
+a {
+  color: red;
+
+  >c {
+    color: red;
+  }
+}
+
+<===>

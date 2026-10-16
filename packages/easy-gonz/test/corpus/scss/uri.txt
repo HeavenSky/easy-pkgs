@@ -1,0 +1,19 @@
+=== s.2
+url(
+  'http://test.com'
+)
+---
+uri 1:1-3:1 {scss}
+  space 1:5-2:2 "\n  "
+  string 2:3-2:19 "'http://test.com'"
+  space 2:20-2:20 "\n"
+
+=== s.3
+url(
+  http://test.com
+)
+---
+uri 1:1-3:1 {scss}
+  space 1:5-2:2 "\n  "
+  raw 2:3-2:17 "http://test.com"
+  space 2:18-2:18 "\n"

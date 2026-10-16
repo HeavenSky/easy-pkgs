@@ -1,0 +1,252 @@
+=== 0 [css less]
+test()
+---
+function 1:1-1:6 {*}
+  ident 1:1-1:4 "test"
+  arguments 1:5-1:6
+
+=== 0 [sass scss]
+f(5)
+---
+function 1:1-1:4 {*}
+  ident 1:1-1:1 "f"
+  arguments 1:2-1:4
+    number 1:3-1:3 "5"
+
+=== 1 [css less]
+test(n)
+---
+function 1:1-1:7 {*}
+  ident 1:1-1:4 "test"
+  arguments 1:5-1:7
+    ident 1:6-1:6 "n"
+
+=== 1 [sass scss]
+f($n:5)
+---
+function 1:1-1:7 {*}
+  ident 1:1-1:1 "f"
+  arguments 1:2-1:7
+    declaration 1:3-1:6
+      property 1:3-1:4
+        variable 1:3-1:4
+          ident 1:4-1:4 "n"
+      propertyDelimiter 1:5-1:5 ":"
+      value 1:6-1:6
+        number 1:6-1:6 "5"
+
+=== 2 [css less sass]
+test-test(n)
+---
+function 1:1-1:12 {*}
+  ident 1:1-1:9 "test-test"
+  arguments 1:10-1:12
+    ident 1:11-1:11 "n"
+
+=== 3 [css less sass]
+test(x+y)
+---
+function 1:1-1:9 {*}
+  ident 1:1-1:4 "test"
+  arguments 1:5-1:9
+    ident 1:6-1:6 "x"
+    operator 1:7-1:7 "+"
+    ident 1:8-1:8 "y"
+
+=== 4 [css less]
+test(x,y)
+---
+function 1:1-1:9 {*}
+  ident 1:1-1:4 "test"
+  arguments 1:5-1:9
+    ident 1:6-1:6 "x"
+    operator 1:7-1:7 ","
+    ident 1:8-1:8 "y"
+
+=== 5 [css less]
+test(10px,'test' test(x),89%)
+---
+function 1:1-1:29 {*}
+  ident 1:1-1:4 "test"
+  arguments 1:5-1:29
+    dimension 1:6-1:9
+      number 1:6-1:7 "10"
+      ident 1:8-1:9 "px"
+    operator 1:10-1:10 ","
+    string 1:11-1:16 "'test'"
+    space 1:17-1:17 " "
+    function 1:18-1:24
+      ident 1:18-1:21 "test"
+      arguments 1:22-1:24
+        ident 1:23-1:23 "x"
+    operator 1:25-1:25 ","
+    percentage 1:26-1:28
+      number 1:26-1:27 "89"
+
+=== c.0 [css less]
+test(/*test*/)
+---
+function 1:1-1:14 {*}
+  ident 1:1-1:4 "test"
+  arguments 1:5-1:14
+    multilineComment 1:6-1:13 "test"
+
+=== c.1 [css less]
+test(/*test*/n/*test*/)
+---
+function 1:1-1:23 {*}
+  ident 1:1-1:4 "test"
+  arguments 1:5-1:23
+    multilineComment 1:6-1:13 "test"
+    ident 1:14-1:14 "n"
+    multilineComment 1:15-1:22 "test"
+
+=== c.2 [css less]
+test-test(/*test*/n/*test*/)
+---
+function 1:1-1:28 {*}
+  ident 1:1-1:9 "test-test"
+  arguments 1:10-1:28
+    multilineComment 1:11-1:18 "test"
+    ident 1:19-1:19 "n"
+    multilineComment 1:20-1:27 "test"
+
+=== c.3 [css less]
+test(/*test*/x/*test*/+/*test*/y/*test*/)
+---
+function 1:1-1:41 {*}
+  ident 1:1-1:4 "test"
+  arguments 1:5-1:41
+    multilineComment 1:6-1:13 "test"
+    ident 1:14-1:14 "x"
+    multilineComment 1:15-1:22 "test"
+    operator 1:23-1:23 "+"
+    multilineComment 1:24-1:31 "test"
+    ident 1:32-1:32 "y"
+    multilineComment 1:33-1:40 "test"
+
+=== c.4 [css less]
+test(/*test*/x/*test*/,/*test*/y/*test*/)
+---
+function 1:1-1:41 {*}
+  ident 1:1-1:4 "test"
+  arguments 1:5-1:41
+    multilineComment 1:6-1:13 "test"
+    ident 1:14-1:14 "x"
+    multilineComment 1:15-1:22 "test"
+    operator 1:23-1:23 ","
+    multilineComment 1:24-1:31 "test"
+    ident 1:32-1:32 "y"
+    multilineComment 1:33-1:40 "test"
+
+=== c.5 [css less]
+test(/*test*/10px/*test*/,/*test*/'test'/*test*/test(/*test*/x/*test*/)/*test*/,/*test*/89%/*test*/)
+---
+function 1:1-1:100 {*}
+  ident 1:1-1:4 "test"
+  arguments 1:5-1:100
+    multilineComment 1:6-1:13 "test"
+    dimension 1:14-1:17
+      number 1:14-1:15 "10"
+      ident 1:16-1:17 "px"
+    multilineComment 1:18-1:25 "test"
+    operator 1:26-1:26 ","
+    multilineComment 1:27-1:34 "test"
+    string 1:35-1:40 "'test'"
+    multilineComment 1:41-1:48 "test"
+    function 1:49-1:71
+      ident 1:49-1:52 "test"
+      arguments 1:53-1:71
+        multilineComment 1:54-1:61 "test"
+        ident 1:62-1:62 "x"
+        multilineComment 1:63-1:70 "test"
+    multilineComment 1:72-1:79 "test"
+    operator 1:80-1:80 ","
+    multilineComment 1:81-1:88 "test"
+    percentage 1:89-1:91
+      number 1:89-1:90 "89"
+    multilineComment 1:92-1:99 "test"
+
+=== s.0 [css less sass]
+test(  )
+---
+function 1:1-1:8 {*}
+  ident 1:1-1:4 "test"
+  arguments 1:5-1:8
+    space 1:6-1:7 "  "
+
+=== s.1 [css less sass]
+test(  n  )
+---
+function 1:1-1:11 {*}
+  ident 1:1-1:4 "test"
+  arguments 1:5-1:11
+    space 1:6-1:7 "  "
+    ident 1:8-1:8 "n"
+    space 1:9-1:10 "  "
+
+=== s.2 [css less sass]
+test-test(  n  )
+---
+function 1:1-1:16 {*}
+  ident 1:1-1:9 "test-test"
+  arguments 1:10-1:16
+    space 1:11-1:12 "  "
+    ident 1:13-1:13 "n"
+    space 1:14-1:15 "  "
+
+=== s.3 [css less sass]
+test(  x  +  y  )
+---
+function 1:1-1:17 {*}
+  ident 1:1-1:4 "test"
+  arguments 1:5-1:17
+    space 1:6-1:7 "  "
+    ident 1:8-1:8 "x"
+    space 1:9-1:10 "  "
+    operator 1:11-1:11 "+"
+    space 1:12-1:13 "  "
+    ident 1:14-1:14 "y"
+    space 1:15-1:16 "  "
+
+=== s.4 [css less]
+test(  x  ,  y  )
+---
+function 1:1-1:17 {*}
+  ident 1:1-1:4 "test"
+  arguments 1:5-1:17
+    space 1:6-1:7 "  "
+    ident 1:8-1:8 "x"
+    space 1:9-1:10 "  "
+    operator 1:11-1:11 ","
+    space 1:12-1:13 "  "
+    ident 1:14-1:14 "y"
+    space 1:15-1:16 "  "
+
+=== s.5 [css less]
+test(  10px  ,  'test'  test(  x  )  ,  89%  )
+---
+function 1:1-1:46 {*}
+  ident 1:1-1:4 "test"
+  arguments 1:5-1:46
+    space 1:6-1:7 "  "
+    dimension 1:8-1:11
+      number 1:8-1:9 "10"
+      ident 1:10-1:11 "px"
+    space 1:12-1:13 "  "
+    operator 1:14-1:14 ","
+    space 1:15-1:16 "  "
+    string 1:17-1:22 "'test'"
+    space 1:23-1:24 "  "
+    function 1:25-1:35
+      ident 1:25-1:28 "test"
+      arguments 1:29-1:35
+        space 1:30-1:31 "  "
+        ident 1:32-1:32 "x"
+        space 1:33-1:34 "  "
+    space 1:36-1:37 "  "
+    operator 1:38-1:38 ","
+    space 1:39-1:40 "  "
+    percentage 1:41-1:43
+      number 1:41-1:42 "89"
+    space 1:44-1:45 "  "

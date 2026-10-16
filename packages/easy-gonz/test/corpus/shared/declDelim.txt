@@ -1,0 +1,4 @@
+=== 0 [css less scss]
+;
+---
+declarationDelimiter 1:1-1:1 {*} ";"

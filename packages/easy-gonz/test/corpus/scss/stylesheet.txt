@@ -1,0 +1,311 @@
+=== 0
+@include nani;
+---
+stylesheet 1:1-1:14 {scss}
+  include 1:1-1:13
+    atkeyword 1:1-1:8
+      ident 1:2-1:8 "include"
+    space 1:9-1:9 " "
+    ident 1:10-1:13 "nani"
+  declarationDelimiter 1:14-1:14 ";"
+
+=== 1
+.nani{a:b}; @extend .nani;
+---
+stylesheet 1:1-1:26 {scss}
+  ruleset 1:1-1:10
+    selector 1:1-1:5
+      class 1:1-1:5
+        ident 1:2-1:5 "nani"
+    block 1:6-1:10
+      declaration 1:7-1:9
+        property 1:7-1:7
+          ident 1:7-1:7 "a"
+        propertyDelimiter 1:8-1:8 ":"
+        value 1:9-1:9
+          ident 1:9-1:9 "b"
+  declarationDelimiter 1:11-1:11 ";"
+  space 1:12-1:12 " "
+  extend 1:13-1:25
+    atkeyword 1:13-1:19
+      ident 1:14-1:19 "extend"
+    space 1:20-1:20 " "
+    selector 1:21-1:25
+      class 1:21-1:25
+        ident 1:22-1:25 "nani"
+  declarationDelimiter 1:26-1:26 ";"
+
+=== 2
+p {
+  font-weight: bold;
+  a:hover {
+    font-style: italic;
+  }
+}
+---
+stylesheet 1:1-6:1 {scss}
+  ruleset 1:1-6:1
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "p"
+    space 1:2-1:2 " "
+    block 1:3-6:1
+      space 1:4-2:2 "\n  "
+      declaration 2:3-2:19
+        property 2:3-2:13
+          ident 2:3-2:13 "font-weight"
+        propertyDelimiter 2:14-2:14 ":"
+        space 2:15-2:15 " "
+        value 2:16-2:19
+          ident 2:16-2:19 "bold"
+      declarationDelimiter 2:20-2:20 ";"
+      space 2:21-3:2 "\n  "
+      ruleset 3:3-5:3
+        selector 3:3-3:9
+          typeSelector 3:3-3:3
+            ident 3:3-3:3 "a"
+          pseudoClass 3:4-3:9
+            ident 3:5-3:9 "hover"
+        space 3:10-3:10 " "
+        block 3:11-5:3
+          space 3:12-4:4 "\n    "
+          declaration 4:5-4:22
+            property 4:5-4:14
+              ident 4:5-4:14 "font-style"
+            propertyDelimiter 4:15-4:15 ":"
+            space 4:16-4:16 " "
+            value 4:17-4:22
+              ident 4:17-4:22 "italic"
+          declarationDelimiter 4:23-4:23 ";"
+          space 4:24-5:2 "\n  "
+      space 5:4-5:4 "\n"
+
+=== 3
+%foo {
+  content: 'bar';
+}
+---
+stylesheet 1:1-3:1 {scss}
+  ruleset 1:1-3:1
+    selector 1:1-1:4
+      placeholder 1:1-1:4
+        ident 1:2-1:4 "foo"
+    space 1:5-1:5 " "
+    block 1:6-3:1
+      space 1:7-2:2 "\n  "
+      declaration 2:3-2:16
+        property 2:3-2:9
+          ident 2:3-2:9 "content"
+        propertyDelimiter 2:10-2:10 ":"
+        space 2:11-2:11 " "
+        value 2:12-2:16
+          string 2:12-2:16 "'bar'"
+      declarationDelimiter 2:17-2:17 ";"
+      space 2:18-2:18 "\n"
+
+=== css.0
+@import url('foo.css');
+---
+stylesheet 1:1-1:23 {scss}
+  atrule 1:1-1:22
+    atkeyword 1:1-1:7
+      ident 1:2-1:7 "import"
+    space 1:8-1:8 " "
+    uri 1:9-1:22
+      string 1:13-1:21 "'foo.css'"
+  declarationDelimiter 1:23-1:23 ";"
+
+=== issue-95
+$a-url: 'myUrl.png';
+// comment
+---
+stylesheet 1:1-2:10 {scss}
+  declaration 1:1-1:19
+    property 1:1-1:6
+      variable 1:1-1:6
+        ident 1:2-1:6 "a-url"
+    propertyDelimiter 1:7-1:7 ":"
+    space 1:8-1:8 " "
+    value 1:9-1:19
+      string 1:9-1:19 "'myUrl.png'"
+  declarationDelimiter 1:20-1:20 ";"
+  space 1:21-1:21 "\n"
+  singlelineComment 2:1-2:10 " comment"
+
+=== issue-95.test-2
+.url-overflow {
+  // this is a comment
+  content: '';
+}
+---
+stylesheet 1:1-4:1 {scss}
+  ruleset 1:1-4:1
+    selector 1:1-1:13
+      class 1:1-1:13
+        ident 1:2-1:13 "url-overflow"
+    space 1:14-1:14 " "
+    block 1:15-4:1
+      space 1:16-2:2 "\n  "
+      singlelineComment 2:3-2:22 " this is a comment"
+      space 2:23-3:2 "\n  "
+      declaration 3:3-3:13
+        property 3:3-3:9
+          ident 3:3-3:9 "content"
+        propertyDelimiter 3:10-3:10 ":"
+        space 3:11-3:11 " "
+        value 3:12-3:13
+          string 3:12-3:13 "''"
+      declarationDelimiter 3:14-3:14 ";"
+      space 3:15-3:15 "\n"
+
+=== issue104
+$image-url: '../image';
+// Comment
+---
+stylesheet 1:1-2:10 {scss}
+  declaration 1:1-1:22
+    property 1:1-1:10
+      variable 1:1-1:10
+        ident 1:2-1:10 "image-url"
+    propertyDelimiter 1:11-1:11 ":"
+    space 1:12-1:12 " "
+    value 1:13-1:22
+      string 1:13-1:22 "'../image'"
+  declarationDelimiter 1:23-1:23 ";"
+  space 1:24-1:24 "\n"
+  singlelineComment 2:1-2:10 " Comment"
+
+=== crlf/0
+#test {
+  color: red;
+}
+---
+stylesheet 1:1-3:1 {scss}
+  ruleset 1:1-3:1
+    selector 1:1-1:5
+      id 1:1-1:5
+        ident 1:2-1:5 "test"
+    space 1:6-1:6 " "
+    block 1:7-3:1
+      space 1:8-2:2 "\r\n  "
+      declaration 2:3-2:12
+        property 2:3-2:7
+          ident 2:3-2:7 "color"
+        propertyDelimiter 2:8-2:8 ":"
+        space 2:9-2:9 " "
+        value 2:10-2:12
+          ident 2:10-2:12 "red"
+      declarationDelimiter 2:13-2:13 ";"
+      space 2:14-2:15 "\r\n"
+
+=== crlf/issue152
+.foo {
+    color: red;
+}
+---
+stylesheet 1:1-3:1 {scss}
+  ruleset 1:1-3:1
+    selector 1:1-1:4
+      class 1:1-1:4
+        ident 1:2-1:4 "foo"
+    space 1:5-1:5 " "
+    block 1:6-3:1
+      space 1:7-2:4 "\n    "
+      declaration 2:5-2:14
+        property 2:5-2:9
+          ident 2:5-2:9 "color"
+        propertyDelimiter 2:10-2:10 ":"
+        space 2:11-2:11 " "
+        value 2:12-2:14
+          ident 2:12-2:14 "red"
+      declarationDelimiter 2:15-2:15 ";"
+      space 2:16-2:16 "\n"
+
+=== keyframes.scientific
+@keyframes a {
+  1e2% {b: c}
+}
+---
+stylesheet 1:1-3:1 {scss}
+  atrule 1:1-3:1
+    atkeyword 1:1-1:10
+      ident 1:2-1:10 "keyframes"
+    space 1:11-1:11 " "
+    ident 1:12-1:12 "a"
+    space 1:13-1:13 " "
+    block 1:14-3:1
+      space 1:15-2:2 "\n  "
+      ruleset 2:3-2:13
+        selector 2:3-2:6
+          keyframesSelector 2:3-2:6
+            percentage 2:3-2:6
+              number 2:3-2:5 "1e2"
+        space 2:7-2:7 " "
+        block 2:8-2:13
+          declaration 2:9-2:12
+            property 2:9-2:9
+              ident 2:9-2:9 "b"
+            propertyDelimiter 2:10-2:10 ":"
+            space 2:11-2:11 " "
+            value 2:12-2:12
+              ident 2:12-2:12 "c"
+      space 2:14-2:14 "\n"
+
+=== css-function/result-with-block-and-delimiters
+@function --a() {
+  result: {}#&%^*;
+}
+
+---
+stylesheet 1:1-3:2 {scss}
+  atrule 1:1-3:1
+    atkeyword 1:1-1:9
+      ident 1:2-1:9 "function"
+    space 1:10-1:10 " "
+    operator 1:11-1:11 "-"
+    function 1:12-1:15
+      ident 1:12-1:13 "-a"
+      arguments 1:14-1:15
+    space 1:16-1:16 " "
+    block 1:17-3:1
+      space 1:18-2:2 "\n  "
+      declaration 2:3-2:17
+        property 2:3-2:8
+          ident 2:3-2:8 "result"
+        propertyDelimiter 2:9-2:9 ":"
+        space 2:10-2:10 " "
+        value 2:11-2:17
+          block 2:11-2:12
+          operator 2:13-2:13 "#"
+          parentSelector 2:14-2:14 "&"
+          operator 2:15-2:15 "%"
+          operator 2:16-2:16 "^"
+          operator 2:17-2:17 "*"
+      declarationDelimiter 2:18-2:18 ";"
+      space 2:19-2:19 "\n"
+  space 3:2-3:2 "\n"
+
+=== string/interpolation-with-comment
+a {
+  content: "#{ a /*#{"}*/ }";
+}
+
+---
+stylesheet 1:1-3:2 {scss}
+  ruleset 1:1-3:1
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 " "
+    block 1:3-3:1
+      space 1:4-2:2 "\n  "
+      declaration 2:3-2:28
+        property 2:3-2:9
+          ident 2:3-2:9 "content"
+        propertyDelimiter 2:10-2:10 ":"
+        space 2:11-2:11 " "
+        value 2:12-2:28
+          string 2:12-2:28 "\"#{ a /*#{\"}*/ }\""
+      declarationDelimiter 2:29-2:29 ";"
+      space 2:30-2:30 "\n"
+  space 3:2-3:2 "\n"

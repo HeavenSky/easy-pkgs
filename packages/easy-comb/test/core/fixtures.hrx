@@ -1,0 +1,289 @@
+<===> css/variable.css
+div {
+  --color: red;
+}
+
+<===> less/import.less
+div {
+    @import "foo.css";
+    top: 0;
+}
+
+<===> less/interpolated-class.less
+.btn-@{size} {
+    color: tomato;
+}
+.icon-@{name}-active:hover {
+    top: 0;
+}
+
+<===> less/interpolated-property.expected.less
+.safe-padding(@direction: bottom) {
+    box-sizing: border-box;
+
+    padding-@{direction}: 0;
+    padding-@{direction}: calc(env(~"safe-area-inset-@{direction}", 0px) * var(--scaleRatio, 1));
+    @{direction}: 0;
+    border-@{direction}-width: 1px;
+}
+
+<===> less/interpolated-property.less
+.safe-padding(@direction: bottom) {
+    box-sizing: border-box;
+    padding-@{direction}: 0;
+    padding-@{direction}: calc(env(~"safe-area-inset-@{direction}", 0px) * var(--scaleRatio, 1));
+    @{direction}: 0;
+    border-@{direction}-width: 1px;
+}
+
+<===> less/interpolated-variable-1.less
+div.@{nani} {
+    color:tomato;
+    top:0;
+}
+
+<===> less/interpolated-variable-2.less
+div {
+    color: @{tomato};
+    top:0;
+}
+
+<===> less/mixin.less
+div {
+    .mixin;
+    top: 0;
+}
+
+<===> less/nested-media.less
+div {
+    @media screen and (orientation: landscape) {
+        color: tomato;
+    }
+    top: 0;
+}
+
+<===> less/nested-rule.less
+div {
+    color: tomato;
+    a {
+        top: 0;
+    }
+}
+
+<===> less/operation.less
+div {
+    @base: 5%;
+    @filler: @base * 2;
+    @other: @base + @filler;
+    color: #888 / 4;
+    background-color: @base-color + #111;
+    height: 100% / 2 + @filler;
+}
+
+<===> less/parent-selector.less
+div {
+    color: tomato;
+    &.top {
+        color: nani;
+        top: 0;
+    }
+    left: 0;
+}
+
+<===> less/variable.less
+@red: tomato;
+div {
+    color: @tomato;
+    top: @@foo;
+}
+
+<===> scss/content.scss
+@mixin nani {
+    a {
+        @content;
+    }
+}
+
+<===> scss/default.scss
+div {
+    color: tomato !default;
+    top: 0;
+}
+
+<===> scss/each.scss
+div {
+    @each $animal in puma, sea-slug, erget {
+        .#{$animal}-icon {
+            background-image: url("/images/#{$animal}.png");
+        }
+    }
+}
+
+<===> scss/empty.scss
+
+<===> scss/extend-1.scss
+div {
+    @extend .nani;
+    top: 0;
+}
+
+<===> scss/extend-2.scss
+div {
+    @extend %nani;
+    top: 0;
+}
+
+<===> scss/for.scss
+div {
+    @for $i from 1 through 3 {
+        .item-#{$i} {
+            width: 2em * 1;
+        }
+    }
+}
+
+<===> scss/function.scss
+@function nani($n) {
+    @return $n * 2;
+}
+
+<===> scss/if-else-if.scss
+div {
+    @if $type == ocean {
+        top: 0;
+    } @else if $type == monster {
+        left: 0;
+    }
+}
+
+<===> scss/if-else.scss
+div {
+    @if $type == ocean {
+        top: 0;
+    } @else {
+        left: 0;
+    }
+}
+
+<===> scss/if.scss
+div {
+    @if $type == ocean {
+        top: 0;
+    }
+}
+
+<===> scss/import.scss
+div {
+    @import "foo.css";
+    top: 0;
+}
+
+<===> scss/include.scss
+div {
+    @include nani($panda);
+    top: 0;
+}
+
+<===> scss/interpolated-variable-1.scss
+div.#{$nani} {
+    color: tomato;
+    top:0;
+}
+
+<===> scss/interpolated-variable-2.scss
+div {
+    color: #{$tomato};
+    top: 0;
+}
+
+<===> scss/mixin-1.scss
+@mixin nani {
+    color: tomato;
+}
+.foo {
+    @include nani;
+}
+
+<===> scss/mixin-2.scss
+@mixin nani($tomato) {
+    color: $tomato;
+}
+.foo {
+    @include nani(red);
+}
+
+<===> scss/mixin-3.scss
+@mixin nani($shadows...) {
+    box-shadow: $shadows;
+}
+.foo {
+    @include nani(0px 4px 5px #666, 2px 6px 10px #999);
+}
+
+<===> scss/mixin-4.scss
+.foo {
+    @include nani {
+        color: tomato;
+        top: 0
+    }
+}
+
+<===> scss/nested-media.scss
+div {
+    @media screen and (orientation: landscape) {
+        color: tomato;
+    }
+    top: 0;
+}
+
+<===> scss/nested-property.scss
+div {
+    color: tomato;
+    font: 2px/3px {
+        family: fantasy;
+        size: 30em;
+    }
+    left: 0;
+}
+
+<===> scss/nested-rule.scss
+div {
+    color: tomato;
+    a {
+        top: 0;
+    }
+}
+
+<===> scss/parent-selector.scss
+div {
+    color: tomato;
+    &.top {
+        color: nani;
+        top: 0;
+    }
+    left: 0;
+}
+
+<===> scss/variable.scss
+$red: tomato;
+div {
+    color: $tomato;
+}
+
+<===> scss/warn.scss
+div {
+    @warn "nani";
+    top: 0;
+}
+
+<===> scss/while.scss
+div {
+    @while $i > 6 {
+        .item {
+            width: 2em * $i;
+        }
+        $i: $i - 2;
+    }
+}
+
+<===>

@@ -1,0 +1,15 @@
+const rc = require('rc');
+
+const pkg = require('../package.json');
+
+const config = {
+  env: {
+    // show node-pre-gyp http info
+    // like "node-pre-gyp http GET https://npmmirror.com/mirrors/fsevents/v1.0.6/fse-v1.0.6-node-v46-darwin-x64.tar.gz"
+    npm_config_loglevel: 'http',
+  },
+  userAgent: `easy-np/${pkg.version} npm/? node/${process.version} ${process.platform} ${process.arch}`,
+  npmrc: rc('npm'),
+};
+
+module.exports = config;

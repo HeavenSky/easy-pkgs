@@ -1,0 +1,11 @@
+=== 0
+color
+---
+property 1:1-1:5 {css}
+  ident 1:1-1:5 "color"
+
+=== hack.star.0
+*zoom
+---
+property 1:1-1:5 {css}
+  ident 1:1-1:5 "*zoom"

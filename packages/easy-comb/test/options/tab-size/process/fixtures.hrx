@@ -1,0 +1,13 @@
+<===> css/test.css
+a {
+	color: tomato;
+	top: 0;
+	}
+
+<===> css/test.expected.css
+a {
+    color: tomato;
+    top: 0;
+    }
+
+<===>

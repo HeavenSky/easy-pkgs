@@ -1,0 +1,4 @@
+=== 0 [sass scss]
+!global
+---
+global 1:1-1:7 {*} "!global"

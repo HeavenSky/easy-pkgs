@@ -1,0 +1,187 @@
+=== 1
+@include nani() {p:v}
+---
+include 1:1-1:21 {scss}
+  atkeyword 1:1-1:8
+    ident 1:2-1:8 "include"
+  space 1:9-1:9 " "
+  ident 1:10-1:13 "nani"
+  arguments 1:14-1:15
+  space 1:16-1:16 " "
+  block 1:17-1:21
+    declaration 1:18-1:20
+      property 1:18-1:18
+        ident 1:18-1:18 "p"
+      propertyDelimiter 1:19-1:19 ":"
+      value 1:20-1:20
+        ident 1:20-1:20 "v"
+
+=== 4
+@include nani {p:v}
+---
+include 1:1-1:19 {scss}
+  atkeyword 1:1-1:8
+    ident 1:2-1:8 "include"
+  space 1:9-1:9 " "
+  ident 1:10-1:13 "nani"
+  space 1:14-1:14 " "
+  block 1:15-1:19
+    declaration 1:16-1:18
+      property 1:16-1:16
+        ident 1:16-1:16 "p"
+      propertyDelimiter 1:17-1:17 ":"
+      value 1:18-1:18
+        ident 1:18-1:18 "v"
+
+=== 5
+@include keyframes(foo) { 0% {}}
+---
+include 1:1-1:32 {scss}
+  atkeyword 1:1-1:8
+    ident 1:2-1:8 "include"
+  space 1:9-1:9 " "
+  ident 1:10-1:18 "keyframes"
+  arguments 1:19-1:23
+    ident 1:20-1:22 "foo"
+  space 1:24-1:24 " "
+  block 1:25-1:32
+    space 1:26-1:26 " "
+    ruleset 1:27-1:31
+      selector 1:27-1:28
+        keyframesSelector 1:27-1:28
+          percentage 1:27-1:28
+            number 1:27-1:27 "0"
+      space 1:29-1:29 " "
+      block 1:30-1:31
+
+=== 6
+@include nani($foo !important)
+---
+include 1:1-1:30 {scss}
+  atkeyword 1:1-1:8
+    ident 1:2-1:8 "include"
+  space 1:9-1:9 " "
+  ident 1:10-1:13 "nani"
+  arguments 1:14-1:30
+    variable 1:15-1:18
+      ident 1:16-1:18 "foo"
+    space 1:19-1:19 " "
+    important 1:20-1:29 "!important"
+
+=== module.0
+@include ns.foo
+---
+include 1:1-1:15 {scss}
+  atkeyword 1:1-1:8
+    ident 1:2-1:8 "include"
+  space 1:9-1:9 " "
+  module 1:10-1:12
+    ident 1:10-1:11 "ns"
+  ident 1:13-1:15 "foo"
+
+=== module.1
+@include ns.foo(color.hwb(1, 2%, 3%))
+---
+include 1:1-1:37 {scss}
+  atkeyword 1:1-1:8
+    ident 1:2-1:8 "include"
+  space 1:9-1:9 " "
+  module 1:10-1:12
+    ident 1:10-1:11 "ns"
+  ident 1:13-1:15 "foo"
+  arguments 1:16-1:37
+    module 1:17-1:22
+      ident 1:17-1:21 "color"
+    function 1:23-1:36
+      ident 1:23-1:25 "hwb"
+      arguments 1:26-1:36
+        number 1:27-1:27 "1"
+        delimiter 1:28-1:28 ","
+        space 1:29-1:29 " "
+        percentage 1:30-1:31
+          number 1:30-1:30 "2"
+        delimiter 1:32-1:32 ","
+        space 1:33-1:33 " "
+        percentage 1:34-1:35
+          number 1:34-1:34 "3"
+
+=== module.2
+@include a(b.c(1)) {}
+---
+include 1:1-1:21 {scss}
+  atkeyword 1:1-1:8
+    ident 1:2-1:8 "include"
+  space 1:9-1:9 " "
+  ident 1:10-1:10 "a"
+  arguments 1:11-1:18
+    module 1:12-1:13
+      ident 1:12-1:12 "b"
+    function 1:14-1:17
+      ident 1:14-1:14 "c"
+      arguments 1:15-1:17
+        number 1:16-1:16 "1"
+  space 1:19-1:19 " "
+  block 1:20-1:21
+
+=== using.0
+@include a() using ($b, $c...) {}
+---
+include 1:1-1:33 {scss}
+  atkeyword 1:1-1:8
+    ident 1:2-1:8 "include"
+  space 1:9-1:9 " "
+  ident 1:10-1:10 "a"
+  arguments 1:11-1:12
+  space 1:13-1:13 " "
+  ident 1:14-1:18 "using"
+  space 1:19-1:19 " "
+  arguments 1:20-1:30
+    variable 1:21-1:22
+      ident 1:22-1:22 "b"
+    delimiter 1:23-1:23 ","
+    space 1:24-1:24 " "
+    variablesList 1:25-1:29
+      variable 1:25-1:26
+        ident 1:26-1:26 "c"
+  space 1:31-1:31 " "
+  block 1:32-1:33
+
+=== using.1
+@include a using($b: 1){}
+---
+include 1:1-1:25 {scss}
+  atkeyword 1:1-1:8
+    ident 1:2-1:8 "include"
+  space 1:9-1:9 " "
+  ident 1:10-1:10 "a"
+  space 1:11-1:11 " "
+  ident 1:12-1:16 "using"
+  arguments 1:17-1:23
+    declaration 1:18-1:22
+      property 1:18-1:19
+        variable 1:18-1:19
+          ident 1:19-1:19 "b"
+      propertyDelimiter 1:20-1:20 ":"
+      space 1:21-1:21 " "
+      value 1:22-1:22
+        number 1:22-1:22 "1"
+  block 1:24-1:25
+
+=== using.2
+@include a() //
+  UsInG () {}
+---
+include 1:1-2:13 {scss}
+  atkeyword 1:1-1:8
+    ident 1:2-1:8 "include"
+  space 1:9-1:9 " "
+  ident 1:10-1:10 "a"
+  arguments 1:11-1:12
+  space 1:13-1:13 " "
+  singlelineComment 1:14-1:16 ""
+  space 1:16-2:2 "\n  "
+  ident 2:3-2:7 "UsInG"
+  space 2:8-2:8 " "
+  arguments 2:9-2:10
+  space 2:11-2:11 " "
+  block 2:12-2:13

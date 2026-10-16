@@ -1,0 +1,27 @@
+=== 0
+.nani:extend(.inline)
+---
+extend 1:1-1:21 {less}
+  class 1:1-1:5
+    ident 1:2-1:5 "nani"
+  pseudoClass 1:6-1:21
+    ident 1:7-1:12 "extend"
+    arguments 1:13-1:21
+      selector 1:14-1:20
+        class 1:14-1:20
+          ident 1:15-1:20 "inline"
+
+=== 1
+&:extend(.inline all)
+---
+extend 1:1-1:21 {less}
+  parentSelector 1:1-1:1 "&"
+  pseudoClass 1:2-1:21
+    ident 1:3-1:8 "extend"
+    arguments 1:9-1:21
+      selector 1:10-1:20
+        class 1:10-1:16
+          ident 1:11-1:16 "inline"
+        space 1:17-1:17 " "
+        typeSelector 1:18-1:20
+          ident 1:18-1:20 "all"

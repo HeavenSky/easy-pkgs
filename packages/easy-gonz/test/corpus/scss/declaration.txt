@@ -1,0 +1,72 @@
+=== 0
+a:b
+---
+declaration 1:1-1:3 {scss}
+  property 1:1-1:1
+    ident 1:1-1:1 "a"
+  propertyDelimiter 1:2-1:2 ":"
+  value 1:3-1:3
+    ident 1:3-1:3 "b"
+
+=== 1
+a : b
+---
+declaration 1:1-1:5 {scss}
+  property 1:1-1:1
+    ident 1:1-1:1 "a"
+  space 1:2-1:2 " "
+  propertyDelimiter 1:3-1:3 ":"
+  space 1:4-1:4 " "
+  value 1:5-1:5
+    ident 1:5-1:5 "b"
+
+=== 2
+$a: &
+---
+declaration 1:1-1:5 {scss}
+  property 1:1-1:2
+    variable 1:1-1:2
+      ident 1:2-1:2 "a"
+  propertyDelimiter 1:3-1:3 ":"
+  space 1:4-1:4 " "
+  value 1:5-1:5
+    parentSelector 1:5-1:5 "&"
+
+=== issue-296
+$--bg-color: #fff
+---
+declaration 1:1-1:17 {scss}
+  property 1:1-1:11
+    variable 1:1-1:11
+      ident 1:2-1:11 "--bg-color"
+  propertyDelimiter 1:12-1:12 ":"
+  space 1:13-1:13 " "
+  value 1:14-1:17
+    color 1:14-1:17 "fff"
+
+=== module.0
+ns.$var: 1
+---
+declaration 1:1-1:10 {scss}
+  property 1:1-1:7
+    module 1:1-1:3
+      ident 1:1-1:2 "ns"
+    variable 1:4-1:7
+      ident 1:5-1:7 "var"
+  propertyDelimiter 1:8-1:8 ":"
+  space 1:9-1:9 " "
+  value 1:10-1:10
+    number 1:10-1:10 "1"
+
+=== hack.star.0
+*width: 1px
+---
+declaration 1:1-1:11 {scss}
+  property 1:1-1:6
+    ident 1:1-1:6 "*width"
+  propertyDelimiter 1:7-1:7 ":"
+  space 1:8-1:8 " "
+  value 1:9-1:11
+    dimension 1:9-1:11
+      number 1:9-1:9 "1"
+      ident 1:10-1:11 "px"

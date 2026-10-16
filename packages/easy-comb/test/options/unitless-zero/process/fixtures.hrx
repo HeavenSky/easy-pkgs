@@ -1,0 +1,45 @@
+<===> css/issue-394.css
+.example {
+  bottom: 0em;
+  left:   0.5em;
+  right:  1em;
+  top:    1.5em;
+}
+
+<===> css/issue-394.expected.css
+.example {
+  bottom: 0;
+  left:   0.5em;
+  right:  1em;
+  top:    1.5em;
+}
+
+<===> less/issue-389.less
+.test
+{
+    width: 100%;
+}
+
+<===> scss/keep-units.scss
+$zero: 0px;
+$map: (width: 0px);
+a {
+  width: 0px + 1pt;
+  height: -0px * 1em;
+  margin: 0px 0em;
+  --gap: 0px;
+  flex: 1 0px;
+}
+
+<===> scss/keep-units.expected.scss
+$zero: 0px;
+$map: (width: 0px);
+a {
+  width: 0px + 1pt;
+  height: -0px * 1em;
+  margin: 0 0;
+  --gap: 0px;
+  flex: 1 0px;
+}
+
+<===>

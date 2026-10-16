@@ -1,0 +1,21 @@
+node_modules
+# 构建产物; 各包的 dist 由 build 生成, 只随 npm 包发布
+packages/*/dist/
+.DS_Store
+*.log
+.*/
+ISSUE.md
+TODO.md
+DONE.md
+# 以下路径需要跟踪, 取消常见全局忽略规则(以点开头的目录, *.tar, *.tgz)的影响; 删掉后这些文件在改名或新增时会被静默漏提交
+!/.github/
+!packages/*/test/fixtures/**/.config/
+!packages/*/test/fixtures/**/node_modules/.bin/
+!packages/*/test/fixtures/local/*.tar
+!packages/*/test/fixtures/local/*.tgz
+# 全局规则常忽略 *-lock.json: 各包的 lockfile 入库, 保证 CI 与发布按同一份依赖版本安装与构建
+!packages/*/package-lock.json
+# 全局规则会忽略 vendor 与点目录: easy-comb 的内置 gonzales-pe 与目录遍历用例的 fixture 必须跟踪
+!packages/easy-comb/vendor/
+!packages/easy-comb/test/core/process-directory/fixture/vendor/
+!packages/easy-comb/test/core/process-directory/fixture/.hidden/

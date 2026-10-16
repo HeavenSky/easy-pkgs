@@ -1,0 +1,71 @@
+<===> css/test-3.expected.css
+a {color: tomato; top: 0;
+}
+
+a { color: tomato;
+    top: 0;
+}
+
+a { color: tomato;
+    top: 0;
+}
+
+a {
+    color: tomato;
+    top: 0;
+}
+
+a {
+    color: tomato;
+    top: 0;
+}
+
+a {
+    color: tomato;
+    top: 0;
+}
+
+@media print { a {color: tomato; top: 0;
+    }
+}
+
+@media print {
+    a {
+        color: tomato;
+        top: 0;
+    }
+}
+
+<===> css/test.css
+a {color: tomato; top: 0;}
+
+a { color: tomato;
+top: 0; }
+
+a { color: tomato;
+    top: 0; }
+
+a {
+color: tomato;
+top: 0; }
+
+a {
+color: tomato;
+top: 0;
+}
+
+ a {
+    color: tomato;
+  top: 0;
+   }
+
+@media print { a {color: tomato; top: 0; } }
+
+   @media print {
+a {
+    color: tomato;
+  top: 0;
+   }
+   }
+
+<===>

@@ -1,0 +1,19 @@
+{
+  "name": "postinstall-demo",
+  "version": "1.0.0",
+  "scripts": {
+    "preinstall": "node index.js preinstall",
+    "install": "node index.js install",
+    "postinstall": "node index.js postinstall",
+    "prepublish": "node index.js prepublish",
+    "prepare": "node index.js prepare"
+  },
+  "dependencies": {
+    "postinstall-hello": "1.0.0",
+    "utility": "1.6.0",
+    "a-dep-b": "*"
+  },
+  "allowScripts": {
+    "postinstall-hello": true
+  }
+}

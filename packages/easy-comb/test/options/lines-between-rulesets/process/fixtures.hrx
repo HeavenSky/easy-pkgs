@@ -1,0 +1,397 @@
+<===> css/2-lines-between-rulesets.expected.css
+/*comment*/
+.foo {background: red;}
+
+
+/*comment*/.bar{border: 1px solid red;}
+
+
+.baz{color: #fff;}
+
+<===> css/lines-between-rulesets.css
+/*comment*/
+.foo {background: red;}/*comment*/.bar{border: 1px solid red;}.baz{color: #fff;}
+
+<===> css/lines-between-rulesets.expected.css
+/*comment*/
+.foo {background: red;}
+
+/*comment*/.bar{border: 1px solid red;}
+
+.baz{color: #fff;}
+
+<===> css/missing-newline.css
+@media screen {
+    a {
+        color: red;
+    }.b {
+        color: blue;
+    }
+}
+.c {
+    top: 0;
+}.d {
+    top: 0;
+}
+
+<===> css/missing-newline.expected.css
+@media screen {
+    a {
+        color: red;
+    }
+
+    .b {
+        color: blue;
+    }
+}
+
+.c {
+    top: 0;
+}
+
+.d {
+    top: 0;
+}
+
+<===> less/2-lines-between-rulesets.expected.less
+.foo {
+  .border-radius(5px);
+  background: red;
+
+
+  /* comment */
+  .omg {
+    .test {
+      height: 50px;
+    }
+  }
+}
+
+
+.bar {
+  border: 1px solid red;
+
+
+  /*
+  ** another comment
+  ** spanning multiple lines
+  */
+  @media (min-width: 500px) {
+    width: 50px;
+  }
+}
+
+
+.baz {
+  @grey: #ccc;
+
+
+  // a single-line comment
+  // another single-line comment
+  .wtf {
+    @media only screen {
+      background-color: @grey;
+    }
+  }
+}
+
+<===> less/lines-between-rulesets.expected.less
+.foo {
+  .border-radius(5px);
+  background: red;
+
+  /* comment */
+  .omg {
+    .test {
+      height: 50px;
+    }
+  }
+}
+
+.bar {
+  border: 1px solid red;
+
+  /*
+  ** another comment
+  ** spanning multiple lines
+  */
+  @media (min-width: 500px) {
+    width: 50px;
+  }
+}
+
+.baz {
+  @grey: #ccc;
+
+  // a single-line comment
+  // another single-line comment
+  .wtf {
+    @media only screen {
+      background-color: @grey;
+    }
+  }
+}
+
+<===> less/lines-between-rulesets.less
+.foo {
+  .border-radius(5px);
+  background: red;
+  /* comment */
+  .omg {
+    .test {
+      height: 50px;
+    }
+  }
+}.bar {
+  border: 1px solid red;
+  /*
+  ** another comment
+  ** spanning multiple lines
+  */
+  @media (min-width: 500px) {
+    width: 50px;
+  }
+}.baz {
+  @grey: #ccc;
+  // a single-line comment
+  // another single-line comment
+  .wtf {
+    @media only screen {
+      background-color: @grey;
+    }
+  }
+}
+
+<===> sass/2-lines-between-rulesets.expected.sass
+.foo
+  +border-radius(5px)
+  background: red
+
+
+  // comment
+  .omg
+    .test
+      height: 50px
+
+
+.bar
+  border: 1px solid red
+
+
+  /*
+   * another comment
+   * spanning multiple lines
+   */
+  @media (min-width: 500px)
+    width: 50px
+
+
+.baz
+  $grey: #ccc
+
+
+  // a single-line comment
+  // another single-line comment
+  .wtf
+    @media only screen
+      background-color: $grey
+
+<===> sass/lines-between-rulesets.expected.sass
+.foo
+  +border-radius(5px)
+  background: red
+
+  // comment
+  .omg
+    .test
+      height: 50px
+
+.bar
+  border: 1px solid red
+
+  /*
+   * another comment
+   * spanning multiple lines
+   */
+  @media (min-width: 500px)
+    width: 50px
+
+.baz
+  $grey: #ccc
+
+  // a single-line comment
+  // another single-line comment
+  .wtf
+    @media only screen
+      background-color: $grey
+
+<===> sass/lines-between-rulesets.sass
+.foo
+  +border-radius(5px)
+  background: red
+  // comment
+  .omg
+    .test
+      height: 50px
+.bar
+  border: 1px solid red
+  /*
+   * another comment
+   * spanning multiple lines
+   */
+  @media (min-width: 500px)
+    width: 50px
+.baz
+  $grey: #ccc
+  // a single-line comment
+  // another single-line comment
+  .wtf
+    @media only screen
+      background-color: $grey
+
+<===> scss/2-lines-between-rulesets.expected.scss
+.foo {
+  @include border-radius(5px);
+  background: red;
+
+
+  /* comment */
+  .omg {
+    .test {
+      height: 50px;
+    }
+  }
+}
+
+
+.bar {
+  border: 1px solid red;
+
+
+  /*
+  ** another comment
+  ** spanning multiple lines
+  */
+  @media (min-width: 500px) {
+    width: 50px;
+  }
+}
+
+
+.baz {
+  $grey: #ccc;
+
+
+  // a single-line comment
+  // another single-line comment
+  .wtf {
+    @media only screen {
+      background-color: $grey;
+    }
+  }
+}
+
+<===> scss/imports.expected.scss
+@charset "utf-8";
+@import 'size';
+@import 'color';
+@use 'x';
+
+.a {
+  b: c;
+}
+
+<===> scss/imports.scss
+@charset "utf-8";
+@import 'size';
+@import 'color';
+@use 'x';
+.a {
+  b: c;
+}
+
+<===> scss/lines-between-rulesets.expected.scss
+.foo {
+  @include border-radius(5px);
+  background: red;
+
+  /* comment */
+  .omg {
+    .test {
+      height: 50px;
+    }
+  }
+}
+
+.bar {
+  border: 1px solid red;
+
+  /*
+  ** another comment
+  ** spanning multiple lines
+  */
+  @media (min-width: 500px) {
+    width: 50px;
+  }
+}
+
+.baz {
+  $grey: #ccc;
+
+  // a single-line comment
+  // another single-line comment
+  .wtf {
+    @media only screen {
+      background-color: $grey;
+    }
+  }
+}
+
+<===> scss/lines-between-rulesets.scss
+.foo {
+  @include border-radius(5px);
+  background: red;
+  /* comment */
+  .omg {
+    .test {
+      height: 50px;
+    }
+  }
+}.bar {
+  border: 1px solid red;
+  /*
+  ** another comment
+  ** spanning multiple lines
+  */
+  @media (min-width: 500px) {
+    width: 50px;
+  }
+}.baz {
+  $grey: #ccc;
+  // a single-line comment
+  // another single-line comment
+  .wtf {
+    @media only screen {
+      background-color: $grey;
+    }
+  }
+}
+
+<===> scss/trailing-comment.expected.scss
+.a {
+  border-radius: 1em; // sass-lint:disable-line
+
+  &::before {
+    content: 'x';
+  }
+}
+
+<===> scss/trailing-comment.scss
+.a {
+  border-radius: 1em; // sass-lint:disable-line
+  &::before {
+    content: 'x';
+  }
+}
+
+<===>

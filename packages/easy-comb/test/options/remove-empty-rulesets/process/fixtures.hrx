@@ -1,0 +1,132 @@
+<===> less/1.expected.less
+#a {
+
+  #b {
+      text-align: right;
+  }
+
+  
+
+  #d {
+    .e {
+      text-align: center;
+    }
+  }
+}
+
+<===> less/1.less
+#a {
+
+  #b {
+      text-align: right;
+  }
+
+  #c {  }
+
+  #d {
+    .e {
+      text-align: center;
+    }
+  }
+}
+
+<===> scss/empty-nested-rule.expected.scss
+
+
+<===> scss/empty-nested-rule.scss
+.parent {
+    .child {
+        .grandchild { }
+    }
+}
+
+<===> scss/empty-rulesets-in-media.expected.scss
+@media screen {
+  
+  b {
+    color: red;
+  }
+}
+
+<===> scss/empty-rulesets-in-media.scss
+@media screen {
+  a {}
+  b {
+    color: red;
+  }
+}
+
+<===> scss/include.scss
+.parent {
+    @include mix-all;
+    @include mix-top;
+}
+
+<===> scss/nested-rule-1.scss
+.parent {
+    .child {
+        @include mix-all;
+        @include mix-top;
+    }
+}
+
+<===> scss/nested-rule-2.expected.scss
+.parent {
+    .child1 {
+        @include mix-all;
+        @include mix-top;
+    }
+    
+}
+
+<===> scss/nested-rule-2.scss
+.parent {
+    .child1 {
+        @include mix-all;
+        @include mix-top;
+    }
+    .child2 {
+        .grandchild { }
+    }
+}
+
+<===> less/referenced.less
+.mixin {}
+.unused {}
+.a {
+  .mixin;
+}
+.b:extend(.a) {}
+
+<===> less/referenced.expected.less
+.mixin {}
+
+.a {
+  .mixin;
+}
+.b:extend(.a) {}
+
+<===> scss/referenced.scss
+%placeholder {}
+.target {}
+.unused {}
+a {
+  @extend %placeholder;
+  @extend .target;
+}
+
+<===> scss/referenced.expected.scss
+%placeholder {}
+.target {}
+
+a {
+  @extend %placeholder;
+  @extend .target;
+}
+
+<===> sass/ruleset-without-block.sass
+a
+> b
+  c: d
+
+<===>

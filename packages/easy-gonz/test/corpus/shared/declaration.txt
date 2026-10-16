@@ -1,0 +1,330 @@
+=== 0 [css less sass]
+property:value
+---
+declaration 1:1-1:14 {*}
+  property 1:1-1:8
+    ident 1:1-1:8 "property"
+  propertyDelimiter 1:9-1:9 ":"
+  value 1:10-1:14
+    ident 1:10-1:14 "value"
+
+=== 1 [css less sass]
+-my-property:value
+---
+declaration 1:1-1:18 {*}
+  property 1:1-1:12
+    ident 1:1-1:12 "-my-property"
+  propertyDelimiter 1:13-1:13 ":"
+  value 1:14-1:18
+    ident 1:14-1:18 "value"
+
+=== custom.property.1 [css sass scss]
+--foo:bar
+---
+declaration 1:1-1:9 {*}
+  customProperty 1:1-1:5
+    ident 1:3-1:5 "foo"
+  propertyDelimiter 1:6-1:6 ":"
+  value 1:7-1:9
+    ident 1:7-1:9 "bar"
+
+=== custom.property.2 [css sass scss]
+--foo-bar:baz
+---
+declaration 1:1-1:13 {*}
+  customProperty 1:1-1:9
+    ident 1:3-1:9 "foo-bar"
+  propertyDelimiter 1:10-1:10 ":"
+  value 1:11-1:13
+    ident 1:11-1:13 "baz"
+
+=== custom.property.3 [css sass scss]
+--foo:var(--bar)
+---
+declaration 1:1-1:16 {*}
+  customProperty 1:1-1:5
+    ident 1:3-1:5 "foo"
+  propertyDelimiter 1:6-1:6 ":"
+  value 1:7-1:16
+    function 1:7-1:16
+      ident 1:7-1:9 "var"
+      arguments 1:10-1:16
+        customProperty 1:11-1:15
+          ident 1:13-1:15 "bar"
+
+=== custom.property.4 [sass scss]
+foo:var(--bar, baz)
+---
+declaration 1:1-1:19 {*}
+  property 1:1-1:3
+    ident 1:1-1:3 "foo"
+  propertyDelimiter 1:4-1:4 ":"
+  value 1:5-1:19
+    function 1:5-1:19
+      ident 1:5-1:7 "var"
+      arguments 1:8-1:19
+        customProperty 1:9-1:13
+          ident 1:11-1:13 "bar"
+        delimiter 1:14-1:14 ","
+        space 1:15-1:15 " "
+        ident 1:16-1:18 "baz"
+
+=== custom.property.5 [css sass scss]
+foo:calc(var(--bar) * 1px)
+---
+declaration 1:1-1:26 {*}
+  property 1:1-1:3
+    ident 1:1-1:3 "foo"
+  propertyDelimiter 1:4-1:4 ":"
+  value 1:5-1:26
+    function 1:5-1:26
+      ident 1:5-1:8 "calc"
+      arguments 1:9-1:26
+        function 1:10-1:19
+          ident 1:10-1:12 "var"
+          arguments 1:13-1:19
+            customProperty 1:14-1:18
+              ident 1:16-1:18 "bar"
+        space 1:20-1:20 " "
+        operator 1:21-1:21 "*"
+        space 1:22-1:22 " "
+        dimension 1:23-1:25
+          number 1:23-1:23 "1"
+          ident 1:24-1:25 "px"
+
+=== custom.property.6 [css sass scss]
+foo: " (" var(--bar) ")"
+---
+declaration 1:1-1:24 {*}
+  property 1:1-1:3
+    ident 1:1-1:3 "foo"
+  propertyDelimiter 1:4-1:4 ":"
+  space 1:5-1:5 " "
+  value 1:6-1:24
+    string 1:6-1:9 "\" (\""
+    space 1:10-1:10 " "
+    function 1:11-1:20
+      ident 1:11-1:13 "var"
+      arguments 1:14-1:20
+        customProperty 1:15-1:19
+          ident 1:17-1:19 "bar"
+    space 1:21-1:21 " "
+    string 1:22-1:24 "\")\""
+
+=== c.0 [css less]
+property/*test*/:value
+---
+declaration 1:1-1:22 {*}
+  property 1:1-1:8
+    ident 1:1-1:8 "property"
+  multilineComment 1:9-1:16 "test"
+  propertyDelimiter 1:17-1:17 ":"
+  value 1:18-1:22
+    ident 1:18-1:22 "value"
+
+=== c.1 [css less]
+property:/*test*/value
+---
+declaration 1:1-1:22 {*}
+  property 1:1-1:8
+    ident 1:1-1:8 "property"
+  propertyDelimiter 1:9-1:9 ":"
+  multilineComment 1:10-1:17 "test"
+  value 1:18-1:22
+    ident 1:18-1:22 "value"
+
+=== c.2 [css less]
+property/*test*/:/*test*/value
+---
+declaration 1:1-1:30 {*}
+  property 1:1-1:8
+    ident 1:1-1:8 "property"
+  multilineComment 1:9-1:16 "test"
+  propertyDelimiter 1:17-1:17 ":"
+  multilineComment 1:18-1:25 "test"
+  value 1:26-1:30
+    ident 1:26-1:30 "value"
+
+=== c.3 [css less]
+property  /*test*/  :  /*test*/  value
+---
+declaration 1:1-1:38 {*}
+  property 1:1-1:8
+    ident 1:1-1:8 "property"
+  space 1:9-1:10 "  "
+  multilineComment 1:11-1:18 "test"
+  space 1:19-1:20 "  "
+  propertyDelimiter 1:21-1:21 ":"
+  space 1:22-1:23 "  "
+  multilineComment 1:24-1:31 "test"
+  space 1:32-1:33 "  "
+  value 1:34-1:38
+    ident 1:34-1:38 "value"
+
+=== filter.0 [css less sass scss]
+filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='images/transparent-border.png',sizingMethod='scale')
+---
+declaration 1:1-1:115 {*}
+  property 1:1-1:6
+    ident 1:1-1:6 "filter"
+  propertyDelimiter 1:7-1:7 ":"
+  value 1:8-1:115
+    progid 1:8-1:115 "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='images/transparent-border.png',sizingMethod='scale')"
+
+=== filter.1 [css less sass scss]
+filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='images/transparent-border.png',sizingMethod='scale')progid:DXImageTransform.Microsoft.AlphaImageLoader(src='test.png',sizingMethod='something')
+---
+declaration 1:1-1:206 {*}
+  property 1:1-1:6
+    ident 1:1-1:6 "filter"
+  propertyDelimiter 1:7-1:7 ":"
+  value 1:8-1:206
+    progid 1:8-1:115 "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='images/transparent-border.png',sizingMethod='scale')"
+    progid 1:116-1:206 "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='test.png',sizingMethod='something')"
+
+=== filter.2 [css less sass scss] [skip]
+*filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='images/transparent-border.png',sizingMethod='scale')
+---
+declaration 1:1-1:116 {*}
+  property 1:1-1:7
+    ident 1:1-1:7 "*filter"
+  propertyDelimiter 1:8-1:8 ":"
+  value 1:9-1:116
+    progid 1:9-1:116 "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='images/transparent-border.png',sizingMethod='scale')"
+
+=== filter.3 [css less sass scss]
+-filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='images/transparent-border.png',sizingMethod='scale')
+---
+declaration 1:1-1:116 {*}
+  property 1:1-1:7
+    ident 1:1-1:7 "-filter"
+  propertyDelimiter 1:8-1:8 ":"
+  value 1:9-1:116
+    progid 1:9-1:116 "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='images/transparent-border.png',sizingMethod='scale')"
+
+=== filter.4 [css less sass scss]
+_filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='images/transparent-border.png',sizingMethod='scale')
+---
+declaration 1:1-1:116 {*}
+  property 1:1-1:7
+    ident 1:1-1:7 "_filter"
+  propertyDelimiter 1:8-1:8 ":"
+  value 1:9-1:116
+    progid 1:9-1:116 "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='images/transparent-border.png',sizingMethod='scale')"
+
+=== filter.5 [css less sass scss]
+-ms-filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='images/transparent-border.png',sizingMethod='scale')
+---
+declaration 1:1-1:119 {*}
+  property 1:1-1:10
+    ident 1:1-1:10 "-ms-filter"
+  propertyDelimiter 1:11-1:11 ":"
+  value 1:12-1:119
+    progid 1:12-1:119 "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='images/transparent-border.png',sizingMethod='scale')"
+
+=== filter.c.0 [css less scss]
+filter/*test*/:/*test*/progid:DXImageTransform.Microsoft.AlphaImageLoader(src='images/transparent-border.png',sizingMethod='scale')
+---
+declaration 1:1-1:131 {*}
+  property 1:1-1:6
+    ident 1:1-1:6 "filter"
+  multilineComment 1:7-1:14 "test"
+  propertyDelimiter 1:15-1:15 ":"
+  multilineComment 1:16-1:23 "test"
+  value 1:24-1:131
+    progid 1:24-1:131 "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='images/transparent-border.png',sizingMethod='scale')"
+
+=== filter.c.1 [css less scss]
+filter/*test*/:/*test*/progid:DXImageTransform.Microsoft.AlphaImageLoader(/*)*/src='images/transparent-border.png'/*)*/,/*)*/sizingMethod='scale')
+---
+declaration 1:1-1:146 {*}
+  property 1:1-1:6
+    ident 1:1-1:6 "filter"
+  multilineComment 1:7-1:14 "test"
+  propertyDelimiter 1:15-1:15 ":"
+  multilineComment 1:16-1:23 "test"
+  value 1:24-1:146
+    progid 1:24-1:146 "progid:DXImageTransform.Microsoft.AlphaImageLoader(/*)*/src='images/transparent-border.png'/*)*/,/*)*/sizingMethod='scale')"
+
+=== filter.s.0 [css less sass scss]
+filter  :  progid:DXImageTransform.Microsoft.AlphaImageLoader(src='images/transparent-border.png',sizingMethod='scale')
+---
+declaration 1:1-1:119 {*}
+  property 1:1-1:6
+    ident 1:1-1:6 "filter"
+  space 1:7-1:8 "  "
+  propertyDelimiter 1:9-1:9 ":"
+  space 1:10-1:11 "  "
+  value 1:12-1:119
+    progid 1:12-1:119 "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='images/transparent-border.png',sizingMethod='scale')"
+
+=== filter.s.1 [css less scss]
+filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='images/transparent-border.png',sizingMethod='scale')
+       progid:DXImageTransform.Microsoft.AlphaImageLoader(src='test.png',sizingMethod='something')
+---
+declaration 1:1-2:98 {*}
+  property 1:1-1:6
+    ident 1:1-1:6 "filter"
+  propertyDelimiter 1:7-1:7 ":"
+  value 1:8-2:98
+    progid 1:8-1:115 "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='images/transparent-border.png',sizingMethod='scale')"
+    space 1:116-2:7 "\n       "
+    progid 2:8-2:98 "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='test.png',sizingMethod='something')"
+
+=== s.0 [css less sass]
+property :value
+---
+declaration 1:1-1:15 {*}
+  property 1:1-1:8
+    ident 1:1-1:8 "property"
+  space 1:9-1:9 " "
+  propertyDelimiter 1:10-1:10 ":"
+  value 1:11-1:15
+    ident 1:11-1:15 "value"
+
+=== s.1 [css less sass]
+property: value
+---
+declaration 1:1-1:15 {*}
+  property 1:1-1:8
+    ident 1:1-1:8 "property"
+  propertyDelimiter 1:9-1:9 ":"
+  space 1:10-1:10 " "
+  value 1:11-1:15
+    ident 1:11-1:15 "value"
+
+=== s.2 [css less sass]
+property : value
+---
+declaration 1:1-1:16 {*}
+  property 1:1-1:8
+    ident 1:1-1:8 "property"
+  space 1:9-1:9 " "
+  propertyDelimiter 1:10-1:10 ":"
+  space 1:11-1:11 " "
+  value 1:12-1:16
+    ident 1:12-1:16 "value"
+
+=== s.3 [css less sass]
+property   :   value
+---
+declaration 1:1-1:20 {*}
+  property 1:1-1:8
+    ident 1:1-1:8 "property"
+  space 1:9-1:11 "   "
+  propertyDelimiter 1:12-1:12 ":"
+  space 1:13-1:15 "   "
+  value 1:16-1:20
+    ident 1:16-1:20 "value"
+
+=== custom.property.7 [sass scss]
+--#{$foo}:bar
+---
+declaration 1:1-1:13 {*}
+  customProperty 1:1-1:9
+    interpolation 1:3-1:9
+      variable 1:5-1:8
+        ident 1:6-1:8 "foo"
+  propertyDelimiter 1:10-1:10 ":"
+  value 1:11-1:13
+    ident 1:11-1:13 "bar"

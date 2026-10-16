@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "env": {
+    "node": true,
+    "es6": true
+  },
+  "ignorePatterns": [
+    "docs/**"
+  ],
+  "rules": {
+    "no-cond-assign": "off"
+  }
+}

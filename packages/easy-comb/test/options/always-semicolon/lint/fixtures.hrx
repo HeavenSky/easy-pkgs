@@ -1,0 +1,18 @@
+<===> css/lint-1.css
+div { height: 0; }
+
+<===> css/lint-2.css
+div { height: 0 }
+
+<===> css/lint-3.css
+div {
+    height: 0
+}
+
+@media screen {
+    .a {
+        color: tomato;
+        position: panda}
+}
+
+<===>

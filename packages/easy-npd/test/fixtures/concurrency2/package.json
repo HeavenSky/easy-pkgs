@@ -1,0 +1,9 @@
+{
+  "name": "concurrency2",
+  "devDependencies": {
+    "browserify": "14",
+    "koa": "1",
+    "express": "4",
+    "mocha": "^2.3.4"
+  }
+}

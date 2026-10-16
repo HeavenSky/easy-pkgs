@@ -1,0 +1,24 @@
+=== 2
+.btn-@{size}
+---
+class 1:1-1:12 {less}
+  ident 1:2-1:5 "btn-"
+  interpolatedVariable 1:6-1:12
+    ident 1:8-1:11 "size"
+
+=== 3
+.btn-@{size}-lg
+---
+class 1:1-1:15 {less}
+  ident 1:2-1:5 "btn-"
+  interpolatedVariable 1:6-1:12
+    ident 1:8-1:11 "size"
+  ident 1:13-1:15 "-lg"
+
+=== 4
+.@{prefix}-btn
+---
+class 1:1-1:14 {less}
+  interpolatedVariable 1:2-1:10
+    ident 1:4-1:9 "prefix"
+  ident 1:11-1:14 "-btn"

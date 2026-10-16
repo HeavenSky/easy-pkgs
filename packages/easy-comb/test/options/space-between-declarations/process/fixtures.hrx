@@ -1,0 +1,100 @@
+<===> css/comments.css
+a {
+    color: tomato;
+    /* comment */
+    top: 0;     /* comment */
+    left: 10px;
+    right: 0;
+    /* comment */
+    }
+
+<===> css/comments.expected.css
+a {
+    color: tomato;
+    /* comment */
+    top: 0;     /* comment */ left: 10px; right: 0;
+    /* comment */
+    }
+
+<===> css/integer-value.css
+a {
+    color: tomato;
+
+    top: 0;
+    left: 10px
+    }
+
+<===> css/integer-value.expected.css
+a {
+    color: tomato;top: 0;left: 10px
+    }
+
+<===> css/issue-239.css
+html{
+    color:#444;font-family:proxima-nova;font-size:62.5%;font-weight:300;line-height:1.5;}
+
+<===> css/issue-239.expected.css
+html{
+    color:#444;
+    font-family:proxima-nova;
+    font-size:62.5%;
+    font-weight:300;
+    line-height:1.5;}
+
+<===> css/issue-378.css
+@media (min-width: 768px) {
+    body { background: red; }
+}
+
+<===> css/space-newline-value.css
+a {
+    color: tomato;top: 0; left: 10px;
+    right: 0; width: 100% \9;
+}
+
+<===> css/space-newline-value.expected.css
+a {
+    color: tomato;
+    top: 0;
+    left: 10px;
+    right: 0;
+    width: 100% \9;
+}
+
+<===> css/space-value.css
+a {
+    color: tomato;
+
+    top: 0;
+    left: 10px
+    }
+
+<===> css/space-value.expected.css
+a {
+    color: tomato; top: 0; left: 10px
+    }
+
+<===> css/test.css
+a {
+    animal: panda;color: tomato; top: 0; }
+
+<===> scss/nested-compact.scss
+.btn{color:RED;@include foo;&:hover{color:blue}
+  &:focus{color:red}}
+
+<===> scss/nested-compact.expected.scss
+.btn{color:RED;
+@include foo;
+&:hover{color:blue}
+  &:focus{color:red}}
+
+<===> less/nested-compact.less
+.btn{color:RED;.mixin();&:hover{color:blue};.m{x:1}}
+
+<===> less/nested-compact.expected.less
+.btn{color:RED;
+.mixin();
+&:hover{color:blue};
+.m{x:1}}
+
+<===>

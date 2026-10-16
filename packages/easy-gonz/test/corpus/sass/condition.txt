@@ -1,0 +1,15 @@
+=== 3
+@else if $ocean != 'big'
+---
+condition 1:1-1:24 {sass}
+  atkeyword 1:1-1:5
+    ident 1:2-1:5 "else"
+  space 1:6-1:6 " "
+  ident 1:7-1:8 "if"
+  space 1:9-1:9 " "
+  variable 1:10-1:15
+    ident 1:11-1:15 "ocean"
+  space 1:16-1:16 " "
+  operator 1:17-1:18 "!="
+  space 1:19-1:19 " "
+  string 1:20-1:24 "'big'"

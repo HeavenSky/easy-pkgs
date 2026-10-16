@@ -1,0 +1,61 @@
+=== 2
+:property value
+---
+declaration 1:1-1:15 {sass}
+  propertyDelimiter 1:1-1:1 ":"
+  property 1:2-1:9
+    ident 1:2-1:9 "property"
+  space 1:10-1:10 " "
+  value 1:11-1:15
+    ident 1:11-1:15 "value"
+
+=== 3
+$a: &
+---
+declaration 1:1-1:5 {sass}
+  property 1:1-1:2
+    variable 1:1-1:2
+      ident 1:2-1:2 "a"
+  propertyDelimiter 1:3-1:3 ":"
+  space 1:4-1:4 " "
+  value 1:5-1:5
+    parentSelector 1:5-1:5 "&"
+
+=== s.4
+:property   value
+---
+declaration 1:1-1:17 {sass}
+  propertyDelimiter 1:1-1:1 ":"
+  property 1:2-1:9
+    ident 1:2-1:9 "property"
+  space 1:10-1:12 "   "
+  value 1:13-1:17
+    ident 1:13-1:17 "value"
+
+=== module.0
+ns.$var: 1
+---
+declaration 1:1-1:10 {sass}
+  property 1:1-1:7
+    module 1:1-1:3
+      ident 1:1-1:2 "ns"
+    variable 1:4-1:7
+      ident 1:5-1:7 "var"
+  propertyDelimiter 1:8-1:8 ":"
+  space 1:9-1:9 " "
+  value 1:10-1:10
+    number 1:10-1:10 "1"
+
+=== module.1
+b: math.$pi
+---
+declaration 1:1-1:11 {sass}
+  property 1:1-1:1
+    ident 1:1-1:1 "b"
+  propertyDelimiter 1:2-1:2 ":"
+  space 1:3-1:3 " "
+  value 1:4-1:11
+    module 1:4-1:8
+      ident 1:4-1:7 "math"
+    variable 1:9-1:11
+      ident 1:10-1:11 "pi"

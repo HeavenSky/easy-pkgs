@@ -1,0 +1,187 @@
+=== issue-238
+div,, span {
+  color: red;
+}
+---
+ruleset 1:1-3:1 {css}
+  selector 1:1-1:3
+    typeSelector 1:1-1:3
+      ident 1:1-1:3 "div"
+  delimiter 1:4-1:4 ","
+  delimiter 1:5-1:5 ","
+  space 1:6-1:6 " "
+  selector 1:7-1:10
+    typeSelector 1:7-1:10
+      ident 1:7-1:10 "span"
+  space 1:11-1:11 " "
+  block 1:12-3:1
+    space 1:13-2:2 "\n  "
+    declaration 2:3-2:12
+      property 2:3-2:7
+        ident 2:3-2:7 "color"
+      propertyDelimiter 2:8-2:8 ":"
+      space 2:9-2:9 " "
+      value 2:10-2:12
+        ident 2:10-2:12 "red"
+    declarationDelimiter 2:13-2:13 ";"
+    space 2:14-2:14 "\n"
+
+=== nesting.0
+.a { color: red; & .b { color: blue } }
+---
+ruleset 1:1-1:39 {css}
+  selector 1:1-1:2
+    class 1:1-1:2
+      ident 1:2-1:2 "a"
+  space 1:3-1:3 " "
+  block 1:4-1:39
+    space 1:5-1:5 " "
+    declaration 1:6-1:15
+      property 1:6-1:10
+        ident 1:6-1:10 "color"
+      propertyDelimiter 1:11-1:11 ":"
+      space 1:12-1:12 " "
+      value 1:13-1:15
+        ident 1:13-1:15 "red"
+    declarationDelimiter 1:16-1:16 ";"
+    space 1:17-1:17 " "
+    ruleset 1:18-1:37
+      selector 1:18-1:21
+        parentSelector 1:18-1:18 "&"
+        space 1:19-1:19 " "
+        class 1:20-1:21
+          ident 1:21-1:21 "b"
+      space 1:22-1:22 " "
+      block 1:23-1:37
+        space 1:24-1:24 " "
+        declaration 1:25-1:35
+          property 1:25-1:29
+            ident 1:25-1:29 "color"
+          propertyDelimiter 1:30-1:30 ":"
+          space 1:31-1:31 " "
+          value 1:32-1:35
+            ident 1:32-1:35 "blue"
+        space 1:36-1:36 " "
+    space 1:38-1:38 " "
+
+=== nesting.1
+.a { > .b {} .c & {} &:hover, &.d {} }
+---
+ruleset 1:1-1:38 {css}
+  selector 1:1-1:2
+    class 1:1-1:2
+      ident 1:2-1:2 "a"
+  space 1:3-1:3 " "
+  block 1:4-1:38
+    space 1:5-1:5 " "
+    ruleset 1:6-1:12
+      selector 1:6-1:9
+        combinator 1:6-1:6 ">"
+        space 1:7-1:7 " "
+        class 1:8-1:9
+          ident 1:9-1:9 "b"
+      space 1:10-1:10 " "
+      block 1:11-1:12
+    space 1:13-1:13 " "
+    ruleset 1:14-1:20
+      selector 1:14-1:17
+        class 1:14-1:15
+          ident 1:15-1:15 "c"
+        space 1:16-1:16 " "
+        parentSelector 1:17-1:17 "&"
+      space 1:18-1:18 " "
+      block 1:19-1:20
+    space 1:21-1:21 " "
+    ruleset 1:22-1:36
+      selector 1:22-1:28
+        parentSelector 1:22-1:22 "&"
+        pseudoClass 1:23-1:28
+          ident 1:24-1:28 "hover"
+      delimiter 1:29-1:29 ","
+      space 1:30-1:30 " "
+      selector 1:31-1:33
+        parentSelector 1:31-1:31 "&"
+        class 1:32-1:33
+          ident 1:33-1:33 "d"
+      space 1:34-1:34 " "
+      block 1:35-1:36
+    space 1:37-1:37 " "
+
+=== nesting.2
+div { span { color: red; } color: blue; }
+---
+ruleset 1:1-1:41 {css}
+  selector 1:1-1:3
+    typeSelector 1:1-1:3
+      ident 1:1-1:3 "div"
+  space 1:4-1:4 " "
+  block 1:5-1:41
+    space 1:6-1:6 " "
+    ruleset 1:7-1:26
+      selector 1:7-1:10
+        typeSelector 1:7-1:10
+          ident 1:7-1:10 "span"
+      space 1:11-1:11 " "
+      block 1:12-1:26
+        space 1:13-1:13 " "
+        declaration 1:14-1:23
+          property 1:14-1:18
+            ident 1:14-1:18 "color"
+          propertyDelimiter 1:19-1:19 ":"
+          space 1:20-1:20 " "
+          value 1:21-1:23
+            ident 1:21-1:23 "red"
+        declarationDelimiter 1:24-1:24 ";"
+        space 1:25-1:25 " "
+    space 1:27-1:27 " "
+    declaration 1:28-1:38
+      property 1:28-1:32
+        ident 1:28-1:32 "color"
+      propertyDelimiter 1:33-1:33 ":"
+      space 1:34-1:34 " "
+      value 1:35-1:38
+        ident 1:35-1:38 "blue"
+    declarationDelimiter 1:39-1:39 ";"
+    space 1:40-1:40 " "
+
+=== nesting.3
+.a { @media (width >= 0) { color: red; .b {} } }
+---
+ruleset 1:1-1:48 {css}
+  selector 1:1-1:2
+    class 1:1-1:2
+      ident 1:2-1:2 "a"
+  space 1:3-1:3 " "
+  block 1:4-1:48
+    space 1:5-1:5 " "
+    atrule 1:6-1:46
+      atkeyword 1:6-1:11
+        ident 1:7-1:11 "media"
+      space 1:12-1:12 " "
+      parentheses 1:13-1:24
+        ident 1:14-1:18 "width"
+        space 1:19-1:19 " "
+        operator 1:20-1:20 ">"
+        operator 1:21-1:21 "="
+        space 1:22-1:22 " "
+        number 1:23-1:23 "0"
+      space 1:25-1:25 " "
+      block 1:26-1:46
+        space 1:27-1:27 " "
+        declaration 1:28-1:37
+          property 1:28-1:32
+            ident 1:28-1:32 "color"
+          propertyDelimiter 1:33-1:33 ":"
+          space 1:34-1:34 " "
+          value 1:35-1:37
+            ident 1:35-1:37 "red"
+        declarationDelimiter 1:38-1:38 ";"
+        space 1:39-1:39 " "
+        ruleset 1:40-1:44
+          selector 1:40-1:41
+            class 1:40-1:41
+              ident 1:41-1:41 "b"
+          space 1:42-1:42 " "
+          block 1:43-1:44
+        space 1:45-1:45 " "
+    space 1:47-1:47 " "

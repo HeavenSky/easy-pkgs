@@ -1,0 +1,200 @@
+=== 0 [css less sass scss]
+url('http://test.com')
+---
+uri 1:1-1:22 {*}
+  string 1:5-1:21 "'http://test.com'"
+
+=== 1 [css less sass scss]
+url(http://test.com)
+---
+uri 1:1-1:20 {*}
+  raw 1:5-1:19 "http://test.com"
+
+=== c.0 [css less sass scss]
+url(/*test*/'http://test.com'/*test*/)
+---
+uri 1:1-1:38 {*}
+  multilineComment 1:5-1:12 "test"
+  string 1:13-1:29 "'http://test.com'"
+  multilineComment 1:30-1:37 "test"
+
+=== c.1 [css less]
+url(/*test*/http://test.com/*test*/)
+---
+uri 1:1-1:36 {*}
+  multilineComment 1:5-1:12 "test"
+  raw 1:13-1:35 "http://test.com/*test*/"
+
+=== c.1 [sass scss]
+url(/*test*/http://test.com/*test*/)
+---
+uri 1:1-1:36 {*}
+  multilineComment 1:5-1:12 "test"
+  raw 1:13-1:27 "http://test.com"
+  multilineComment 1:28-1:35 "test"
+
+=== s.0 [css less sass scss]
+url(  'http://test.com'  )
+---
+uri 1:1-1:26 {*}
+  space 1:5-1:6 "  "
+  string 1:7-1:23 "'http://test.com'"
+  space 1:24-1:25 "  "
+
+=== s.1 [css less sass scss]
+url(  http://test.com  )
+---
+uri 1:1-1:24 {*}
+  space 1:5-1:6 "  "
+  raw 1:7-1:21 "http://test.com"
+  space 1:22-1:23 "  "
+
+=== 2 [sass scss]
+url(get-url())
+---
+uri 1:1-1:14 {*}
+  function 1:5-1:13
+    ident 1:5-1:11 "get-url"
+    arguments 1:12-1:13
+
+=== 3 [sass scss]
+url($foo)
+---
+uri 1:1-1:9 {*}
+  variable 1:5-1:8
+    ident 1:6-1:8 "foo"
+
+=== 4 [sass scss]
+url($foo + $bar)
+---
+uri 1:1-1:16 {*}
+  variable 1:5-1:8
+    ident 1:6-1:8 "foo"
+  space 1:9-1:9 " "
+  operator 1:10-1:10 "+"
+  space 1:11-1:11 " "
+  variable 1:12-1:15
+    ident 1:13-1:15 "bar"
+
+=== 5 [sass scss]
+url('foo/' + $bar)
+---
+uri 1:1-1:18 {*}
+  string 1:5-1:10 "'foo/'"
+  space 1:11-1:11 " "
+  operator 1:12-1:12 "+"
+  space 1:13-1:13 " "
+  variable 1:14-1:17
+    ident 1:15-1:17 "bar"
+
+=== 6 [sass scss]
+url($foo + 'bar.png')
+---
+uri 1:1-1:21 {*}
+  variable 1:5-1:8
+    ident 1:6-1:8 "foo"
+  space 1:9-1:9 " "
+  operator 1:10-1:10 "+"
+  space 1:11-1:11 " "
+  string 1:12-1:20 "'bar.png'"
+
+=== 7 [sass scss]
+url('foo/' + bar())
+---
+uri 1:1-1:19 {*}
+  string 1:5-1:10 "'foo/'"
+  space 1:11-1:11 " "
+  operator 1:12-1:12 "+"
+  space 1:13-1:13 " "
+  function 1:14-1:18
+    ident 1:14-1:16 "bar"
+    arguments 1:17-1:18
+
+=== 8 [sass scss]
+url($foo + bar())
+---
+uri 1:1-1:17 {*}
+  variable 1:5-1:8
+    ident 1:6-1:8 "foo"
+  space 1:9-1:9 " "
+  operator 1:10-1:10 "+"
+  space 1:11-1:11 " "
+  function 1:12-1:16
+    ident 1:12-1:14 "bar"
+    arguments 1:15-1:16
+
+=== 9 [sass scss]
+url(foo() + bar())
+---
+uri 1:1-1:18 {*}
+  function 1:5-1:9
+    ident 1:5-1:7 "foo"
+    arguments 1:8-1:9
+  space 1:10-1:10 " "
+  operator 1:11-1:11 "+"
+  space 1:12-1:12 " "
+  function 1:13-1:17
+    ident 1:13-1:15 "bar"
+    arguments 1:16-1:17
+
+=== 10 [sass scss]
+url()
+---
+uri 1:1-1:5 {*}
+
+=== interp.0 [sass scss]
+url('#{$foo}')
+---
+uri 1:1-1:14 {*}
+  string 1:5-1:13 "'#{$foo}'"
+
+=== interp.1 [sass scss]
+url(#{$foo})
+---
+uri 1:1-1:12 {*}
+  interpolation 1:5-1:11
+    variable 1:7-1:10
+      ident 1:8-1:10 "foo"
+
+=== interp.2 [sass scss]
+url(#{$foo}/bar.png)
+---
+uri 1:1-1:20 {*}
+  interpolation 1:5-1:11
+    variable 1:7-1:10
+      ident 1:8-1:10 "foo"
+  raw 1:12-1:19 "/bar.png"
+
+=== interp.3 [sass scss]
+url(foo/#{$bar})
+---
+uri 1:1-1:16 {*}
+  raw 1:5-1:8 "foo/"
+  interpolation 1:9-1:15
+    variable 1:11-1:14
+      ident 1:12-1:14 "bar"
+
+=== interp.4 [sass scss]
+url(#{$foo} + $bar)
+---
+uri 1:1-1:19 {*}
+  interpolation 1:5-1:11
+    variable 1:7-1:10
+      ident 1:8-1:10 "foo"
+  space 1:12-1:12 " "
+  operator 1:13-1:13 "+"
+  space 1:14-1:14 " "
+  variable 1:15-1:18
+    ident 1:16-1:18 "bar"
+
+=== interp.5 [sass scss]
+url('foo/' + #{$bar})
+---
+uri 1:1-1:21 {*}
+  string 1:5-1:10 "'foo/'"
+  space 1:11-1:11 " "
+  operator 1:12-1:12 "+"
+  space 1:13-1:13 " "
+  interpolation 1:14-1:20
+    variable 1:16-1:19
+      ident 1:17-1:19 "bar"

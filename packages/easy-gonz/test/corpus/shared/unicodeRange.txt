@@ -1,0 +1,32 @@
+=== unicode.0 [css less sass scss]
+U+416
+---
+unicodeRange 1:1-1:5 {*}
+  urange 1:1-1:5 "U+416"
+
+=== unicode.1 [css less sass scss]
+U+0-7F
+---
+unicodeRange 1:1-1:6 {*}
+  urange 1:1-1:6 "U+0-7F"
+
+=== unicode.2 [css less sass scss]
+U+0025-00FF
+---
+unicodeRange 1:1-1:11 {*}
+  urange 1:1-1:11 "U+0025-00FF"
+
+=== unicode.3 [css less sass scss]
+U+4??
+---
+unicodeRange 1:1-1:5 {*}
+  urange 1:1-1:5 "U+4??"
+
+=== unicode.4 [css less sass scss]
+U+A5, U+4E00-9FFF
+---
+unicodeRange 1:1-1:17 {*}
+  urange 1:1-1:4 "U+A5"
+  delimiter 1:5-1:5 ","
+  space 1:6-1:6 " "
+  urange 1:7-1:17 "U+4E00-9FFF"

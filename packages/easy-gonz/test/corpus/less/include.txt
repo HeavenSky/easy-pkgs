@@ -1,0 +1,64 @@
+=== 0
+.nani
+---
+include 1:1-1:5 {less}
+  class 1:1-1:5
+    ident 1:2-1:5 "nani"
+
+=== 1
+#nani
+---
+include 1:1-1:5 {less}
+  id 1:1-1:5
+    ident 1:2-1:5 "nani"
+
+=== 2
+.nani(2px)
+---
+include 1:1-1:10 {less}
+  class 1:1-1:5
+    ident 1:2-1:5 "nani"
+  arguments 1:6-1:10
+    dimension 1:7-1:9
+      number 1:7-1:7 "2"
+      ident 1:8-1:9 "px"
+
+=== 3
+.nani(2px) !important
+---
+include 1:1-1:21 {less}
+  class 1:1-1:5
+    ident 1:2-1:5 "nani"
+  arguments 1:6-1:10
+    dimension 1:7-1:9
+      number 1:7-1:7 "2"
+      ident 1:8-1:9 "px"
+  space 1:11-1:11 " "
+  important 1:12-1:21 "!important"
+
+=== 4
+#bundle > .button
+---
+include 1:1-1:17 {less}
+  id 1:1-1:7
+    ident 1:2-1:7 "bundle"
+  space 1:8-1:8 " "
+  operator 1:9-1:9 ">"
+  space 1:10-1:10 " "
+  class 1:11-1:17
+    ident 1:12-1:17 "button"
+
+=== 5
+#bundle > .button (tomato)
+---
+include 1:1-1:26 {less}
+  id 1:1-1:7
+    ident 1:2-1:7 "bundle"
+  space 1:8-1:8 " "
+  operator 1:9-1:9 ">"
+  space 1:10-1:10 " "
+  class 1:11-1:17
+    ident 1:12-1:17 "button"
+  space 1:18-1:18 " "
+  arguments 1:19-1:26
+    ident 1:20-1:25 "tomato"

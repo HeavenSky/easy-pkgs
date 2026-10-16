@@ -1,0 +1,648 @@
+=== 0 [css less sass scss]
+:test
+---
+pseudoClass 1:1-1:5 {*}
+  ident 1:2-1:5 "test"
+
+=== 1 [css less sass scss]
+:test-test
+---
+pseudoClass 1:1-1:10 {*}
+  ident 1:2-1:10 "test-test"
+
+=== 2 [css less]
+:nth-child(2n+1)
+---
+pseudoClass 1:1-1:16 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:16
+    number 1:12-1:12 "2"
+    ident 1:13-1:13 "n"
+    operator 1:14-1:14 "+"
+    number 1:15-1:15 "1"
+
+=== 2 [sass scss]
+:nth-child(n+10)
+---
+pseudoClass 1:1-1:16 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:16
+    ident 1:12-1:12 "n"
+    operator 1:13-1:13 "+"
+    number 1:14-1:15 "10"
+
+=== 3 [css less]
+:nth-last-child(+3n-2)
+---
+pseudoClass 1:1-1:22 {*}
+  ident 1:2-1:15 "nth-last-child"
+  arguments 1:16-1:22
+    operator 1:17-1:17 "+"
+    number 1:18-1:18 "3"
+    ident 1:19-1:19 "n"
+    operator 1:20-1:20 "-"
+    number 1:21-1:21 "2"
+
+=== 3 [sass scss]
+:nth-child(odd)
+---
+pseudoClass 1:1-1:15 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:15
+    selector 1:12-1:14
+      typeSelector 1:12-1:14
+        ident 1:12-1:14 "odd"
+
+=== s.0 [css less sass scss]
+:not( h1)
+---
+pseudoClass 1:1-1:9 {*}
+  ident 1:2-1:4 "not"
+  arguments 1:5-1:9
+    space 1:6-1:6 " "
+    selector 1:7-1:8
+      typeSelector 1:7-1:8
+        ident 1:7-1:8 "h1"
+
+=== s.1 [css less sass scss]
+:not(h1 )
+---
+pseudoClass 1:1-1:9 {*}
+  ident 1:2-1:4 "not"
+  arguments 1:5-1:9
+    selector 1:6-1:7
+      typeSelector 1:6-1:7
+        ident 1:6-1:7 "h1"
+    space 1:8-1:8 " "
+
+=== s.2 [css less sass scss]
+:not( h1 )
+---
+pseudoClass 1:1-1:10 {*}
+  ident 1:2-1:4 "not"
+  arguments 1:5-1:10
+    space 1:6-1:6 " "
+    selector 1:7-1:8
+      typeSelector 1:7-1:8
+        ident 1:7-1:8 "h1"
+    space 1:9-1:9 " "
+
+=== s.3 [css less sass scss]
+:not( .h1)
+---
+pseudoClass 1:1-1:10 {*}
+  ident 1:2-1:4 "not"
+  arguments 1:5-1:10
+    space 1:6-1:6 " "
+    selector 1:7-1:9
+      class 1:7-1:9
+        ident 1:8-1:9 "h1"
+
+=== s.4 [css less sass scss]
+:not(.h1 )
+---
+pseudoClass 1:1-1:10 {*}
+  ident 1:2-1:4 "not"
+  arguments 1:5-1:10
+    selector 1:6-1:8
+      class 1:6-1:8
+        ident 1:7-1:8 "h1"
+    space 1:9-1:9 " "
+
+=== s.5 [css less sass scss]
+:not( .h1 )
+---
+pseudoClass 1:1-1:11 {*}
+  ident 1:2-1:4 "not"
+  arguments 1:5-1:11
+    space 1:6-1:6 " "
+    selector 1:7-1:9
+      class 1:7-1:9
+        ident 1:8-1:9 "h1"
+    space 1:10-1:10 " "
+
+=== s.6 [css less sass scss]
+:nth-child( odd)
+---
+pseudoClass 1:1-1:16 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:16
+    space 1:12-1:12 " "
+    selector 1:13-1:15
+      typeSelector 1:13-1:15
+        ident 1:13-1:15 "odd"
+
+=== s.7 [css less sass scss]
+:nth-child(odd )
+---
+pseudoClass 1:1-1:16 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:16
+    selector 1:12-1:14
+      typeSelector 1:12-1:14
+        ident 1:12-1:14 "odd"
+    space 1:15-1:15 " "
+
+=== s.8 [css less sass scss]
+:nth-child( odd )
+---
+pseudoClass 1:1-1:17 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:17
+    space 1:12-1:12 " "
+    selector 1:13-1:15
+      typeSelector 1:13-1:15
+        ident 1:13-1:15 "odd"
+    space 1:16-1:16 " "
+
+=== s.9 [css less sass scss]
+:nth-child( 2n+1)
+---
+pseudoClass 1:1-1:17 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:17
+    space 1:12-1:12 " "
+    number 1:13-1:13 "2"
+    ident 1:14-1:14 "n"
+    operator 1:15-1:15 "+"
+    number 1:16-1:16 "1"
+
+=== s.10 [css less sass scss]
+:nth-child(2n+1 )
+---
+pseudoClass 1:1-1:17 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:17
+    number 1:12-1:12 "2"
+    ident 1:13-1:13 "n"
+    operator 1:14-1:14 "+"
+    number 1:15-1:15 "1"
+    space 1:16-1:16 " "
+
+=== s.11 [css less sass scss]
+:nth-child( 2n+1 )
+---
+pseudoClass 1:1-1:18 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:18
+    space 1:12-1:12 " "
+    number 1:13-1:13 "2"
+    ident 1:14-1:14 "n"
+    operator 1:15-1:15 "+"
+    number 1:16-1:16 "1"
+    space 1:17-1:17 " "
+
+=== s.12 [css less sass scss]
+:nth-child( 2n)
+---
+pseudoClass 1:1-1:15 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:15
+    space 1:12-1:12 " "
+    number 1:13-1:13 "2"
+    ident 1:14-1:14 "n"
+
+=== s.13 [css less sass scss]
+:nth-child(2n )
+---
+pseudoClass 1:1-1:15 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:15
+    number 1:12-1:12 "2"
+    ident 1:13-1:13 "n"
+    space 1:14-1:14 " "
+
+=== s.14 [css less sass scss]
+:nth-child( 2n )
+---
+pseudoClass 1:1-1:16 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:16
+    space 1:12-1:12 " "
+    number 1:13-1:13 "2"
+    ident 1:14-1:14 "n"
+    space 1:15-1:15 " "
+
+=== s.15 [css less sass scss]
+:nth-child( 8)
+---
+pseudoClass 1:1-1:14 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:14
+    space 1:12-1:12 " "
+    number 1:13-1:13 "8"
+
+=== s.16 [css less sass scss]
+:nth-child(8 )
+---
+pseudoClass 1:1-1:14 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:14
+    number 1:12-1:12 "8"
+    space 1:13-1:13 " "
+
+=== s.17 [css less sass scss]
+:nth-child( 8 )
+---
+pseudoClass 1:1-1:15 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:15
+    space 1:12-1:12 " "
+    number 1:13-1:13 "8"
+    space 1:14-1:14 " "
+
+=== 4 [sass scss]
+:nth-child(2n)
+---
+pseudoClass 1:1-1:14 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:14
+    number 1:12-1:12 "2"
+    ident 1:13-1:13 "n"
+
+=== 5 [sass scss]
+:nth-child(2n+1)
+---
+pseudoClass 1:1-1:16 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:16
+    number 1:12-1:12 "2"
+    ident 1:13-1:13 "n"
+    operator 1:14-1:14 "+"
+    number 1:15-1:15 "1"
+
+=== 6 [sass scss]
+:nth-child(2n-1)
+---
+pseudoClass 1:1-1:16 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:16
+    number 1:12-1:12 "2"
+    ident 1:13-1:13 "n"
+    operator 1:14-1:14 "-"
+    number 1:15-1:15 "1"
+
+=== 7 [sass scss]
+:nth-child(-2n)
+---
+pseudoClass 1:1-1:15 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:15
+    operator 1:12-1:12 "-"
+    number 1:13-1:13 "2"
+    ident 1:14-1:14 "n"
+
+=== 8 [sass scss]
+:nth-child(-2n+1)
+---
+pseudoClass 1:1-1:17 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:17
+    operator 1:12-1:12 "-"
+    number 1:13-1:13 "2"
+    ident 1:14-1:14 "n"
+    operator 1:15-1:15 "+"
+    number 1:16-1:16 "1"
+
+=== 9 [sass scss]
+:nth-child(-2n-1)
+---
+pseudoClass 1:1-1:17 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:17
+    operator 1:12-1:12 "-"
+    number 1:13-1:13 "2"
+    ident 1:14-1:14 "n"
+    operator 1:15-1:15 "-"
+    number 1:16-1:16 "1"
+
+=== 10 [sass scss]
+:not(.heading)
+---
+pseudoClass 1:1-1:14 {*}
+  ident 1:2-1:4 "not"
+  arguments 1:5-1:14
+    selector 1:6-1:13
+      class 1:6-1:13
+        ident 1:7-1:13 "heading"
+
+=== 11 [sass scss]
+:not(h1)
+---
+pseudoClass 1:1-1:8 {*}
+  ident 1:2-1:4 "not"
+  arguments 1:5-1:8
+    selector 1:6-1:7
+      typeSelector 1:6-1:7
+        ident 1:6-1:7 "h1"
+
+=== 12 [sass scss]
+:not(*)
+---
+pseudoClass 1:1-1:7 {*}
+  ident 1:2-1:4 "not"
+  arguments 1:5-1:7
+    selector 1:6-1:6
+      universalSelector 1:6-1:6
+
+=== 13 [sass scss]
+:not(h1.foo .bar)
+---
+pseudoClass 1:1-1:17 {*}
+  ident 1:2-1:4 "not"
+  arguments 1:5-1:17
+    selector 1:6-1:16
+      typeSelector 1:6-1:7
+        ident 1:6-1:7 "h1"
+      class 1:8-1:11
+        ident 1:9-1:11 "foo"
+      space 1:12-1:12 " "
+      class 1:13-1:16
+        ident 1:14-1:16 "bar"
+
+=== 14 [sass scss]
+:nth-child(n)
+---
+pseudoClass 1:1-1:13 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:13
+    ident 1:12-1:12 "n"
+
+=== 15 [sass scss]
+:nth-child(n+1)
+---
+pseudoClass 1:1-1:15 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:15
+    ident 1:12-1:12 "n"
+    operator 1:13-1:13 "+"
+    number 1:14-1:14 "1"
+
+=== 16 [sass scss]
+:nth-child(-n+2)
+---
+pseudoClass 1:1-1:16 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:16
+    operator 1:12-1:12 "-"
+    ident 1:13-1:13 "n"
+    operator 1:14-1:14 "+"
+    number 1:15-1:15 "2"
+
+=== 17 [sass scss]
+:nth-child(8)
+---
+pseudoClass 1:1-1:13 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:13
+    number 1:12-1:12 "8"
+
+=== interp.0 [sass scss]
+:#{$a}
+---
+pseudoClass 1:1-1:6 {*}
+  interpolation 1:2-1:6
+    variable 1:4-1:5
+      ident 1:5-1:5 "a"
+
+=== interp.3 [sass scss]
+:nth-child(#{$i})
+---
+pseudoClass 1:1-1:17 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:17
+    selector 1:12-1:16
+      typeSelector 1:12-1:16
+        interpolation 1:12-1:16
+          variable 1:14-1:15
+            ident 1:15-1:15 "i"
+
+=== interp.4 [sass scss]
+:nth-child(#{$i}n)
+---
+pseudoClass 1:1-1:18 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:18
+    interpolation 1:12-1:16
+      variable 1:14-1:15
+        ident 1:15-1:15 "i"
+    ident 1:17-1:17 "n"
+
+=== interp.5 [sass scss]
+:nth-child(#{$i}n+1)
+---
+pseudoClass 1:1-1:20 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:20
+    interpolation 1:12-1:16
+      variable 1:14-1:15
+        ident 1:15-1:15 "i"
+    ident 1:17-1:17 "n"
+    operator 1:18-1:18 "+"
+    number 1:19-1:19 "1"
+
+=== interp.5.2 [sass scss]
+:nth-child(#{$i}+1)
+---
+pseudoClass 1:1-1:19 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:19
+    interpolation 1:12-1:16
+      variable 1:14-1:15
+        ident 1:15-1:15 "i"
+    operator 1:17-1:17 "+"
+    number 1:18-1:18 "1"
+
+=== interp.6 [sass scss]
+:nth-child(#{$i}n-1)
+---
+pseudoClass 1:1-1:20 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:20
+    interpolation 1:12-1:16
+      variable 1:14-1:15
+        ident 1:15-1:15 "i"
+    ident 1:17-1:17 "n"
+    operator 1:18-1:18 "-"
+    number 1:19-1:19 "1"
+
+=== interp.6.2 [sass scss]
+:nth-child(#{$i}-1)
+---
+pseudoClass 1:1-1:19 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:19
+    interpolation 1:12-1:16
+      variable 1:14-1:15
+        ident 1:15-1:15 "i"
+    operator 1:17-1:17 "-"
+    number 1:18-1:18 "1"
+
+=== interp.7 [sass scss]
+:nth-child(-#{$i}n)
+---
+pseudoClass 1:1-1:19 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:19
+    operator 1:12-1:12 "-"
+    interpolation 1:13-1:17
+      variable 1:15-1:16
+        ident 1:16-1:16 "i"
+    ident 1:18-1:18 "n"
+
+=== interp.8 [sass scss]
+:nth-child(-#{$i}n+1)
+---
+pseudoClass 1:1-1:21 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:21
+    operator 1:12-1:12 "-"
+    interpolation 1:13-1:17
+      variable 1:15-1:16
+        ident 1:16-1:16 "i"
+    ident 1:18-1:18 "n"
+    operator 1:19-1:19 "+"
+    number 1:20-1:20 "1"
+
+=== interp.8.2 [sass scss]
+:nth-child(-#{$i}n+#{$j})
+---
+pseudoClass 1:1-1:25 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:25
+    operator 1:12-1:12 "-"
+    interpolation 1:13-1:17
+      variable 1:15-1:16
+        ident 1:16-1:16 "i"
+    ident 1:18-1:18 "n"
+    operator 1:19-1:19 "+"
+    interpolation 1:20-1:24
+      variable 1:22-1:23
+        ident 1:23-1:23 "j"
+
+=== interp.9 [sass scss]
+:nth-child(-#{$i}n-1)
+---
+pseudoClass 1:1-1:21 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:21
+    operator 1:12-1:12 "-"
+    interpolation 1:13-1:17
+      variable 1:15-1:16
+        ident 1:16-1:16 "i"
+    ident 1:18-1:18 "n"
+    operator 1:19-1:19 "-"
+    number 1:20-1:20 "1"
+
+=== interp.9.2 [sass scss]
+:nth-child(-#{$i}n-#{$j})
+---
+pseudoClass 1:1-1:25 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:25
+    operator 1:12-1:12 "-"
+    interpolation 1:13-1:17
+      variable 1:15-1:16
+        ident 1:16-1:16 "i"
+    ident 1:18-1:18 "n"
+    operator 1:19-1:19 "-"
+    interpolation 1:20-1:24
+      variable 1:22-1:23
+        ident 1:23-1:23 "j"
+
+=== interp.15 [sass scss]
+:nth-child(n+#{$i})
+---
+pseudoClass 1:1-1:19 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:19
+    ident 1:12-1:12 "n"
+    operator 1:13-1:13 "+"
+    interpolation 1:14-1:18
+      variable 1:16-1:17
+        ident 1:17-1:17 "i"
+
+=== interp.16 [sass scss]
+:nth-child(-n+#{$i})
+---
+pseudoClass 1:1-1:20 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:20
+    operator 1:12-1:12 "-"
+    ident 1:13-1:13 "n"
+    operator 1:14-1:14 "+"
+    interpolation 1:15-1:19
+      variable 1:17-1:18
+        ident 1:18-1:18 "i"
+
+=== nth-of.spaced [css less sass scss]
+:nth-child(2n + 1 of .a)
+---
+pseudoClass 1:1-1:24 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:24
+    number 1:12-1:12 "2"
+    ident 1:13-1:13 "n"
+    space 1:14-1:14 " "
+    operator 1:15-1:15 "+"
+    space 1:16-1:16 " "
+    number 1:17-1:17 "1"
+    space 1:18-1:18 " "
+    ident 1:19-1:20 "of"
+    space 1:21-1:21 " "
+    selector 1:22-1:23
+      class 1:22-1:23
+        ident 1:23-1:23 "a"
+
+=== nth-of.last-child [css less sass scss]
+:nth-last-child(-n+3 of a, .b)
+---
+pseudoClass 1:1-1:30 {*}
+  ident 1:2-1:15 "nth-last-child"
+  arguments 1:16-1:30
+    operator 1:17-1:17 "-"
+    ident 1:18-1:18 "n"
+    operator 1:19-1:19 "+"
+    number 1:20-1:20 "3"
+    space 1:21-1:21 " "
+    ident 1:22-1:23 "of"
+    space 1:24-1:24 " "
+    selector 1:25-1:25
+      typeSelector 1:25-1:25
+        ident 1:25-1:25 "a"
+    delimiter 1:26-1:26 ","
+    space 1:27-1:27 " "
+    selector 1:28-1:29
+      class 1:28-1:29
+        ident 1:29-1:29 "b"
+
+=== nth-of.odd [css less sass scss]
+:nth-child(odd of .a)
+---
+pseudoClass 1:1-1:21 {*}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:21
+    ident 1:12-1:14 "odd"
+    space 1:15-1:15 " "
+    ident 1:16-1:17 "of"
+    space 1:18-1:18 " "
+    selector 1:19-1:20
+      class 1:19-1:20
+        ident 1:20-1:20 "a"
+
+=== nth-of.number [css less sass scss]
+:NTH-CHILD( +5 OF p )
+---
+pseudoClass 1:1-1:21 {*}
+  ident 1:2-1:10 "NTH-CHILD"
+  arguments 1:11-1:21
+    space 1:12-1:12 " "
+    operator 1:13-1:13 "+"
+    number 1:14-1:14 "5"
+    space 1:15-1:15 " "
+    ident 1:16-1:17 "OF"
+    space 1:18-1:18 " "
+    selector 1:19-1:19
+      typeSelector 1:19-1:19
+        ident 1:19-1:19 "p"
+    space 1:20-1:20 " "

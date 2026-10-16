@@ -1,0 +1,36 @@
+=== 14
+a>>b
+---
+selector 1:1-1:4 {less}
+  typeSelector 1:1-1:1
+    ident 1:1-1:1 "a"
+  combinator 1:2-1:3 ">>"
+  typeSelector 1:4-1:4
+    ident 1:4-1:4 "b"
+
+=== 15
+a>>>b
+---
+selector 1:1-1:5 {less}
+  typeSelector 1:1-1:1
+    ident 1:1-1:1 "a"
+  combinator 1:2-1:4 ">>>"
+  typeSelector 1:5-1:5
+    ident 1:5-1:5 "b"
+
+=== issue-114-3
+&2-panda
+---
+selector 1:1-1:8 {less}
+  parentSelector 1:1-1:1 "&"
+  parentSelectorExtension 1:2-1:8
+    number 1:2-1:2 "2"
+    ident 1:3-1:8 "-panda"
+
+=== issue-124
+input&
+---
+selector 1:1-1:6 {less}
+  typeSelector 1:1-1:5
+    ident 1:1-1:5 "input"
+  parentSelector 1:6-1:6 "&"

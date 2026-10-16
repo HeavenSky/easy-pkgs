@@ -1,0 +1,80 @@
+<===> css/test-2.expected.css
+a { color:  red }
+a{color:  red}
+a {color :  red}
+a {color :  /* foo */ red }
+a {color /* bar */ :  red }
+
+<===> css/test-3.expected.css
+a { color:
+    red }
+a{color:
+    red}
+a {color :
+    red}
+a {color :
+    /* foo */ red }
+a {color /* bar */ :
+    red }
+
+<===> css/test.css
+a { color: red }
+a{color:red}
+a {color : red}
+a {color : /* foo */ red }
+a {color /* bar */ : red }
+
+<===> css/test.expected.css
+a { color:red }
+a{color:red}
+a {color :red}
+a {color :/* foo */ red }
+a {color /* bar */ :red }
+
+<===> sass/colon-after-property-name.expected.sass
+a
+  color:  panda
+  top:  0
+
+<===> sass/colon-after-property-name.sass
+a
+  color: panda
+  top:0
+
+<===> sass/colon-before-property-name.expected.sass
+a
+  :color panda
+  :top 0
+
+<===> sass/colon-before-property-name.sass
+a
+  :color panda
+  :top 0
+
+<===> scss/pseudo-elements.expected.scss
+li{
+    float: left;
+
+    a:hover{
+        text-decoration: underline;
+    }
+}
+
+li:before {
+    color: tomato;
+}
+
+<===> scss/pseudo-elements.scss
+li{
+    float:left;
+
+    a:hover{
+        text-decoration:underline;
+    }
+}
+
+li:before {
+    color:tomato;
+}
+
+<===>

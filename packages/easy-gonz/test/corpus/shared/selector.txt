@@ -1,0 +1,667 @@
+=== 0 [css less sass scss]
+test
+---
+selector 1:1-1:4 {*}
+  typeSelector 1:1-1:4
+    ident 1:1-1:4 "test"
+
+=== 1 [css less sass scss]
+.test
+---
+selector 1:1-1:5 {*}
+  class 1:1-1:5
+    ident 1:2-1:5 "test"
+
+=== 2 [css less sass scss]
+#test
+---
+selector 1:1-1:5 {*}
+  id 1:1-1:5
+    ident 1:2-1:5 "test"
+
+=== 3 [css less sass scss]
+[a=b]
+---
+selector 1:1-1:5 {*}
+  attributeSelector 1:1-1:5
+    attributeName 1:2-1:2
+      ident 1:2-1:2 "a"
+    attributeMatch 1:3-1:3 "="
+    attributeValue 1:4-1:4
+      ident 1:4-1:4 "b"
+
+=== 4 [css less sass scss]
+[a=b][c='d']
+---
+selector 1:1-1:12 {*}
+  attributeSelector 1:1-1:5
+    attributeName 1:2-1:2
+      ident 1:2-1:2 "a"
+    attributeMatch 1:3-1:3 "="
+    attributeValue 1:4-1:4
+      ident 1:4-1:4 "b"
+  attributeSelector 1:6-1:12
+    attributeName 1:7-1:7
+      ident 1:7-1:7 "c"
+    attributeMatch 1:8-1:8 "="
+    attributeValue 1:9-1:11
+      string 1:9-1:11 "'d'"
+
+=== 5 [css less sass scss]
+a b
+---
+selector 1:1-1:3 {*}
+  typeSelector 1:1-1:1
+    ident 1:1-1:1 "a"
+  space 1:2-1:2 " "
+  typeSelector 1:3-1:3
+    ident 1:3-1:3 "b"
+
+=== 6 [css less sass scss]
+a+b
+---
+selector 1:1-1:3 {*}
+  typeSelector 1:1-1:1
+    ident 1:1-1:1 "a"
+  combinator 1:2-1:2 "+"
+  typeSelector 1:3-1:3
+    ident 1:3-1:3 "b"
+
+=== 7 [css less sass scss]
+a>b
+---
+selector 1:1-1:3 {*}
+  typeSelector 1:1-1:1
+    ident 1:1-1:1 "a"
+  combinator 1:2-1:2 ">"
+  typeSelector 1:3-1:3
+    ident 1:3-1:3 "b"
+
+=== 8 [css less sass scss]
+a~b
+---
+selector 1:1-1:3 {*}
+  typeSelector 1:1-1:1
+    ident 1:1-1:1 "a"
+  combinator 1:2-1:2 "~"
+  typeSelector 1:3-1:3
+    ident 1:3-1:3 "b"
+
+=== 9 [css less sass scss]
+:nth-child(+3n-2)
+---
+selector 1:1-1:17 {*}
+  pseudoClass 1:1-1:17
+    ident 1:2-1:10 "nth-child"
+    arguments 1:11-1:17
+      operator 1:12-1:12 "+"
+      number 1:13-1:13 "3"
+      ident 1:14-1:14 "n"
+      operator 1:15-1:15 "-"
+      number 1:16-1:16 "2"
+
+=== 10 [css less sass scss]
+a|b
+---
+selector 1:1-1:3 {*}
+  typeSelector 1:1-1:3
+    namePrefix 1:1-1:2
+      namespacePrefix 1:1-1:1
+        ident 1:1-1:1 "a"
+      namespaceSeparator 1:2-1:2 "|"
+    ident 1:3-1:3 "b"
+
+=== 11 [css less sass scss]
+*|*:not(*)
+---
+selector 1:1-1:10 {*}
+  universalSelector 1:1-1:3
+    namePrefix 1:1-1:2
+      namespacePrefix 1:1-1:1
+        ident 1:1-1:1 "*"
+      namespaceSeparator 1:2-1:2 "|"
+  pseudoClass 1:4-1:10
+    ident 1:5-1:7 "not"
+    arguments 1:8-1:10
+      selector 1:9-1:9
+        universalSelector 1:9-1:9
+
+=== 12 [css less sass scss]
+x:not([ABC])
+---
+selector 1:1-1:12 {*}
+  typeSelector 1:1-1:1
+    ident 1:1-1:1 "x"
+  pseudoClass 1:2-1:12
+    ident 1:3-1:5 "not"
+    arguments 1:6-1:12
+      selector 1:7-1:11
+        attributeSelector 1:7-1:11
+          attributeName 1:8-1:10
+            ident 1:8-1:10 "ABC"
+
+=== 13 [css less sass scss]
+:not(el.class-postfix)
+---
+selector 1:1-1:22 {*}
+  pseudoClass 1:1-1:22
+    ident 1:2-1:4 "not"
+    arguments 1:5-1:22
+      selector 1:6-1:21
+        typeSelector 1:6-1:7
+          ident 1:6-1:7 "el"
+        class 1:8-1:21
+          ident 1:9-1:21 "class-postfix"
+
+=== 14 [sass scss]
+#{$classes}
+---
+selector 1:1-1:11 {*}
+  typeSelector 1:1-1:11
+    interpolation 1:1-1:11
+      variable 1:3-1:10
+        ident 1:4-1:10 "classes"
+
+=== 18 [sass scss]
+[a=b].foo
+---
+selector 1:1-1:9 {*}
+  attributeSelector 1:1-1:5
+    attributeName 1:2-1:2
+      ident 1:2-1:2 "a"
+    attributeMatch 1:3-1:3 "="
+    attributeValue 1:4-1:4
+      ident 1:4-1:4 "b"
+  class 1:6-1:9
+    ident 1:7-1:9 "foo"
+
+=== 19 [sass scss]
+%foo
+---
+selector 1:1-1:4 {*}
+  placeholder 1:1-1:4
+    ident 1:2-1:4 "foo"
+
+=== 20 [sass scss]
+a>>b
+---
+selector 1:1-1:4 {*}
+  typeSelector 1:1-1:1
+    ident 1:1-1:1 "a"
+  combinator 1:2-1:3 ">>"
+  typeSelector 1:4-1:4
+    ident 1:4-1:4 "b"
+
+=== c.1 [css less scss]
+a/*test*/+/*test*/b
+---
+selector 1:1-1:19 {*}
+  typeSelector 1:1-1:1
+    ident 1:1-1:1 "a"
+  multilineComment 1:2-1:9 "test"
+  combinator 1:10-1:10 "+"
+  multilineComment 1:11-1:18 "test"
+  typeSelector 1:19-1:19
+    ident 1:19-1:19 "b"
+
+=== c.2 [css less scss]
+a/*test*/>/*test*/b
+---
+selector 1:1-1:19 {*}
+  typeSelector 1:1-1:1
+    ident 1:1-1:1 "a"
+  multilineComment 1:2-1:9 "test"
+  combinator 1:10-1:10 ">"
+  multilineComment 1:11-1:18 "test"
+  typeSelector 1:19-1:19
+    ident 1:19-1:19 "b"
+
+=== c.3 [css less scss]
+a/*test*/~/*test*/b
+---
+selector 1:1-1:19 {*}
+  typeSelector 1:1-1:1
+    ident 1:1-1:1 "a"
+  multilineComment 1:2-1:9 "test"
+  combinator 1:10-1:10 "~"
+  multilineComment 1:11-1:18 "test"
+  typeSelector 1:19-1:19
+    ident 1:19-1:19 "b"
+
+=== c.4 [css less scss]
+a  b  +  c  >  d  ~  e
+---
+selector 1:1-1:22 {*}
+  typeSelector 1:1-1:1
+    ident 1:1-1:1 "a"
+  space 1:2-1:3 "  "
+  typeSelector 1:4-1:4
+    ident 1:4-1:4 "b"
+  space 1:5-1:6 "  "
+  combinator 1:7-1:7 "+"
+  space 1:8-1:9 "  "
+  typeSelector 1:10-1:10
+    ident 1:10-1:10 "c"
+  space 1:11-1:12 "  "
+  combinator 1:13-1:13 ">"
+  space 1:14-1:15 "  "
+  typeSelector 1:16-1:16
+    ident 1:16-1:16 "d"
+  space 1:17-1:18 "  "
+  combinator 1:19-1:19 "~"
+  space 1:20-1:21 "  "
+  typeSelector 1:22-1:22
+    ident 1:22-1:22 "e"
+
+=== s.0 [css less sass scss]
+a    b
+---
+selector 1:1-1:6 {*}
+  typeSelector 1:1-1:1
+    ident 1:1-1:1 "a"
+  space 1:2-1:5 "    "
+  typeSelector 1:6-1:6
+    ident 1:6-1:6 "b"
+
+=== s.1 [css less sass scss]
+a  +  b
+---
+selector 1:1-1:7 {*}
+  typeSelector 1:1-1:1
+    ident 1:1-1:1 "a"
+  space 1:2-1:3 "  "
+  combinator 1:4-1:4 "+"
+  space 1:5-1:6 "  "
+  typeSelector 1:7-1:7
+    ident 1:7-1:7 "b"
+
+=== s.2 [css less sass scss]
+a  >  b
+---
+selector 1:1-1:7 {*}
+  typeSelector 1:1-1:1
+    ident 1:1-1:1 "a"
+  space 1:2-1:3 "  "
+  combinator 1:4-1:4 ">"
+  space 1:5-1:6 "  "
+  typeSelector 1:7-1:7
+    ident 1:7-1:7 "b"
+
+=== s.3 [css less sass scss]
+a  ~  b
+---
+selector 1:1-1:7 {*}
+  typeSelector 1:1-1:1
+    ident 1:1-1:1 "a"
+  space 1:2-1:3 "  "
+  combinator 1:4-1:4 "~"
+  space 1:5-1:6 "  "
+  typeSelector 1:7-1:7
+    ident 1:7-1:7 "b"
+
+=== s.4 [css less sass scss]
+a  b  +  c  >  d  ~  e
+---
+selector 1:1-1:22 {*}
+  typeSelector 1:1-1:1
+    ident 1:1-1:1 "a"
+  space 1:2-1:3 "  "
+  typeSelector 1:4-1:4
+    ident 1:4-1:4 "b"
+  space 1:5-1:6 "  "
+  combinator 1:7-1:7 "+"
+  space 1:8-1:9 "  "
+  typeSelector 1:10-1:10
+    ident 1:10-1:10 "c"
+  space 1:11-1:12 "  "
+  combinator 1:13-1:13 ">"
+  space 1:14-1:15 "  "
+  typeSelector 1:16-1:16
+    ident 1:16-1:16 "d"
+  space 1:17-1:18 "  "
+  combinator 1:19-1:19 "~"
+  space 1:20-1:21 "  "
+  typeSelector 1:22-1:22
+    ident 1:22-1:22 "e"
+
+=== s.5 [css less sass scss]
+a  >>  b
+---
+selector 1:1-1:8 {*}
+  typeSelector 1:1-1:1
+    ident 1:1-1:1 "a"
+  space 1:2-1:3 "  "
+  combinator 1:4-1:5 ">>"
+  space 1:6-1:7 "  "
+  typeSelector 1:8-1:8
+    ident 1:8-1:8 "b"
+
+=== s.6 [css less sass scss]
+a  >>>  b
+---
+selector 1:1-1:9 {*}
+  typeSelector 1:1-1:1
+    ident 1:1-1:1 "a"
+  space 1:2-1:3 "  "
+  combinator 1:4-1:6 ">>>"
+  space 1:7-1:8 "  "
+  typeSelector 1:9-1:9
+    ident 1:9-1:9 "b"
+
+=== c.0 [less scss]
+a/*test*/b
+---
+selector 1:1-1:10 {*}
+  typeSelector 1:1-1:1
+    ident 1:1-1:1 "a"
+  multilineComment 1:2-1:9 "test"
+  typeSelector 1:10-1:10
+    ident 1:10-1:10 "b"
+
+=== issue-100 [less scss]
+&.panda
+---
+selector 1:1-1:7 {*}
+  parentSelector 1:1-1:1 "&"
+  class 1:2-1:7
+    ident 1:3-1:7 "panda"
+
+=== issue-102 [less sass scss]
+> i
+---
+selector 1:1-1:3 {*}
+  combinator 1:1-1:1 ">"
+  space 1:2-1:2 " "
+  typeSelector 1:3-1:3
+    ident 1:3-1:3 "i"
+
+=== issue-102-2 [less sass scss]
+nav.breadcrumb +
+---
+selector 1:1-1:16 {*}
+  typeSelector 1:1-1:3
+    ident 1:1-1:3 "nav"
+  class 1:4-1:14
+    ident 1:5-1:14 "breadcrumb"
+  space 1:15-1:15 " "
+  combinator 1:16-1:16 "+"
+
+=== issue-102-3 [less sass scss]
+>
+---
+selector 1:1-1:1 {*}
+  combinator 1:1-1:1 ">"
+
+=== issue-114 [less sass scss]
+&__element
+---
+selector 1:1-1:10 {*}
+  parentSelector 1:1-1:1 "&"
+  parentSelectorExtension 1:2-1:10
+    ident 1:2-1:10 "__element"
+
+=== issue-114-2 [less sass scss]
+&--modifier
+---
+selector 1:1-1:11 {*}
+  parentSelector 1:1-1:1 "&"
+  parentSelectorExtension 1:2-1:11
+    ident 1:2-1:11 "--modifier"
+
+=== issue-114-3 [sass scss]
+&2-panda
+---
+selector 1:1-1:8 {*}
+  parentSelector 1:1-1:1 "&"
+  parentSelectorExtension 1:2-1:8
+    ident 1:2-1:8 "2-panda"
+
+=== issue-130 [less sass scss]
+> tr > td
+---
+selector 1:1-1:9 {*}
+  combinator 1:1-1:1 ">"
+  space 1:2-1:2 " "
+  typeSelector 1:3-1:4
+    ident 1:3-1:4 "tr"
+  space 1:5-1:5 " "
+  combinator 1:6-1:6 ">"
+  space 1:7-1:7 " "
+  typeSelector 1:8-1:9
+    ident 1:8-1:9 "td"
+
+=== issue-130-2 [less sass scss]
+> .bar .hi
+---
+selector 1:1-1:10 {*}
+  combinator 1:1-1:1 ">"
+  space 1:2-1:2 " "
+  class 1:3-1:6
+    ident 1:4-1:6 "bar"
+  space 1:7-1:7 " "
+  class 1:8-1:10
+    ident 1:9-1:10 "hi"
+
+=== 21 [sass scss]
+a>>>b
+---
+selector 1:1-1:5 {*}
+  typeSelector 1:1-1:1
+    ident 1:1-1:1 "a"
+  combinator 1:2-1:4 ">>>"
+  typeSelector 1:5-1:5
+    ident 1:5-1:5 "b"
+
+=== interp.0 [sass scss]
+[a=b] #{$foo}
+---
+selector 1:1-1:13 {*}
+  attributeSelector 1:1-1:5
+    attributeName 1:2-1:2
+      ident 1:2-1:2 "a"
+    attributeMatch 1:3-1:3 "="
+    attributeValue 1:4-1:4
+      ident 1:4-1:4 "b"
+  space 1:6-1:6 " "
+  typeSelector 1:7-1:13
+    interpolation 1:7-1:13
+      variable 1:9-1:12
+        ident 1:10-1:12 "foo"
+
+=== interp.1 [sass scss]
+[a=b]#{$foo}
+---
+selector 1:1-1:12 {*}
+  attributeSelector 1:1-1:5
+    attributeName 1:2-1:2
+      ident 1:2-1:2 "a"
+    attributeMatch 1:3-1:3 "="
+    attributeValue 1:4-1:4
+      ident 1:4-1:4 "b"
+  interpolation 1:6-1:12
+    variable 1:8-1:11
+      ident 1:9-1:11 "foo"
+
+=== interp.2 [sass scss]
+#{$foo} #{$bar}
+---
+selector 1:1-1:15 {*}
+  typeSelector 1:1-1:7
+    interpolation 1:1-1:7
+      variable 1:3-1:6
+        ident 1:4-1:6 "foo"
+  space 1:8-1:8 " "
+  typeSelector 1:9-1:15
+    interpolation 1:9-1:15
+      variable 1:11-1:14
+        ident 1:12-1:14 "bar"
+
+=== interp.3 [sass scss]
+#{$foo}#{$bar}
+---
+selector 1:1-1:14 {*}
+  typeSelector 1:1-1:14
+    interpolation 1:1-1:7
+      variable 1:3-1:6
+        ident 1:4-1:6 "foo"
+    interpolation 1:8-1:14
+      variable 1:10-1:13
+        ident 1:11-1:13 "bar"
+
+=== interp.4 [sass scss]
+foo#{$bar}
+---
+selector 1:1-1:10 {*}
+  typeSelector 1:1-1:10
+    ident 1:1-1:3 "foo"
+    interpolation 1:4-1:10
+      variable 1:6-1:9
+        ident 1:7-1:9 "bar"
+
+=== interp.5 [sass scss]
+.#{$foo}-bar
+---
+selector 1:1-1:12 {*}
+  class 1:1-1:12
+    interpolation 1:2-1:8
+      variable 1:4-1:7
+        ident 1:5-1:7 "foo"
+    ident 1:9-1:12 "-bar"
+
+=== interp.6 [sass scss]
+.#{$foo}-0
+---
+selector 1:1-1:10 {*}
+  class 1:1-1:10
+    interpolation 1:2-1:8
+      variable 1:4-1:7
+        ident 1:5-1:7 "foo"
+    ident 1:9-1:10 "-0"
+
+=== interp.7 [sass scss]
+.#{$foo}10
+---
+selector 1:1-1:10 {*}
+  class 1:1-1:10
+    interpolation 1:2-1:8
+      variable 1:4-1:7
+        ident 1:5-1:7 "foo"
+    ident 1:9-1:10 "10"
+
+=== interp.8 [sass scss]
+foo[attr]#{$bar}
+---
+selector 1:1-1:16 {*}
+  typeSelector 1:1-1:3
+    ident 1:1-1:3 "foo"
+  attributeSelector 1:4-1:9
+    attributeName 1:5-1:8
+      ident 1:5-1:8 "attr"
+  interpolation 1:10-1:16
+    variable 1:12-1:15
+      ident 1:13-1:15 "bar"
+
+=== issue-110 [sass scss]
+%#{$nani}
+---
+selector 1:1-1:9 {*}
+  placeholder 1:1-1:9
+    interpolation 1:2-1:9
+      variable 1:4-1:8
+        ident 1:5-1:8 "nani"
+
+=== issue-136 [sass scss]
+&#{$var}
+---
+selector 1:1-1:8 {*}
+  parentSelector 1:1-1:1 "&"
+  parentSelectorExtension 1:2-1:8
+    interpolation 1:2-1:8
+      variable 1:4-1:7
+        ident 1:5-1:7 "var"
+
+=== issue-171 [sass scss]
+.-#{$s1}
+---
+selector 1:1-1:8 {*}
+  class 1:1-1:8
+    ident 1:2-1:2 "-"
+    interpolation 1:3-1:8
+      variable 1:5-1:7
+        ident 1:6-1:7 "s1"
+
+=== issue-171-2 [sass scss]
+.-#{$s1}.-#{$s2}
+---
+selector 1:1-1:16 {*}
+  class 1:1-1:8
+    ident 1:2-1:2 "-"
+    interpolation 1:3-1:8
+      variable 1:5-1:7
+        ident 1:6-1:7 "s1"
+  class 1:9-1:16
+    ident 1:10-1:10 "-"
+    interpolation 1:11-1:16
+      variable 1:13-1:15
+        ident 1:14-1:15 "s2"
+
+=== issue-171-3 [sass scss]
+.-#{$s1}-#{$s2}
+---
+selector 1:1-1:15 {*}
+  class 1:1-1:15
+    ident 1:2-1:2 "-"
+    interpolation 1:3-1:8
+      variable 1:5-1:7
+        ident 1:6-1:7 "s1"
+    ident 1:9-1:9 "-"
+    interpolation 1:10-1:15
+      variable 1:12-1:14
+        ident 1:13-1:14 "s2"
+
+=== issue-171-4 [sass scss]
+.-#{$s1}#{$s2}-#{$s3}
+---
+selector 1:1-1:21 {*}
+  class 1:1-1:21
+    ident 1:2-1:2 "-"
+    interpolation 1:3-1:8
+      variable 1:5-1:7
+        ident 1:6-1:7 "s1"
+    interpolation 1:9-1:14
+      variable 1:11-1:13
+        ident 1:12-1:13 "s2"
+    ident 1:15-1:15 "-"
+    interpolation 1:16-1:21
+      variable 1:18-1:20
+        ident 1:19-1:20 "s3"
+
+=== issue-171-5 [sass scss]
+&-#{$s1}
+---
+selector 1:1-1:8 {*}
+  parentSelector 1:1-1:1 "&"
+  parentSelectorExtension 1:2-1:8
+    ident 1:2-1:2 "-"
+    interpolation 1:3-1:8
+      variable 1:5-1:7
+        ident 1:6-1:7 "s1"
+
+=== issue-171-6 [sass scss]
+&--#{$s1}
+---
+selector 1:1-1:9 {*}
+  parentSelector 1:1-1:1 "&"
+  parentSelectorExtension 1:2-1:9
+    ident 1:2-1:3 "--"
+    interpolation 1:4-1:9
+      variable 1:6-1:8
+        ident 1:7-1:8 "s1"
+
+=== issue-171-7 [sass scss]
+&----
+---
+selector 1:1-1:5 {*}
+  parentSelector 1:1-1:1 "&"
+  parentSelectorExtension 1:2-1:5
+    ident 1:2-1:5 "----"

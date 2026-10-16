@@ -1,0 +1,82 @@
+{
+  "name": "easy-comb",
+  "description": "Sort properties and unify the code style of CSS, Less, SCSS and Sass files, with the csscomb command and config files you already use",
+  "version": "0.0.2",
+  "keywords": [
+    "csscomb",
+    "css",
+    "formatter",
+    "less",
+    "sass",
+    "scss",
+    "sort",
+    "properties",
+    "style"
+  ],
+  "homepage": "https://github.com/HeavenSky/easy-pkgs/tree/main/packages/easy-comb#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HeavenSky/easy-pkgs.git",
+    "directory": "packages/easy-comb"
+  },
+  "license": "MIT",
+  "author": "calla <aurora.calla@outlook.com>",
+  "contributors": [
+    "Mikhail Troshev <mishanga@yandex-team.ru>",
+    "Tony Ganch <tonyganch+github@gmail.com> (http://tonyganch.com/)"
+  ],
+  "engines": {
+    "node": "^16.17.0 || >=18.3.0"
+  },
+  "dependencies": {
+    "tinyglobby": "^0.2.17"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^26.6.5",
+    "mdn-data": "^2.37.2",
+    "mocha": "^11.8.0",
+    "oxlint": "^1.88.0",
+    "stylelint-config-recess-order": "^7.8.0",
+    "typescript": "^7.0.2"
+  },
+  "type": "module",
+  "main": "./dist/csscomb.js",
+  "types": "./dist/csscomb.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/csscomb.d.ts",
+      "default": "./dist/csscomb.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "CHANGELOG.md",
+    "bin",
+    "dist",
+    "vendor"
+  ],
+  "bin": {
+    "csscomb": "./bin/csscomb.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "mocha",
+    "test:official": "node ../_official_style_suites/comb.mjs",
+    "lint": "oxlint --fix",
+    "lint:check": "oxlint",
+    "sort-order": "node scripts/sort-order.ts",
+    "prepack": "npm run build",
+    "vendor": "node scripts/vendor-gonzales.ts"
+  },
+  "imports": {
+    "#gonzales-pe": {
+      "types": "./vendor/gonzales-pe/gonzales.d.cts",
+      "default": "./vendor/gonzales-pe/src/gonzales.js"
+    }
+  },
+  "bugs": {
+    "url": "https://github.com/HeavenSky/easy-pkgs/issues"
+  }
+}

@@ -1,0 +1,49 @@
+<===> css/test-2.expected.css
+a { color  : red }
+a{color  :red}
+a {color  : red}
+a {color  : /* foo */ red }
+a {color /* bar */  : red }
+
+<===> css/test-3.expected.css
+a { color
+    : red }
+a{color
+    :red}
+a {color
+    : red}
+a {color
+    : /* foo */ red }
+a {color /* bar */
+    : red }
+
+<===> css/test.css
+a { color: red }
+a{color:red}
+a {color : red}
+a {color : /* foo */ red }
+a {color /* bar */ : red }
+
+<===> css/test.expected.css
+a { color: red }
+a{color:red}
+a {color: red}
+a {color: /* foo */ red }
+a {color /* bar */: red }
+
+<===> sass/test.expected.sass
+a
+  color : tomato
+  top : 0
+
+<===> sass/test.sass
+a
+  color: tomato
+  top: 0
+
+<===> sass/test2.sass
+a
+  :color tomato
+  :top 0
+
+<===>

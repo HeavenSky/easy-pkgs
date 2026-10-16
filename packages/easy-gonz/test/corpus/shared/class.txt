@@ -1,0 +1,135 @@
+=== 0 [css less]
+.abc
+---
+class 1:1-1:4 {*}
+  ident 1:2-1:4 "abc"
+
+=== 0 [sass scss]
+.foo
+---
+class 1:1-1:4 {*}
+  ident 1:2-1:4 "foo"
+
+=== 1 [css less]
+.abc-nani
+---
+class 1:1-1:9 {*}
+  ident 1:2-1:9 "abc-nani"
+
+=== 1 [sass scss]
+.foo-bar
+---
+class 1:1-1:8 {*}
+  ident 1:2-1:8 "foo-bar"
+
+=== interp.0 [sass scss]
+.foo-#{$bar}
+---
+class 1:1-1:12 {*}
+  ident 1:2-1:5 "foo-"
+  interpolation 1:6-1:12
+    variable 1:8-1:11
+      ident 1:9-1:11 "bar"
+
+=== interp.1 [sass scss]
+.#{$foo}
+---
+class 1:1-1:8 {*}
+  interpolation 1:2-1:8
+    variable 1:4-1:7
+      ident 1:5-1:7 "foo"
+
+=== interp.2 [sass scss]
+.#{$foo}bar
+---
+class 1:1-1:11 {*}
+  interpolation 1:2-1:8
+    variable 1:4-1:7
+      ident 1:5-1:7 "foo"
+  ident 1:9-1:11 "bar"
+
+=== interp.3 [sass scss]
+.#{$foo}1
+---
+class 1:1-1:9 {*}
+  interpolation 1:2-1:8
+    variable 1:4-1:7
+      ident 1:5-1:7 "foo"
+  ident 1:9-1:9 "1"
+
+=== interp.4 [sass scss]
+.#{$foo}#{$bar}
+---
+class 1:1-1:15 {*}
+  interpolation 1:2-1:8
+    variable 1:4-1:7
+      ident 1:5-1:7 "foo"
+  interpolation 1:9-1:15
+    variable 1:11-1:14
+      ident 1:12-1:14 "bar"
+
+=== interp.5 [sass scss]
+.#{$foo}-bar
+---
+class 1:1-1:12 {*}
+  interpolation 1:2-1:8
+    variable 1:4-1:7
+      ident 1:5-1:7 "foo"
+  ident 1:9-1:12 "-bar"
+
+=== interp.6 [sass scss]
+.#{$foo}-1
+---
+class 1:1-1:10 {*}
+  interpolation 1:2-1:8
+    variable 1:4-1:7
+      ident 1:5-1:7 "foo"
+  ident 1:9-1:10 "-1"
+
+=== interp.7 [sass scss]
+.#{$foo}-#{$bar}
+---
+class 1:1-1:16 {*}
+  interpolation 1:2-1:8
+    variable 1:4-1:7
+      ident 1:5-1:7 "foo"
+  ident 1:9-1:9 "-"
+  interpolation 1:10-1:16
+    variable 1:12-1:15
+      ident 1:13-1:15 "bar"
+
+=== interp.8 [sass scss]
+.#{$foo}a#{$bar}
+---
+class 1:1-1:16 {*}
+  interpolation 1:2-1:8
+    variable 1:4-1:7
+      ident 1:5-1:7 "foo"
+  ident 1:9-1:9 "a"
+  interpolation 1:10-1:16
+    variable 1:12-1:15
+      ident 1:13-1:15 "bar"
+
+=== interp.9 [sass scss]
+.#{$foo}1#{$bar}
+---
+class 1:1-1:16 {*}
+  interpolation 1:2-1:8
+    variable 1:4-1:7
+      ident 1:5-1:7 "foo"
+  ident 1:9-1:9 "1"
+  interpolation 1:10-1:16
+    variable 1:12-1:15
+      ident 1:13-1:15 "bar"
+
+=== interp.10 [sass scss]
+.#{$foo}--#{$bar}
+---
+class 1:1-1:17 {*}
+  interpolation 1:2-1:8
+    variable 1:4-1:7
+      ident 1:5-1:7 "foo"
+  ident 1:9-1:10 "--"
+  interpolation 1:11-1:17
+    variable 1:13-1:16
+      ident 1:14-1:16 "bar"

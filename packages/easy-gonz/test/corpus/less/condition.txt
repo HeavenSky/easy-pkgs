@@ -1,0 +1,118 @@
+=== 0
+when (lightness(@a) >= 50%)
+---
+condition 1:1-1:27 {less}
+  ident 1:1-1:4 "when"
+  space 1:5-1:5 " "
+  parentheses 1:6-1:27
+    function 1:7-1:19
+      ident 1:7-1:15 "lightness"
+      arguments 1:16-1:19
+        variable 1:17-1:18
+          ident 1:18-1:18 "a"
+    space 1:20-1:20 " "
+    operator 1:21-1:21 ">"
+    operator 1:22-1:22 "="
+    space 1:23-1:23 " "
+    percentage 1:24-1:26
+      number 1:24-1:25 "50"
+
+=== 1
+when (@a)
+---
+condition 1:1-1:9 {less}
+  ident 1:1-1:4 "when"
+  space 1:5-1:5 " "
+  parentheses 1:6-1:9
+    variable 1:7-1:8
+      ident 1:8-1:8 "a"
+
+=== 2
+when (@a = true)
+---
+condition 1:1-1:16 {less}
+  ident 1:1-1:4 "when"
+  space 1:5-1:5 " "
+  parentheses 1:6-1:16
+    variable 1:7-1:8
+      ident 1:8-1:8 "a"
+    space 1:9-1:9 " "
+    operator 1:10-1:10 "="
+    space 1:11-1:11 " "
+    ident 1:12-1:15 "true"
+
+=== 3
+when (@a > 10), (@a < -10)
+---
+condition 1:1-1:26 {less}
+  ident 1:1-1:4 "when"
+  space 1:5-1:5 " "
+  parentheses 1:6-1:14
+    variable 1:7-1:8
+      ident 1:8-1:8 "a"
+    space 1:9-1:9 " "
+    operator 1:10-1:10 ">"
+    space 1:11-1:11 " "
+    number 1:12-1:13 "10"
+  delimiter 1:15-1:15 ","
+  space 1:16-1:16 " "
+  parentheses 1:17-1:26
+    variable 1:18-1:19
+      ident 1:19-1:19 "a"
+    space 1:20-1:20 " "
+    operator 1:21-1:21 "<"
+    space 1:22-1:22 " "
+    operator 1:23-1:23 "-"
+    number 1:24-1:25 "10"
+
+=== 4
+when (isnumber(@b))
+---
+condition 1:1-1:19 {less}
+  ident 1:1-1:4 "when"
+  space 1:5-1:5 " "
+  parentheses 1:6-1:19
+    function 1:7-1:18
+      ident 1:7-1:14 "isnumber"
+      arguments 1:15-1:18
+        variable 1:16-1:17
+          ident 1:17-1:17 "b"
+
+=== 5
+when not (@b > 0)
+---
+condition 1:1-1:17 {less}
+  ident 1:1-1:4 "when"
+  space 1:5-1:5 " "
+  ident 1:6-1:8 "not"
+  space 1:9-1:9 " "
+  parentheses 1:10-1:17
+    variable 1:11-1:12
+      ident 1:12-1:12 "b"
+    space 1:13-1:13 " "
+    operator 1:14-1:14 ">"
+    space 1:15-1:15 " "
+    number 1:16-1:16 "0"
+
+=== 6
+when (isnumber(@a)) and (@a > 0)
+---
+condition 1:1-1:32 {less}
+  ident 1:1-1:4 "when"
+  space 1:5-1:5 " "
+  parentheses 1:6-1:19
+    function 1:7-1:18
+      ident 1:7-1:14 "isnumber"
+      arguments 1:15-1:18
+        variable 1:16-1:17
+          ident 1:17-1:17 "a"
+  space 1:20-1:20 " "
+  ident 1:21-1:23 "and"
+  space 1:24-1:24 " "
+  parentheses 1:25-1:32
+    variable 1:26-1:27
+      ident 1:27-1:27 "a"
+    space 1:28-1:28 " "
+    operator 1:29-1:29 ">"
+    space 1:30-1:30 " "
+    number 1:31-1:31 "0"

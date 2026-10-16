@@ -1,0 +1,39 @@
+=== 0
+/*test
+---
+multilineComment 1:1-1:6 {sass} "test"
+
+=== 1
+/*test*/
+---
+multilineComment 1:1-1:8 {sass} "test"
+
+=== 2
+/*Nice
+  comment
+---
+multilineComment 1:1-2:9 {sass} "Nice\n  comment"
+
+=== 3
+/* Tomatos
+      are
+    red
+---
+multilineComment 1:1-3:7 {sass} " Tomatos\n      are\n    red"
+
+=== issue-252
+/**
+  foo "bar
+
+  .icon-home
+    width: $w
+*/
+---
+multilineComment 1:1-6:2 {sass} "*\n  foo \"bar\n\n  .icon-home\n    width: $w\n"
+
+=== issue-252-2
+/**
+  foo
+*/
+---
+multilineComment 1:1-3:2 {sass} "*\n  foo\n"

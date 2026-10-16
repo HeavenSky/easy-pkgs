@@ -1,0 +1,31 @@
+=== 0 [sass scss]
+@include nani
+---
+include 1:1-1:13 {*}
+  atkeyword 1:1-1:8
+    ident 1:2-1:8 "include"
+  space 1:9-1:9 " "
+  ident 1:10-1:13 "nani"
+
+=== 2 [sass scss]
+@include nani(10)
+---
+include 1:1-1:17 {*}
+  atkeyword 1:1-1:8
+    ident 1:2-1:8 "include"
+  space 1:9-1:9 " "
+  ident 1:10-1:13 "nani"
+  arguments 1:14-1:17
+    number 1:15-1:16 "10"
+
+=== 3 [sass scss]
+@include nani($v)
+---
+include 1:1-1:17 {*}
+  atkeyword 1:1-1:8
+    ident 1:2-1:8 "include"
+  space 1:9-1:9 " "
+  ident 1:10-1:13 "nani"
+  arguments 1:14-1:17
+    variable 1:15-1:16
+      ident 1:16-1:16 "v"

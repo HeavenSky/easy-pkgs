@@ -1,0 +1,4 @@
+=== 0 [css less sass scss]
+|
+---
+namespaceSeparator 1:1-1:1 {*} "|"

@@ -1,0 +1,25 @@
+=== 0
+@if 1 > 2 { color: tomato; }
+---
+conditionalStatement 1:1-1:28 {scss}
+  condition 1:1-1:9
+    atkeyword 1:1-1:3
+      ident 1:2-1:3 "if"
+    space 1:4-1:4 " "
+    number 1:5-1:5 "1"
+    space 1:6-1:6 " "
+    operator 1:7-1:7 ">"
+    space 1:8-1:8 " "
+    number 1:9-1:9 "2"
+  space 1:10-1:10 " "
+  block 1:11-1:28
+    space 1:12-1:12 " "
+    declaration 1:13-1:25
+      property 1:13-1:17
+        ident 1:13-1:17 "color"
+      propertyDelimiter 1:18-1:18 ":"
+      space 1:19-1:19 " "
+      value 1:20-1:25
+        ident 1:20-1:25 "tomato"
+    declarationDelimiter 1:26-1:26 ";"
+    space 1:27-1:27 " "

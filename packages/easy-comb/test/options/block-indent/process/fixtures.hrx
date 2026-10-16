@@ -1,0 +1,217 @@
+<===> css/issue-379.css
+.pageArea #header {
+color: red;
+}
+
+<===> css/issue-379.expected.css
+.pageArea #header {
+    color: red;
+    }
+
+<===> css/test-2.expected.css
+a {color: tomato; top: 0;}
+
+a { color: tomato;
+    top: 0; }
+
+a { color: tomato;
+    top: 0; }
+
+a {
+    color: tomato;
+    top: 0; }
+
+a {
+    color: tomato;
+    top: 0;
+    }
+
+a {
+    color: tomato;
+    top: 0;
+    }
+
+@media print { a {color: tomato; top: 0; } }
+
+@media print {
+    a {
+        color: tomato;
+        top: 0;
+        }
+    }
+
+<===> css/test-3.expected.css
+a {color: tomato; top: 0;
+}
+
+a { color: tomato;
+    top: 0;
+}
+
+a { color: tomato;
+    top: 0;
+}
+
+a {
+    color: tomato;
+    top: 0;
+}
+
+a {
+    color: tomato;
+    top: 0;
+}
+
+a {
+    color: tomato;
+    top: 0;
+}
+
+@media print { a {color: tomato; top: 0;
+    }
+}
+
+@media print {
+    a {
+        color: tomato;
+        top: 0;
+    }
+}
+
+<===> css/test.css
+a {color: tomato; top: 0;}
+
+a { color: tomato;
+top: 0; }
+
+a { color: tomato;
+    top: 0; }
+
+a {
+color: tomato;
+top: 0; }
+
+a {
+color: tomato;
+top: 0;
+}
+
+ a {
+    color: tomato;
+  top: 0;
+   }
+
+@media print { a {color: tomato; top: 0; } }
+
+   @media print {
+a {
+    color: tomato;
+  top: 0;
+   }
+   }
+
+<===> css/test.expected.css
+a {color: tomato; top: 0;}
+
+a { color: tomato;
+top: 0; }
+
+a { color: tomato;
+top: 0; }
+
+a {
+color: tomato;
+top: 0; }
+
+a {
+color: tomato;
+top: 0;
+}
+
+a {
+color: tomato;
+top: 0;
+}
+
+@media print { a {color: tomato; top: 0; } }
+
+@media print {
+a {
+color: tomato;
+top: 0;
+}
+}
+
+<===> sass/block.expected.sass
+a
+  color: tomato
+  top: 0
+
+p
+  bottom: 0
+
+<===> sass/block.sass
+a
+    color: tomato
+    top: 0
+
+p
+    bottom: 0
+
+<===> sass/mixin.expected.sass
+@mixin sexy-border($color, $width: 1px)
+    border:
+        color: $color
+        width: $width
+        style: dashed
+
+p
+    +sexy-border(blue)
+
+<===> sass/mixin.sass
+@mixin sexy-border($color, $width: 1px)
+  border:
+    color: $color
+    width: $width
+    style: dashed
+
+p
+  +sexy-border(blue)
+
+<===> sass/nested-ruleset.expected.sass
+a
+  color: tomato
+  top: 0
+
+  p
+    bottom: 0
+
+  &:hover
+    color: yellow
+
+<===> sass/nested-ruleset.sass
+a
+    color: tomato
+    top: 0
+
+    p
+        bottom: 0
+
+    &:hover
+        color: yellow
+
+<===> scss/nested-include.expected.scss
+li{
+  @include respond-to(mobile){ float: none; }
+  float: left;
+  width: 25%;
+  }
+
+<===> scss/nested-include.scss
+li{
+    @include respond-to(mobile){ float: none; }
+    float: left;
+    width: 25%;
+}
+
+<===>

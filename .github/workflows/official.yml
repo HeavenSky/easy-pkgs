@@ -1,0 +1,45 @@
+# 用各语法的官方测试集检验 easy-gonz 与 easy-comb; 语料按 packages/_official_style_suites/suites.json 钉死的版本下载, 不入库.
+# 每个包提交已知失败基线(test/official-baseline.json): 新增失败即失败; 修好的用例要随修复用 --update 移出基线.
+# 每周定时运行一次, 在升级语料版本前发现上游语料或依赖带来的漂移.
+name: Official suites
+run-name: "Official suites ${{ github.event_name == 'pull_request' && format('PR #{0}', github.event.number) || github.event_name }}"
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: official-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  official:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.x
+      - uses: actions/cache@v6
+        with:
+          path: .cache/official
+          key: official-${{ hashFiles('packages/_official_style_suites/suites.json') }}
+      - run: npm ci
+        working-directory: packages/_official_style_suites
+      - run: node packages/_official_style_suites/fetch.mjs
+      - run: npm run test:official
+        working-directory: packages/easy-gonz
+      # 判定脚本直接加载 easy-comb 的源码, 需要它的运行时依赖
+      - run: npm ci
+        working-directory: packages/easy-comb
+      - run: npm run test:official
+        working-directory: packages/easy-comb

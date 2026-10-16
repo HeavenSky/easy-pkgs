@@ -1,0 +1,257 @@
+=== 0
+{@include nani}
+---
+block 1:1-1:15 {scss}
+  include 1:2-1:14
+    atkeyword 1:2-1:9
+      ident 1:3-1:9 "include"
+    space 1:10-1:10 " "
+    ident 1:11-1:14 "nani"
+
+=== 1
+{@extend .nani}
+---
+block 1:1-1:15 {scss}
+  extend 1:2-1:14
+    atkeyword 1:2-1:8
+      ident 1:3-1:8 "extend"
+    space 1:9-1:9 " "
+    selector 1:10-1:14
+      class 1:10-1:14
+        ident 1:11-1:14 "nani"
+
+=== 2
+{
+  p1:v1; // comment
+  p2:v2
+}
+---
+block 1:1-4:1 {scss}
+  space 1:2-2:2 "\n  "
+  declaration 2:3-2:7
+    property 2:3-2:4
+      ident 2:3-2:4 "p1"
+    propertyDelimiter 2:5-2:5 ":"
+    value 2:6-2:7
+      ident 2:6-2:7 "v1"
+  declarationDelimiter 2:8-2:8 ";"
+  space 2:9-2:9 " "
+  singlelineComment 2:10-2:19 " comment"
+  space 2:20-3:2 "\n  "
+  declaration 3:3-3:7
+    property 3:3-3:4
+      ident 3:3-3:4 "p2"
+    propertyDelimiter 3:5-3:5 ":"
+    value 3:6-3:7
+      ident 3:6-3:7 "v2"
+  space 3:8-3:8 "\n"
+
+=== 3
+{
+    @extend .nani
+}
+---
+block 1:1-3:1 {scss}
+  space 1:2-2:4 "\n    "
+  extend 2:5-2:17
+    atkeyword 2:5-2:11
+      ident 2:6-2:11 "extend"
+    space 2:12-2:12 " "
+    selector 2:13-2:17
+      class 2:13-2:17
+        ident 2:14-2:17 "nani"
+  space 2:18-2:18 "\n"
+
+=== 4
+{
+    float:left;
+    a:hover {color:tomato;}
+}
+---
+block 1:1-4:1 {scss}
+  space 1:2-2:4 "\n    "
+  declaration 2:5-2:14
+    property 2:5-2:9
+      ident 2:5-2:9 "float"
+    propertyDelimiter 2:10-2:10 ":"
+    value 2:11-2:14
+      ident 2:11-2:14 "left"
+  declarationDelimiter 2:15-2:15 ";"
+  space 2:16-3:4 "\n    "
+  ruleset 3:5-3:27
+    selector 3:5-3:11
+      typeSelector 3:5-3:5
+        ident 3:5-3:5 "a"
+      pseudoClass 3:6-3:11
+        ident 3:7-3:11 "hover"
+    space 3:12-3:12 " "
+    block 3:13-3:27
+      declaration 3:14-3:25
+        property 3:14-3:18
+          ident 3:14-3:18 "color"
+        propertyDelimiter 3:19-3:19 ":"
+        value 3:20-3:25
+          ident 3:20-3:25 "tomato"
+      declarationDelimiter 3:26-3:26 ";"
+  space 3:28-3:28 "\n"
+
+=== 5
+{
+    float:left;
+    @include nani {color:tomato;}
+    }
+---
+block 1:1-4:5 {scss}
+  space 1:2-2:4 "\n    "
+  declaration 2:5-2:14
+    property 2:5-2:9
+      ident 2:5-2:9 "float"
+    propertyDelimiter 2:10-2:10 ":"
+    value 2:11-2:14
+      ident 2:11-2:14 "left"
+  declarationDelimiter 2:15-2:15 ";"
+  space 2:16-3:4 "\n    "
+  include 3:5-3:33
+    atkeyword 3:5-3:12
+      ident 3:6-3:12 "include"
+    space 3:13-3:13 " "
+    ident 3:14-3:17 "nani"
+    space 3:18-3:18 " "
+    block 3:19-3:33
+      declaration 3:20-3:31
+        property 3:20-3:24
+          ident 3:20-3:24 "color"
+        propertyDelimiter 3:25-3:25 ":"
+        value 3:26-3:31
+          ident 3:26-3:31 "tomato"
+      declarationDelimiter 3:32-3:32 ";"
+  space 3:34-4:4 "\n    "
+
+=== 6
+{filter: alpha(opacity=42)}
+---
+block 1:1-1:27 {scss}
+  declaration 1:2-1:26
+    property 1:2-1:7
+      ident 1:2-1:7 "filter"
+    propertyDelimiter 1:8-1:8 ":"
+    space 1:9-1:9 " "
+    value 1:10-1:26
+      function 1:10-1:26
+        ident 1:10-1:14 "alpha"
+        arguments 1:15-1:26
+          ident 1:16-1:22 "opacity"
+          operator 1:23-1:23 "="
+          number 1:24-1:25 "42"
+
+=== nested.mixin
+{
+  @mixin bar {
+    color: tomato;
+  }
+}
+---
+block 1:1-5:1 {scss}
+  space 1:2-2:2 "\n  "
+  mixin 2:3-4:3
+    atkeyword 2:3-2:8
+      ident 2:4-2:8 "mixin"
+    space 2:9-2:9 " "
+    ident 2:10-2:12 "bar"
+    space 2:13-2:13 " "
+    block 2:14-4:3
+      space 2:15-3:4 "\n    "
+      declaration 3:5-3:17
+        property 3:5-3:9
+          ident 3:5-3:9 "color"
+        propertyDelimiter 3:10-3:10 ":"
+        space 3:11-3:11 " "
+        value 3:12-3:17
+          ident 3:12-3:17 "tomato"
+      declarationDelimiter 3:18-3:18 ";"
+      space 3:19-4:2 "\n  "
+  space 4:4-4:4 "\n"
+
+=== custom-property.raw
+{
+  --a: {b: c};
+  --d: e!f;
+  --g: (h; i)
+}
+---
+block 1:1-5:1 {scss}
+  space 1:2-2:2 "\n  "
+  declaration 2:3-2:13
+    customProperty 2:3-2:5
+      ident 2:5-2:5 "a"
+    propertyDelimiter 2:6-2:6 ":"
+    space 2:7-2:7 " "
+    value 2:8-2:13
+      raw 2:8-2:13 "{b: c}"
+  declarationDelimiter 2:14-2:14 ";"
+  space 2:15-3:2 "\n  "
+  declaration 3:3-3:10
+    customProperty 3:3-3:5
+      ident 3:5-3:5 "d"
+    propertyDelimiter 3:6-3:6 ":"
+    space 3:7-3:7 " "
+    value 3:8-3:10
+      raw 3:8-3:10 "e!f"
+  declarationDelimiter 3:11-3:11 ";"
+  space 3:12-4:2 "\n  "
+  declaration 4:3-4:13
+    customProperty 4:3-4:5
+      ident 4:5-4:5 "g"
+    propertyDelimiter 4:6-4:6 ":"
+    space 4:7-4:7 " "
+    value 4:8-4:13
+      parentheses 4:8-4:13
+        raw 4:9-4:12 "h; i"
+  space 4:14-4:14 "\n"
+
+=== custom-property.empty
+{--a:; --b: }
+---
+block 1:1-1:13 {scss}
+  declaration 1:2-1:5
+    customProperty 1:2-1:4
+      ident 1:4-1:4 "a"
+    propertyDelimiter 1:5-1:5 ":"
+    value 1:6-1:5
+  declarationDelimiter 1:6-1:6 ";"
+  space 1:7-1:7 " "
+  declaration 1:8-1:12
+    customProperty 1:8-1:10
+      ident 1:10-1:10 "b"
+    propertyDelimiter 1:11-1:11 ":"
+    space 1:12-1:12 " "
+    value 1:13-1:12
+
+=== custom-property.dashed
+{--: a; --1: b; ---: c}
+---
+block 1:1-1:23 {scss}
+  declaration 1:2-1:6
+    customProperty 1:2-1:3
+    propertyDelimiter 1:4-1:4 ":"
+    space 1:5-1:5 " "
+    value 1:6-1:6
+      ident 1:6-1:6 "a"
+  declarationDelimiter 1:7-1:7 ";"
+  space 1:8-1:8 " "
+  declaration 1:9-1:14
+    customProperty 1:9-1:11
+      ident 1:11-1:11 "1"
+    propertyDelimiter 1:12-1:12 ":"
+    space 1:13-1:13 " "
+    value 1:14-1:14
+      ident 1:14-1:14 "b"
+  declarationDelimiter 1:15-1:15 ";"
+  space 1:16-1:16 " "
+  declaration 1:17-1:22
+    customProperty 1:17-1:19
+      ident 1:19-1:19 "-"
+    propertyDelimiter 1:20-1:20 ":"
+    space 1:21-1:21 " "
+    value 1:22-1:22
+      ident 1:22-1:22 "c"

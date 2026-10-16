@@ -1,0 +1,11 @@
+=== prefix.0
+.foo-*
+---
+class 1:1-1:6 {css}
+  ident 1:2-1:6 "foo-*"
+
+=== prefix.1
+.foo-bar-*
+---
+class 1:1-1:10 {css}
+  ident 1:2-1:10 "foo-bar-*"

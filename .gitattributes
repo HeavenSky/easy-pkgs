@@ -1,0 +1,7 @@
+# 要求逐字节保留的测试数据: 语料与 HRX 归档按 \n 切分且含原始 CR, 不能被 autocrlf 改写
+packages/easy-gonz/test/corpus/** -text
+packages/easy-comb/test/**/fixtures.hrx -text
+packages/easy-np/test/fixtures/windows-shebang/bin/crlf.js -text
+packages/easy-npd/test/fixtures/windows-shebang/bin/crlf.js -text
+*.tgz binary
+*.tar binary

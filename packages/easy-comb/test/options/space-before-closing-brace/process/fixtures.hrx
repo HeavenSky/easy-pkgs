@@ -1,0 +1,35 @@
+<===> css/test-2.expected.css
+a{top: 0  }
+a {top: 0  }
+
+@media print{a{top: 0  }  }
+@media print { a { top: 0  }  }
+
+<===> css/test-3.expected.css
+a{top: 0
+    }
+a {top: 0
+    }
+
+@media print{a{top: 0
+    }
+    }
+@media print { a { top: 0
+    }
+    }
+
+<===> css/test.css
+a{top: 0}
+a {top: 0 }
+
+@media print{a{top: 0}}
+@media print { a { top: 0 } }
+
+<===> css/test.expected.css
+a{top: 0}
+a {top: 0}
+
+@media print{a{top: 0}}
+@media print { a { top: 0}}
+
+<===>

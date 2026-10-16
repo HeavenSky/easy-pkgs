@@ -1,0 +1,45 @@
+<===> css/test-2.expected.css
+a,  b { color: red }
+a,  b { color: red }
+a ,  b { color: red }
+a,  b { color: red }
+a+b,  c>d,  e{ color: red }
+<===> css/test-3.expected.css
+a,
+    b { color: red }
+a,
+    b { color: red }
+a ,
+    b { color: red }
+a,
+    b { color: red }
+a+b,
+    c>d,
+    e{ color: red }
+<===> css/test.css
+a,b { color: red }
+a, b { color: red }
+a ,b { color: red }
+a,
+b { color: red }
+a+b,c>d,e{ color: red }
+<===> css/test.expected.css
+a,b { color: red }
+a,b { color: red }
+a ,b { color: red }
+a,b { color: red }
+a+b,c>d,e{ color: red }
+<===> sass/issue-238.expected.sass
+html,
+body,
+p
+  background: #fff
+  color: #000
+
+<===> sass/issue-238.sass
+html,
+body, p
+  background: #fff
+  color: #000
+
+<===>

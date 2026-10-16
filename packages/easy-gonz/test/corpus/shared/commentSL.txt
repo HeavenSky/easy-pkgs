@@ -1,0 +1,9 @@
+=== 0 [less sass scss]
+//test
+---
+singlelineComment 1:1-1:6 {*} "test"
+
+=== 1 [less sass scss]
+//   test
+---
+singlelineComment 1:1-1:9 {*} "   test"

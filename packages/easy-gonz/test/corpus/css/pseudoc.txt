@@ -1,0 +1,90 @@
+=== relative.0
+:has(> .b)
+---
+pseudoClass 1:1-1:10 {css}
+  ident 1:2-1:4 "has"
+  arguments 1:5-1:10
+    selector 1:6-1:9
+      combinator 1:6-1:6 ">"
+      space 1:7-1:7 " "
+      class 1:8-1:9
+        ident 1:9-1:9 "b"
+
+=== relative.1
+:has(+ a, ~ .c)
+---
+pseudoClass 1:1-1:15 {css}
+  ident 1:2-1:4 "has"
+  arguments 1:5-1:15
+    selector 1:6-1:8
+      combinator 1:6-1:6 "+"
+      space 1:7-1:7 " "
+      typeSelector 1:8-1:8
+        ident 1:8-1:8 "a"
+    delimiter 1:9-1:9 ","
+    space 1:10-1:10 " "
+    selector 1:11-1:14
+      combinator 1:11-1:11 "~"
+      space 1:12-1:12 " "
+      class 1:13-1:14
+        ident 1:14-1:14 "c"
+
+=== dashed-ident.0
+:state(--foo)
+---
+pseudoClass 1:1-1:13 {css}
+  ident 1:2-1:6 "state"
+  arguments 1:7-1:13
+    ident 1:8-1:12 "--foo"
+
+=== numbers.0
+:heading(1, 2)
+---
+pseudoClass 1:1-1:14 {css}
+  ident 1:2-1:8 "heading"
+  arguments 1:9-1:14
+    number 1:10-1:10 "1"
+    delimiter 1:11-1:11 ","
+    space 1:12-1:12 " "
+    number 1:13-1:13 "2"
+
+=== nth-of.0
+:nth-child(2n+1 of .a)
+---
+pseudoClass 1:1-1:22 {css}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:22
+    number 1:12-1:12 "2"
+    ident 1:13-1:13 "n"
+    operator 1:14-1:14 "+"
+    number 1:15-1:15 "1"
+    space 1:16-1:16 " "
+    ident 1:17-1:18 "of"
+    space 1:19-1:19 " "
+    selector 1:20-1:21
+      class 1:20-1:21
+        ident 1:21-1:21 "a"
+
+=== anb.leading-plus.0
+:nth-child(+n)
+---
+pseudoClass 1:1-1:14 {css}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:14
+    operator 1:12-1:12 "+"
+    ident 1:13-1:13 "n"
+
+=== anb.leading-plus.1
+:nth-child( +3n - 2)
+---
+pseudoClass 1:1-1:20 {css}
+  ident 1:2-1:10 "nth-child"
+  arguments 1:11-1:20
+    space 1:12-1:12 " "
+    operator 1:13-1:13 "+"
+    number 1:14-1:14 "3"
+    ident 1:15-1:15 "n"
+    space 1:16-1:16 " "
+    operator 1:17-1:17 "-"
+    space 1:18-1:18 " "
+    number 1:19-1:19 "2"

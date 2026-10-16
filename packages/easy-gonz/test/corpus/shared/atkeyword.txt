@@ -1,0 +1,11 @@
+=== 0 [css less sass scss]
+@import
+---
+atkeyword 1:1-1:7 {*}
+  ident 1:2-1:7 "import"
+
+=== 1 [css less sass scss]
+@font-face
+---
+atkeyword 1:1-1:10 {*}
+  ident 1:2-1:10 "font-face"

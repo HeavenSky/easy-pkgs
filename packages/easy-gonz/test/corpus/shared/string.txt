@@ -1,0 +1,19 @@
+=== 0 [css less sass scss]
+'test'
+---
+string 1:1-1:6 {*} "'test'"
+
+=== 1 [css less sass scss]
+"test"
+---
+string 1:1-1:6 {*} "\"test\""
+
+=== 2 [css less sass scss]
+'te\'st'
+---
+string 1:1-1:8 {*} "'te\\'st'"
+
+=== 3 [css less sass scss]
+"te\"st"
+---
+string 1:1-1:8 {*} "\"te\\\"st\""

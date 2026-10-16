@@ -1,0 +1,5 @@
+=== 0
+@{nani}
+---
+interpolatedVariable 1:1-1:7 {less}
+  ident 1:3-1:6 "nani"

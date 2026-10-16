@@ -1,0 +1,7 @@
+=== issue-110
+%#{$nani}
+---
+placeholder 1:1-1:9 {scss}
+  interpolation 1:2-1:9
+    variable 1:4-1:8
+      ident 1:5-1:8 "nani"

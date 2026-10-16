@@ -1,0 +1,81 @@
+<===> css/leftovers-in-group.css
+a {
+  color: red;
+  width: 1px;
+  z-index: 1;
+  bottom: 0;
+}
+
+<===> css/leftovers-in-group.expected.css
+a {
+  z-index: 1;
+  bottom: 0;
+  width: 1px;
+  color: red;
+}
+
+<===> css/same-property.css
+button {
+  outline: 1px dotted;
+  outline: 5px auto -webkit-focus-ring-color;
+}
+
+<===> css/test-2.expected.css
+a {
+    top: 0;
+    left: 0;
+
+    -moz-color: zebra;
+    color: tomato;
+    -webkit-float: left;
+    float: right;
+    font-size: 1em;
+    position: absolute;
+    }
+
+<===> css/test-3.expected.css
+a {
+    top: 0;
+    left: 0;
+
+    color: tomato;
+    font-size: 1em;
+    position: absolute;
+    -webkit-float: left;
+    -moz-color: zebra;
+    float: right;
+    }
+
+<===> css/test.css
+a {
+    color: tomato;
+    font-size: 1em;
+    top: 0;
+    position: absolute;
+    left: 0;
+    -webkit-float: left;
+    -moz-color: zebra;
+    float: right;
+    }
+
+<===> css/test.expected.css
+a {
+    top: 0;
+    left: 0;
+
+    -webkit-float: left;
+    float: right;
+    font-size: 1em;
+    position: absolute;
+
+    -moz-color: zebra;
+    color: tomato;
+    }
+
+<===> scss/leftovers-variable.expected.scss
+div {$blue: steelblue; $red: tomato;  }
+
+<===> scss/leftovers-variable.scss
+div {$red: tomato;  $blue: steelblue; }
+
+<===>

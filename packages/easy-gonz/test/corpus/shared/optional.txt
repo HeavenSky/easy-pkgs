@@ -1,0 +1,4 @@
+=== 0 [sass scss]
+!optional
+---
+optional 1:1-1:9 {*} "!optional"

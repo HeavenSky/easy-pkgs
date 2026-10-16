@@ -1,0 +1,2526 @@
+=== 0
+@include nani
+---
+stylesheet 1:1-1:13 {sass}
+  include 1:1-1:13
+    atkeyword 1:1-1:8
+      ident 1:2-1:8 "include"
+    space 1:9-1:9 " "
+    ident 1:10-1:13 "nani"
+
+=== 1
+.nani
+  a:b
+@extend .nani
+---
+stylesheet 1:1-3:13 {sass}
+  ruleset 1:1-2:6
+    selector 1:1-1:5
+      class 1:1-1:5
+        ident 1:2-1:5 "nani"
+    space 1:6-1:6 "\n"
+    block 2:1-2:6
+      space 2:1-2:2 "  "
+      declaration 2:3-2:5
+        property 2:3-2:3
+          ident 2:3-2:3 "a"
+        propertyDelimiter 2:4-2:4 ":"
+        value 2:5-2:5
+          ident 2:5-2:5 "b"
+      declarationDelimiter 2:6-2:6 "\n"
+  extend 3:1-3:13
+    atkeyword 3:1-3:7
+      ident 3:2-3:7 "extend"
+    space 3:8-3:8 " "
+    selector 3:9-3:13
+      class 3:9-3:13
+        ident 3:10-3:13 "nani"
+
+=== 2
+/* First
+  comment
+/* Second
+  comment
+.nani
+    color: tomato
+    top: 0
+    // Third
+      comment
+    // Fourth
+      comment
+    left: 0
+---
+stylesheet 1:1-12:11 {sass}
+  multilineComment 1:1-2:9 " First\n  comment"
+  space 2:10-2:10 "\n"
+  multilineComment 3:1-4:9 " Second\n  comment"
+  space 4:10-4:10 "\n"
+  ruleset 5:1-12:11
+    selector 5:1-5:5
+      class 5:1-5:5
+        ident 5:2-5:5 "nani"
+    space 5:6-5:6 "\n"
+    block 6:1-12:11
+      space 6:1-6:4 "    "
+      declaration 6:5-6:17
+        property 6:5-6:9
+          ident 6:5-6:9 "color"
+        propertyDelimiter 6:10-6:10 ":"
+        space 6:11-6:11 " "
+        value 6:12-6:17
+          ident 6:12-6:17 "tomato"
+      declarationDelimiter 6:18-6:18 "\n"
+      space 7:1-7:4 "    "
+      declaration 7:5-7:10
+        property 7:5-7:7
+          ident 7:5-7:7 "top"
+        propertyDelimiter 7:8-7:8 ":"
+        space 7:9-7:9 " "
+        value 7:10-7:10
+          number 7:10-7:10 "0"
+      declarationDelimiter 7:11-7:11 "\n"
+      space 8:1-8:4 "    "
+      singlelineComment 8:5-9:13 " Third\n      comment"
+      space 9:14-9:14 "\n"
+      space 10:1-10:4 "    "
+      singlelineComment 10:5-11:13 " Fourth\n      comment"
+      space 11:14-11:14 "\n"
+      space 12:1-12:4 "    "
+      declaration 12:5-12:11
+        property 12:5-12:8
+          ident 12:5-12:8 "left"
+        propertyDelimiter 12:9-12:9 ":"
+        space 12:10-12:10 " "
+        value 12:11-12:11
+          number 12:11-12:11 "0"
+
+=== 3
+@test0
+@test1
+---
+stylesheet 1:1-2:6 {sass}
+  atrule 1:1-1:7
+    atkeyword 1:1-1:6
+      ident 1:2-1:6 "test0"
+    space 1:7-1:7 "\n"
+  atrule 2:1-2:6
+    atkeyword 2:1-2:6
+      ident 2:2-2:6 "test1"
+
+=== 4
+s
+  p:v
+@test
+---
+stylesheet 1:1-3:5 {sass}
+  ruleset 1:1-2:6
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "s"
+    space 1:2-1:2 "\n"
+    block 2:1-2:6
+      space 2:1-2:2 "  "
+      declaration 2:3-2:5
+        property 2:3-2:3
+          ident 2:3-2:3 "p"
+        propertyDelimiter 2:4-2:4 ":"
+        value 2:5-2:5
+          ident 2:5-2:5 "v"
+      declarationDelimiter 2:6-2:6 "\n"
+  atrule 3:1-3:5
+    atkeyword 3:1-3:5
+      ident 3:2-3:5 "test"
+
+=== 5
+a
+  color: tomato
+
+  p
+    top: 0
+---
+stylesheet 1:1-5:10 {sass}
+  ruleset 1:1-5:10
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 "\n"
+    block 2:1-5:10
+      space 2:1-2:2 "  "
+      declaration 2:3-2:15
+        property 2:3-2:7
+          ident 2:3-2:7 "color"
+        propertyDelimiter 2:8-2:8 ":"
+        space 2:9-2:9 " "
+        value 2:10-2:15
+          ident 2:10-2:15 "tomato"
+      declarationDelimiter 2:16-2:16 "\n"
+      space 3:1-3:1 "\n"
+      space 4:1-4:2 "  "
+      ruleset 4:3-5:10
+        selector 4:3-4:3
+          typeSelector 4:3-4:3
+            ident 4:3-4:3 "p"
+        space 4:4-4:4 "\n"
+        block 5:1-5:10
+          space 5:1-5:4 "    "
+          declaration 5:5-5:10
+            property 5:5-5:7
+              ident 5:5-5:7 "top"
+            propertyDelimiter 5:8-5:8 ":"
+            space 5:9-5:9 " "
+            value 5:10-5:10
+              number 5:10-5:10 "0"
+
+=== 6
+a
+  +inline-block
+  color: tomato
+---
+stylesheet 1:1-3:15 {sass}
+  ruleset 1:1-3:15
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 "\n"
+    block 2:1-3:15
+      space 2:1-2:2 "  "
+      include 2:3-2:15
+        operator 2:3-2:3 "+"
+        ident 2:4-2:15 "inline-block"
+      declarationDelimiter 2:16-2:16 "\n"
+      space 3:1-3:2 "  "
+      declaration 3:3-3:15
+        property 3:3-3:7
+          ident 3:3-3:7 "color"
+        propertyDelimiter 3:8-3:8 ":"
+        space 3:9-3:9 " "
+        value 3:10-3:15
+          ident 3:10-3:15 "tomato"
+
+=== 7
+$mycolor: #00ff00
+$mypadding: 3px
+---
+stylesheet 1:1-2:15 {sass}
+  declaration 1:1-1:17
+    property 1:1-1:8
+      variable 1:1-1:8
+        ident 1:2-1:8 "mycolor"
+    propertyDelimiter 1:9-1:9 ":"
+    space 1:10-1:10 " "
+    value 1:11-1:17
+      color 1:11-1:17 "00ff00"
+  declarationDelimiter 1:18-1:18 "\n"
+  declaration 2:1-2:15
+    property 2:1-2:10
+      variable 2:1-2:10
+        ident 2:2-2:10 "mypadding"
+    propertyDelimiter 2:11-2:11 ":"
+    space 2:12-2:12 " "
+    value 2:13-2:15
+      dimension 2:13-2:15
+        number 2:13-2:13 "3"
+        ident 2:14-2:15 "px"
+
+=== 8
+%foo
+  content: 'bar'
+---
+stylesheet 1:1-2:16 {sass}
+  ruleset 1:1-2:16
+    selector 1:1-1:4
+      placeholder 1:1-1:4
+        ident 1:2-1:4 "foo"
+    space 1:5-1:5 "\n"
+    block 2:1-2:16
+      space 2:1-2:2 "  "
+      declaration 2:3-2:16
+        property 2:3-2:9
+          ident 2:3-2:9 "content"
+        propertyDelimiter 2:10-2:10 ":"
+        space 2:11-2:11 " "
+        value 2:12-2:16
+          string 2:12-2:16 "'bar'"
+
+=== c.0
+/* test */
+s
+    p: v
+
+/* test */
+---
+stylesheet 1:1-5:10 {sass}
+  multilineComment 1:1-1:10 " test "
+  space 1:11-1:11 "\n"
+  ruleset 2:1-3:9
+    selector 2:1-2:1
+      typeSelector 2:1-2:1
+        ident 2:1-2:1 "s"
+    space 2:2-2:2 "\n"
+    block 3:1-3:9
+      space 3:1-3:4 "    "
+      declaration 3:5-3:8
+        property 3:5-3:5
+          ident 3:5-3:5 "p"
+        propertyDelimiter 3:6-3:6 ":"
+        space 3:7-3:7 " "
+        value 3:8-3:8
+          ident 3:8-3:8 "v"
+      declarationDelimiter 3:9-3:9 "\n"
+  space 4:1-4:1 "\n"
+  multilineComment 5:1-5:10 " test "
+
+=== css.0
+@import url('foo.css')
+---
+stylesheet 1:1-1:22 {sass}
+  atrule 1:1-1:22
+    atkeyword 1:1-1:7
+      ident 1:2-1:7 "import"
+    space 1:8-1:8 " "
+    uri 1:9-1:22
+      string 1:13-1:21 "'foo.css'"
+
+=== issue86.test1
+.ie-test
+    filter: progid:DXImageTransform.Microsoft.gradient (startColorstr=#33CCCCCC, endColorstr=#33CCCCCC)
+---
+stylesheet 1:1-2:103 {sass}
+  ruleset 1:1-2:103
+    selector 1:1-1:8
+      class 1:1-1:8
+        ident 1:2-1:8 "ie-test"
+    space 1:9-1:9 "\n"
+    block 2:1-2:103
+      space 2:1-2:4 "    "
+      declaration 2:5-2:103
+        property 2:5-2:10
+          ident 2:5-2:10 "filter"
+        propertyDelimiter 2:11-2:11 ":"
+        space 2:12-2:12 " "
+        value 2:13-2:103
+          progid 2:13-2:103 "progid:DXImageTransform.Microsoft.gradient (startColorstr=#33CCCCCC, endColorstr=#33CCCCCC)"
+
+=== issue87.test1
+.t
+    filter:progid:DXImageTransform.Microsoft.Alpha(Opacity=40) !important
+---
+stylesheet 1:1-2:73 {sass}
+  ruleset 1:1-2:73
+    selector 1:1-1:2
+      class 1:1-1:2
+        ident 1:2-1:2 "t"
+    space 1:3-1:3 "\n"
+    block 2:1-2:73
+      space 2:1-2:4 "    "
+      declaration 2:5-2:73
+        property 2:5-2:10
+          ident 2:5-2:10 "filter"
+        propertyDelimiter 2:11-2:11 ":"
+        value 2:12-2:73
+          progid 2:12-2:62 "progid:DXImageTransform.Microsoft.Alpha(Opacity=40)"
+          space 2:63-2:63 " "
+          important 2:64-2:73 "!important"
+
+=== issue88.test1
+.t-1
+    color: red
+
+.t-01
+    color: blue
+---
+stylesheet 1:1-5:15 {sass}
+  ruleset 1:1-2:15
+    selector 1:1-1:4
+      class 1:1-1:4
+        ident 1:2-1:4 "t-1"
+    space 1:5-1:5 "\n"
+    block 2:1-2:15
+      space 2:1-2:4 "    "
+      declaration 2:5-2:14
+        property 2:5-2:9
+          ident 2:5-2:9 "color"
+        propertyDelimiter 2:10-2:10 ":"
+        space 2:11-2:11 " "
+        value 2:12-2:14
+          ident 2:12-2:14 "red"
+      declarationDelimiter 2:15-2:15 "\n"
+  space 3:1-3:1 "\n"
+  ruleset 4:1-5:15
+    selector 4:1-4:5
+      class 4:1-4:5
+        ident 4:2-4:5 "t-01"
+    space 4:6-4:6 "\n"
+    block 5:1-5:15
+      space 5:1-5:4 "    "
+      declaration 5:5-5:15
+        property 5:5-5:9
+          ident 5:5-5:9 "color"
+        propertyDelimiter 5:10-5:10 ":"
+        space 5:11-5:11 " "
+        value 5:12-5:15
+          ident 5:12-5:15 "blue"
+
+=== issue90.test1
+@media test
+    @page
+        p: v
+---
+stylesheet 1:1-3:12 {sass}
+  atrule 1:1-3:12
+    atkeyword 1:1-1:6
+      ident 1:2-1:6 "media"
+    space 1:7-1:7 " "
+    ident 1:8-1:11 "test"
+    space 1:12-1:12 "\n"
+    block 2:1-3:12
+      space 2:1-2:4 "    "
+      atrule 2:5-3:12
+        atkeyword 2:5-2:9
+          ident 2:6-2:9 "page"
+        space 2:10-2:10 "\n"
+        block 3:1-3:12
+          space 3:1-3:8 "        "
+          declaration 3:9-3:12
+            property 3:9-3:9
+              ident 3:9-3:9 "p"
+            propertyDelimiter 3:10-3:10 ":"
+            space 3:11-3:11 " "
+            value 3:12-3:12
+              ident 3:12-3:12 "v"
+
+=== issue104
+$image-url: '../image'
+// Comment
+---
+stylesheet 1:1-2:10 {sass}
+  declaration 1:1-1:22
+    property 1:1-1:10
+      variable 1:1-1:10
+        ident 1:2-1:10 "image-url"
+    propertyDelimiter 1:11-1:11 ":"
+    space 1:12-1:12 " "
+    value 1:13-1:22
+      string 1:13-1:22 "'../image'"
+  declarationDelimiter 1:23-1:23 "\n"
+  singlelineComment 2:1-2:10 " Comment"
+
+=== issue-147-1
+.foo
+  @extend %foo
+
+.bar
+  @extend %bar
+---
+stylesheet 1:1-5:14 {sass}
+  ruleset 1:1-3:1
+    selector 1:1-1:4
+      class 1:1-1:4
+        ident 1:2-1:4 "foo"
+    space 1:5-1:5 "\n"
+    block 2:1-3:1
+      space 2:1-2:2 "  "
+      extend 2:3-2:14
+        atkeyword 2:3-2:9
+          ident 2:4-2:9 "extend"
+        space 2:10-2:10 " "
+        selector 2:11-2:14
+          placeholder 2:11-2:14
+            ident 2:12-2:14 "foo"
+      space 2:15-2:15 "\n"
+      space 3:1-3:1 "\n"
+  ruleset 4:1-5:14
+    selector 4:1-4:4
+      class 4:1-4:4
+        ident 4:2-4:4 "bar"
+    space 4:5-4:5 "\n"
+    block 5:1-5:14
+      space 5:1-5:2 "  "
+      extend 5:3-5:14
+        atkeyword 5:3-5:9
+          ident 5:4-5:9 "extend"
+        space 5:10-5:10 " "
+        selector 5:11-5:14
+          placeholder 5:11-5:14
+            ident 5:12-5:14 "bar"
+
+=== issue-147-2
+.foo
+  @extend %foo
+---
+stylesheet 1:1-2:14 {sass}
+  ruleset 1:1-2:14
+    selector 1:1-1:4
+      class 1:1-1:4
+        ident 1:2-1:4 "foo"
+    space 1:5-1:5 "\n"
+    block 2:1-2:14
+      space 2:1-2:2 "  "
+      extend 2:3-2:14
+        atkeyword 2:3-2:9
+          ident 2:4-2:9 "extend"
+        space 2:10-2:10 " "
+        selector 2:11-2:14
+          placeholder 2:11-2:14
+            ident 2:12-2:14 "foo"
+
+=== issue-193-1
+@function hello($value)
+  @return $value
+
+@function world($value)
+  @return $value
+---
+stylesheet 1:1-5:16 {sass}
+  atrule 1:1-2:17
+    atkeyword 1:1-1:9
+      ident 1:2-1:9 "function"
+    space 1:10-1:10 " "
+    function 1:11-1:23
+      ident 1:11-1:15 "hello"
+      arguments 1:16-1:23
+        variable 1:17-1:22
+          ident 1:18-1:22 "value"
+    space 1:24-1:24 "\n"
+    block 2:1-2:17
+      space 2:1-2:2 "  "
+      atrule 2:3-2:17
+        atkeyword 2:3-2:9
+          ident 2:4-2:9 "return"
+        space 2:10-2:10 " "
+        variable 2:11-2:16
+          ident 2:12-2:16 "value"
+        space 2:17-2:17 "\n"
+  space 3:1-3:1 "\n"
+  atrule 4:1-5:16
+    atkeyword 4:1-4:9
+      ident 4:2-4:9 "function"
+    space 4:10-4:10 " "
+    function 4:11-4:23
+      ident 4:11-4:15 "world"
+      arguments 4:16-4:23
+        variable 4:17-4:22
+          ident 4:18-4:22 "value"
+    space 4:24-4:24 "\n"
+    block 5:1-5:16
+      space 5:1-5:2 "  "
+      atrule 5:3-5:16
+        atkeyword 5:3-5:9
+          ident 5:4-5:9 "return"
+        space 5:10-5:10 " "
+        variable 5:11-5:16
+          ident 5:12-5:16 "value"
+
+=== issue-193-2
+@mixin media-breakpoint-notebook
+    @media (max-width: 1280px) and (min-width: 1024px)
+        @content
+
+// $noop: 0 // hide sass-lint false error
+
+@mixin media-breakpoint-msie-10-11
+    @media (-ms-high-contrast: none), (-ms-high-contrast: active)
+        @content
+---
+stylesheet 1:1-9:16 {sass}
+  mixin 1:1-4:1
+    atkeyword 1:1-1:6
+      ident 1:2-1:6 "mixin"
+    space 1:7-1:7 " "
+    ident 1:8-1:32 "media-breakpoint-notebook"
+    space 1:33-1:33 "\n"
+    block 2:1-4:1
+      space 2:1-2:4 "    "
+      atrule 2:5-3:17
+        atkeyword 2:5-2:10
+          ident 2:6-2:10 "media"
+        space 2:11-2:11 " "
+        parentheses 2:12-2:30
+          ident 2:13-2:21 "max-width"
+          operator 2:22-2:22 ":"
+          space 2:23-2:23 " "
+          dimension 2:24-2:29
+            number 2:24-2:27 "1280"
+            ident 2:28-2:29 "px"
+        space 2:31-2:31 " "
+        ident 2:32-2:34 "and"
+        space 2:35-2:35 " "
+        parentheses 2:36-2:54
+          ident 2:37-2:45 "min-width"
+          operator 2:46-2:46 ":"
+          space 2:47-2:47 " "
+          dimension 2:48-2:53
+            number 2:48-2:51 "1024"
+            ident 2:52-2:53 "px"
+        space 2:55-2:55 "\n"
+        block 3:1-3:17
+          space 3:1-3:8 "        "
+          atrule 3:9-3:17
+            atkeyword 3:9-3:16
+              ident 3:10-3:16 "content"
+            space 3:17-3:17 "\n"
+      declarationDelimiter 4:1-4:1 "\n"
+  singlelineComment 5:1-5:41 " $noop: 0 // hide sass-lint false error"
+  space 5:42-5:42 "\n"
+  space 6:1-6:1 "\n"
+  mixin 7:1-9:16
+    atkeyword 7:1-7:6
+      ident 7:2-7:6 "mixin"
+    space 7:7-7:7 " "
+    ident 7:8-7:34 "media-breakpoint-msie-10-11"
+    space 7:35-7:35 "\n"
+    block 8:1-9:16
+      space 8:1-8:4 "    "
+      atrule 8:5-9:16
+        atkeyword 8:5-8:10
+          ident 8:6-8:10 "media"
+        space 8:11-8:11 " "
+        parentheses 8:12-8:36
+          ident 8:13-8:29 "-ms-high-contrast"
+          operator 8:30-8:30 ":"
+          space 8:31-8:31 " "
+          ident 8:32-8:35 "none"
+        operator 8:37-8:37 ","
+        space 8:38-8:38 " "
+        parentheses 8:39-8:65
+          ident 8:40-8:56 "-ms-high-contrast"
+          operator 8:57-8:57 ":"
+          space 8:58-8:58 " "
+          ident 8:59-8:64 "active"
+        space 8:66-8:66 "\n"
+        block 9:1-9:16
+          space 9:1-9:8 "        "
+          atrule 9:9-9:16
+            atkeyword 9:9-9:16
+              ident 9:10-9:16 "content"
+
+=== issue211
+div, /* banana */ span
+  display: none
+---
+stylesheet 1:1-2:15 {sass}
+  ruleset 1:1-2:15
+    selector 1:1-1:3
+      typeSelector 1:1-1:3
+        ident 1:1-1:3 "div"
+    delimiter 1:4-1:4 ","
+    space 1:5-1:5 " "
+    multilineComment 1:6-1:17 " banana "
+    space 1:18-1:18 " "
+    selector 1:19-1:22
+      typeSelector 1:19-1:22
+        ident 1:19-1:22 "span"
+    space 1:23-1:23 "\n"
+    block 2:1-2:15
+      space 2:1-2:2 "  "
+      declaration 2:3-2:15
+        property 2:3-2:9
+          ident 2:3-2:9 "display"
+        propertyDelimiter 2:10-2:10 ":"
+        space 2:11-2:11 " "
+        value 2:12-2:15
+          ident 2:12-2:15 "none"
+
+=== s.0
+s
+    p: v
+---
+stylesheet 1:1-2:8 {sass}
+  ruleset 1:1-2:8
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "s"
+    space 1:2-1:2 "\n"
+    block 2:1-2:8
+      space 2:1-2:4 "    "
+      declaration 2:5-2:8
+        property 2:5-2:5
+          ident 2:5-2:5 "p"
+        propertyDelimiter 2:6-2:6 ":"
+        space 2:7-2:7 " "
+        value 2:8-2:8
+          ident 2:8-2:8 "v"
+
+=== s.1
+s0
+    p0: v0
+
+s1
+    p1: v1
+---
+stylesheet 1:1-5:10 {sass}
+  ruleset 1:1-2:11
+    selector 1:1-1:2
+      typeSelector 1:1-1:2
+        ident 1:1-1:2 "s0"
+    space 1:3-1:3 "\n"
+    block 2:1-2:11
+      space 2:1-2:4 "    "
+      declaration 2:5-2:10
+        property 2:5-2:6
+          ident 2:5-2:6 "p0"
+        propertyDelimiter 2:7-2:7 ":"
+        space 2:8-2:8 " "
+        value 2:9-2:10
+          ident 2:9-2:10 "v0"
+      declarationDelimiter 2:11-2:11 "\n"
+  space 3:1-3:1 "\n"
+  ruleset 4:1-5:10
+    selector 4:1-4:2
+      typeSelector 4:1-4:2
+        ident 4:1-4:2 "s1"
+    space 4:3-4:3 "\n"
+    block 5:1-5:10
+      space 5:1-5:4 "    "
+      declaration 5:5-5:10
+        property 5:5-5:6
+          ident 5:5-5:6 "p1"
+        propertyDelimiter 5:7-5:7 ":"
+        space 5:8-5:8 " "
+        value 5:9-5:10
+          ident 5:9-5:10 "v1"
+
+=== s.2
+@test0
+@test1
+---
+stylesheet 1:1-2:6 {sass}
+  atrule 1:1-1:7
+    atkeyword 1:1-1:6
+      ident 1:2-1:6 "test0"
+    space 1:7-1:7 "\n"
+  atrule 2:1-2:6
+    atkeyword 2:1-2:6
+      ident 2:2-2:6 "test1"
+
+=== s.3
+s
+    p:v
+
+@test
+---
+stylesheet 1:1-4:5 {sass}
+  ruleset 1:1-2:8
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "s"
+    space 1:2-1:2 "\n"
+    block 2:1-2:8
+      space 2:1-2:4 "    "
+      declaration 2:5-2:7
+        property 2:5-2:5
+          ident 2:5-2:5 "p"
+        propertyDelimiter 2:6-2:6 ":"
+        value 2:7-2:7
+          ident 2:7-2:7 "v"
+      declarationDelimiter 2:8-2:8 "\n"
+  space 3:1-3:1 "\n"
+  atrule 4:1-4:5
+    atkeyword 4:1-4:5
+      ident 4:2-4:5 "test"
+
+=== crlf/0
+#test
+  color: red
+---
+stylesheet 1:1-2:12 {sass}
+  ruleset 1:1-2:12
+    selector 1:1-1:5
+      id 1:1-1:5
+        ident 1:2-1:5 "test"
+    space 1:6-1:7 "\r\n"
+    block 2:1-2:12
+      space 2:1-2:2 "  "
+      declaration 2:3-2:12
+        property 2:3-2:7
+          ident 2:3-2:7 "color"
+        propertyDelimiter 2:8-2:8 ":"
+        space 2:9-2:9 " "
+        value 2:10-2:12
+          ident 2:10-2:12 "red"
+
+=== crlf/issue152
+.foo
+    color: red
+---
+stylesheet 1:1-2:14 {sass}
+  ruleset 1:1-2:14
+    selector 1:1-1:4
+      class 1:1-1:4
+        ident 1:2-1:4 "foo"
+    space 1:5-1:5 "\n"
+    block 2:1-2:14
+      space 2:1-2:4 "    "
+      declaration 2:5-2:14
+        property 2:5-2:9
+          ident 2:5-2:9 "color"
+        propertyDelimiter 2:10-2:10 ":"
+        space 2:11-2:11 " "
+        value 2:12-2:14
+          ident 2:12-2:14 "red"
+
+=== crlf/issue224-0
+p
+    // test
+    color: red
+---
+stylesheet 1:1-3:14 {sass}
+  ruleset 1:1-3:14
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "p"
+    space 1:2-1:3 "\r\n"
+    block 2:1-3:14
+      space 2:1-2:4 "    "
+      singlelineComment 2:5-2:11 " test"
+      space 2:12-2:13 "\r\n"
+      space 3:1-3:4 "    "
+      declaration 3:5-3:14
+        property 3:5-3:9
+          ident 3:5-3:9 "color"
+        propertyDelimiter 3:10-3:10 ":"
+        space 3:11-3:11 " "
+        value 3:12-3:14
+          ident 3:12-3:14 "red"
+
+=== crlf/issue224-1
+p
+    /*
+     * test
+     */
+    color: red
+---
+stylesheet 1:1-5:14 {sass}
+  ruleset 1:1-5:14
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "p"
+    space 1:2-1:3 "\r\n"
+    block 2:1-5:14
+      space 2:1-2:4 "    "
+      multilineComment 2:5-4:7 "\r\n     * test\r\n     "
+      space 4:8-4:9 "\r\n"
+      space 5:1-5:4 "    "
+      declaration 5:5-5:14
+        property 5:5-5:9
+          ident 5:5-5:9 "color"
+        propertyDelimiter 5:10-5:10 ":"
+        space 5:11-5:11 " "
+        value 5:12-5:14
+          ident 5:12-5:14 "red"
+
+=== issue-266
+a
+  b
+    color: red
+
+// comment
+c
+  color: blue
+---
+stylesheet 1:1-7:13 {sass}
+  ruleset 1:1-4:1
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 "\n"
+    block 2:1-4:1
+      space 2:1-2:2 "  "
+      ruleset 2:3-3:15
+        selector 2:3-2:3
+          typeSelector 2:3-2:3
+            ident 2:3-2:3 "b"
+        space 2:4-2:4 "\n"
+        block 3:1-3:15
+          space 3:1-3:4 "    "
+          declaration 3:5-3:14
+            property 3:5-3:9
+              ident 3:5-3:9 "color"
+            propertyDelimiter 3:10-3:10 ":"
+            space 3:11-3:11 " "
+            value 3:12-3:14
+              ident 3:12-3:14 "red"
+          declarationDelimiter 3:15-3:15 "\n"
+      space 4:1-4:1 "\n"
+  singlelineComment 5:1-5:10 " comment"
+  space 5:11-5:11 "\n"
+  ruleset 6:1-7:13
+    selector 6:1-6:1
+      typeSelector 6:1-6:1
+        ident 6:1-6:1 "c"
+    space 6:2-6:2 "\n"
+    block 7:1-7:13
+      space 7:1-7:2 "  "
+      declaration 7:3-7:13
+        property 7:3-7:7
+          ident 7:3-7:7 "color"
+        propertyDelimiter 7:8-7:8 ":"
+        space 7:9-7:9 " "
+        value 7:10-7:13
+          ident 7:10-7:13 "blue"
+
+=== issue-266-2
+.button
+  color: red
+
+  &--blue
+    color: blue
+
+
+// Navigation
+//
+// Styleguide 2.2
+
+.nav
+  display: block
+---
+stylesheet 1:1-13:16 {sass}
+  ruleset 1:1-7:1
+    selector 1:1-1:7
+      class 1:1-1:7
+        ident 1:2-1:7 "button"
+    space 1:8-1:8 "\n"
+    block 2:1-7:1
+      space 2:1-2:2 "  "
+      declaration 2:3-2:12
+        property 2:3-2:7
+          ident 2:3-2:7 "color"
+        propertyDelimiter 2:8-2:8 ":"
+        space 2:9-2:9 " "
+        value 2:10-2:12
+          ident 2:10-2:12 "red"
+      declarationDelimiter 2:13-2:13 "\n"
+      space 3:1-3:1 "\n"
+      space 4:1-4:2 "  "
+      ruleset 4:3-5:16
+        selector 4:3-4:9
+          parentSelector 4:3-4:3 "&"
+          parentSelectorExtension 4:4-4:9
+            ident 4:4-4:9 "--blue"
+        space 4:10-4:10 "\n"
+        block 5:1-5:16
+          space 5:1-5:4 "    "
+          declaration 5:5-5:15
+            property 5:5-5:9
+              ident 5:5-5:9 "color"
+            propertyDelimiter 5:10-5:10 ":"
+            space 5:11-5:11 " "
+            value 5:12-5:15
+              ident 5:12-5:15 "blue"
+          declarationDelimiter 5:16-5:16 "\n"
+      space 6:1-6:1 "\n"
+      space 7:1-7:1 "\n"
+  singlelineComment 8:1-8:13 " Navigation"
+  space 8:14-8:14 "\n"
+  singlelineComment 9:1-9:2 ""
+  space 9:3-9:3 "\n"
+  singlelineComment 10:1-10:17 " Styleguide 2.2"
+  space 10:18-10:18 "\n"
+  space 11:1-11:1 "\n"
+  ruleset 12:1-13:16
+    selector 12:1-12:4
+      class 12:1-12:4
+        ident 12:2-12:4 "nav"
+    space 12:5-12:5 "\n"
+    block 13:1-13:16
+      space 13:1-13:2 "  "
+      declaration 13:3-13:16
+        property 13:3-13:9
+          ident 13:3-13:9 "display"
+        propertyDelimiter 13:10-13:10 ":"
+        space 13:11-13:11 " "
+        value 13:12-13:16
+          ident 13:12-13:16 "block"
+
+=== compress.sass21.part4.4.test1
+@charset "ISO-8859-1";
+---
+stylesheet 1:1-1:22 {sass}
+  atrule 1:1-1:21
+    atkeyword 1:1-1:8
+      ident 1:2-1:8 "charset"
+    space 1:9-1:9 " "
+    string 1:10-1:21 "\"ISO-8859-1\""
+  declarationDelimiter 1:22-1:22 ";"
+
+=== compress.sass21.part4.4.test3
+@charset "test0";
+@charset "test1";
+---
+stylesheet 1:1-2:17 {sass}
+  atrule 1:1-1:16
+    atkeyword 1:1-1:8
+      ident 1:2-1:8 "charset"
+    space 1:9-1:9 " "
+    string 1:10-1:16 "\"test0\""
+  declarationDelimiter 1:17-1:17 ";"
+  space 1:18-1:18 "\n"
+  atrule 2:1-2:16
+    atkeyword 2:1-2:8
+      ident 2:2-2:8 "charset"
+    space 2:9-2:9 " "
+    string 2:10-2:16 "\"test1\""
+  declarationDelimiter 2:17-2:17 ";"
+
+=== compress.sass21.part6.3.test1
+@import "mystyle.css";
+---
+stylesheet 1:1-1:22 {sass}
+  atrule 1:1-1:21
+    atkeyword 1:1-1:7
+      ident 1:2-1:7 "import"
+    space 1:8-1:8 " "
+    string 1:9-1:21 "\"mystyle.css\""
+  declarationDelimiter 1:22-1:22 ";"
+
+=== compress.sass21.part6.3.test2
+@import url("mystyle.css");
+---
+stylesheet 1:1-1:27 {sass}
+  atrule 1:1-1:26
+    atkeyword 1:1-1:7
+      ident 1:2-1:7 "import"
+    space 1:8-1:8 " "
+    uri 1:9-1:26
+      string 1:13-1:25 "\"mystyle.css\""
+  declarationDelimiter 1:27-1:27 ";"
+
+=== compress.sass21.part6.3.test3
+@import url("fineprint.css") print;
+---
+stylesheet 1:1-1:35 {sass}
+  atrule 1:1-1:34
+    atkeyword 1:1-1:7
+      ident 1:2-1:7 "import"
+    space 1:8-1:8 " "
+    uri 1:9-1:28
+      string 1:13-1:27 "\"fineprint.css\""
+    space 1:29-1:29 " "
+    ident 1:30-1:34 "print"
+  declarationDelimiter 1:35-1:35 ";"
+
+=== compress.sass21.part6.3.test4
+@import url("bluish.css") projection, tv;
+---
+stylesheet 1:1-1:41 {sass}
+  atrule 1:1-1:40
+    atkeyword 1:1-1:7
+      ident 1:2-1:7 "import"
+    space 1:8-1:8 " "
+    uri 1:9-1:25
+      string 1:13-1:24 "\"bluish.css\""
+    space 1:26-1:26 " "
+    ident 1:27-1:36 "projection"
+    operator 1:37-1:37 ","
+    space 1:38-1:38 " "
+    ident 1:39-1:40 "tv"
+  declarationDelimiter 1:41-1:41 ";"
+
+=== compress.sass21.part6.3.test5
+@import "mystyle.css";
+@import "mystyle.css";
+---
+stylesheet 1:1-2:22 {sass}
+  atrule 1:1-1:21
+    atkeyword 1:1-1:7
+      ident 1:2-1:7 "import"
+    space 1:8-1:8 " "
+    string 1:9-1:21 "\"mystyle.css\""
+  declarationDelimiter 1:22-1:22 ";"
+  space 1:23-1:23 "\n"
+  atrule 2:1-2:21
+    atkeyword 2:1-2:7
+      ident 2:2-2:7 "import"
+    space 2:8-2:8 " "
+    string 2:9-2:21 "\"mystyle.css\""
+  declarationDelimiter 2:22-2:22 ";"
+
+=== issue90.test2
+x
+    p:v
+
+@media test
+    a
+        p:v
+
+    /* comment */
+
+    @page
+        p: v
+
+    b
+        p:v
+
+y
+    p:v
+---
+stylesheet 1:1-17:7 {sass}
+  ruleset 1:1-2:8
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "x"
+    space 1:2-1:2 "\n"
+    block 2:1-2:8
+      space 2:1-2:4 "    "
+      declaration 2:5-2:7
+        property 2:5-2:5
+          ident 2:5-2:5 "p"
+        propertyDelimiter 2:6-2:6 ":"
+        value 2:7-2:7
+          ident 2:7-2:7 "v"
+      declarationDelimiter 2:8-2:8 "\n"
+  space 3:1-3:1 "\n"
+  atrule 4:1-14:12
+    atkeyword 4:1-4:6
+      ident 4:2-4:6 "media"
+    space 4:7-4:7 " "
+    ident 4:8-4:11 "test"
+    space 4:12-4:12 "\n"
+    block 5:1-14:12
+      space 5:1-5:4 "    "
+      ruleset 5:5-6:12
+        selector 5:5-5:5
+          typeSelector 5:5-5:5
+            ident 5:5-5:5 "a"
+        space 5:6-5:6 "\n"
+        block 6:1-6:12
+          space 6:1-6:8 "        "
+          declaration 6:9-6:11
+            property 6:9-6:9
+              ident 6:9-6:9 "p"
+            propertyDelimiter 6:10-6:10 ":"
+            value 6:11-6:11
+              ident 6:11-6:11 "v"
+          declarationDelimiter 6:12-6:12 "\n"
+      space 7:1-7:1 "\n"
+      space 8:1-8:4 "    "
+      multilineComment 8:5-8:17 " comment "
+      space 8:18-8:18 "\n"
+      space 9:1-9:1 "\n"
+      space 10:1-10:4 "    "
+      atrule 10:5-11:13
+        atkeyword 10:5-10:9
+          ident 10:6-10:9 "page"
+        space 10:10-10:10 "\n"
+        block 11:1-11:13
+          space 11:1-11:8 "        "
+          declaration 11:9-11:12
+            property 11:9-11:9
+              ident 11:9-11:9 "p"
+            propertyDelimiter 11:10-11:10 ":"
+            space 11:11-11:11 " "
+            value 11:12-11:12
+              ident 11:12-11:12 "v"
+          declarationDelimiter 11:13-11:13 "\n"
+      space 12:1-12:1 "\n"
+      space 13:1-13:4 "    "
+      ruleset 13:5-14:12
+        selector 13:5-13:5
+          typeSelector 13:5-13:5
+            ident 13:5-13:5 "b"
+        space 13:6-13:6 "\n"
+        block 14:1-14:12
+          space 14:1-14:8 "        "
+          declaration 14:9-14:11
+            property 14:9-14:9
+              ident 14:9-14:9 "p"
+            propertyDelimiter 14:10-14:10 ":"
+            value 14:11-14:11
+              ident 14:11-14:11 "v"
+          declarationDelimiter 14:12-14:12 "\n"
+  space 15:1-15:1 "\n"
+  ruleset 16:1-17:7
+    selector 16:1-16:1
+      typeSelector 16:1-16:1
+        ident 16:1-16:1 "y"
+    space 16:2-16:2 "\n"
+    block 17:1-17:7
+      space 17:1-17:4 "    "
+      declaration 17:5-17:7
+        property 17:5-17:5
+          ident 17:5-17:5 "p"
+        propertyDelimiter 17:6-17:6 ":"
+        value 17:7-17:7
+          ident 17:7-17:7 "v"
+
+=== join/paren-leading-comma
+$a: (b: c
+  , d: e)
+
+---
+stylesheet 1:1-2:10 {sass}
+  declaration 1:1-2:9
+    property 1:1-1:2
+      variable 1:1-1:2
+        ident 1:2-1:2 "a"
+    propertyDelimiter 1:3-1:3 ":"
+    space 1:4-1:4 " "
+    value 1:5-2:9
+      parentheses 1:5-2:9
+        ident 1:6-1:6 "b"
+        operator 1:7-1:7 ":"
+        space 1:8-1:8 " "
+        ident 1:9-1:9 "c"
+        space 1:10-1:10 "\n"
+        space 2:1-2:2 "  "
+        operator 2:3-2:3 ","
+        space 2:4-2:4 " "
+        ident 2:5-2:5 "d"
+        operator 2:6-2:6 ":"
+        space 2:7-2:7 " "
+        ident 2:8-2:8 "e"
+  declarationDelimiter 2:10-2:10 "\n"
+
+=== join/variable-colon-end
+$a:
+  b
+
+---
+stylesheet 1:1-2:4 {sass}
+  declaration 1:1-2:3
+    property 1:1-1:2
+      variable 1:1-1:2
+        ident 1:2-1:2 "a"
+    propertyDelimiter 1:3-1:3 ":"
+    space 1:4-2:2 "\n  "
+    value 2:3-2:3
+      ident 2:3-2:3 "b"
+  declarationDelimiter 2:4-2:4 "\n"
+
+=== join/variable-colon-start
+$a
+  : b
+
+---
+stylesheet 1:1-2:6 {sass}
+  declaration 1:1-2:5
+    property 1:1-1:2
+      variable 1:1-1:2
+        ident 1:2-1:2 "a"
+    space 1:3-2:2 "\n  "
+    propertyDelimiter 2:3-2:3 ":"
+    space 2:4-2:4 " "
+    value 2:5-2:5
+      ident 2:5-2:5 "b"
+  declarationDelimiter 2:6-2:6 "\n"
+
+=== join/operator-end
+$a: 1 +
+  2
+
+---
+stylesheet 1:1-2:4 {sass}
+  declaration 1:1-2:3
+    property 1:1-1:2
+      variable 1:1-1:2
+        ident 1:2-1:2 "a"
+    propertyDelimiter 1:3-1:3 ":"
+    space 1:4-1:4 " "
+    value 1:5-2:3
+      number 1:5-1:5 "1"
+      space 1:6-1:6 " "
+      operator 1:7-1:7 "+"
+      space 1:8-2:2 "\n  "
+      number 2:3-2:3 "2"
+  declarationDelimiter 2:4-2:4 "\n"
+
+=== join/at-rule-name-alone
+@if
+  true
+  a
+    b: c
+
+---
+stylesheet 1:1-4:9 {sass}
+  conditionalStatement 1:1-4:9
+    condition 1:1-2:6
+      atkeyword 1:1-1:3
+        ident 1:2-1:3 "if"
+      space 1:4-2:2 "\n  "
+      ident 2:3-2:6 "true"
+    space 2:7-2:7 "\n"
+    block 3:1-4:9
+      space 3:1-3:2 "  "
+      ruleset 3:3-4:9
+        selector 3:3-3:3
+          typeSelector 3:3-3:3
+            ident 3:3-3:3 "a"
+        space 3:4-3:4 "\n"
+        block 4:1-4:9
+          space 4:1-4:4 "    "
+          declaration 4:5-4:8
+            property 4:5-4:5
+              ident 4:5-4:5 "b"
+            propertyDelimiter 4:6-4:6 ":"
+            space 4:7-4:7 " "
+            value 4:8-4:8
+              ident 4:8-4:8 "c"
+          declarationDelimiter 4:9-4:9 "\n"
+
+=== join/keyword-end
+@for $i from
+  1 through 2
+  a
+    b: $i
+
+---
+stylesheet 1:1-4:10 {sass}
+  loop 1:1-4:10
+    atkeyword 1:1-1:4
+      ident 1:2-1:4 "for"
+    space 1:5-1:5 " "
+    variable 1:6-1:7
+      ident 1:7-1:7 "i"
+    space 1:8-1:8 " "
+    ident 1:9-1:12 "from"
+    space 1:13-2:2 "\n  "
+    number 2:3-2:3 "1"
+    space 2:4-2:4 " "
+    ident 2:5-2:11 "through"
+    space 2:12-2:12 " "
+    number 2:13-2:13 "2"
+    space 2:14-2:14 "\n"
+    block 3:1-4:10
+      space 3:1-3:2 "  "
+      ruleset 3:3-4:10
+        selector 3:3-3:3
+          typeSelector 3:3-3:3
+            ident 3:3-3:3 "a"
+        space 3:4-3:4 "\n"
+        block 4:1-4:10
+          space 4:1-4:4 "    "
+          declaration 4:5-4:9
+            property 4:5-4:5
+              ident 4:5-4:5 "b"
+            propertyDelimiter 4:6-4:6 ":"
+            space 4:7-4:7 " "
+            value 4:8-4:9
+              variable 4:8-4:9
+                ident 4:9-4:9 "i"
+          declarationDelimiter 4:10-4:10 "\n"
+
+=== join/keyword-start
+@each $a
+  in b, c
+  .x
+    d: $a
+
+---
+stylesheet 1:1-4:10 {sass}
+  loop 1:1-4:10
+    atkeyword 1:1-1:5
+      ident 1:2-1:5 "each"
+    space 1:6-1:6 " "
+    variable 1:7-1:8
+      ident 1:8-1:8 "a"
+    space 1:9-2:2 "\n  "
+    ident 2:3-2:4 "in"
+    space 2:5-2:5 " "
+    ident 2:6-2:6 "b"
+    operator 2:7-2:7 ","
+    space 2:8-2:8 " "
+    ident 2:9-2:9 "c"
+    space 2:10-2:10 "\n"
+    block 3:1-4:10
+      space 3:1-3:2 "  "
+      ruleset 3:3-4:10
+        selector 3:3-3:4
+          class 3:3-3:4
+            ident 3:4-3:4 "x"
+        space 3:5-3:5 "\n"
+        block 4:1-4:10
+          space 4:1-4:4 "    "
+          declaration 4:5-4:9
+            property 4:5-4:5
+              ident 4:5-4:5 "d"
+            propertyDelimiter 4:6-4:6 ":"
+            space 4:7-4:7 " "
+            value 4:8-4:9
+              variable 4:8-4:9
+                ident 4:9-4:9 "a"
+          declarationDelimiter 4:10-4:10 "\n"
+
+=== join/each-leading-comma
+@each $a
+  , $b in (c: d)
+  .x
+    e: $b
+
+---
+stylesheet 1:1-4:10 {sass}
+  atrule 1:1-4:10
+    atkeyword 1:1-1:5
+      ident 1:2-1:5 "each"
+    space 1:6-1:6 " "
+    variable 1:7-1:8
+      ident 1:8-1:8 "a"
+    space 1:9-2:2 "\n  "
+    operator 2:3-2:3 ","
+    space 2:4-2:4 " "
+    variable 2:5-2:6
+      ident 2:6-2:6 "b"
+    space 2:7-2:7 " "
+    ident 2:8-2:9 "in"
+    space 2:10-2:10 " "
+    parentheses 2:11-2:16
+      ident 2:12-2:12 "c"
+      operator 2:13-2:13 ":"
+      space 2:14-2:14 " "
+      ident 2:15-2:15 "d"
+    space 2:17-2:17 "\n"
+    block 3:1-4:10
+      space 3:1-3:2 "  "
+      ruleset 3:3-4:10
+        selector 3:3-3:4
+          class 3:3-3:4
+            ident 3:4-3:4 "x"
+        space 3:5-3:5 "\n"
+        block 4:1-4:10
+          space 4:1-4:4 "    "
+          declaration 4:5-4:9
+            property 4:5-4:5
+              ident 4:5-4:5 "e"
+            propertyDelimiter 4:6-4:6 ":"
+            space 4:7-4:7 " "
+            value 4:8-4:9
+              variable 4:8-4:9
+                ident 4:9-4:9 "b"
+          declarationDelimiter 4:10-4:10 "\n"
+
+=== join/use-with
+@use "a" with
+  ($b: c)
+
+---
+stylesheet 1:1-2:10 {sass}
+  atrule 1:1-2:10
+    atkeyword 1:1-1:4
+      ident 1:2-1:4 "use"
+    space 1:5-1:5 " "
+    string 1:6-1:8 "\"a\""
+    space 1:9-1:9 " "
+    ident 1:10-1:13 "with"
+    space 1:14-2:2 "\n  "
+    parentheses 2:3-2:9
+      variable 2:4-2:5
+        ident 2:5-2:5 "b"
+      operator 2:6-2:6 ":"
+      space 2:7-2:7 " "
+      ident 2:8-2:8 "c"
+    space 2:10-2:10 "\n"
+
+=== join/keyframes-from-not-joined
+@keyframes a
+  from
+    b: c
+
+---
+stylesheet 1:1-3:9 {sass}
+  atrule 1:1-3:9
+    atkeyword 1:1-1:10
+      ident 1:2-1:10 "keyframes"
+    space 1:11-1:11 " "
+    ident 1:12-1:12 "a"
+    space 1:13-1:13 "\n"
+    block 2:1-3:9
+      space 2:1-2:2 "  "
+      ruleset 2:3-3:9
+        selector 2:3-2:6
+          keyframesSelector 2:3-2:6
+            ident 2:3-2:6 "from"
+        space 2:7-2:7 "\n"
+        block 3:1-3:9
+          space 3:1-3:4 "    "
+          declaration 3:5-3:8
+            property 3:5-3:5
+              ident 3:5-3:5 "b"
+            propertyDelimiter 3:6-3:6 ":"
+            space 3:7-3:7 " "
+            value 3:8-3:8
+              ident 3:8-3:8 "c"
+          declarationDelimiter 3:9-3:9 "\n"
+
+=== join/media-not-joined
+@media screen
+  a
+    b: c
+
+---
+stylesheet 1:1-3:9 {sass}
+  atrule 1:1-3:9
+    atkeyword 1:1-1:6
+      ident 1:2-1:6 "media"
+    space 1:7-1:7 " "
+    ident 1:8-1:13 "screen"
+    space 1:14-1:14 "\n"
+    block 2:1-3:9
+      space 2:1-2:2 "  "
+      ruleset 2:3-3:9
+        selector 2:3-2:3
+          typeSelector 2:3-2:3
+            ident 2:3-2:3 "a"
+        space 2:4-2:4 "\n"
+        block 3:1-3:9
+          space 3:1-3:4 "    "
+          declaration 3:5-3:8
+            property 3:5-3:5
+              ident 3:5-3:5 "b"
+            propertyDelimiter 3:6-3:6 ":"
+            space 3:7-3:7 " "
+            value 3:8-3:8
+              ident 3:8-3:8 "c"
+          declarationDelimiter 3:9-3:9 "\n"
+
+=== join/mixin-equals-alone
+=
+  a
+
+b
+  +a
+
+---
+stylesheet 1:1-5:5 {sass}
+  mixin 1:1-3:1
+    operator 1:1-1:1 "="
+    space 1:2-2:2 "\n  "
+    ident 2:3-2:3 "a"
+    space 2:4-2:4 "\n"
+    space 3:1-3:1 "\n"
+  ruleset 4:1-5:5
+    selector 4:1-4:1
+      typeSelector 4:1-4:1
+        ident 4:1-4:1 "b"
+    space 4:2-4:2 "\n"
+    block 5:1-5:5
+      space 5:1-5:2 "  "
+      include 5:3-5:4
+        operator 5:3-5:3 "+"
+        ident 5:4-5:4 "a"
+      declarationDelimiter 5:5-5:5 "\n"
+
+=== join/include-using
+@include a() using
+  ($b)
+  c: $b
+
+---
+stylesheet 1:1-3:8 {sass}
+  include 1:1-3:8
+    atkeyword 1:1-1:8
+      ident 1:2-1:8 "include"
+    space 1:9-1:9 " "
+    ident 1:10-1:10 "a"
+    arguments 1:11-1:12
+    space 1:13-1:13 " "
+    ident 1:14-1:18 "using"
+    space 1:19-2:2 "\n  "
+    arguments 2:3-2:6
+      variable 2:4-2:5
+        ident 2:5-2:5 "b"
+    space 2:7-2:7 "\n"
+    block 3:1-3:8
+      space 3:1-3:2 "  "
+      declaration 3:3-3:7
+        property 3:3-3:3
+          ident 3:3-3:3 "c"
+        propertyDelimiter 3:4-3:4 ":"
+        space 3:5-3:5 " "
+        value 3:6-3:7
+          variable 3:6-3:7
+            ident 3:7-3:7 "b"
+      declarationDelimiter 3:8-3:8 "\n"
+
+=== join/variables-list-space
+@mixin a($b
+  ...)
+  c: d
+
+---
+stylesheet 1:1-3:7 {sass}
+  mixin 1:1-3:7
+    atkeyword 1:1-1:6
+      ident 1:2-1:6 "mixin"
+    space 1:7-1:7 " "
+    ident 1:8-1:8 "a"
+    arguments 1:9-2:6
+      variablesList 1:10-2:5
+        variable 1:10-1:11
+          ident 1:11-1:11 "b"
+        space 1:12-2:2 "\n  "
+    space 2:7-2:7 "\n"
+    block 3:1-3:7
+      space 3:1-3:2 "  "
+      declaration 3:3-3:6
+        property 3:3-3:3
+          ident 3:3-3:3 "c"
+        propertyDelimiter 3:4-3:4 ":"
+        space 3:5-3:5 " "
+        value 3:6-3:6
+          ident 3:6-3:6 "d"
+      declarationDelimiter 3:7-3:7 "\n"
+
+=== delim/semicolon
+a
+  b: c;
+  d: e;
+
+---
+stylesheet 1:1-3:8 {sass}
+  ruleset 1:1-3:7
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 "\n"
+    block 2:1-3:7
+      space 2:1-2:2 "  "
+      declaration 2:3-2:6
+        property 2:3-2:3
+          ident 2:3-2:3 "b"
+        propertyDelimiter 2:4-2:4 ":"
+        space 2:5-2:5 " "
+        value 2:6-2:6
+          ident 2:6-2:6 "c"
+      declarationDelimiter 2:7-2:7 ";"
+      space 2:8-2:8 "\n"
+      space 3:1-3:2 "  "
+      declaration 3:3-3:6
+        property 3:3-3:3
+          ident 3:3-3:3 "d"
+        propertyDelimiter 3:4-3:4 ":"
+        space 3:5-3:5 " "
+        value 3:6-3:6
+          ident 3:6-3:6 "e"
+      declarationDelimiter 3:7-3:7 ";"
+  space 3:8-3:8 "\n"
+
+=== delim/cr
+a  b: c  d: e
+---
+stylesheet 1:1-3:7 {sass}
+  ruleset 1:1-3:7
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 "\r"
+    block 2:1-3:7
+      space 2:1-2:2 "  "
+      declaration 2:3-2:6
+        property 2:3-2:3
+          ident 2:3-2:3 "b"
+        propertyDelimiter 2:4-2:4 ":"
+        space 2:5-2:5 " "
+        value 2:6-2:6
+          ident 2:6-2:6 "c"
+      declarationDelimiter 2:7-2:7 "\r"
+      space 3:1-3:2 "  "
+      declaration 3:3-3:6
+        property 3:3-3:3
+          ident 3:3-3:3 "d"
+        propertyDelimiter 3:4-3:4 ":"
+        space 3:5-3:5 " "
+        value 3:6-3:6
+          ident 3:6-3:6 "e"
+      declarationDelimiter 3:7-3:7 "\r"
+
+=== delim/ff
+a  b: c
+---
+stylesheet 1:1-2:7 {sass}
+  ruleset 1:1-2:7
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 "\f"
+    block 2:1-2:7
+      space 2:1-2:2 "  "
+      declaration 2:3-2:6
+        property 2:3-2:3
+          ident 2:3-2:3 "b"
+        propertyDelimiter 2:4-2:4 ":"
+        space 2:5-2:5 " "
+        value 2:6-2:6
+          ident 2:6-2:6 "c"
+      declarationDelimiter 2:7-2:7 "\f"
+
+=== semicolon/after-any-statement
+@use "a";
+$b: c;
+d
+  @include e;
+  f: g;
+
+---
+stylesheet 1:1-5:8 {sass}
+  atrule 1:1-1:8
+    atkeyword 1:1-1:4
+      ident 1:2-1:4 "use"
+    space 1:5-1:5 " "
+    string 1:6-1:8 "\"a\""
+  declarationDelimiter 1:9-1:9 ";"
+  space 1:10-1:10 "\n"
+  declaration 2:1-2:5
+    property 2:1-2:2
+      variable 2:1-2:2
+        ident 2:2-2:2 "b"
+    propertyDelimiter 2:3-2:3 ":"
+    space 2:4-2:4 " "
+    value 2:5-2:5
+      ident 2:5-2:5 "c"
+  declarationDelimiter 2:6-2:6 ";"
+  space 2:7-2:7 "\n"
+  ruleset 3:1-5:7
+    selector 3:1-3:1
+      typeSelector 3:1-3:1
+        ident 3:1-3:1 "d"
+    space 3:2-3:2 "\n"
+    block 4:1-5:7
+      space 4:1-4:2 "  "
+      include 4:3-4:12
+        atkeyword 4:3-4:10
+          ident 4:4-4:10 "include"
+        space 4:11-4:11 " "
+        ident 4:12-4:12 "e"
+      declarationDelimiter 4:13-4:13 ";"
+      space 4:14-4:14 "\n"
+      space 5:1-5:2 "  "
+      declaration 5:3-5:6
+        property 5:3-5:3
+          ident 5:3-5:3 "f"
+        propertyDelimiter 5:4-5:4 ":"
+        space 5:5-5:5 " "
+        value 5:6-5:6
+          ident 5:6-5:6 "g"
+      declarationDelimiter 5:7-5:7 ";"
+  space 5:8-5:8 "\n"
+
+=== comment/inside-value
+a
+  b: c /* d */ e
+
+---
+stylesheet 1:1-2:17 {sass}
+  ruleset 1:1-2:17
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 "\n"
+    block 2:1-2:17
+      space 2:1-2:2 "  "
+      declaration 2:3-2:16
+        property 2:3-2:3
+          ident 2:3-2:3 "b"
+        propertyDelimiter 2:4-2:4 ":"
+        space 2:5-2:5 " "
+        value 2:6-2:16
+          ident 2:6-2:6 "c"
+          space 2:7-2:7 " "
+          multilineComment 2:8-2:14 " d "
+          space 2:15-2:15 " "
+          ident 2:16-2:16 "e"
+      declarationDelimiter 2:17-2:17 "\n"
+
+=== comment/inside-value-no-indent
+a
+  b: c /* 
+d */ e
+
+---
+stylesheet 1:1-3:7 {sass}
+  ruleset 1:1-3:7
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 "\n"
+    block 2:1-3:7
+      space 2:1-2:2 "  "
+      declaration 2:3-3:6
+        property 2:3-2:3
+          ident 2:3-2:3 "b"
+        propertyDelimiter 2:4-2:4 ":"
+        space 2:5-2:5 " "
+        value 2:6-3:6
+          ident 2:6-2:6 "c"
+          space 2:7-2:7 " "
+          multilineComment 2:8-3:4 " \nd "
+          space 3:5-3:5 " "
+          ident 3:6-3:6 "e"
+      declarationDelimiter 3:7-3:7 "\n"
+
+=== ruleset/without-block
+a
+  b: c
+d
+
+---
+stylesheet 1:1-3:2 {sass}
+  ruleset 1:1-2:7
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 "\n"
+    block 2:1-2:7
+      space 2:1-2:2 "  "
+      declaration 2:3-2:6
+        property 2:3-2:3
+          ident 2:3-2:3 "b"
+        propertyDelimiter 2:4-2:4 ":"
+        space 2:5-2:5 " "
+        value 2:6-2:6
+          ident 2:6-2:6 "c"
+      declarationDelimiter 2:7-2:7 "\n"
+  ruleset 3:1-3:1
+    selector 3:1-3:1
+      typeSelector 3:1-3:1
+        ident 3:1-3:1 "d"
+  space 3:2-3:2 "\n"
+
+=== ruleset/without-block-in-block
+a
+  b
+  c
+    d: e
+
+---
+stylesheet 1:1-4:9 {sass}
+  ruleset 1:1-4:9
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 "\n"
+    block 2:1-4:9
+      space 2:1-2:2 "  "
+      ruleset 2:3-2:3
+        selector 2:3-2:3
+          typeSelector 2:3-2:3
+            ident 2:3-2:3 "b"
+      space 2:4-2:4 "\n"
+      space 3:1-3:2 "  "
+      ruleset 3:3-4:9
+        selector 3:3-3:3
+          typeSelector 3:3-3:3
+            ident 3:3-3:3 "c"
+        space 3:4-3:4 "\n"
+        block 4:1-4:9
+          space 4:1-4:4 "    "
+          declaration 4:5-4:8
+            property 4:5-4:5
+              ident 4:5-4:5 "d"
+            propertyDelimiter 4:6-4:6 ":"
+            space 4:7-4:7 " "
+            value 4:8-4:8
+              ident 4:8-4:8 "e"
+          declarationDelimiter 4:9-4:9 "\n"
+
+=== mixin/equals-without-body
+=a
+b
+  c: d
+
+---
+stylesheet 1:1-3:7 {sass}
+  mixin 1:1-1:3
+    operator 1:1-1:1 "="
+    ident 1:2-1:2 "a"
+    space 1:3-1:3 "\n"
+  ruleset 2:1-3:7
+    selector 2:1-2:1
+      typeSelector 2:1-2:1
+        ident 2:1-2:1 "b"
+    space 2:2-2:2 "\n"
+    block 3:1-3:7
+      space 3:1-3:2 "  "
+      declaration 3:3-3:6
+        property 3:3-3:3
+          ident 3:3-3:3 "c"
+        propertyDelimiter 3:4-3:4 ":"
+        space 3:5-3:5 " "
+        value 3:6-3:6
+          ident 3:6-3:6 "d"
+      declarationDelimiter 3:7-3:7 "\n"
+
+=== declaration/nested-properties-after-value
+a
+ b: c
+    d: e
+      f: g
+ h: i
+
+---
+stylesheet 1:1-5:6 {sass}
+  ruleset 1:1-5:6
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 "\n"
+    block 2:1-5:6
+      space 2:1-2:1 " "
+      declaration 2:2-5:1
+        property 2:2-2:2
+          ident 2:2-2:2 "b"
+        propertyDelimiter 2:3-2:3 ":"
+        space 2:4-2:4 " "
+        value 2:5-5:1
+          ident 2:5-2:5 "c"
+          space 2:6-2:6 "\n"
+          block 3:1-5:1
+            space 3:1-3:4 "    "
+            declaration 3:5-4:11
+              property 3:5-3:5
+                ident 3:5-3:5 "d"
+              propertyDelimiter 3:6-3:6 ":"
+              space 3:7-3:7 " "
+              value 3:8-4:11
+                ident 3:8-3:8 "e"
+                space 3:9-3:9 "\n"
+                block 4:1-4:11
+                  space 4:1-4:6 "      "
+                  declaration 4:7-4:10
+                    property 4:7-4:7
+                      ident 4:7-4:7 "f"
+                    propertyDelimiter 4:8-4:8 ":"
+                    space 4:9-4:9 " "
+                    value 4:10-4:10
+                      ident 4:10-4:10 "g"
+                  declarationDelimiter 4:11-4:11 "\n"
+            space 5:1-5:1 " "
+      declaration 5:2-5:5
+        property 5:2-5:2
+          ident 5:2-5:2 "h"
+        propertyDelimiter 5:3-5:3 ":"
+        space 5:4-5:4 " "
+        value 5:5-5:5
+          ident 5:5-5:5 "i"
+      declarationDelimiter 5:6-5:6 "\n"
+
+=== declaration/custom-property-braces
+a
+  --b: {c
+    d}
+
+---
+stylesheet 1:1-3:7 {sass}
+  ruleset 1:1-3:7
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 "\n"
+    block 2:1-3:7
+      space 2:1-2:2 "  "
+      declaration 2:3-3:6
+        customProperty 2:3-2:5
+          ident 2:5-2:5 "b"
+        propertyDelimiter 2:6-2:6 ":"
+        space 2:7-2:7 " "
+        value 2:8-3:6
+          raw 2:8-3:6 "{c\n    d}"
+      declarationDelimiter 3:7-3:7 "\n"
+
+=== atrule/supports-arguments-across-lines
+@supports a(b
+  )
+  c
+      d: e
+
+---
+stylesheet 1:1-4:11 {sass}
+  atrule 1:1-4:11
+    atkeyword 1:1-1:9
+      ident 1:2-1:9 "supports"
+    space 1:10-1:10 " "
+    function 1:11-2:3
+      ident 1:11-1:11 "a"
+      arguments 1:12-2:3
+        ident 1:13-1:13 "b"
+        space 1:14-1:14 "\n"
+        space 2:1-2:2 "  "
+    space 2:4-2:4 "\n"
+    block 3:1-4:11
+      space 3:1-3:2 "  "
+      ruleset 3:3-4:11
+        selector 3:3-3:3
+          typeSelector 3:3-3:3
+            ident 3:3-3:3 "c"
+        space 3:4-3:4 "\n"
+        block 4:1-4:11
+          space 4:1-4:6 "      "
+          declaration 4:7-4:10
+            property 4:7-4:7
+              ident 4:7-4:7 "d"
+            propertyDelimiter 4:8-4:8 ":"
+            space 4:9-4:9 " "
+            value 4:10-4:10
+              ident 4:10-4:10 "e"
+          declarationDelimiter 4:11-4:11 "\n"
+
+=== atrule/supports-arguments-after-open-paren
+@supports a(
+  b)
+    c
+      d: e
+
+---
+stylesheet 1:1-4:11 {sass}
+  atrule 1:1-4:11
+    atkeyword 1:1-1:9
+      ident 1:2-1:9 "supports"
+    space 1:10-1:10 " "
+    function 1:11-2:4
+      ident 1:11-1:11 "a"
+      arguments 1:12-2:4
+        space 1:13-1:13 "\n"
+        space 2:1-2:2 "  "
+        ident 2:3-2:3 "b"
+    space 2:5-2:5 "\n"
+    block 3:1-4:11
+      space 3:1-3:4 "    "
+      ruleset 3:5-4:11
+        selector 3:5-3:5
+          typeSelector 3:5-3:5
+            ident 3:5-3:5 "c"
+        space 3:6-3:6 "\n"
+        block 4:1-4:11
+          space 4:1-4:6 "      "
+          declaration 4:7-4:10
+            property 4:7-4:7
+              ident 4:7-4:7 "d"
+            propertyDelimiter 4:8-4:8 ":"
+            space 4:9-4:9 " "
+            value 4:10-4:10
+              ident 4:10-4:10 "e"
+          declarationDelimiter 4:11-4:11 "\n"
+
+=== ruleset/escaped-pseudo-function
+\:nth-child(2n+1) SPAN
+  foo: bar
+
+---
+stylesheet 1:1-2:11 {sass}
+  ruleset 1:1-2:11
+    selector 1:1-1:22
+      function 1:1-1:17
+        ident 1:1-1:11 "\\:nth-child"
+        arguments 1:12-1:17
+          raw 1:13-1:16 "2n+1"
+      space 1:18-1:18 " "
+      typeSelector 1:19-1:22
+        ident 1:19-1:22 "SPAN"
+    space 1:23-1:23 "\n"
+    block 2:1-2:11
+      space 2:1-2:2 "  "
+      declaration 2:3-2:10
+        property 2:3-2:5
+          ident 2:3-2:5 "foo"
+        propertyDelimiter 2:6-2:6 ":"
+        space 2:7-2:7 " "
+        value 2:8-2:10
+          ident 2:8-2:10 "bar"
+      declarationDelimiter 2:11-2:11 "\n"
+
+=== selector/newline-before-combinator
+a
++ b
+  c: d
+
+---
+stylesheet 1:1-3:7 {sass}
+  ruleset 1:1-1:1
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+  space 1:2-1:2 "\n"
+  ruleset 2:1-3:7
+    selector 2:1-2:3
+      combinator 2:1-2:1 "+"
+      space 2:2-2:2 " "
+      typeSelector 2:3-2:3
+        ident 2:3-2:3 "b"
+    space 2:4-2:4 "\n"
+    block 3:1-3:7
+      space 3:1-3:2 "  "
+      declaration 3:3-3:6
+        property 3:3-3:3
+          ident 3:3-3:3 "c"
+        propertyDelimiter 3:4-3:4 ":"
+        space 3:5-3:5 " "
+        value 3:6-3:6
+          ident 3:6-3:6 "d"
+      declarationDelimiter 3:7-3:7 "\n"
+
+=== selector/space-and-newline-before-combinator
+a 
++ b
+  c: d
+
+---
+stylesheet 1:1-3:7 {sass}
+  ruleset 1:1-1:1
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+  space 1:2-1:2 " "
+  space 1:3-1:3 "\n"
+  ruleset 2:1-3:7
+    selector 2:1-2:3
+      combinator 2:1-2:1 "+"
+      space 2:2-2:2 " "
+      typeSelector 2:3-2:3
+        ident 2:3-2:3 "b"
+    space 2:4-2:4 "\n"
+    block 3:1-3:7
+      space 3:1-3:2 "  "
+      declaration 3:3-3:6
+        property 3:3-3:3
+          ident 3:3-3:3 "c"
+        propertyDelimiter 3:4-3:4 ":"
+        space 3:5-3:5 " "
+        value 3:6-3:6
+          ident 3:6-3:6 "d"
+      declarationDelimiter 3:7-3:7 "\n"
+
+=== selector/newline-between-compounds
+a
+.b
+  c: d
+
+---
+stylesheet 1:1-3:7 {sass}
+  ruleset 1:1-1:1
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+  space 1:2-1:2 "\n"
+  ruleset 2:1-3:7
+    selector 2:1-2:2
+      class 2:1-2:2
+        ident 2:2-2:2 "b"
+    space 2:3-2:3 "\n"
+    block 3:1-3:7
+      space 3:1-3:2 "  "
+      declaration 3:3-3:6
+        property 3:3-3:3
+          ident 3:3-3:3 "c"
+        propertyDelimiter 3:4-3:4 ":"
+        space 3:5-3:5 " "
+        value 3:6-3:6
+          ident 3:6-3:6 "d"
+      declarationDelimiter 3:7-3:7 "\n"
+
+=== extend/followed-by-less-indented-rule
+x
+  @extend .a
+.c
+  d: e
+
+---
+stylesheet 1:1-4:7 {sass}
+  ruleset 1:1-2:13
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "x"
+    space 1:2-1:2 "\n"
+    block 2:1-2:13
+      space 2:1-2:2 "  "
+      extend 2:3-2:12
+        atkeyword 2:3-2:9
+          ident 2:4-2:9 "extend"
+        space 2:10-2:10 " "
+        selector 2:11-2:12
+          class 2:11-2:12
+            ident 2:12-2:12 "a"
+      space 2:13-2:13 "\n"
+  ruleset 3:1-4:7
+    selector 3:1-3:2
+      class 3:1-3:2
+        ident 3:2-3:2 "c"
+    space 3:3-3:3 "\n"
+    block 4:1-4:7
+      space 4:1-4:2 "  "
+      declaration 4:3-4:6
+        property 4:3-4:3
+          ident 4:3-4:3 "d"
+        propertyDelimiter 4:4-4:4 ":"
+        space 4:5-4:5 " "
+        value 4:6-4:6
+          ident 4:6-4:6 "e"
+      declarationDelimiter 4:7-4:7 "\n"
+
+=== selector/newline-after-comma
+a,
+b
+  c: d
+
+---
+stylesheet 1:1-3:7 {sass}
+  ruleset 1:1-3:7
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    delimiter 1:2-1:2 ","
+    space 1:3-1:3 "\n"
+    selector 2:1-2:1
+      typeSelector 2:1-2:1
+        ident 2:1-2:1 "b"
+    space 2:2-2:2 "\n"
+    block 3:1-3:7
+      space 3:1-3:2 "  "
+      declaration 3:3-3:6
+        property 3:3-3:3
+          ident 3:3-3:3 "c"
+        propertyDelimiter 3:4-3:4 ":"
+        space 3:5-3:5 " "
+        value 3:6-3:6
+          ident 3:6-3:6 "d"
+      declarationDelimiter 3:7-3:7 "\n"
+
+=== join/selector-combinator-end-not-joined
+a >
+b
+  c: d
+
+---
+stylesheet 1:1-3:7 {sass}
+  ruleset 1:1-1:3
+    selector 1:1-1:3
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+      space 1:2-1:2 " "
+      combinator 1:3-1:3 ">"
+  space 1:4-1:4 "\n"
+  ruleset 2:1-3:7
+    selector 2:1-2:1
+      typeSelector 2:1-2:1
+        ident 2:1-2:1 "b"
+    space 2:2-2:2 "\n"
+    block 3:1-3:7
+      space 3:1-3:2 "  "
+      declaration 3:3-3:6
+        property 3:3-3:3
+          ident 3:3-3:3 "c"
+        propertyDelimiter 3:4-3:4 ":"
+        space 3:5-3:5 " "
+        value 3:6-3:6
+          ident 3:6-3:6 "d"
+      declarationDelimiter 3:7-3:7 "\n"
+
+=== join/selector-plus-end-not-joined
+a +
+b
+  c: d
+
+---
+stylesheet 1:1-3:7 {sass}
+  ruleset 1:1-1:3
+    selector 1:1-1:3
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+      space 1:2-1:2 " "
+      combinator 1:3-1:3 "+"
+  space 1:4-1:4 "\n"
+  ruleset 2:1-3:7
+    selector 2:1-2:1
+      typeSelector 2:1-2:1
+        ident 2:1-2:1 "b"
+    space 2:2-2:2 "\n"
+    block 3:1-3:7
+      space 3:1-3:2 "  "
+      declaration 3:3-3:6
+        property 3:3-3:3
+          ident 3:3-3:3 "c"
+        propertyDelimiter 3:4-3:4 ":"
+        space 3:5-3:5 " "
+        value 3:6-3:6
+          ident 3:6-3:6 "d"
+      declarationDelimiter 3:7-3:7 "\n"
+
+=== join/declaration-operator-end
+a
+  b: 1 >
+    2
+
+---
+stylesheet 1:1-3:6 {sass}
+  ruleset 1:1-3:6
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 "\n"
+    block 2:1-3:6
+      space 2:1-2:2 "  "
+      declaration 2:3-3:5
+        property 2:3-2:3
+          ident 2:3-2:3 "b"
+        propertyDelimiter 2:4-2:4 ":"
+        space 2:5-2:5 " "
+        value 2:6-3:5
+          number 2:6-2:6 "1"
+          space 2:7-2:7 " "
+          operator 2:8-2:8 ">"
+          space 2:9-3:4 "\n    "
+          number 3:5-3:5 "2"
+      declarationDelimiter 3:6-3:6 "\n"
+
+=== join/declaration-interpolated-property-operator-end
+a
+  #{$p}-x: 1 +
+    2
+
+---
+stylesheet 1:1-3:6 {sass}
+  ruleset 1:1-3:6
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 "\n"
+    block 2:1-3:6
+      space 2:1-2:2 "  "
+      declaration 2:3-3:5
+        property 2:3-2:9
+          interpolation 2:3-2:7
+            variable 2:5-2:6
+              ident 2:6-2:6 "p"
+          ident 2:8-2:9 "-x"
+        propertyDelimiter 2:10-2:10 ":"
+        space 2:11-2:11 " "
+        value 2:12-3:5
+          number 2:12-2:12 "1"
+          space 2:13-2:13 " "
+          operator 2:14-2:14 "+"
+          space 2:15-3:4 "\n    "
+          number 3:5-3:5 "2"
+      declarationDelimiter 3:6-3:6 "\n"
+
+=== pseudo.arguments.multiline-close
+a:b(c
+  )
+  d: e
+---
+stylesheet 1:1-3:6 {sass}
+  ruleset 1:1-3:6
+    selector 1:1-2:3
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+      pseudoClass 1:2-2:3
+        ident 1:3-1:3 "b"
+        arguments 1:4-2:3
+          selector 1:5-1:5
+            typeSelector 1:5-1:5
+              ident 1:5-1:5 "c"
+          space 1:6-1:6 "\n"
+          space 2:1-2:2 "  "
+    space 2:4-2:4 "\n"
+    block 3:1-3:6
+      space 3:1-3:2 "  "
+      declaration 3:3-3:6
+        property 3:3-3:3
+          ident 3:3-3:3 "d"
+        propertyDelimiter 3:4-3:4 ":"
+        space 3:5-3:5 " "
+        value 3:6-3:6
+          ident 3:6-3:6 "e"
+
+=== pseudo.nth-of-with-block
+a:nth-child(2n + 1 of .a)
+  b: c
+---
+stylesheet 1:1-2:6 {sass}
+  ruleset 1:1-2:6
+    selector 1:1-1:25
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+      pseudoClass 1:2-1:25
+        ident 1:3-1:11 "nth-child"
+        arguments 1:12-1:25
+          number 1:13-1:13 "2"
+          ident 1:14-1:14 "n"
+          space 1:15-1:15 " "
+          operator 1:16-1:16 "+"
+          space 1:17-1:17 " "
+          number 1:18-1:18 "1"
+          space 1:19-1:19 " "
+          ident 1:20-1:21 "of"
+          space 1:22-1:22 " "
+          selector 1:23-1:24
+            class 1:23-1:24
+              ident 1:24-1:24 "a"
+    space 1:26-1:26 "\n"
+    block 2:1-2:6
+      space 2:1-2:2 "  "
+      declaration 2:3-2:6
+        property 2:3-2:3
+          ident 2:3-2:3 "b"
+        propertyDelimiter 2:4-2:4 ":"
+        space 2:5-2:5 " "
+        value 2:6-2:6
+          ident 2:6-2:6 "c"
+
+=== include.shorthand-content-block
++b
+  #logo
+    c: d
+---
+stylesheet 1:1-3:8 {sass}
+  include 1:1-3:8
+    operator 1:1-1:1 "+"
+    ident 1:2-1:2 "b"
+    space 1:3-1:3 "\n"
+    block 2:1-3:8
+      space 2:1-2:2 "  "
+      ruleset 2:3-3:8
+        selector 2:3-2:7
+          id 2:3-2:7
+            ident 2:4-2:7 "logo"
+        space 2:8-2:8 "\n"
+        block 3:1-3:8
+          space 3:1-3:4 "    "
+          declaration 3:5-3:8
+            property 3:5-3:5
+              ident 3:5-3:5 "c"
+            propertyDelimiter 3:6-3:6 ":"
+            space 3:7-3:7 " "
+            value 3:8-3:8
+              ident 3:8-3:8 "d"
+
+=== include.shorthand-arguments-content-block
++b(1)
+  c: d
+---
+stylesheet 1:1-2:6 {sass}
+  include 1:1-2:6
+    operator 1:1-1:1 "+"
+    ident 1:2-1:2 "b"
+    arguments 1:3-1:5
+      number 1:4-1:4 "1"
+    space 1:6-1:6 "\n"
+    block 2:1-2:6
+      space 2:1-2:2 "  "
+      declaration 2:3-2:6
+        property 2:3-2:3
+          ident 2:3-2:3 "c"
+        propertyDelimiter 2:4-2:4 ":"
+        space 2:5-2:5 " "
+        value 2:6-2:6
+          ident 2:6-2:6 "d"
+
+=== selector.leading-combinator-not-include
++ b
+  c: d
++.b
+  c: d
+---
+stylesheet 1:1-4:6 {sass}
+  ruleset 1:1-2:7
+    selector 1:1-1:3
+      combinator 1:1-1:1 "+"
+      space 1:2-1:2 " "
+      typeSelector 1:3-1:3
+        ident 1:3-1:3 "b"
+    space 1:4-1:4 "\n"
+    block 2:1-2:7
+      space 2:1-2:2 "  "
+      declaration 2:3-2:6
+        property 2:3-2:3
+          ident 2:3-2:3 "c"
+        propertyDelimiter 2:4-2:4 ":"
+        space 2:5-2:5 " "
+        value 2:6-2:6
+          ident 2:6-2:6 "d"
+      declarationDelimiter 2:7-2:7 "\n"
+  ruleset 3:1-4:6
+    selector 3:1-3:3
+      combinator 3:1-3:1 "+"
+      class 3:2-3:3
+        ident 3:3-3:3 "b"
+    space 3:4-3:4 "\n"
+    block 4:1-4:6
+      space 4:1-4:2 "  "
+      declaration 4:3-4:6
+        property 4:3-4:3
+          ident 4:3-4:3 "c"
+        propertyDelimiter 4:4-4:4 ":"
+        space 4:5-4:5 " "
+        value 4:6-4:6
+          ident 4:6-4:6 "d"
+
+=== module.0
+a
+  b: math.$pi
+
+---
+stylesheet 1:1-2:14 {sass}
+  ruleset 1:1-2:14
+    selector 1:1-1:1
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+    space 1:2-1:2 "\n"
+    block 2:1-2:14
+      space 2:1-2:2 "  "
+      declaration 2:3-2:13
+        property 2:3-2:3
+          ident 2:3-2:3 "b"
+        propertyDelimiter 2:4-2:4 ":"
+        space 2:5-2:5 " "
+        value 2:6-2:13
+          module 2:6-2:10
+            ident 2:6-2:9 "math"
+          variable 2:11-2:13
+            ident 2:12-2:13 "pi"
+      declarationDelimiter 2:14-2:14 "\n"
+
+=== module.1
+$a: math.$pi
+
+---
+stylesheet 1:1-1:13 {sass}
+  declaration 1:1-1:12
+    property 1:1-1:2
+      variable 1:1-1:2
+        ident 1:2-1:2 "a"
+    propertyDelimiter 1:3-1:3 ":"
+    space 1:4-1:4 " "
+    value 1:5-1:12
+      module 1:5-1:9
+        ident 1:5-1:8 "math"
+      variable 1:10-1:12
+        ident 1:11-1:12 "pi"
+  declarationDelimiter 1:13-1:13 "\n"
+
+=== module.2
+ns.$var: 1
+
+---
+stylesheet 1:1-1:11 {sass}
+  declaration 1:1-1:10
+    property 1:1-1:7
+      module 1:1-1:3
+        ident 1:1-1:2 "ns"
+      variable 1:4-1:7
+        ident 1:5-1:7 "var"
+    propertyDelimiter 1:8-1:8 ":"
+    space 1:9-1:9 " "
+    value 1:10-1:10
+      number 1:10-1:10 "1"
+  declarationDelimiter 1:11-1:11 "\n"
+
+=== module.class-selector
+a.b
+  c: d
+
+---
+stylesheet 1:1-2:7 {sass}
+  ruleset 1:1-2:7
+    selector 1:1-1:3
+      typeSelector 1:1-1:1
+        ident 1:1-1:1 "a"
+      class 1:2-1:3
+        ident 1:3-1:3 "b"
+    space 1:4-1:4 "\n"
+    block 2:1-2:7
+      space 2:1-2:2 "  "
+      declaration 2:3-2:6
+        property 2:3-2:3
+          ident 2:3-2:3 "c"
+        propertyDelimiter 2:4-2:4 ":"
+        space 2:5-2:5 " "
+        value 2:6-2:6
+          ident 2:6-2:6 "d"
+      declarationDelimiter 2:7-2:7 "\n"

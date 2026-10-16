@@ -1,0 +1,35 @@
+=== 0 [sass scss]
+$a
+---
+variable 1:1-1:2 {*}
+  ident 1:2-1:2 "a"
+
+=== 1 [sass scss]
+$a-x
+---
+variable 1:1-1:4 {*}
+  ident 1:2-1:4 "a-x"
+
+=== 2 [sass scss]
+$color_0
+---
+variable 1:1-1:8 {*}
+  ident 1:2-1:8 "color_0"
+
+=== 3 [sass scss]
+$color_1
+---
+variable 1:1-1:8 {*}
+  ident 1:2-1:8 "color_1"
+
+=== 4 [sass scss]
+$color-1d
+---
+variable 1:1-1:9 {*}
+  ident 1:2-1:9 "color-1d"
+
+=== issue-296 [sass scss]
+$--bg-color
+---
+variable 1:1-1:11 {*}
+  ident 1:2-1:11 "--bg-color"

@@ -1,0 +1,14 @@
+=== 0 [css less sass scss]
+!important
+---
+important 1:1-1:10 {*} "!important"
+
+=== c.0 [css less scss]
+!/*test*/important
+---
+important 1:1-1:18 {*} "!/*test*/important"
+
+=== s.0 [css less sass scss]
+!  important
+---
+important 1:1-1:12 {*} "!  important"

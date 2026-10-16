@@ -1,0 +1,255 @@
+<===> css/test-1.css
+div { height: 0 }
+
+<===> css/test-1.expected.css
+div { height: 0; }
+
+<===> css/test-2.css
+div {
+height: 0
+}
+
+<===> css/test-2.expected.css
+div {
+height: 0;
+}
+
+<===> css/test-3.css
+div {height: 0}
+
+<===> css/test-3.expected.css
+div {height: 0;}
+
+<===> css/test-4.css
+div {
+height: 0 /* Comment */
+}
+
+<===> css/test-4.expected.css
+div {
+height: 0; /* Comment */
+}
+
+<===> css/test-5.css
+div {
+top: 1px;
+height: 0 /* 1comment */  /* 2comment */
+}
+
+<===> css/test-5.expected.css
+div {
+top: 1px;
+height: 0; /* 1comment */  /* 2comment */
+}
+
+<===> less/condition-multiline.less
+div {
+    @color: tomato;
+    div when (@color = tomato) {
+        top: 0;
+        }
+    }
+
+<===> less/condition.less
+div { @color: tomato; div when (@color = tomato) { top: 0; } }
+
+<===> less/include-1-multiline.expected.less
+div {
+    color: tomato;
+    .nani;
+    }
+
+<===> less/include-1-multiline.less
+div {
+    color: tomato;
+    .nani
+    }
+
+<===> less/include-1.expected.less
+div { color: tomato; .nani; }
+
+<===> less/include-1.less
+div { color: tomato; .nani }
+
+<===> less/include-2-multiline.expected.less
+div {
+    color: tomato;
+    .nani(2px);
+    }
+
+<===> less/include-2-multiline.less
+div {
+    color: tomato;
+    .nani(2px)
+    }
+
+<===> less/include-2.expected.less
+div { color: tomato; .nani(2px); }
+
+<===> less/include-2.less
+div { color: tomato; .nani(2px) }
+
+<===> less/include-3-multiline.expected.less
+div {
+    color: tomato;
+    .nani(2px) !important;
+    }
+
+<===> less/include-3-multiline.less
+div {
+    color: tomato;
+    .nani(2px) !important
+    }
+
+<===> less/include-3.expected.less
+div { color: tomato; .nani(2px) !important; }
+
+<===> less/include-3.less
+div { color: tomato; .nani(2px) !important }
+
+<===> less/include-4-multiline.expected.less
+div {
+    color: tomato;
+    #bundle > .button;
+    }
+
+<===> less/include-4-multiline.less
+div {
+    color: tomato;
+    #bundle > .button
+    }
+
+<===> less/include-4.expected.less
+div { color: tomato; #bundle > .button; }
+
+<===> less/include-4.less
+div { color: tomato; #bundle > .button }
+
+<===> less/include-5-multiline.expected.less
+div {
+    @color: tomato;
+    #bundle > .button (@color);
+    }
+
+<===> less/include-5-multiline.less
+div {
+    @color: tomato;
+    #bundle > .button (@color)
+    }
+
+<===> less/include-5.expected.less
+div { @color: tomato; #bundle > .button (@color); }
+
+<===> less/include-5.less
+div { @color: tomato; #bundle > .button (@color) }
+
+<===> sass/test.sass
+a
+  color: tomato
+  top: 0
+
+  p
+    a: b
+    c:d
+
+<===> scss/block-include-multiline.scss
+div {
+    color: tomato;
+    @include nani {
+        top: 0;
+        content: '';
+        }
+    }
+
+<===> scss/block-include.scss
+div { color: tomato; @include nani { top: 0; content: ''; } }
+
+<===> scss/block-value-multiline.scss
+div {
+    color: tomato;
+    font: {
+        family: fantasy;
+        size: 16px;
+        }
+    }
+
+<===> scss/block-value.scss
+div { color: tomato; font: { family: fantasy; size: 16px; } }
+
+<===> scss/condition-multiline.scss
+div {
+    $color: tomato;
+    @if $color == tomato {
+        top: 0;
+        }
+    }
+
+<===> scss/condition.scss
+div { $color: tomato; @if $color == tomato { top: 0; } }
+
+<===> scss/extend-multiline.expected.scss
+div {
+    color: tomato;
+    @extend .nani;
+    }
+
+<===> scss/extend-multiline.scss
+div {
+    color: tomato;
+    @extend .nani
+    }
+
+<===> scss/extend.expected.scss
+div { color: tomato; @extend .nani; }
+
+<===> scss/extend.scss
+div { color: tomato; @extend .nani }
+
+<===> scss/include-1-multiline.expected.scss
+div {
+    color: tomato;
+    @include nani;
+    }
+
+<===> scss/include-1-multiline.scss
+div {
+    color: tomato;
+    @include nani
+    }
+
+<===> scss/include-1.expected.scss
+div { color: tomato; @include nani; }
+
+<===> scss/include-1.scss
+div { color: tomato; @include nani }
+
+<===> scss/include-2-multiline.expected.scss
+div {
+    color: tomato;
+    @include nani(10);
+    }
+
+<===> scss/include-2-multiline.scss
+div {
+    color: tomato;
+    @include nani(10)
+    }
+
+<===> scss/include-2.expected.scss
+div { color: tomato; @include nani(10); }
+
+<===> scss/include-2.scss
+div { color: tomato; @include nani(10) }
+
+<===> scss/loop-multiline.scss
+div {
+    color: tomato;
+    @while 1 > 2 {
+        top: 0;
+        }
+    }
+
+<===> scss/loop.scss
+div { color: tomato; @while 1 > 2 { top: 0; } }
+
+<===>

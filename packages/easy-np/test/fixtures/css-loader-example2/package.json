@@ -1,0 +1,6 @@
+{
+  "name": "css-loader-example2",
+  "dependencies": {
+    "css-loader": "~0.23.1"
+  }
+}

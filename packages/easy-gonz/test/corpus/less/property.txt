@@ -1,0 +1,38 @@
+=== 0
+@nani
+---
+property 1:1-1:5 {less}
+  variable 1:1-1:5
+    ident 1:2-1:5 "nani"
+
+=== 2
+padding-@{side}
+---
+property 1:1-1:15 {less}
+  ident 1:1-1:8 "padding-"
+  interpolatedVariable 1:9-1:15
+    ident 1:11-1:14 "side"
+
+=== 3
+@{prop}
+---
+property 1:1-1:7 {less}
+  interpolatedVariable 1:1-1:7
+    ident 1:3-1:6 "prop"
+
+=== 4
+@{prop}-width
+---
+property 1:1-1:13 {less}
+  interpolatedVariable 1:1-1:7
+    ident 1:3-1:6 "prop"
+  ident 1:8-1:13 "-width"
+
+=== 5
+border-@{side}-width
+---
+property 1:1-1:20 {less}
+  ident 1:1-1:7 "border-"
+  interpolatedVariable 1:8-1:14
+    ident 1:10-1:13 "side"
+  ident 1:15-1:20 "-width"

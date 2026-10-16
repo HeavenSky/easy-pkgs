@@ -1,0 +1,101 @@
+=== c.2
+@test/*test
+     test*/x/*test*/,/*test*/y/*test*/x(/*test*/1/*test*/+/*test*/2/*test*/)/*test*/{/*test*/p/*test*/:/*test*/v/*test*/}
+---
+atrule 1:1-2:121 {css}
+  atkeyword 1:1-1:5
+    ident 1:2-1:5 "test"
+  multilineComment 1:6-2:11 "test\n     test"
+  ident 2:12-2:12 "x"
+  multilineComment 2:13-2:20 "test"
+  operator 2:21-2:21 ","
+  multilineComment 2:22-2:29 "test"
+  ident 2:30-2:30 "y"
+  multilineComment 2:31-2:38 "test"
+  function 2:39-2:76
+    ident 2:39-2:39 "x"
+    arguments 2:40-2:76
+      multilineComment 2:41-2:48 "test"
+      number 2:49-2:49 "1"
+      multilineComment 2:50-2:57 "test"
+      operator 2:58-2:58 "+"
+      multilineComment 2:59-2:66 "test"
+      number 2:67-2:67 "2"
+      multilineComment 2:68-2:75 "test"
+  multilineComment 2:77-2:84 "test"
+  block 2:85-2:121
+    multilineComment 2:86-2:93 "test"
+    declaration 2:94-2:112
+      property 2:94-2:94
+        ident 2:94-2:94 "p"
+      multilineComment 2:95-2:102 "test"
+      propertyDelimiter 2:103-2:103 ":"
+      multilineComment 2:104-2:111 "test"
+      value 2:112-2:112
+        ident 2:112-2:112 "v"
+    multilineComment 2:113-2:120 "test"
+
+=== range.0
+@media (400px <= width <= 700px) {}
+---
+atrule 1:1-1:35 {css}
+  atkeyword 1:1-1:6
+    ident 1:2-1:6 "media"
+  space 1:7-1:7 " "
+  parentheses 1:8-1:32
+    dimension 1:9-1:13
+      number 1:9-1:11 "400"
+      ident 1:12-1:13 "px"
+    space 1:14-1:14 " "
+    operator 1:15-1:15 "<"
+    operator 1:16-1:16 "="
+    space 1:17-1:17 " "
+    ident 1:18-1:22 "width"
+    space 1:23-1:23 " "
+    operator 1:24-1:24 "<"
+    operator 1:25-1:25 "="
+    space 1:26-1:26 " "
+    dimension 1:27-1:31
+      number 1:27-1:29 "700"
+      ident 1:30-1:31 "px"
+  space 1:33-1:33 " "
+  block 1:34-1:35
+
+=== nesting-selector.0
+@scope (&) {}
+---
+atrule 1:1-1:13 {css}
+  atkeyword 1:1-1:6
+    ident 1:2-1:6 "scope"
+  space 1:7-1:7 " "
+  parentheses 1:8-1:10
+    parentSelector 1:9-1:9 "&"
+  space 1:11-1:11 " "
+  block 1:12-1:13
+
+=== nesting-selector.1
+@supports selector(&) and (not selector(> .a)) {}
+---
+atrule 1:1-1:49 {css}
+  atkeyword 1:1-1:9
+    ident 1:2-1:9 "supports"
+  space 1:10-1:10 " "
+  function 1:11-1:21
+    ident 1:11-1:18 "selector"
+    arguments 1:19-1:21
+      parentSelector 1:20-1:20 "&"
+  space 1:22-1:22 " "
+  ident 1:23-1:25 "and"
+  space 1:26-1:26 " "
+  parentheses 1:27-1:46
+    ident 1:28-1:30 "not"
+    space 1:31-1:31 " "
+    function 1:32-1:45
+      ident 1:32-1:39 "selector"
+      arguments 1:40-1:45
+        operator 1:41-1:41 ">"
+        space 1:42-1:42 " "
+        class 1:43-1:44
+          ident 1:44-1:44 "a"
+  space 1:47-1:47 " "
+  block 1:48-1:49

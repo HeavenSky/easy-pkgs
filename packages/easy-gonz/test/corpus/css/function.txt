@@ -1,0 +1,9 @@
+=== 6
+calc(x*y)
+---
+function 1:1-1:9 {css}
+  ident 1:1-1:4 "calc"
+  arguments 1:5-1:9
+    ident 1:6-1:6 "x"
+    operator 1:7-1:7 "*"
+    ident 1:8-1:8 "y"

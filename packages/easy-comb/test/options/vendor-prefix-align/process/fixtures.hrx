@@ -1,0 +1,327 @@
+<===> css/already-aligned.css
+.radio-button_theme_normal .radio-button__radio:before
+{
+    background: rgba(0,0,0,.4);
+    background: -webkit-linear-gradient(top, rgba(0,0,0,.2) 0,rgba(0,0,0,.4) 100%);
+    background:    -moz-linear-gradient(top, rgba(0,0,0,.2) 0, rgba(0,0,0,.4) 100%);
+    background:      -o-linear-gradient(top, rgba(0,0,0,.2) 0,rgba(0,0,0,.4) 100%);
+    background:         linear-gradient(to bottom, rgba(0,0,0,.2) 0,rgba(0,0,0,.4) 100%);
+
+    -moz-box-shadow: 0 1px 0 rgba(0,0,0,.07);
+         box-shadow: 0 1px 0 rgba(0,0,0,.07);
+}
+
+<===> css/already-aligned.expected.css
+.radio-button_theme_normal .radio-button__radio:before
+{
+    background: rgba(0,0,0,.4);
+    background: -webkit-linear-gradient(top, rgba(0,0,0,.2) 0,rgba(0,0,0,.4) 100%);
+    background:    -moz-linear-gradient(top, rgba(0,0,0,.2) 0, rgba(0,0,0,.4) 100%);
+    background:      -o-linear-gradient(top, rgba(0,0,0,.2) 0,rgba(0,0,0,.4) 100%);
+    background:         linear-gradient(to bottom, rgba(0,0,0,.2) 0,rgba(0,0,0,.4) 100%);
+
+    -moz-box-shadow: 0 1px 0 rgba(0,0,0,.07);
+         box-shadow: 0 1px 0 rgba(0,0,0,.07);
+}
+
+<===> css/both.css
+.serp-block__head_animation_yes
+{
+    -webkit-transition: -webkit-transform 150ms linear;
+            transition: transform 150ms linear;
+}
+
+<===> css/both.expected.css
+.serp-block__head_animation_yes
+{
+    -webkit-transition: -webkit-transform 150ms linear;
+            transition:         transform 150ms linear;
+}
+
+<===> css/complex.css
+@media all and (min-width:0)
+{
+    .radio-button_theme_normal .radio-button__radio:before
+    {
+        background: rgba(0,0,0,.4);
+        background: -webkit-linear-gradient(top, rgba(0,0,0,.2) 0,rgba(0,0,0,.4) 100%);
+        background: -moz-linear-gradient(top, rgba(0,0,0,.2) 0, rgba(0,0,0,.4) 100%);
+        background: -o-linear-gradient(top, rgba(0,0,0,.2) 0,rgba(0,0,0,.4) 100%);
+        background:     linear-gradient(to bottom, rgba(0,0,0,.2) 0,rgba(0,0,0,.4) 100%);
+        -moz-box-shadow: 0 1px 0 rgba(0,0,0,.07);
+        box-shadow: 0 1px 0 rgba(0,0,0,.07);
+    }
+
+    /* :after — фон */
+    .radio-button_theme_normal .radio-button__radio:after
+    {
+        background: #fff;
+        background: -webkit-linear-gradient(top, #fff 0,#eee 100%);
+        background: -moz-linear-gradient(top, #fff 0, #eee 100%);
+        background:  -o-linear-gradient(top, #fff 0,#eee 100%);
+        background:     linear-gradient(to bottom, #fff 0,#eee 100%);
+    }
+
+    /* _focused_yes */
+    .radio-button_theme_normal .radio-button__radio_focused_yes:before
+    {
+        -moz-box-shadow: 0 0 6px 2px rgba(255,204,0,.7), 0 1px 0 rgba(0,0,0,.07);
+             box-shadow: 0 0 6px 2px rgba(255,204,0,.7), 0 1px 0 rgba(0,0,0,.07);
+    }
+}
+
+<===> css/complex.expected.css
+@media all and (min-width:0)
+{
+    .radio-button_theme_normal .radio-button__radio:before
+    {
+        background: rgba(0,0,0,.4);
+        background: -webkit-linear-gradient(top, rgba(0,0,0,.2) 0,rgba(0,0,0,.4) 100%);
+        background:    -moz-linear-gradient(top, rgba(0,0,0,.2) 0, rgba(0,0,0,.4) 100%);
+        background:      -o-linear-gradient(top, rgba(0,0,0,.2) 0,rgba(0,0,0,.4) 100%);
+        background:         linear-gradient(to bottom, rgba(0,0,0,.2) 0,rgba(0,0,0,.4) 100%);
+        -moz-box-shadow: 0 1px 0 rgba(0,0,0,.07);
+             box-shadow: 0 1px 0 rgba(0,0,0,.07);
+    }
+
+    /* :after — фон */
+    .radio-button_theme_normal .radio-button__radio:after
+    {
+        background: #fff;
+        background: -webkit-linear-gradient(top, #fff 0,#eee 100%);
+        background:    -moz-linear-gradient(top, #fff 0, #eee 100%);
+        background:      -o-linear-gradient(top, #fff 0,#eee 100%);
+        background:         linear-gradient(to bottom, #fff 0,#eee 100%);
+    }
+
+    /* _focused_yes */
+    .radio-button_theme_normal .radio-button__radio_focused_yes:before
+    {
+        -moz-box-shadow: 0 0 6px 2px rgba(255,204,0,.7), 0 1px 0 rgba(0,0,0,.07);
+             box-shadow: 0 0 6px 2px rgba(255,204,0,.7), 0 1px 0 rgba(0,0,0,.07);
+    }
+}
+
+<===> css/issue-193.css
+li {color: #7799c8;
+    font-size: 10px;}
+
+<===> css/issue-193.expected.css
+li {color: #7799c8;
+    font-size: 10px;}
+
+<===> css/issue-241.css
+*
+{
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+<===> css/issue-241.expected.css
+*
+{
+	-webkit-box-sizing: border-box;
+	   -moz-box-sizing: border-box;
+	        box-sizing: border-box;
+	}
+
+<===> css/multiline-comments.css
+a
+{
+    -webkit-color: panda;
+    /*
+     *    /\_/\
+     *   ( o.o )
+     *    > ^ <
+     */ -moz-color: panda;
+}
+
+<===> css/multiline-comments.expected.css
+a
+{
+     -webkit-color: panda;
+    /*
+     *    /\_/\
+     *   ( o.o )
+     *    > ^ <
+     */ -moz-color: panda;
+}
+
+<===> css/one-line-2.css
+a{top:0}
+
+<===> css/one-line-2.expected.css
+a{top:0}
+
+<===> css/one-line.css
+a{ -webkit-color:tomato; -moz-color:tomato; top:0 }
+
+<===> css/one-line.expected.css
+a{ -webkit-color:tomato; -moz-color:tomato; top:0 }
+
+<===> css/property-align.css
+a
+{
+  color: #fff;
+
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+}
+
+<===> css/property-align.expected.css
+a
+{
+  color: #fff;
+
+  -webkit-border-radius: 3px;
+     -moz-border-radius: 3px;
+          border-radius: 3px;
+}
+
+<===> css/same-name.css
+.test
+{
+    -webkit-transition: -webkit-transform .6s;
+    transition: transform .6s;
+    -webkit-transform: scale(.6, .6);
+    transform: scale(.6, .6);
+}
+
+<===> css/same-name.expected.css
+.test
+{
+    -webkit-transition: -webkit-transform .6s;
+            transition:         transform .6s;
+    -webkit-transform: scale(.6, .6);
+            transform: scale(.6, .6);
+}
+
+<===> css/value-align.css
+b
+{
+  color: #fff;
+
+  background: -webkit-linear-gradient(linear, left top, right top, color-stop(0,rgba(255,255,255,0)), color-stop(20%, #fff));
+  background: -moz-linear-gradient(left, rgba(255,255,255,0) 0, #fff 20%);
+  background: -o-linear-gradient(left, rgba(255,255,255,0) 0, #fff 20%);
+  background: -ms-linear-gradient(left, rgba(255,255,255,0) 0, #fff 20%);
+  background:       linear-gradient(to right, rgba(255,255,255,0) 0, #fff 20%);
+}
+
+<===> css/value-align.expected.css
+b
+{
+  color: #fff;
+
+  background: -webkit-linear-gradient(linear, left top, right top, color-stop(0,rgba(255,255,255,0)), color-stop(20%, #fff));
+  background:    -moz-linear-gradient(left, rgba(255,255,255,0) 0, #fff 20%);
+  background:      -o-linear-gradient(left, rgba(255,255,255,0) 0, #fff 20%);
+  background:     -ms-linear-gradient(left, rgba(255,255,255,0) 0, #fff 20%);
+  background:         linear-gradient(to right, rgba(255,255,255,0) 0, #fff 20%);
+}
+
+<===> css/with-comment-property-2.css
+a
+{
+    top: 0;/* ololo */margin: 0;}
+
+<===> css/with-comment-property-2.expected.css
+a
+{
+    top: 0;/* ololo */margin: 0;}
+
+<===> css/with-comment-property.css
+body
+{
+    -webkit-transition: transform 150ms linear;
+     /* comment */ transition: transform 150ms linear;
+}
+
+<===> css/with-comment-property.expected.css
+body
+{
+           -webkit-transition: transform 150ms linear;
+     /* comment */ transition: transform 150ms linear;
+}
+
+<===> css/with-comment.css
+body
+{
+    background: -webkit-linear-gradient(nani);
+    background: /* comment */ -moz-linear-gradient(nani);
+}
+
+<===> css/with-comment.expected.css
+body
+{
+    background:            -webkit-linear-gradient(nani);
+    background: /* comment */ -moz-linear-gradient(nani);
+}
+
+<===> css/without-space.css
+body
+{
+    background:-webkit-linear-gradient(nani);
+    background:-moz-linear-gradient(nani);
+}
+
+<===> css/without-space.expected.css
+body
+{
+    background:-webkit-linear-gradient(nani);
+    background:   -moz-linear-gradient(nani);
+}
+
+<===> css/issue-628.css
+a
+{
+    transition: none;
+    -webkit-transition: none;
+    -moz-transition: none;
+    color: red;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    -webkit-user-select: none;
+    color: red;
+    user-select: none;
+    background: linear-gradient(red);
+    background: -webkit-linear-gradient(red);
+}
+
+<===> css/issue-628.expected.css
+a
+{
+    transition: none;
+    -webkit-transition: none;
+       -moz-transition: none;
+    color: red;
+    -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+    -webkit-user-select: none;
+    color: red;
+    user-select: none;
+    background: linear-gradient(red);
+    background: -webkit-linear-gradient(red);
+}
+
+<===> sass/property.sass
+a
+  -webkit-color: panda
+  color: panda
+  -moz-color: panda
+
+<===> sass/value.expected.sass
+a
+  color: -webkit-panda
+  color:    -moz-panda
+  color:         panda
+
+<===> sass/value.sass
+a
+  color: -webkit-panda
+  color: -moz-panda
+  color: panda
+
+<===>

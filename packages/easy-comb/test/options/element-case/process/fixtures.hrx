@@ -1,0 +1,29 @@
+<===> scss/interpolation.expected.scss
+#{$block}-fooBar {
+  color: red;
+}
+
+div.Foo {
+  color: red;
+}
+
+<===> scss/interpolation.scss
+#{$block}-fooBar {
+  color: red;
+}
+
+DIV.Foo {
+  color: red;
+}
+
+<===> scss/mixin.expected.scss
+a {
+    @include boxSizingContent();
+}
+
+<===> scss/mixin.scss
+A {
+    @include boxSizingContent();
+}
+
+<===>

@@ -1,0 +1,101 @@
+=== 0
+@while 1 > 2
+  a
+    p:v
+---
+loop 1:1-3:7 {sass}
+  atkeyword 1:1-1:6
+    ident 1:2-1:6 "while"
+  space 1:7-1:7 " "
+  number 1:8-1:8 "1"
+  space 1:9-1:9 " "
+  operator 1:10-1:10 ">"
+  space 1:11-1:11 " "
+  number 1:12-1:12 "2"
+  space 1:13-1:13 "\n"
+  block 2:1-3:7
+    space 2:1-2:2 "  "
+    ruleset 2:3-3:7
+      selector 2:3-2:3
+        typeSelector 2:3-2:3
+          ident 2:3-2:3 "a"
+      space 2:4-2:4 "\n"
+      block 3:1-3:7
+        space 3:1-3:4 "    "
+        declaration 3:5-3:7
+          property 3:5-3:5
+            ident 3:5-3:5 "p"
+          propertyDelimiter 3:6-3:6 ":"
+          value 3:7-3:7
+            ident 3:7-3:7 "v"
+
+=== 1
+@for $i from 1 through 3
+  a
+    p:v
+---
+loop 1:1-3:7 {sass}
+  atkeyword 1:1-1:4
+    ident 1:2-1:4 "for"
+  space 1:5-1:5 " "
+  variable 1:6-1:7
+    ident 1:7-1:7 "i"
+  space 1:8-1:8 " "
+  ident 1:9-1:12 "from"
+  space 1:13-1:13 " "
+  number 1:14-1:14 "1"
+  space 1:15-1:15 " "
+  ident 1:16-1:22 "through"
+  space 1:23-1:23 " "
+  number 1:24-1:24 "3"
+  space 1:25-1:25 "\n"
+  block 2:1-3:7
+    space 2:1-2:2 "  "
+    ruleset 2:3-3:7
+      selector 2:3-2:3
+        typeSelector 2:3-2:3
+          ident 2:3-2:3 "a"
+      space 2:4-2:4 "\n"
+      block 3:1-3:7
+        space 3:1-3:4 "    "
+        declaration 3:5-3:7
+          property 3:5-3:5
+            ident 3:5-3:5 "p"
+          propertyDelimiter 3:6-3:6 ":"
+          value 3:7-3:7
+            ident 3:7-3:7 "v"
+
+=== 2
+@each $animal in puma, egret
+  a
+    p:v
+---
+loop 1:1-3:7 {sass}
+  atkeyword 1:1-1:5
+    ident 1:2-1:5 "each"
+  space 1:6-1:6 " "
+  variable 1:7-1:13
+    ident 1:8-1:13 "animal"
+  space 1:14-1:14 " "
+  ident 1:15-1:16 "in"
+  space 1:17-1:17 " "
+  ident 1:18-1:21 "puma"
+  operator 1:22-1:22 ","
+  space 1:23-1:23 " "
+  ident 1:24-1:28 "egret"
+  space 1:29-1:29 "\n"
+  block 2:1-3:7
+    space 2:1-2:2 "  "
+    ruleset 2:3-3:7
+      selector 2:3-2:3
+        typeSelector 2:3-2:3
+          ident 2:3-2:3 "a"
+      space 2:4-2:4 "\n"
+      block 3:1-3:7
+        space 3:1-3:4 "    "
+        declaration 3:5-3:7
+          property 3:5-3:5
+            ident 3:5-3:5 "p"
+          propertyDelimiter 3:6-3:6 ":"
+          value 3:7-3:7
+            ident 3:7-3:7 "v"

@@ -1,0 +1,1332 @@
+<===> css/custom-property.css
+.w {
+  color: blue;
+  --color: red;
+  margin: 0;
+  --width: 1px;
+  --gutter: 2px;
+}
+
+<===> css/custom-property.expected.css
+.w {
+  --color: red;
+  --width: 1px;
+
+  --gutter: 2px;
+  margin: 0;
+  color: blue;
+}
+
+<===> css/data-uri.css
+a
+{
+    color: tomato;
+    background: #D2D2D2 no-repeat url('data:image/svg+xml;charset=US-ASCII.naninani');
+    position: absolute;
+}
+
+
+<===> css/data-uri.expected.css
+a
+{
+    position: absolute;
+    background: #D2D2D2 no-repeat url('data:image/svg+xml;charset=US-ASCII.naninani');
+    color: tomato;
+}
+
+
+<===> css/issue-94-1.css
+.test
+{
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    bottom: -1px;
+    left: -1px;
+
+    border: 1px solid transparent;
+    border-color: rgba(0,0,0,0.38) rgba(0,0,0,0.27) rgba(0,0,0,0.16);
+
+    background: -webkit-linear-gradient(#fff, #fff);
+    background: linear-gradient(#fff, #fff);
+    background-clip: padding-box;
+    background-size: 16px 16px;
+
+    -webkit-appearance: textfield;
+}
+
+<===> css/issue-94-1.expected.css
+.test
+{
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    bottom: -1px;
+    left: -1px;
+
+    border: 1px solid transparent;
+    border-color: rgba(0,0,0,.38) rgba(0,0,0,.27) rgba(0,0,0,.16);
+    background: -webkit-linear-gradient(#fff, #fff);
+    background:         linear-gradient(#fff, #fff);
+    background-clip: padding-box;
+    background-size: 16px 16px;
+
+    -webkit-appearance: textfield;
+}
+
+<===> css/issue-94-2.css
+.test
+{
+    width: 0;
+    width: 100%;
+    height: 0;
+
+    background: #fff;
+    color: #000;
+
+    display: -moz-inline-stack;
+    display: inline-block;
+
+    position: absolute;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+<===> css/issue-94-2.expected.css
+.test
+{
+    position: absolute;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+
+    display: -moz-inline-stack;
+    display: inline-block;
+
+    width: 0;
+    width: 100%;
+    height: 0;
+
+    color: #000;
+    background: #fff;
+}
+
+<===> css/issue-94-3.css
+.input-view {
+  position: absolute;
+  -webkit-appearance: none;
+  right: -1px;
+  bottom: -1px;
+  left: -1px;
+
+  border: 1px solid transparent;
+
+  top: -1px;
+
+  background: -webkit-linear-gradient(#FFF, #FFF);
+  background: linear-gradient(#FFF, #FFF);
+  background-clip: padding-box;
+  background-size: 16px 16px;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.2), inset 0 1px 1px rgba(0,0,0,0.1);
+
+  border-color: rgba(0,0,0,0.27);
+  border-top-color: rgba(0,0,0,0.38);
+  border-bottom-color: rgba(0,0,0,0.16);
+}
+
+<===> css/issue-94-3.expected.css
+.input-view
+{
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    bottom: -1px;
+    left: -1px;
+
+    border: 1px solid transparent;
+    border-color: rgba(0,0,0,.27);
+    border-top-color: rgba(0,0,0,.38);
+    border-bottom-color: rgba(0,0,0,.16);
+    background: -webkit-linear-gradient(#fff, #fff);
+    background:         linear-gradient(#fff, #fff);
+    background-clip: padding-box;
+    background-size: 16px 16px;
+    box-shadow: 0 1px 0 rgba(255,255,255,.2), inset 0 1px 1px rgba(0,0,0,.1);
+
+    -webkit-appearance: none;
+}
+
+<===> css/leftovers-1.css
+a
+{
+    leftover: yay;
+    z-index: 1;
+    position: absolute;
+}
+
+b
+{
+    z-index: 2;
+    leftover: yay;
+    position: absolute;
+}
+
+c
+{
+    z-index: 3;
+    position: absolute;
+    leftover: yay;
+}
+
+<===> css/leftovers-1.expected.css
+a
+{
+    position: absolute;
+    z-index: 1;
+
+    leftover: yay;
+}
+
+b
+{
+    position: absolute;
+    z-index: 2;
+
+    leftover: yay;
+}
+
+c
+{
+    position: absolute;
+    z-index: 3;
+
+    leftover: yay;
+}
+
+<===> css/leftovers-2.css
+a
+{
+    leftover: yay;
+    z-index: 1;
+    position: absolute;
+}
+
+b
+{
+    z-index: 2;
+    leftover: yay;
+    position: absolute;
+}
+
+c
+{
+    z-index: 3;
+    position: absolute;
+    leftover: yay;
+}
+
+<===> css/leftovers-2.expected.css
+a
+{
+    leftover: yay;
+
+    position: absolute;
+    z-index: 1;
+}
+
+b
+{
+    leftover: yay;
+
+    position: absolute;
+    z-index: 2;
+}
+
+c
+{
+    leftover: yay;
+
+    position: absolute;
+    z-index: 3;
+}
+
+<===> css/leftovers-3.css
+a
+{
+    leftover: yay;
+    z-index: 1;
+    position: absolute;
+}
+
+b
+{
+    z-index: 2;
+    leftover: yay;
+    position: absolute;
+}
+
+c
+{
+    z-index: 3;
+    position: absolute;
+    leftover: yay;
+}
+
+<===> css/leftovers-3.expected.css
+a
+{
+    leftover: yay;
+    position: absolute;
+    z-index: 1;
+}
+
+b
+{
+    leftover: yay;
+    position: absolute;
+    z-index: 2;
+}
+
+c
+{
+    leftover: yay;
+    position: absolute;
+    z-index: 3;
+}
+
+<===> css/leftovers-4.css
+a
+{
+    leftover: yay;
+    z-index: 1;
+    position: absolute;
+}
+
+b
+{
+    z-index: 2;
+    leftover: yay;
+    position: absolute;
+}
+
+c
+{
+    z-index: 3;
+    position: absolute;
+    leftover: yay;
+}
+
+<===> css/leftovers-4.expected.css
+a
+{
+    position: absolute;
+    leftover: yay;
+    z-index: 1;
+}
+
+b
+{
+    position: absolute;
+    leftover: yay;
+    z-index: 2;
+}
+
+c
+{
+    position: absolute;
+    leftover: yay;
+    z-index: 3;
+}
+
+<===> css/missing-delimiter.css
+a {
+    z-index: 2;
+    position: absolute
+}
+
+<===> css/missing-delimiter.expected.css
+a {
+    position: absolute;
+    z-index: 2;
+}
+
+<===> css/multiple-groups-2.css
+a
+{
+    color: tomato;
+    top: 0;
+}
+
+
+<===> css/multiple-groups-2.expected.css
+a
+{
+    top: 0;
+
+    color: tomato;
+}
+
+
+<===> css/multiple-groups-comments.css
+a, b, i /* foobar */
+{
+    padding: 0;
+    margin: 0;
+    }
+
+<===> css/multiple-groups-comments.expected.css
+a, b, i /* foobar */
+{
+    margin: 0;
+
+    padding: 0;
+    }
+
+<===> css/multiple-groups.css
+a
+{
+    z-index: 2;
+    position: absolute;
+    height: 2px;
+    width: 2px;
+}
+
+<===> css/multiple-groups.expected.css
+a
+{
+    position: absolute;
+    z-index: 2;
+
+    width: 2px;
+    height: 2px;
+}
+
+<===> css/semicolon-inside-value.css
+h1 {
+    text-transform: uppercase;
+    text-align: center
+}
+
+<===> css/semicolon-inside-value.expected.css
+h1 {
+    text-align: center;
+    text-transform: uppercase;
+}
+
+<===> css/single-group-comments.css
+div p em {
+    /* upline comment */
+    font-style:italic;
+    border-bottom:1px solid red; /* trololo */ /* trololo */
+}
+
+<===> css/single-group-comments.expected.css
+div p em {
+    border-bottom:1px solid red; /* trololo */ /* trololo */
+    /* upline comment */
+    font-style:italic;
+}
+
+<===> css/single-group.css
+a
+{
+    z-index: 2;
+    position: absolute;
+}
+
+<===> css/single-group.expected.css
+a
+{
+    position: absolute;
+    z-index: 2;
+}
+
+<===> less/comments-1.expected.less
+div {top: 0; /* 3 */ /* 4 *//* 1 */ color: tomato; /* 2 */ }
+
+<===> less/comments-1.less
+div {/* 1 */ color: tomato; /* 2 */ top: 0; /* 3 */ /* 4 */}
+
+<===> less/comments-2.expected.less
+div {
+    /* 2 */
+    /* 3 */
+    top: 0; /* 4 */
+    color: tomato; /* 1 */
+    /* 5 */
+}
+
+<===> less/comments-2.less
+div {
+    color: tomato; /* 1 */
+    /* 2 */
+    /* 3 */
+    top: 0; /* 4 */
+    /* 5 */
+}
+
+<===> less/comments-3.expected.less
+p {
+    // Get in line!
+    @var: white;
+    /* One hell of a comment */
+    color: tomato;
+}
+
+<===> less/comments-3.less
+p {
+    /* One hell of a comment */
+    color: tomato;
+    // Get in line!
+    @var: white;
+}
+
+<===> less/comments-4.expected.less
+p {
+    @var: white; // Get in line!
+    color: tomato; /* One hell of a comment */
+    }
+
+<===> less/comments-4.less
+p {
+    color: tomato; /* One hell of a comment */
+    @var: white; // Get in line!
+    }
+
+<===> less/different-groups.expected.less
+div {
+    top: 0;
+
+    color: tomato;
+}
+
+<===> less/different-groups.less
+div {
+    color: tomato;
+    top: 0;
+}
+
+<===> less/extend.expected.less
+.block {
+    &:extend(.foo);
+    color: black;
+}
+.a:extend(.b) {
+  color: pink;
+}
+
+<===> less/extend.less
+.block {
+    color: black;
+    &:extend(.foo);
+}
+.a:extend(.b) {
+  color: pink;
+}
+
+<===> less/import.expected.less
+div { @import "foo.css"; color: tomato; }
+
+<===> less/import.less
+div { color: tomato; @import "foo.css"; }
+
+<===> less/mixin-1.expected.less
+.bordered {
+    border-top: dotted 1px black;
+    border-bottom: solid 2px black;
+}
+#menu a {
+    .bordered;
+    color: #111;
+    }
+.post a {
+    .bordered;
+    color: red;
+    }
+
+<===> less/mixin-1.less
+.bordered {
+    border-bottom: solid 2px black;
+    border-top: dotted 1px black;
+}
+#menu a {
+    color: #111;
+    .bordered;
+    }
+.post a {
+    color: red;
+    .bordered;
+    }
+
+<===> less/mixin-2.expected.less
+.test {
+    .test1();
+    .test2();
+    top: 0;
+    color: tomato;
+    }
+
+<===> less/mixin-2.less
+.test {
+    .test1();
+    color: tomato;
+    .test2();
+    top: 0;
+    }
+
+<===> less/mixin-3.expected.less
+.foo {
+    .linear-gradient(#fff; #000);
+    border: 1px solid #f00;
+    color: #0f0;
+}
+
+<===> less/mixin-3.less
+.foo {
+    color: #0f0;
+    border: 1px solid #f00;
+    .linear-gradient(#fff; #000);
+}
+
+<===> less/mixin-4.expected.less
+.block {
+    .last;
+    .hide-text;
+
+    color: black;
+
+    .media("lap");
+    .media("palm");
+}
+
+<===> less/mixin-4.less
+.block {
+    color: black;
+    .media("lap");
+    .media("palm");
+    .last;
+    .hide-text;
+}
+
+<===> less/nested-rule-1.expected.less
+div {
+    color: tomato; a {
+        top: 0;
+        color: nani;
+    }
+}
+
+<===> less/nested-rule-1.less
+div {
+    color: tomato; a {
+        color: nani;
+        top: 0;
+    }
+}
+
+<===> less/nested-rule-2.expected.less
+div {
+    left: 0;
+    color: tomato; a {
+        top: 0;
+        color: nani;
+    }
+}
+
+<===> less/nested-rule-2.less
+div {
+    color: tomato; a {
+        color: nani;
+        top: 0;
+    }
+    left: 0;
+}
+
+<===> less/rule.expected.less
+div {
+    top: 0;
+    color: tomato;
+}
+
+<===> less/rule.less
+div {
+    color: tomato;
+    top: 0;
+}
+
+<===> less/variable.expected.less
+div { @red: tomato; color: @red; }
+
+<===> less/variable.less
+div { color: @red; @red: tomato; }
+
+<===> sass/comments.expected.sass
+div
+    /* 2 */
+    /* 3 */
+    top: 0 // 4
+    color: tomato // 1
+    /* 5 */
+
+<===> sass/comments.sass
+div
+    color: tomato // 1
+    /* 2 */
+    /* 3 */
+    top: 0 // 4
+    /* 5 */
+
+<===> sass/condition.expected.sass
+div
+    top: 0
+    color: tomato
+    @if $color == tomato
+        font-size: 2px
+        display: block
+
+<===> sass/condition.sass
+div
+    color: tomato
+    @if $color == tomato
+        display: block
+        font-size: 2px
+    top: 0
+
+<===> sass/different-groups.expected.sass
+div
+    top: 0
+
+    color: tomato
+
+<===> sass/different-groups.sass
+div
+    color: tomato
+    top: 0
+
+<===> sass/extend.expected.sass
+div
+  @extend %nani
+  color: tomato
+
+<===> sass/extend.sass
+div
+  color: tomato
+  @extend %nani
+
+<===> sass/import.expected.sass
+ div
+   @import "foo.css"
+   color: tomato
+
+<===> sass/import.sass
+ div
+   color: tomato
+   @import "foo.css"
+
+<===> sass/include-specified-1.expected.sass
+.block
+  +last
+  +hide-text
+
+  color: black
+
+  +media(lap)
+    color: green
+  +media(palm)
+    color: red
+
+<===> sass/include-specified-1.sass
+.block
+  color: black
+  +media(lap)
+    color: green
+
+  +media(palm)
+    color: red
+
+  +last
+  +hide-text
+
+<===> sass/include-specified-2.expected.sass
+.block
+  @include last
+  @include hide-text
+
+  color: black
+
+  @include media(lap)
+    color: green
+  @include media(palm)
+    color: red
+
+<===> sass/include-specified-2.sass
+.block
+  color: black
+  @include media(lap)
+    color: green
+
+  @include media(palm)
+    color: red
+
+  @include last
+  @include hide-text
+
+<===> sass/include.expected.sass
+div
+  @include nani
+  color: tomato
+
+<===> sass/include.sass
+div
+  color: tomato
+  @include nani
+
+<===> sass/issue-332-2.expected.sass
+$contest_color: #ffc33c
+
+.winners_images_button
+  display: none
+.winners_images
+  height: 100px
+  padding-left: 0.6%
+  padding-right: 0.6%
+  width: 100%
+  .winner_cell
+    float: left
+    height: 100px
+    width: 85px
+  .winner_avatar
+    background-repeat: no-repeat
+    background-size: 100%
+    border: 1px solid lightgray
+    float: left
+    height: 75px
+    width: 85px
+  .winner_year
+    color: black
+    float: left
+    font-family: bold_mic_font
+    font-size: 17px
+    height: 20px
+    margin-bottom: 5px
+    text-align: center
+    width: 85px
+    span
+      display: none
+  .winner_info
+    display: none
+  .winner_cell:hover
+    .winner_year
+      span
+        display: block
+    .tooltip-inner
+      font-size: 10pt
+      text-align: justify
+      h6
+        color: white
+        font-family: bold_mic_font
+        font-size: 12pt
+        margin: 0
+        text-align: center
+
+<===> sass/issue-332-2.sass
+$contest_color: #ffc33c
+
+.winners_images_button
+  display: none
+.winners_images
+  width: 100%
+  padding-left: 0.6%
+  padding-right: 0.6%
+  height: 100px
+  .winner_cell
+    width: 85px
+    height: 100px
+    float: left
+  .winner_avatar
+    width: 85px
+    height: 75px
+    border: 1px solid lightgray
+    float: left
+    background-repeat: no-repeat
+    background-size: 100%
+  .winner_year
+    margin-bottom: 5px
+    text-align: center
+    float: left
+    width: 85px
+    height: 20px
+    font-size: 17px
+    color: black
+    font-family: bold_mic_font
+    span
+      display: none
+  .winner_info
+    display: none
+  .winner_cell:hover
+    .winner_year
+      span
+        display: block
+    .tooltip-inner
+      h6
+        text-align: center
+        margin: 0
+        font-family: bold_mic_font
+        color: white
+        font-size: 12pt
+      font-size: 10pt
+      text-align: justify
+
+<===> sass/issue-332.expected.sass
+.block
+  color: black
+
+  +media(lap)
+    color: green
+  +media(palm)
+    color: red
+  +last
+  +hide-text
+
+<===> sass/issue-332.sass
+.block
+  +media(lap)
+    color: green
+
+  +media(palm)
+    color: red
+
+  color: black
+
+  +last
+  +hide-text
+
+<===> sass/mixin.expected.sass
+.foo
+    @include nani
+        top: 0
+        color: tomato
+
+<===> sass/mixin.sass
+.foo
+    @include nani
+        color: tomato
+        top: 0
+
+<===> sass/nested-rule-1.expected.sass
+div
+    color: tomato
+    a
+      top: 0
+      color: nani
+
+<===> sass/nested-rule-1.sass
+div
+    color: tomato
+    a
+      color: nani
+      top: 0
+
+<===> sass/nested-rule-2.expected.sass
+div
+    left: 0
+    color: tomato
+    a
+        top: 0
+        color: nani
+
+<===> sass/nested-rule-2.sass
+div
+    color: tomato
+    a
+        color: nani
+        top: 0
+    left: 0
+
+<===> sass/rule.expected.sass
+div
+    top: 0
+    color: tomato
+
+<===> sass/rule.sass
+div
+    color: tomato
+    top: 0
+
+<===> sass/ruleset.expected.sass
+div
+    left: 0
+    color: tomato
+    a
+        top: 0
+        color: nani
+
+<===> sass/ruleset.sass
+div
+    color: tomato
+    a
+        color: nani
+        top: 0
+    left: 0
+
+<===> sass/variable.expected.sass
+div
+    $red: tomato
+    color: $tomato
+
+<===> sass/variable.sass
+div
+    color: $tomato
+    $red: tomato
+
+<===> scss/comments-1.expected.scss
+div {
+    /* 2 */
+    /* 3 */
+    top: 0; /* 4 */
+    color: tomato; /* 1 */
+    /* 5 */
+}
+
+<===> scss/comments-1.scss
+div {
+    color: tomato; /* 1 */
+    /* 2 */
+    /* 3 */
+    top: 0; /* 4 */
+    /* 5 */
+}
+
+<===> scss/comments-2.expected.scss
+div {top: 0; /* 3 */ /* 4 *//* 1 */ color: tomato; /* 2 */ }
+
+<===> scss/comments-2.scss
+div {/* 1 */ color: tomato; /* 2 */ top: 0; /* 3 */ /* 4 */}
+
+<===> scss/condition.expected.scss
+div {
+    top: 0;
+    color: tomato;
+    @if @color == tomato {
+        font-size: 2px;
+        display: block;
+        }
+    }
+
+<===> scss/condition.scss
+div {
+    color: tomato;
+    @if @color == tomato {
+        display: block;
+        font-size: 2px;
+        }
+    top: 0;
+    }
+
+<===> scss/crlf.expected.scss
+#c {
+	padding: 0;
+
+	@include a;
+	@include b;
+}
+
+<===> scss/crlf.scss
+#c {
+	@include a;
+	@include b;
+	padding: 0;
+}
+
+<===> scss/different-groups.expected.scss
+div {
+    top: 0;
+
+    color: tomato;
+}
+
+<===> scss/different-groups.scss
+div {
+    color: tomato;
+    top: 0;
+}
+
+<===> scss/extend.expected.scss
+div { @extend %nani; color: tomato; }
+
+<===> scss/extend.scss
+div { color: tomato; @extend %nani; }
+
+<===> scss/function.expected.scss
+@function encode($string) {
+  @if type-of($string) == color {
+    $hex: 1;
+  }
+  $string: '%23' + $string;
+  @return $string;
+}
+
+.a {
+  top: 0;
+  color: red;
+}
+
+<===> scss/function.scss
+@function encode($string) {
+  @if type-of($string) == color {
+    $hex: 1;
+  }
+  $string: '%23' + $string;
+  @return $string;
+}
+
+.a {
+  color: red;
+  top: 0;
+}
+
+<===> scss/import.expected.scss
+div { @import "foo.css"; color: tomato; }
+
+<===> scss/import.scss
+div { color: tomato; @import "foo.css"; }
+
+<===> scss/include-specified.expected.scss
+.block {
+    @include last;
+    @include hide-text;
+
+    color: black;
+
+    @include media("lap") {
+        color: green;
+    }
+    @include media("palm") {
+        color: red;
+    }
+}
+
+<===> scss/include-specified.scss
+.block {
+    color: black;
+    @include media("lap") {
+        color: green;
+    }
+    @include media("palm") {
+        color: red;
+    }
+    @include last;
+    @include hide-text;
+}
+
+<===> scss/include.expected.scss
+div { @include nani; color: tomato; }
+
+<===> scss/include.scss
+div { color: tomato; @include nani; }
+
+<===> scss/issue-317.scss
+.tv-header-reminders {
+    display: inline-block;
+    position: relative;
+    vertical-align: top;
+ 
+    &__spin {
+        background-color: #fff;
+        display: none;
+        height: 100%;
+        left: 0;
+        position: absolute;
+        top: 0;
+        width: 100%;
+ 
+        .spin {
+            height: 100%;
+            text-align: center;
+        }
+ 
+        .spin__icon {
+            margin-top: 4px;
+        }
+    }
+ 
+    &_loading_yes .tv-header-reminders__spin {
+        display: block;
+ 
+ 
+    }
+ 
+}
+
+<===> scss/issue-333.scss
+@mixin opacity($opacity) {
+    $opacity-ie: $opacity * 100;
+    opacity: $opacity;
+    filter: alpha(opacity=50);
+}
+
+<===> scss/issue-399.expected.scss
+.block {
+    @extend .hey;
+    @extend %ho;
+    color: black;
+
+    @include media("lap") {
+        color: green;
+    }
+    @include media("palm") {
+        color: red;
+    }
+    @include last;
+    @include hide-text;
+}
+
+<===> scss/issue-399.scss
+.block {
+    color: black;
+
+    @extend .hey;
+    @extend %ho;
+
+    @include media("lap") {
+        color: green;
+    }
+    @include media("palm") {
+        color: red;
+    }
+    @include last;
+    @include hide-text;
+}
+
+<===> scss/leftovers.expected.scss
+a {
+    $red: tomato;
+
+    position: $tomato;
+
+    leftover: yay;
+    border: 1px solid;
+
+    @include nani;
+
+    font: 20px/16px Arial, sans-serif;
+}
+b {
+    $red: tomato;
+
+    position: $tomato;
+
+    leftover: yay;
+    border: 1px solid;
+
+    @include nani;
+
+    font: 20px/16px Arial, sans-serif;
+}
+c {
+    $red: tomato;
+
+    position: $tomato;
+
+    leftover: yay;
+    border: 1px solid;
+
+    @include nani;
+
+    font: 20px/16px Arial, sans-serif;
+}
+
+<===> scss/leftovers.scss
+a {
+    leftover: yay;
+    border: 1px solid;
+    @include nani;
+    font: 20px/16px Arial, sans-serif;
+    position: $tomato;
+    $red: tomato;
+}
+b {
+    border: 1px solid;
+    @include nani;
+    position: $tomato;
+    leftover: yay;
+    font: 20px/16px Arial, sans-serif;
+    $red: tomato;
+}
+c {
+    border: 1px solid;
+    @include nani;
+    font: 20px/16px Arial, sans-serif;
+    position: $tomato;
+    $red: tomato;
+    leftover: yay;
+}
+
+<===> scss/mixin.expected.scss
+.foo { @include nani { top: 0; color: tomato; } }
+
+<===> scss/mixin.scss
+.foo { @include nani { color: tomato; top: 0; } }
+
+<===> scss/nested-rule-1.expected.scss
+div { color: tomato; a { top: 0; color: nani; } }
+
+<===> scss/nested-rule-1.scss
+div { color: tomato; a { color: nani; top: 0; } }
+
+<===> scss/nested-rule-2.expected.scss
+div { left: 0;  color: tomato; a { top: 0; color: nani; }}
+
+<===> scss/nested-rule-2.scss
+div { color: tomato; a { color: nani; top: 0; } left: 0; }
+
+<===> scss/rule-multiline.expected.scss
+div {
+    top: 0;
+    color: tomato;
+    }
+
+<===> scss/rule-multiline.scss
+div {
+    color: tomato;
+    top: 0;
+    }
+
+<===> scss/rule.expected.scss
+div { top: 0; color: tomato; }
+
+<===> scss/rule.scss
+div { color: tomato; top: 0; }
+
+<===> scss/ruleset.expected.scss
+div {
+    left: 0;
+    color: tomato;
+    a {
+        top: 0;
+        color: nani;
+    }
+}
+
+<===> scss/ruleset.scss
+div {
+    color: tomato;
+    a {
+        color: nani;
+        top: 0;
+    }
+    left: 0;
+}
+
+<===> scss/variable.expected.scss
+div { color: $red; $red: tomato; }
+
+<===> scss/variable.scss
+div { color: $red; $red: tomato; }
+
+<===>

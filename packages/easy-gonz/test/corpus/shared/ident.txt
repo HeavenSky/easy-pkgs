@@ -1,0 +1,34 @@
+=== 0 [css less sass scss]
+x
+---
+ident 1:1-1:1 {*} "x"
+
+=== 2 [css less sass scss]
+-x
+---
+ident 1:1-1:2 {*} "-x"
+
+=== 3 [css less sass scss]
+-x-test
+---
+ident 1:1-1:7 {*} "-x-test"
+
+=== 4 [css less sass scss]
+x\:y
+---
+ident 1:1-1:4 {*} "x\\:y"
+
+=== 6 [css less sass scss]
+_0
+---
+ident 1:1-1:2 {*} "_0"
+
+=== 7 [css less sass scss]
+color-foo
+---
+ident 1:1-1:9 {*} "color-foo"
+
+=== 8 [css less sass scss]
+color-2n
+---
+ident 1:1-1:8 {*} "color-2n"

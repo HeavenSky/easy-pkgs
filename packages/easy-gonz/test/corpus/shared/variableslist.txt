@@ -1,0 +1,6 @@
+=== 0 [sass scss]
+$colors...
+---
+variablesList 1:1-1:10 {*}
+  variable 1:1-1:7
+    ident 1:2-1:7 "colors"

@@ -1,0 +1,4 @@
+=== issue-239
+"foo #{"bar"} #{map-get($m, "k")}"
+---
+string 1:1-1:34 {scss} "\"foo #{\"bar\"} #{map-get($m, \"k\")}\""

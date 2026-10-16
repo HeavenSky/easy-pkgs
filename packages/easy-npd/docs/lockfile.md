@@ -1,0 +1,47 @@
+# Lock versions with np-lock.json
+
+**English** · [简体中文](../zh/docs/lockfile.md)
+
+`np-lock.json` pins every resolved version so CI installs exactly what you tested; it is on for `npd-x install` and off for `npd` unless you pass `--lockfile`.
+
+## Install strictly from the lockfile in CI
+
+1. Run `npd-x install` locally. Expected: `np-lock.json` appears in the project root; commit it.
+2. In CI, run `npd-x install --frozen-lockfile`. Expected: npd installs only what the lockfile records and does not write it back.
+3. If a declared dependency is missing from the lockfile, the install fails with `<pkg> is not in np-lock.json, run npd-x install to update it`; rerun step 1 and commit the result.
+
+`--frozen-lockfile` cannot be combined with package arguments, and it needs an existing `np-lock.json`.
+
+## Turn the lockfile on or off
+
+`npd-x install` uses the lockfile by default; these flags change that for one run.
+
+| Flag                          | Effect                                                                                                                   |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `--lockfile`, `--no-lockfile` | Read and write `np-lock.json` or not; on by default, `npd` always adds `--no-lockfile`                                   |
+| `--frozen-lockfile`           | Install only from `np-lock.json`, fail on missing entries, never write it; implies `--lockfile`                          |
+| `--from-package-lock=<file>`  | Install the versions locked in a `package-lock.json` (lockfileVersion 2 or later); its optional dependencies are ignored |
+
+The first source that has a setting decides:
+
+1. `--lockfile` / `--no-lockfile` on the command line, including the `--no-lockfile` that `npd` adds
+2. `--frozen-lockfile`, which counts as on
+3. The `np_lockfile` environment variable
+4. `config.np.lockfile` in `package.json`
+5. `lockfile` and `package-lock` in pnpm settings and `.npmrc`
+6. Default: on
+
+Even when the lockfile is on, npd does not create one if the project already has another package manager's lockfile and no `np-lock.json`; with `--from-package-lock` or `-g`, npd never reads or writes `np-lock.json`.
+
+## Know what np-lock.json records
+
+`np-lock.json` maps every dependency declaration (`name@spec`) to the version it resolved to, and the next install reuses it; easy-np reads and writes the same file.
+
+- Every install walks the whole tree against the lockfile: an installed version that differs from the locked one at any depth is replaced by the locked version.
+- npd neither downloads installed packages again nor reruns their scripts.
+- A full install keeps only the entries it used. An install that adds `<pkg>`, uses `--only` or `--omit`, or skips non-standard fields only adds entries.
+- With `workspaces` in the root `package.json`, npd only adds entries and keeps the member entries easy-np recorded.
+- `npd <pkg>` records the declaration saved to `package.json`; a tag or `*` written on the command line, or no version at all, is resolved again every time.
+- Git dependencies are locked to a commit and checked out without `git ls-remote`; tarball url dependencies are locked to their sha512 integrity, and a changed tarball is an error; local folder dependencies are not locked.
+- Credentials in URLs are never written to the lockfile; installs from the lockfile take them from the declarations in `package.json`.
+- `npd-x update` ignores the locked versions, resolves the ranges again and writes the result back.

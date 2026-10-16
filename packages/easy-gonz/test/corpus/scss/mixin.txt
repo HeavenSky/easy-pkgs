@@ -1,0 +1,128 @@
+=== 0
+@mixin nani {color:tomato}
+---
+mixin 1:1-1:26 {scss}
+  atkeyword 1:1-1:6
+    ident 1:2-1:6 "mixin"
+  space 1:7-1:7 " "
+  ident 1:8-1:11 "nani"
+  space 1:12-1:12 " "
+  block 1:13-1:26
+    declaration 1:14-1:25
+      property 1:14-1:18
+        ident 1:14-1:18 "color"
+      propertyDelimiter 1:19-1:19 ":"
+      value 1:20-1:25
+        ident 1:20-1:25 "tomato"
+
+=== 1
+@mixin nani ($v1) {x:y}
+---
+mixin 1:1-1:23 {scss}
+  atkeyword 1:1-1:6
+    ident 1:2-1:6 "mixin"
+  space 1:7-1:7 " "
+  ident 1:8-1:11 "nani"
+  space 1:12-1:12 " "
+  arguments 1:13-1:17
+    variable 1:14-1:16
+      ident 1:15-1:16 "v1"
+  space 1:18-1:18 " "
+  block 1:19-1:23
+    declaration 1:20-1:22
+      property 1:20-1:20
+        ident 1:20-1:20 "x"
+      propertyDelimiter 1:21-1:21 ":"
+      value 1:22-1:22
+        ident 1:22-1:22 "y"
+
+=== 2
+@mixin nani ($v1, $v2) {x:y}
+---
+mixin 1:1-1:28 {scss}
+  atkeyword 1:1-1:6
+    ident 1:2-1:6 "mixin"
+  space 1:7-1:7 " "
+  ident 1:8-1:11 "nani"
+  space 1:12-1:12 " "
+  arguments 1:13-1:22
+    variable 1:14-1:16
+      ident 1:15-1:16 "v1"
+    delimiter 1:17-1:17 ","
+    space 1:18-1:18 " "
+    variable 1:19-1:21
+      ident 1:20-1:21 "v2"
+  space 1:23-1:23 " "
+  block 1:24-1:28
+    declaration 1:25-1:27
+      property 1:25-1:25
+        ident 1:25-1:25 "x"
+      propertyDelimiter 1:26-1:26 ":"
+      value 1:27-1:27
+        ident 1:27-1:27 "y"
+
+=== 3
+@mixin nani ($v1, $v2:y) {x:$v2}
+---
+mixin 1:1-1:32 {scss}
+  atkeyword 1:1-1:6
+    ident 1:2-1:6 "mixin"
+  space 1:7-1:7 " "
+  ident 1:8-1:11 "nani"
+  space 1:12-1:12 " "
+  arguments 1:13-1:24
+    variable 1:14-1:16
+      ident 1:15-1:16 "v1"
+    delimiter 1:17-1:17 ","
+    space 1:18-1:18 " "
+    declaration 1:19-1:23
+      property 1:19-1:21
+        variable 1:19-1:21
+          ident 1:20-1:21 "v2"
+      propertyDelimiter 1:22-1:22 ":"
+      value 1:23-1:23
+        ident 1:23-1:23 "y"
+  space 1:25-1:25 " "
+  block 1:26-1:32
+    declaration 1:27-1:31
+      property 1:27-1:27
+        ident 1:27-1:27 "x"
+      propertyDelimiter 1:28-1:28 ":"
+      value 1:29-1:31
+        variable 1:29-1:31
+          ident 1:30-1:31 "v2"
+
+=== 4
+@mixin keyframes($foo) {
+  @keyframes #{$foo} {
+    @content;
+  }
+}
+---
+mixin 1:1-5:1 {scss}
+  atkeyword 1:1-1:6
+    ident 1:2-1:6 "mixin"
+  space 1:7-1:7 " "
+  ident 1:8-1:16 "keyframes"
+  arguments 1:17-1:22
+    variable 1:18-1:21
+      ident 1:19-1:21 "foo"
+  space 1:23-1:23 " "
+  block 1:24-5:1
+    space 1:25-2:2 "\n  "
+    atrule 2:3-4:3
+      atkeyword 2:3-2:12
+        ident 2:4-2:12 "keyframes"
+      space 2:13-2:13 " "
+      interpolation 2:14-2:20
+        variable 2:16-2:19
+          ident 2:17-2:19 "foo"
+      space 2:21-2:21 " "
+      block 2:22-4:3
+        space 2:23-3:4 "\n    "
+        atrule 3:5-3:12
+          atkeyword 3:5-3:12
+            ident 3:6-3:12 "content"
+        declarationDelimiter 3:13-3:13 ";"
+        space 3:14-4:2 "\n  "
+    space 4:4-4:4 "\n"

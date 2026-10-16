@@ -1,0 +1,7 @@
+{
+  "name": "public-hoist-pattern",
+  "version": "1.0.0",
+  "dependencies": {
+    "http-errors": "2.0.0"
+  }
+}

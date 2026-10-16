@@ -1,0 +1,6 @@
+=== 0
+@rest...
+---
+variablesList 1:1-1:8 {less}
+  variable 1:1-1:5
+    ident 1:2-1:5 "rest"

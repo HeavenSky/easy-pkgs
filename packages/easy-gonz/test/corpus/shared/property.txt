@@ -1,0 +1,12 @@
+=== 0 [sass scss]
+$nani
+---
+property 1:1-1:5 {*}
+  variable 1:1-1:5
+    ident 1:2-1:5 "nani"
+
+=== 1 [css less sass]
+-my-color
+---
+property 1:1-1:9 {*}
+  ident 1:1-1:9 "-my-color"

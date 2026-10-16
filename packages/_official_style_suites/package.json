@@ -1,0 +1,25 @@
+{
+  "name": "official-style-suites",
+  "private": true,
+  "type": "module",
+  "description": "用各语法的官方测试集检验 easy-gonz 与 easy-comb; 依赖只供判定使用",
+  "scripts": {
+    "fetch": "node fetch.mjs",
+    "extract": "node extract.mjs",
+    "gonz": "node gonz.mjs",
+    "comb": "node comb.mjs",
+    "outline": "node outline.mjs"
+  },
+  "dependencies": {
+    "less": "^4.9.1",
+    "postcss": "^8.5.30",
+    "postcss-less": "^6.0.0",
+    "postcss-scss": "^4.0.9",
+    "postcss-selector-parser": "^7.1.6",
+    "postcss-value-parser": "^4.2.0",
+    "sass": "^1.105.1"
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  }
+}

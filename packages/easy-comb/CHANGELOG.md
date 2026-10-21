@@ -4,6 +4,16 @@ easy-comb is based on [csscomb/csscomb.js](https://github.com/csscomb/csscomb.js
 
 0.0.1 lists all changes relative to csscomb 4.3.0; later versions list only the changes since the previous version.
 
+## Unreleased
+
+### Changed
+
+- easy-gonz is now required as `~0.0.2` instead of `^0.0.2`, so easy-gonz patch releases install without a new easy-comb release.
+
+### Fixed
+
+- `vendor-prefix-align` no longer indents Sass / Less variables (`$x`, `@x`) or custom properties (`--x`) that share a name with a prefixed property; a custom property such as `---webkit-y` no longer makes the following `y` count as its unprefixed form.
+
 ## 0.0.3 (2026-10-16)
 
 ### Changed

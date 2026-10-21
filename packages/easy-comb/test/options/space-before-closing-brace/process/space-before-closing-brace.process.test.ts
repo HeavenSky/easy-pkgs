@@ -42,5 +42,11 @@ describe('Option `space-before-closing-brace`, process', function() {
       });
     });
   });
-});
 
+  describe('empty block-indent', function() {
+    it('Should not indent the closing brace when block-indent is an empty string', async function() {
+      let test = new Test(this, {'block-indent': '', 'space-before-closing-brace': '\n'});
+      assert.equal(await test.comb.processString('a{b{c:d}}', {syntax: 'scss'}), 'a{b{c:d\n}\n}');
+    });
+  });
+});

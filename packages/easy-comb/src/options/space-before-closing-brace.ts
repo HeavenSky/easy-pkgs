@@ -34,7 +34,7 @@ function processBlock(x: Node, level?: number) {
 
     let value = valueFromSettings;
     if (value.indexOf('\n') > -1) {
-      // TODO: Check that it works for '' block indent value <tg>
+      // block-indent 为 '' 或未设置时不补缩进, 右花括号贴行首
       if (blockIndent) {
         value += new Array(level).join(blockIndent);
       }

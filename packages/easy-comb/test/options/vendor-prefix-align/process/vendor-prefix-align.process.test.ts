@@ -115,4 +115,14 @@ describe('Option `vendor-prefix-align`, process', function() {
       assert.equal(actual, 'a {--: b}');
     });
   });
+
+  describe('variables and custom properties', function() {
+    for (const [syntax, v] of [['scss', '$'], ['less', '@'], ['css', '--']]) {
+      it(`Should not align \`${v}x\` with \`-webkit-x\` (${syntax})`, async function() {
+        let test = new Test(this, {'vendor-prefix-align': true});
+        let input = `a {\n    -webkit-x: 1px;\n    ${v}x: 1px;\n    ${v}-webkit-y: 1px;\n    y: 1px;\n}\n`;
+        assert.equal(await test.comb.processString(input, {syntax}), input);
+      });
+    }
+  });
 });

@@ -216,10 +216,11 @@ function walk(args: WalkArgs): void {
  */
 function getPropertyName(node: Node): string | undefined {
   if (!node.is('declaration')) return;
-  // TODO: Check that it's not a variable
-  // 只有 `--` 的空名字自定义属性没有子节点
-  const name = node.get(0)!.get(0);
-  return name ? text(name) : undefined;
+  // 只对普通属性对齐: 变量(`$x` / `@x`)与自定义属性(`--x`)不是带前缀的属性, 参与对齐会被错误缩进
+  const property = node.get(0);
+  if (!property || !property.is('property')) return;
+  const name = property.get(0);
+  return name && name.is('ident') ? text(name) : undefined;
 }
 
 /**

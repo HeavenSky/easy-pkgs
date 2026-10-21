@@ -41,7 +41,7 @@ test("去掉 packages 与 dependencies 中的 dev 条目和根节点的 devDepen
 	assert.equal(out.lockfileVersion, 2);
 });
 
-test("devOptional 条目保留(既是开发依赖又是可选依赖的传递依赖, 偏保守)", () => {
+test("devOptional 条目保留(它是生产依赖的可选依赖, 同时也被开发依赖用到, 线上安装仍需要)", () => {
 	const out = run({
 		lockfileVersion: 3,
 		packages: { "": {}, "node_modules/o": { version: "1.0.0", devOptional: true } },

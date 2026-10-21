@@ -373,8 +373,8 @@ async function _install(parentDir, pkg, ancestors, options, context) {
       }
     }
   }
-  // FIXME: run postinstall before link may cause incompatible error. see
-  // arborist/reify.js#steps._build, npm runs postinstall after unpacking.
+  // 本包的生命周期脚本在它自己与子依赖都链接好之后运行, 但兄弟依赖与 peer 依赖可能仍在并发安装中;
+  // npm(arborist reify 的 _build 步骤)与 easy-npd 都在整棵树装完后才按依赖顺序运行脚本
 
   // from here, a package is already downloaded and unpacked into
   // <root>/.store/<name>/node_modules/<name>. but there is no sub-dependencies

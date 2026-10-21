@@ -20,7 +20,7 @@
 | ----------------------------- | ------------------------------------------------------------------------------------ |
 | `--lockfile`、`--no-lockfile` | 是否读写 `np-lock.json`；默认开启，`npd` 固定补上 `--no-lockfile`                    |
 | `--frozen-lockfile`           | 只按 `np-lock.json` 安装，缺少条目时报错，从不写回；视为开启锁文件                   |
-| `--from-package-lock=<file>`  | 按 `package-lock.json`（lockfileVersion 2 及以上）锁定的版本安装，忽略其中的可选依赖 |
+| `--from-package-lock=<file>`  | 按 `package-lock.json` 或 `npm-shrinkwrap.json`（lockfileVersion 2 及以上，即 npm 7+ 生成）锁定的版本安装，忽略其中的可选依赖 |
 
 取第一个有设置的来源：
 
@@ -31,7 +31,7 @@
 5. pnpm 设置与 `.npmrc` 中的 `lockfile`、`package-lock`
 6. 默认：开启
 
-即使开启了锁文件，项目已有其他包管理器的锁文件而没有 `np-lock.json` 时也不生成；用 `--from-package-lock` 或 `-g` 时不读写 `np-lock.json`。
+即使开启了锁文件，项目已有其他包管理器的锁文件而没有 `np-lock.json` 时也不生成，若该锁文件是 `npm-shrinkwrap.json` 或 `package-lock.json` 则告警并提示改用 `--from-package-lock`；`np-lock.json` 与其他锁文件同时存在时告警两者可能漂移；用 `--from-package-lock` 或 `-g` 时不读写 `np-lock.json`。
 
 ## 了解 np-lock.json 记录什么
 

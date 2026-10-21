@@ -525,7 +525,22 @@ async function main(args, { ignorePkgNames = false, ignoreLockfile = false, mode
     if (argv['frozen-lockfile'] && !lockExists) {
       throw utils.userError(`--frozen-lockfile requires ${npLock.LOCKFILE_NAME} in ${root}`);
     }
-    if (lockExists || !(await npLock.hasForeignLockfile(root))) {
+    const foreign = await npLock.foreignLockfiles(root);
+    const npmLock = foreign.find(name => name === 'npm-shrinkwrap.json' || name === 'package-lock.json');
+    if (lockExists && foreign.length > 0) {
+      console.warn(
+        chalk.yellow('npd WARN both %s and %s exist, they are updated separately and may lock different versions'),
+        npLock.LOCKFILE_NAME,
+        foreign.join(', ')
+      );
+    } else if (!lockExists && npmLock) {
+      console.warn(
+        chalk.yellow('npd WARN %s is not used, pass --from-package-lock=%s to install the versions it locks'),
+        npmLock,
+        npmLock
+      );
+    }
+    if (lockExists || foreign.length === 0) {
       const previous = lockExists ? await npLock.read(root) : {};
       // npd-x update 要升级到范围内的最新版本, 不复用已锁定的版本
       config.dependenciesTree = ignoreLockfile ? {} : { ...previous };

@@ -16,7 +16,7 @@
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `--lockfile`, `--no-lockfile` | Read and write `np-lock.json` or not; on by default, `np` always adds `--no-lockfile`                              |
 | `--frozen-lockfile`           | Install only from `np-lock.json`, fail on a missing entry, never write back; cannot be combined with package names |
-| `--from-package-lock=<file>`  | Install the versions locked in a `package-lock.json` (lockfileVersion >= 2), ignoring its optional dependencies    |
+| `--from-package-lock=<file>`  | Install the versions locked in a `package-lock.json` or `npm-shrinkwrap.json` (lockfileVersion >= 2), ignoring its optional dependencies |
 
 ## What np-lock.json records
 
@@ -27,15 +27,16 @@
 - Partial installs only add entries: installs with `<pkg>`, run inside a workspace directory, run with `--workspaces`/`--only`/`--omit`, or that skip non-standard fields.
 - When an installed version differs from the locked one, easy-np replaces it with the locked version; `np-x update` ignores the locked versions, resolves the ranges again and writes the result back.
 - `np <pkg>` records the declaration it saves into `package.json`; a tag, `*`, or no version on the command line is resolved again on every install.
-- When the project already has another package manager's lockfile and no `np-lock.json`, no `np-lock.json` is created.
+- When the project already has another package manager's lockfile and no `np-lock.json`, no `np-lock.json` is created; if that lockfile is `npm-shrinkwrap.json` or `package-lock.json`, the install warns that it is not used and suggests `--from-package-lock`.
+- When `np-lock.json` and another package manager's lockfile both exist, the install warns that they are updated separately and may drift apart.
 - With `--from-package-lock` or `-g`, `np-lock.json` is neither read nor written.
 - Git dependencies are locked to a commit, tarball URL dependencies to a sha512 integrity; local folder dependencies are not locked.
 - Credentials in URLs are never written into the lockfile.
 
 ## Install from an npm package-lock.json
 
-`--from-package-lock=<file>` installs the versions an npm `package-lock.json` locked, which helps when you move a project from npm.
+`--from-package-lock=<file>` installs the versions an npm `package-lock.json` or `npm-shrinkwrap.json` locked, which helps when you move a project from npm.
 
-- The file must have lockfileVersion 2 or later; easy-np ignores the optional dependencies it lists.
+- The file must have lockfileVersion 2 or later (npm 7+); an older file fails with a hint to regenerate it with npm 7 or later. easy-np ignores the optional dependencies it lists.
 - In a workspace project it reads npm's workspace lockfile, and each workspace gets the versions locked there.
 - If the file cannot be loaded, the install exits with an error instead of resolving from the network.

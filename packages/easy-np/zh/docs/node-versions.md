@@ -8,7 +8,7 @@ easy-np 可在 Node.js >= 14.19.3 上运行，首次编译原生模块时自动�
 
 在 Node.js 14 或 16 上安装 easy-np 会打印 engine 警告，不影响 easy-np 运行：npm 7 及以上为 `npm WARN EBADENGINE`，npm 6 为 `npm WARN notsup`。警告来自 tar 7 及其依赖（`@isaacs/fs-minipass`、`minizlib`、`chownr`、`yallist`）声明的 Node >= 18，以及 urllib 引入的 `type-fest` 4 声明的 Node >= 16。
 
-- 这些警告属预期：easy-np 在 Node 14.19.3 与 16 上实测可用；低于 16.6 时由 [`lib/runtime.js`](../../lib/runtime.js) 补齐 tar 7 需要的内置方法。包里附带 `npm-shrinkwrap.json`，用 npm 安装时整棵依赖树都按在这些 Node.js 版本上实测过的版本安装；pnpm 与 Yarn 不读这个文件，可能装到更新的小版本。
+- 这些警告属预期：easy-np 在 Node 14.19.3 与 16 上实测可用；低于 16.6 时由 [`lib/runtime.js`](../../lib/runtime.js) 补齐 tar 7 需要的内置方法。包里附带 `npm-shrinkwrap.json`，用 npm 安装时整棵依赖树都按在这些 Node.js 版本上实测过的版本安装；pnpm 与 Yarn 不读这个文件，可能装到更新的小版本。easy-np 与 easy-npd 同样不读依赖包内的 `npm-shrinkwrap.json`，`np -g easy-np` 会按声明的范围重新解析。
 - npm 开启了 `engine-strict` 时安装会直接失败（`npm ERR! code EBADENGINE`，npm 6 为 `npm ERR! code ENOTSUP`）。本次安装临时关闭它，例如 `npm i -g easy-np --engine-strict=false`，或改用 Node.js 18 及以上版本。
 
 ## 读懂降级提示

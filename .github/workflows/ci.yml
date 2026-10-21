@@ -32,7 +32,7 @@ jobs:
           generic="$(ls -d packages/*/ | xargs -n1 basename | grep -vxE 'easy-np|easy-npd|_.*' | jq -Rsc 'split("\n") | map(select(. != ""))')"
           echo "generic=$generic" >> "$GITHUB_OUTPUT"
 
-  # 各包 test/ 的文件数与字节数不得超过 test-budget.json, 防止接手新包或录制快照时测试数据再次膨胀
+  # 各包 test/ 的文件数与字节数不得超过 test-budget.json, 防止接手新包或录制快照时测试数据再次膨胀; 顺带跑 scripts/ 的单测
   test-budget:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -42,6 +42,7 @@ jobs:
         with:
           node-version: 24.x
       - run: npm run budget
+      - run: npm run test:scripts
 
   # easy-comb 的运行时下限是 Node ^16.17 || >=18.3, 而测试依赖 Node 22.18+ 的类型剥离:
   # 用新版 Node 构建, 再在旧版本上冒烟运行编译产物

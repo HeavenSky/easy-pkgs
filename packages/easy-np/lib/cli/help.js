@@ -77,7 +77,7 @@ Lockfile:
     also set by env np_lockfile=true|false, config.np.lockfile in package.json, lockfile in pnpm settings, lockfile / package-lock in .npmrc
   --frozen-lockfile: install exactly the versions in np-lock.json, fail if a dependency is not locked, never update it;
     can't be used with package names
-  --from-package-lock=<file>: install the versions in a package-lock.json (lockfileVersion >= 2), optionalDependencies in it are ignored
+  --from-package-lock=<file>: install the versions in a package-lock.json or npm-shrinkwrap.json (lockfileVersion >= 2), optionalDependencies in it are ignored
 
 Install scripts:
 

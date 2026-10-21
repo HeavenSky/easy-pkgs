@@ -4,6 +4,14 @@ easy-np started from [cnpm/npminstall](https://github.com/cnpm/npminstall) 8.0.1
 
 0.0.0 lists every change relative to npminstall 8.0.1; later versions list the changes relative to the previous version.
 
+## Unreleased
+
+### Changed
+
+- `np-x install` warns when the project has an `npm-shrinkwrap.json` or `package-lock.json` but no `np-lock.json`, because those versions are not used; pass `--from-package-lock=<file>` to install them.
+- `np-x install` warns when `np-lock.json` and another package manager's lockfile both exist, because they are updated separately and may lock different versions.
+- `--from-package-lock` with a lockfileVersion 1 file now says to regenerate it with npm 7 or later; the help and docs state that `npm-shrinkwrap.json` is accepted too.
+
 ## 0.0.5 (2026-10-16)
 
 ### Breaking changes

@@ -9,6 +9,7 @@
     "build": "node scripts/each.mjs build",
     "adopt": "node scripts/adopt.mjs",
     "upstream": "node scripts/upstream.mjs",
-    "budget": "node scripts/test-budget.mjs"
+    "budget": "node scripts/test-budget.mjs",
+    "test:scripts": "node --test scripts/*.test.mjs"
   }
 }

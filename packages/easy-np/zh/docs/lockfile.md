@@ -16,7 +16,7 @@
 | ----------------------------- | ---------------------------------------------------------------------------------- |
 | `--lockfile`、`--no-lockfile` | 读写 `np-lock.json` 与否，默认开；`np` 固定补上 `--no-lockfile`                    |
 | `--frozen-lockfile`           | 只按 `np-lock.json` 安装，缺少条目时报错，不写回；不能与包名同用                   |
-| `--from-package-lock=<file>`  | 按 `package-lock.json`（lockfileVersion >= 2）中锁定的版本安装，忽略其中的可选依赖 |
+| `--from-package-lock=<file>`  | 按 `package-lock.json` 或 `npm-shrinkwrap.json`（lockfileVersion >= 2）中锁定的版本安装，忽略其中的可选依赖 |
 
 ## np-lock.json 记录什么
 
@@ -27,15 +27,16 @@
 - 以下安装只追加条目：带 `<pkg>`、在 workspace 目录中运行、带 `--workspaces`/`--only`/`--omit` 运行，以及跳过了非标准字段的安装。
 - 已安装版本与锁定版本不同时，easy-np 直接换成锁定版本；`np-x update` 忽略锁定版本，按范围重新解析并写回。
 - `np <pkg>` 记录的是写进 `package.json` 的那条声明；命令行上写的 tag、`*` 或不写版本，每次安装都重新解析。
-- 项目已有其他包管理器的锁文件且没有 `np-lock.json` 时，不生成 `np-lock.json`。
+- 项目已有其他包管理器的锁文件且没有 `np-lock.json` 时，不生成 `np-lock.json`；若该锁文件是 `npm-shrinkwrap.json` 或 `package-lock.json`，安装时告警它未被使用，并提示改用 `--from-package-lock`。
+- `np-lock.json` 与其他包管理器的锁文件同时存在时，安装时告警两者各自更新，可能锁定不同版本。
 - 使用 `--from-package-lock` 或 `-g` 时，不读写 `np-lock.json`。
 - git 依赖锁定 commit，tarball URL 依赖锁定 sha512 integrity，本地目录依赖不锁定。
 - URL 中的凭据不写进锁文件。
 
 ## 按 npm 的 package-lock.json 安装
 
-`--from-package-lock=<file>` 按 npm `package-lock.json` 中锁定的版本安装，适合从 npm 迁移过来的项目。
+`--from-package-lock=<file>` 按 npm `package-lock.json` 或 `npm-shrinkwrap.json` 中锁定的版本安装，适合从 npm 迁移过来的项目。
 
-- 文件的 lockfileVersion 必须 >= 2；easy-np 忽略其中列出的可选依赖。
+- 文件的 lockfileVersion 必须 >= 2（npm 7 及以上生成），更旧的文件会报错并提示用 npm 7 及以上重新生成；easy-np 忽略其中列出的可选依赖。
 - workspace 项目读取 npm 生成的 workspace lockfile，各 workspace 按其中锁定的版本安装。
 - 文件加载失败时报错退出，不改为联网解析。

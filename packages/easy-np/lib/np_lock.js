@@ -9,8 +9,8 @@ const LOCKFILE_NAME = 'np-lock.json';
 const LOCKFILE_VERSION = 1;
 // 已由其他包管理器锁定版本的项目不生成 np-lock.json, 避免两份锁文件互相矛盾
 const FOREIGN_LOCKFILES = [
-  'package-lock.json',
   'npm-shrinkwrap.json',
+  'package-lock.json',
   'pnpm-lock.yaml',
   'yarn.lock',
   'bun.lock',
@@ -32,12 +32,16 @@ exports.keyOf = keyOf;
 
 exports.exists = root => utils.exists(path.join(root, LOCKFILE_NAME));
 
-exports.hasForeignLockfile = async root => {
+// 返回 root 下存在的其他包管理器锁文件名, 按 FOREIGN_LOCKFILES 顺序(npm-shrinkwrap.json 排在 package-lock.json 之前, 与 npm 读取优先级一致)
+exports.foreignLockfiles = async root => {
+  const found = [];
   for (const name of FOREIGN_LOCKFILES) {
-    if (await utils.exists(path.join(root, name))) return true;
+    if (await utils.exists(path.join(root, name))) found.push(name);
   }
-  return false;
+  return found;
 };
+
+exports.hasForeignLockfile = async root => (await exports.foreignLockfiles(root)).length > 0;
 
 // 返回 { 'name@spec': manifest }; 文件损坏或版本不支持时报错, 不静默回退为联网解析
 exports.read = async root => {

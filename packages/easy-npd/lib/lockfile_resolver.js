@@ -15,7 +15,10 @@ const NODE_MODULES_DIR = 'node_modules/';
  * @param {Nested} nested Nested
  */
 exports.lockfileConverter = function lockfileConverter(lockfile, options, nested) {
-  assert(lockfile.lockfileVersion >= 2, 'Only lockfileVersion >=2 is supported.');
+  assert(
+    lockfile.lockfileVersion >= 2,
+    `lockfileVersion ${lockfile.lockfileVersion} is not supported, regenerate it with npm 7 or later (lockfileVersion >= 2)`
+  );
 
   const tree = {};
 

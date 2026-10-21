@@ -288,6 +288,28 @@ describe('test/lockfile/np-lock.test.js', () => {
     assert.equal(await fs.readFile(lockFile, 'utf8'), before);
   });
 
+  it('should warn that an npm lockfile is not used and keep np-lock.json absent', async () => {
+    await writePkg({ pedding: '1.1.0' });
+    await fs.writeFile(path.join(tmp, 'package-lock.json'), '{}');
+    await fs.writeFile(path.join(tmp, 'npm-shrinkwrap.json'), '{}');
+    await run(helper.npminstall, [])
+      .expect('code', 0)
+      .expect('stderr', /npd WARN npm-shrinkwrap\.json is not used, pass --from-package-lock=npm-shrinkwrap\.json/)
+      .end();
+    await assert.rejects(fs.stat(lockFile), /ENOENT/);
+  });
+
+  it('should warn when np-lock.json and a foreign lockfile both exist', async () => {
+    await writePkg({ pedding: '1.1.0' });
+    await run(helper.npminstall, []).expect('code', 0).end();
+    assert.ok(await exists(lockFile));
+    await fs.writeFile(path.join(tmp, 'yarn.lock'), '');
+    await run(helper.npminstall, [])
+      .expect('code', 0)
+      .expect('stderr', /npd WARN both np-lock\.json and yarn\.lock exist/)
+      .end();
+  });
+
   it('should not create the lockfile with a foreign lockfile or --no-lockfile', async () => {
     await writePkg({ pedding: '1.1.0' });
     await fs.writeFile(path.join(tmp, 'package-lock.json'), '{}');

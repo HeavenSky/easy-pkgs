@@ -18,7 +18,7 @@ npd 支持 Node.js 14.19.3 及以上版本，在旧版本上改用兼容的旧�
 | 16.14 ~ 16.x、18.0 ~ 20.16、21.x、22.0 ~ 22.8 | `node-gyp` 10 / 11（按 `engines.node` 选择）；不识别 Visual Studio 2026 | node-gyp 10 依赖的 tar 6 有未修复的安全公告，只在 node-gyp 下载 Node.js 头文件时使用                    |
 | 14.19 ~ 16.13、17.x                           | `@electron/node-gyp` 10.2；不识别 Visual Studio 2026                    | 经 make-fetch-happen / cacache 引入的 tar 6 有未修复的安全公告，只在 node-gyp 下载 Node.js 头文件时使用 |
 
-npd 自身用的 tar 7 及其依赖声明需要 Node 18 及以上，urllib 引入的 `type-fest` 4 声明需要 Node 16 及以上，但它们在 Node 14.19.3 与 16 上可用；低于 Node 16.6 时，由 `lib/runtime.js` 补上它们需要的内置方法（`String.prototype.replaceAll`、`Array.prototype.at`）。包里附带 `npm-shrinkwrap.json`，用 npm 安装时整棵依赖树都按在这些 Node.js 版本上实测过的版本安装；pnpm 与 Yarn 不读这个文件，可能装到更新的小版本。
+npd 自身用的 tar 7 及其依赖声明需要 Node 18 及以上，urllib 引入的 `type-fest` 4 声明需要 Node 16 及以上，但它们在 Node 14.19.3 与 16 上可用；低于 Node 16.6 时，由 `lib/runtime.js` 补上它们需要的内置方法（`String.prototype.replaceAll`、`Array.prototype.at`）。包里附带 `npm-shrinkwrap.json`，用 npm 安装时整棵依赖树都按在这些 Node.js 版本上实测过的版本安装；pnpm 与 Yarn 不读这个文件，可能装到更新的小版本。easy-np 与 easy-npd 同样不读依赖包内的 `npm-shrinkwrap.json`，`npd -g easy-npd` 会按声明的范围重新解析。
 因此在 Node 14 与 16 上，`npm i -g easy-npd` 会打印 `EBADENGINE` 警告（npm 6 为 `notsup`），属预期，不影响 npd 运行。开启了 npm 的 `engine-strict` 时则无法安装；运行 `npm i -g easy-npd --engine-strict=false`，或改用 Node.js 18 及以上版本。
 
 ## 让 npd 按需安装 node-gyp

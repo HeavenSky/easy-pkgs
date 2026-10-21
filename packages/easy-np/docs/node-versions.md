@@ -8,7 +8,7 @@ easy-np runs on Node.js >= 14.19.3 and installs a compatible node-gyp the first 
 
 Installing easy-np on Node.js 14 or 16 prints engine warnings that do not affect how easy-np runs: `npm WARN EBADENGINE` with npm 7 and later, `npm WARN notsup` with npm 6. They come from tar 7 and its dependencies (`@isaacs/fs-minipass`, `minizlib`, `chownr`, `yallist`), which declare Node >= 18, and from `type-fest` 4 (used by urllib), which declares Node >= 16.
 
-- The warnings are expected: easy-np works on Node 14.19.3 and 16 in testing; below 16.6, [`lib/runtime.js`](../lib/runtime.js) adds the built-in methods tar 7 needs. The package ships an `npm-shrinkwrap.json`, so npm installs the whole dependency tree at the versions tested on these Node.js versions; pnpm and Yarn ignore that file and may resolve newer minor versions.
+- The warnings are expected: easy-np works on Node 14.19.3 and 16 in testing; below 16.6, [`lib/runtime.js`](../lib/runtime.js) adds the built-in methods tar 7 needs. The package ships an `npm-shrinkwrap.json`, so npm installs the whole dependency tree at the versions tested on these Node.js versions; pnpm and Yarn ignore that file and may resolve newer minor versions. easy-np and easy-npd do not read the `npm-shrinkwrap.json` inside dependency packages either, so `np -g easy-np` resolves the declared ranges again.
 - With `engine-strict` enabled in npm, the install fails instead (`npm ERR! code EBADENGINE`, or `npm ERR! code ENOTSUP` with npm 6). Turn it off for this install, for example `npm i -g easy-np --engine-strict=false`, or use Node.js 18 or later.
 
 ## Read the downgrade warning

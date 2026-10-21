@@ -1,6 +1,6 @@
 {
   "name": "easy-npd",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Install npm dependencies that resume where a failed install stopped, retry across the fastest public registries, and run dependency install scripts only after you approve them.",
   "keywords": [
     "dedup",

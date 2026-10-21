@@ -80,7 +80,7 @@ Parsing error: Please check validity of the block starting from line #1
 3 |   b: {
 
 Syntax: scss
-Gonzales PE version: 0.0.2
+Gonzales PE version: 0.0.3
 ```
 
 ## Read node properties

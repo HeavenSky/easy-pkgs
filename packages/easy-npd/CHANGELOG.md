@@ -4,7 +4,7 @@ easy-npd starts from [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.8.0
 
 0.0.0 lists every change relative to npminstall 6.8.0; later versions list changes relative to the previous version.
 
-## Unreleased
+## 0.0.6 (2026-10-21)
 
 ### Changed
 

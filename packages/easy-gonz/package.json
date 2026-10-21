@@ -1,7 +1,7 @@
 {
   "name": "easy-gonz",
   "description": "Parse CSS, Less, SCSS and indented Sass into one editable syntax tree that prints back byte for byte.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "keywords": [
     "ast",
     "css",

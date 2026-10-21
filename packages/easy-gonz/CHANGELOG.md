@@ -4,7 +4,7 @@ easy-gonz is based on [tonyganch/gonzales-pe](https://github.com/tonyganch/gonza
 
 0.0.1 lists all changes relative to gonzales-pe 4.3.0; later versions list only the changes since the previous version.
 
-## Unreleased
+## 0.0.3 (2026-10-21)
 
 ### Fixed
 

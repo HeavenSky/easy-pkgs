@@ -4,7 +4,7 @@ easy-comb is based on [csscomb/csscomb.js](https://github.com/csscomb/csscomb.js
 
 0.0.1 lists all changes relative to csscomb 4.3.0; later versions list only the changes since the previous version.
 
-## Unreleased
+## 0.0.4 (2026-10-21)
 
 ### Changed
 
@@ -12,6 +12,7 @@ easy-comb is based on [csscomb/csscomb.js](https://github.com/csscomb/csscomb.js
 
 ### Fixed
 
+- With easy-gonz 0.0.3, which `~0.0.2` installs, two indented Sass cases are fixed: a multi-line comment indented with tabs stays in one piece instead of having its continuation lines split off and moved, and an unquoted `url()` containing `?`, such as `@import url(//fonts.googleapis.com/css?family=Open+Sans)`, is formatted instead of failing to parse (#242).
 - `vendor-prefix-align` no longer indents Sass / Less variables (`$x`, `@x`) or custom properties (`--x`) that share a name with a prefixed property; a custom property such as `---webkit-y` no longer makes the following `y` count as its unprefixed form.
 
 ## 0.0.3 (2026-10-16)

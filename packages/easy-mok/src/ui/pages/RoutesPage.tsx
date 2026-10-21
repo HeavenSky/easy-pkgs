@@ -11,15 +11,25 @@ import { confirmLeave } from "@/lib/unsaved";
 import { cn, relativeTime } from "@/lib/utils";
 
 // 详情与新建表单(react-hook-form)只在选中路由或点新建时加载
-const RouteDetail = lazy(() => import("@/components/RouteDetail").then(m => ({ default: m.RouteDetail })));
-const NewRouteDialog = lazy(() => import("@/components/NewRouteDialog").then(m => ({ default: m.NewRouteDialog })));
+const RouteDetail = lazy(() =>
+	import("@/components/RouteDetail").then(m => ({ default: m.RouteDetail }))
+);
+const NewRouteDialog = lazy(() =>
+	import("@/components/NewRouteDialog").then(m => ({ default: m.NewRouteDialog }))
+);
 
 const METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "ALL"];
 
 const fileLabel = (r: RouteSummary, folder: string) => {
-	if (r.source.type === "builtin") { return "内置路由"; }
-	if (!r.source.file) { return "未知来源"; }
-	return r.source.file.startsWith(folder) ? r.source.file.slice(folder.length + 1) : r.source.file;
+	if (r.source.type === "builtin") {
+		return "内置路由";
+	}
+	if (!r.source.file) {
+		return "未知来源";
+	}
+	return r.source.file.startsWith(folder)
+		? r.source.file.slice(folder.length + 1)
+		: r.source.file;
 };
 
 export const RoutesPage = () => {
@@ -34,19 +44,32 @@ export const RoutesPage = () => {
 	const method = search.get("method") || "";
 	const grouped = search.get("view") === "file";
 
-	const setParam = (key: string, value: string) => setSearch(prev => {
-		const next = new URLSearchParams(prev);
-		value ? next.set(key, value) : next.delete(key);
-		return next;
-	}, { replace: true });
+	const setParam = (key: string, value: string) =>
+		setSearch(
+			prev => {
+				const next = new URLSearchParams(prev);
+				if (value) next.set(key, value);
+				else next.delete(key);
+				return next;
+			},
+			{ replace: true }
+		);
 
-	const filtered = useMemo(() => (routes.data || []).filter(r =>
-		(!q || r.key.toLowerCase().includes(q.toLowerCase()))
-		&& (!method || r.methods.includes(method))), [routes.data, q, method]);
+	const filtered = useMemo(
+		() =>
+			(routes.data || []).filter(
+				r =>
+					(!q || r.key.toLowerCase().includes(q.toLowerCase())) &&
+					(!method || r.methods.includes(method))
+			),
+		[routes.data, q, method]
+	);
 
 	const folder = meta.data?.folder || "";
 	const sections = useMemo(() => {
-		if (!grouped) { return [{ title: "", items: filtered }]; }
+		if (!grouped) {
+			return [{ title: "", items: filtered }];
+		}
 		const map = new Map<string, RouteSummary[]>();
 		filtered.forEach(r => {
 			const k = fileLabel(r, folder);
@@ -56,25 +79,39 @@ export const RoutesPage = () => {
 	}, [filtered, grouped, folder]);
 
 	const select = (routeId: string) => {
-		if (routeId === id || !confirmLeave()) { return; }
+		if (routeId === id || !confirmLeave()) {
+			return;
+		}
 		navigate(`/routes/${routeId}${search.toString() ? `?${search}` : ""}`);
 	};
 
-	useEffect(() => { // 未指定或已被删除时选中第一条
-		if (!routes.data?.length) { return; }
+	useEffect(() => {
+		// 未指定或已被删除时选中第一条
+		if (!routes.data?.length) {
+			return;
+		}
 		if (!id || !routes.data.some(r => r.id === id)) {
-			navigate(`/routes/${routes.data[0].id}${search.toString() ? `?${search}` : ""}`, { replace: true });
+			navigate(`/routes/${routes.data[0].id}${search.toString() ? `?${search}` : ""}`, {
+				replace: true,
+			});
 		}
 	}, [id, routes.data, navigate, search]);
 
 	const onKeyDown = (e: KeyboardEvent) => {
-		if (e.key !== "ArrowDown" && e.key !== "ArrowUp") { return; }
+		if (e.key !== "ArrowDown" && e.key !== "ArrowUp") {
+			return;
+		}
 		e.preventDefault();
 		const i = filtered.findIndex(r => r.id === id);
-		const next = filtered[Math.min(Math.max(i + (e.key === "ArrowDown" ? 1 : -1), 0), filtered.length - 1)];
+		const next =
+			filtered[
+				Math.min(Math.max(i + (e.key === "ArrowDown" ? 1 : -1), 0), filtered.length - 1)
+			];
 		if (next) {
 			select(next.id);
-			listRef.current?.querySelector<HTMLElement>(`[data-id="${next.id}"]`)?.scrollIntoView({ block: "nearest" });
+			listRef.current
+				?.querySelector<HTMLElement>(`[data-id="${next.id}"]`)
+				?.scrollIntoView({ block: "nearest" });
 		}
 	};
 
@@ -84,34 +121,87 @@ export const RoutesPage = () => {
 				<div className="space-y-2 border-b border-zinc-200 p-3 dark:border-zinc-800">
 					<div className="relative">
 						<Search size={14} className="absolute top-2.5 left-2 text-zinc-400" />
-						<Input aria-label="搜索路由" placeholder="搜索方法或路径" className="pl-7" value={q} onChange={e => setParam("q", e.target.value)} />
+						<Input
+							aria-label="搜索路由"
+							placeholder="搜索方法或路径"
+							className="pl-7"
+							value={q}
+							onChange={e => setParam("q", e.target.value)}
+						/>
 					</div>
 					<div className="flex items-center gap-2">
-						<Select aria-label="按方法筛选" value={method} onChange={e => setParam("method", e.target.value)}>
+						<Select
+							aria-label="按方法筛选"
+							value={method}
+							onChange={e => setParam("method", e.target.value)}
+						>
 							<option value="">全部方法</option>
-							{METHODS.map(m => <option key={m} value={m}>{m}</option>)}
+							{METHODS.map(m => (
+								<option key={m} value={m}>
+									{m}
+								</option>
+							))}
 						</Select>
-						<Button size="sm" variant={grouped ? "default" : "outline"} aria-pressed={grouped} onClick={() => setParam("view", grouped ? "" : "file")}>
-							<FileCode2 size={14} />按文件分组
+						<Button
+							size="sm"
+							variant={grouped ? "default" : "outline"}
+							aria-pressed={grouped}
+							onClick={() => setParam("view", grouped ? "" : "file")}
+						>
+							<FileCode2 size={14} />
+							按文件分组
 						</Button>
-						<Button size="sm" variant="default" className="ml-auto" onClick={() => setCreating(true)}><Plus size={14} />新建</Button>
+						<Button
+							size="sm"
+							variant="default"
+							className="ml-auto"
+							onClick={() => setCreating(true)}
+						>
+							<Plus size={14} />
+							新建
+						</Button>
 					</div>
 				</div>
 				<div className="min-h-0 flex-1 overflow-auto">
 					{routes.isPending && <Skeleton />}
-					{routes.isError && <ErrorState error={routes.error} onRetry={() => routes.refetch()} />}
+					{routes.isError && (
+						<ErrorState error={routes.error} onRetry={() => routes.refetch()} />
+					)}
 					{routes.data && !routes.data.length && (
 						<EmptyState title="还没有 mock 路由">
-							<p>在 <code className="font-mono">{folder}</code> 下新建 js 或 json 文件, 例如:</p>
+							<p>
+								在 <code className="font-mono">{folder}</code> 下新建 js 或 json
+								文件, 例如:
+							</p>
 							<pre className="rounded bg-zinc-100 p-2 text-left font-mono text-xs dark:bg-zinc-800">{`module.exports = {\n  "GET /api/user/:id": { id: 1 },\n};`}</pre>
 							<p>或点击右上角「新建」直接创建.</p>
 						</EmptyState>
 					)}
-					{routes.data && routes.data.length > 0 && !filtered.length && <EmptyState title="没有匹配的路由" />}
-					<ul ref={listRef} role="listbox" aria-label="路由列表" tabIndex={0} onKeyDown={onKeyDown} className="outline-none">
+					{routes.data && routes.data.length > 0 && !filtered.length && (
+						<EmptyState title="没有匹配的路由" />
+					)}
+					<ul
+						ref={listRef}
+						role="listbox"
+						aria-label="路由列表"
+						tabIndex={0}
+						onKeyDown={onKeyDown}
+						className="outline-none"
+					>
 						{sections.map(section => (
-							<li key={section.title || "all"} role={section.title ? "group" : "presentation"} aria-label={section.title || undefined}>
-								{section.title && <div aria-hidden="true" className="sticky top-0 bg-zinc-100 px-3 py-1 font-mono text-[11px] text-zinc-500 dark:bg-zinc-800">{section.title}</div>}
+							<li
+								key={section.title || "all"}
+								role={section.title ? "group" : "presentation"}
+								aria-label={section.title || undefined}
+							>
+								{section.title && (
+									<div
+										aria-hidden="true"
+										className="sticky top-0 bg-zinc-100 px-3 py-1 font-mono text-[11px] text-zinc-500 dark:bg-zinc-800"
+									>
+										{section.title}
+									</div>
+								)}
 								<ul role="presentation" className="contents">
 									{section.items.map(r => (
 										<li
@@ -120,19 +210,54 @@ export const RoutesPage = () => {
 											role="option"
 											aria-selected={r.id === id}
 											onClick={() => select(r.id)}
-											className={cn("cursor-pointer border-b border-zinc-100 px-3 py-2 dark:border-zinc-800/60", r.id === id ? "bg-sky-50 dark:bg-sky-950/40" : "hover:bg-zinc-50 dark:hover:bg-zinc-800/40")}
+											className={cn(
+												"cursor-pointer border-b border-zinc-100 px-3 py-2 dark:border-zinc-800/60",
+												r.id === id
+													? "bg-sky-50 dark:bg-sky-950/40"
+													: "hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
+											)}
 										>
 											<div className="flex items-center gap-1.5">
-												{r.methods.map(m => <MethodBadge key={m} method={m} />)}
-												<span className="truncate font-mono text-xs" title={r.path}>{r.path}</span>
-												{r.weight !== 0 && <Badge className="bg-zinc-100 dark:bg-zinc-800">权重 {r.weight}</Badge>}
+												{r.methods.map(m => (
+													<MethodBadge key={m} method={m} />
+												))}
+												<span
+													className="truncate font-mono text-xs"
+													title={r.path}
+												>
+													{r.path}
+												</span>
+												{r.weight !== 0 && (
+													<Badge className="bg-zinc-100 dark:bg-zinc-800">
+														权重 {r.weight}
+													</Badge>
+												)}
 											</div>
 											<div className="mt-1 flex items-center gap-2 text-[11px] text-zinc-500">
-												{r.mode === "pass" ? <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">放行</Badge>
-													: <span>场景 <b className="font-medium text-zinc-700 dark:text-zinc-300">{r.active.name}</b></span>}
+												{r.mode === "pass" ? (
+													<Badge className="bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+														放行
+													</Badge>
+												) : (
+													<span>
+														场景{" "}
+														<b className="font-medium text-zinc-700 dark:text-zinc-300">
+															{r.active.name}
+														</b>
+													</span>
+												)}
 												{r.delay ? <span>延迟 {r.delay}ms</span> : null}
 												{r.status ? <span>状态码 {r.status}</span> : null}
-												<span className="ml-auto" title={r.lastHit ? new Date(r.lastHit).toLocaleString() : undefined}>{r.hits} 次 · {relativeTime(r.lastHit)}</span>
+												<span
+													className="ml-auto"
+													title={
+														r.lastHit
+															? new Date(r.lastHit).toLocaleString()
+															: undefined
+													}
+												>
+													{r.hits} 次 · {relativeTime(r.lastHit)}
+												</span>
 											</div>
 										</li>
 									))}
@@ -143,11 +268,21 @@ export const RoutesPage = () => {
 				</div>
 			</aside>
 			<section className="min-w-0 flex-1 overflow-auto">
-				{id && routes.data?.some(r => r.id === id) ? <Suspense fallback={<Skeleton rows={8} />}><RouteDetail key={id} id={id} /></Suspense> : !routes.isPending && <EmptyState title="选择左侧的一个路由" />}
+				{id && routes.data?.some(r => r.id === id) ? (
+					<Suspense fallback={<Skeleton rows={8} />}>
+						<RouteDetail key={id} id={id} />
+					</Suspense>
+				) : (
+					!routes.isPending && <EmptyState title="选择左侧的一个路由" />
+				)}
 			</section>
 			{creating && (
 				<Suspense fallback={null}>
-					<NewRouteDialog open onClose={() => setCreating(false)} onCreated={routeId => navigate(`/routes/${routeId}`)} />
+					<NewRouteDialog
+						open
+						onClose={() => setCreating(false)}
+						onCreated={routeId => navigate(`/routes/${routeId}`)}
+					/>
 				</Suspense>
 			)}
 		</div>

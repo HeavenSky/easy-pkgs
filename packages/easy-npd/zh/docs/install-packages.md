@@ -91,12 +91,7 @@ npd lodash@4 ./local-lib  # 只安装并保存这两个包
 npd 读取根 `package.json` 中的 npm `overrides`：包名、`name@<range>` 选择器、嵌套对象，以及 `.` 与 `$name` 引用。
 
 ```json
-{
-  "overrides": {
-    "foo": "1.0.0",
-    "bar@^2": { "baz": "$baz" }
-  }
-}
+{ "overrides": { "foo": "1.0.0", "bar@^2": { "baz": "$baz" } } }
 ```
 
 - `overrides` 不改写根 `package.json` 的直接依赖。

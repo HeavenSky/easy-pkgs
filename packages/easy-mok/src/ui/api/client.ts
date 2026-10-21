@@ -7,7 +7,9 @@ export const mockBaseOf = (pathname: string) => {
 	return m ? m[1] : "/__mock";
 };
 
-export const MOCK_BASE = mockBaseOf(typeof location === "undefined" ? "/__mock/" : location.pathname);
+export const MOCK_BASE = mockBaseOf(
+	typeof location === "undefined" ? "/__mock/" : location.pathname
+);
 export const API_BASE = `${MOCK_BASE}/api`;
 
 export class ApiError extends Error {
@@ -27,7 +29,9 @@ type BootListener = (bootId: string) => void;
 const bootListeners = new Set<BootListener>();
 export const onBootId = (fn: BootListener) => {
 	bootListeners.add(fn);
-	return () => { bootListeners.delete(fn); };
+	return () => {
+		bootListeners.delete(fn);
+	};
 };
 
 interface RequestOptions {
@@ -37,9 +41,15 @@ interface RequestOptions {
 	signal?: AbortSignal;
 }
 
-export async function request<T>(schema: z.ZodType<T> | null, path: string, opt: RequestOptions = {}): Promise<T> {
+export async function request<T>(
+	schema: z.ZodType<T> | null,
+	path: string,
+	opt: RequestOptions = {}
+): Promise<T> {
 	const headers: Record<string, string> = { "x-mock-ui": "1", ...opt.headers };
-	if (opt.body !== undefined) { headers["content-type"] = "application/json"; }
+	if (opt.body !== undefined) {
+		headers["content-type"] = "application/json";
+	}
 	let res: Response;
 	try {
 		res = await fetch(API_BASE + path, {
@@ -49,15 +59,23 @@ export async function request<T>(schema: z.ZodType<T> | null, path: string, opt:
 			signal: opt.signal,
 		});
 	} catch (err) {
-		if ((err as Error).name === "AbortError") { throw err; }
+		if ((err as Error).name === "AbortError") {
+			throw err;
+		}
 		throw new ApiError("NETWORK", 0, "无法连接 dev server, 请确认开发服务仍在运行");
 	}
 	const boot = res.headers.get("x-mock-boot");
-	if (boot) { bootListeners.forEach(fn => fn(boot)); }
+	if (boot) {
+		bootListeners.forEach(fn => fn(boot));
+	}
 	const text = await res.text();
 	let data: unknown = null;
 	if (text) {
-		try { data = JSON.parse(text); } catch { data = text; }
+		try {
+			data = JSON.parse(text);
+		} catch {
+			data = text;
+		}
 	}
 	if (!res.ok) {
 		const parsed = ApiErrorBody.safeParse(data);
@@ -67,11 +85,17 @@ export async function request<T>(schema: z.ZodType<T> | null, path: string, opt:
 		}
 		throw new ApiError("HTTP", res.status, `请求失败 (${res.status})`);
 	}
-	if (!schema) { return data as T; }
+	if (!schema) {
+		return data as T;
+	}
 	const parsed = schema.safeParse(data);
 	if (!parsed.success) {
 		console.error("[easy-mok] 接口返回不符合契约", path, parsed.error);
-		throw new ApiError("CONTRACT", res.status, "接口返回格式不符合预期, 请确认管理页与 easy-mok 版本一致");
+		throw new ApiError(
+			"CONTRACT",
+			res.status,
+			"接口返回格式不符合预期, 请确认管理页与 easy-mok 版本一致"
+		);
 	}
 	return parsed.data;
 }

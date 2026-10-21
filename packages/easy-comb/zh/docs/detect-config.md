@@ -24,11 +24,7 @@ csscomb -c example.css assets/css
 ## 用 template 补齐未设置的选项
 
 ```json
-{
-    "template": "example.css",
-    "leading-zero": false,
-    "vendor-prefix-align": true
-}
+{ "template": "example.css", "leading-zero": false, "vendor-prefix-align": true }
 ```
 
 设置 `template` 后，凡是配置里没写的选项，都取该样式表中检测到的值；这样配置里只需写你想改的几项。

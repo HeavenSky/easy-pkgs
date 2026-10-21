@@ -1,71 +1,71 @@
-'use strict';
+"use strict";
 
-const chalk = require('chalk');
-const debug = require('debug')('npd:bin');
-const path = require('path');
-const cmdShim = require('cmd-shim-hotfix');
-const normalize = require('npm-normalize-package-bin');
-const fixBin = require('bin-links/lib/fix-bin');
-const utils = require('./utils');
+const chalk = require("chalk");
+const debug = require("debug")("npd:bin");
+const path = require("path");
+const cmdShim = require("cmd-shim-hotfix");
+const normalize = require("npm-normalize-package-bin");
+const fixBin = require("bin-links/lib/fix-bin");
+const utils = require("./utils");
 
 module.exports = bin;
 module.exports.getBinDir = getBinDir;
 
 async function bin(parentDir, pkg, pkgDir, options) {
-  // security fix
-  // https://github.com/npm/cli/commit/19ce061a2ee165d8de862c8f0f733c222846b9e1#diff-b05945a9118978f01ad9162683e74404
-  normalize(pkg);
-  let bins = pkg.bin || {};
-  if (typeof bins === 'string') {
-    bins = {};
-    bins[pkg.name] = pkg.bin;
-  }
+	// security fix
+	// https://github.com/npm/cli/commit/19ce061a2ee165d8de862c8f0f733c222846b9e1#diff-b05945a9118978f01ad9162683e74404
+	normalize(pkg);
+	let bins = pkg.bin || {};
+	if (typeof bins === "string") {
+		bins = {};
+		bins[pkg.name] = pkg.bin;
+	}
 
-  const names = Object.keys(bins);
-  if (names.length === 0) {
-    return;
-  }
+	const names = Object.keys(bins);
+	if (names.length === 0) {
+		return;
+	}
 
-  // root package link to options.binDir first
-  const binDir = getBinDir(parentDir, options);
-  const showBinLog = binDir === options.binDir;
-  await utils.mkdirp(binDir);
+	// root package link to options.binDir first
+	const binDir = getBinDir(parentDir, options);
+	const showBinLog = binDir === options.binDir;
+	await utils.mkdirp(binDir);
 
-  for (const name of names) {
-    const srcBin = path.join(pkgDir, bins[name]);
-    const destBin = path.join(binDir, name);
-    await linkBin(srcBin, destBin);
-    // ensure that bin are executable and not containing
-    // windows line-endings(CRLF) on the hashbang line
-    await fixBin(srcBin, 0o755);
-    if (showBinLog) {
-      options.console.info(
-        '[%s] link %s@ -> %s',
-        chalk.green(pkg.name + '@' + pkg.version),
-        chalk.magenta(destBin),
-        srcBin
-      );
-    } else {
-      debug('[%s@%s] link %s@ -> %s', pkg.name, pkg.version, destBin, srcBin);
-    }
-  }
+	for (const name of names) {
+		const srcBin = path.join(pkgDir, bins[name]);
+		const destBin = path.join(binDir, name);
+		await linkBin(srcBin, destBin);
+		// ensure that bin are executable and not containing
+		// windows line-endings(CRLF) on the hashbang line
+		await fixBin(srcBin, 0o755);
+		if (showBinLog) {
+			options.console.info(
+				"[%s] link %s@ -> %s",
+				chalk.green(pkg.name + "@" + pkg.version),
+				chalk.magenta(destBin),
+				srcBin
+			);
+		} else {
+			debug("[%s@%s] link %s@ -> %s", pkg.name, pkg.version, destBin, srcBin);
+		}
+	}
 }
 
 async function linkBin(src, dest) {
-  if (process.platform === 'win32') {
-    return new Promise((resolve, reject) => {
-      cmdShim.ifExists(src, dest, err => {
-        if (err) return reject(err);
-        resolve(dest);
-      });
-    });
-  }
+	if (process.platform === "win32") {
+		return new Promise((resolve, reject) => {
+			cmdShim.ifExists(src, dest, err => {
+				if (err) return reject(err);
+				resolve(dest);
+			});
+		});
+	}
 
-  await utils.forceSymlink(src, dest);
+	await utils.forceSymlink(src, dest);
 }
 
 // 根包的 bin 链接到 options.binDir, 其余链接到所在目录的 node_modules/.bin
 function getBinDir(parentDir, options) {
-  if (options.binDir && parentDir === options.targetDir) return options.binDir;
-  return path.join(parentDir, 'node_modules', '.bin');
+	if (options.binDir && parentDir === options.targetDir) return options.binDir;
+	return path.join(parentDir, "node_modules", ".bin");
 }

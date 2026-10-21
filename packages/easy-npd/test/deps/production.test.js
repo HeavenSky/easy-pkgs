@@ -1,44 +1,41 @@
-'use strict';
+"use strict";
 
-const assert = require('assert');
-const path = require('path');
-const fs = require('fs/promises');
-const coffee = require('coffee');
-const npminstall = require('../support/npminstall');
-const helper = require('../support/helper');
+const assert = require("assert");
+const path = require("path");
+const fs = require("fs/promises");
+const coffee = require("coffee");
+const npminstall = require("../support/npminstall");
+const helper = require("../support/helper");
 
-describe('test/deps/production.test.js', () => {
-  const cwd = helper.fixtures('production');
-  const cleanup = helper.cleanup(cwd);
+describe("test/deps/production.test.js", () => {
+	const cwd = helper.fixtures("production");
+	const cleanup = helper.cleanup(cwd);
 
-  beforeEach(cleanup);
-  afterEach(cleanup);
+	beforeEach(cleanup);
+	afterEach(cleanup);
 
-  it('should ignore devDependencies when install with production', async () => {
-    await npminstall({
-      root: cwd,
-      production: true,
-    });
+	it("should ignore devDependencies when install with production", async () => {
+		await npminstall({ root: cwd, production: true });
 
-    const dirs = await fs.readdir(path.join(cwd, 'node_modules'));
-    assert(!dirs.includes('mocha'));
-    assert(dirs.includes('should'));
-    assert(dirs.includes('koa'));
-  });
+		const dirs = await fs.readdir(path.join(cwd, "node_modules"));
+		assert(!dirs.includes("mocha"));
+		assert(dirs.includes("should"));
+		assert(dirs.includes("koa"));
+	});
 
-  it('should show detail with --detail and check node_modules dir on production mode', async () => {
-    await coffee
-      .fork(helper.npminstall, ['--production', '--detail'], { cwd })
-      .expect('code', 0)
-      .expect('stdout', /installed at node_modules/)
-      .end();
-    // again
-    await coffee
-      .fork(helper.npminstall, ['--production', '--detail'], { cwd })
-      .debug()
-      .expect('code', 0)
-      .expect('stdout', /koa@\* is skipped because it already exists at/)
-      .expect('stderr', /npd WARN node_modules exists: .+?node_modules/)
-      .end();
-  });
+	it("should show detail with --detail and check node_modules dir on production mode", async () => {
+		await coffee
+			.fork(helper.npminstall, ["--production", "--detail"], { cwd })
+			.expect("code", 0)
+			.expect("stdout", /installed at node_modules/)
+			.end();
+		// again
+		await coffee
+			.fork(helper.npminstall, ["--production", "--detail"], { cwd })
+			.debug()
+			.expect("code", 0)
+			.expect("stdout", /koa@\* is skipped because it already exists at/)
+			.expect("stderr", /npd WARN node_modules exists: .+?node_modules/)
+			.end();
+	});
 });

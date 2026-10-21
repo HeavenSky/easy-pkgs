@@ -30,13 +30,7 @@
 `allowScripts` 的每个键指定一批包；`true` 放行它们的安装脚本，`false` 拒绝。
 
 ```json
-{
-  "allowScripts": {
-    "esbuild": true,
-    "sharp@0.33.5": true,
-    "core-js": false
-  }
-}
+{ "allowScripts": { "esbuild": true, "sharp@0.33.5": true, "core-js": false } }
 ```
 
 - 键可以写包名（全部版本）、`<name>@<exact version>`、用 `||` 连接的多个精确版本、git 地址或 tarball url。

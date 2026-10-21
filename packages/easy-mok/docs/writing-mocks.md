@@ -14,16 +14,16 @@ const { scenes } = require("easy-mok");
 
 module.exports = {
 	"GET /api/user/:id": scenes({
-		default: { id: 1, name: "Alice" },             // objects, arrays, and strings are returned as is
+		default: { id: 1, name: "Alice" }, // objects, arrays, and strings are returned as is
 		empty: null,
 		error: (req, res) => res.status(500).json({}), // function with parameters: handle the request yourself, or call next() to hand it to the host; write the parameters out
-		byId: req => ({ id: req.params.id }),          // if it neither responds nor calls next(), its return value is the response body
-		now: () => ({ time: Date.now() }),              // function without parameters: called per request, return value is the response body
+		byId: req => ({ id: req.params.id }), // if it neither responds nor calls next(), its return value is the response body
+		now: () => ({ time: Date.now() }), // function without parameters: called per request, return value is the response body
 		real: () => ({ target: "http://test.example.com", changeOrigin: true }), // returns an object with target / router: proxy config
 	}),
-	"GET|POST:1 /api/list": [],                         // several methods; :1 is the weight, higher wins
+	"GET|POST:1 /api/list": [], // several methods; :1 is the weight, higher wins
 	"ALL /api/legacy/*": () => ({ target: "http://old.example.com" }),
-	MOCK: true,                                         // false turns mocking off for everything
+	MOCK: true, // false turns mocking off for everything
 };
 ```
 

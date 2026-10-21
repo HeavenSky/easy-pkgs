@@ -1,34 +1,19 @@
 {
-  "maxFile": 262144,
-  "maxBinary": 65536,
-  "packages": {
-    "easy-comb": {
-      "files": 149,
-      "bytes": 290816
-    },
-    "easy-gonz": {
-      "files": 137,
-      "bytes": 976896
-    },
-    "easy-np": {
-      "files": 277,
-      "bytes": 1940480
-    },
-    "easy-npd": {
-      "files": 237,
-      "bytes": 1811456
-    },
-    "easy-mok": {
-      "files": 21,
-      "bytes": 124928
-    }
-  },
-  "allow": {
-    "packages/easy-np/test/fixtures/registry-snapshot.json": 1540096,
-    "packages/easy-npd/test/fixtures/registry-snapshot.json": 1458176
-  },
-  "reasons": {
-    "packages/easy-np/test/fixtures/registry-snapshot.json": "录制的公共源版本冻结表, 无法由脚本推导或按版本下载; 已改为每包一行",
-    "packages/easy-npd/test/fixtures/registry-snapshot.json": "同 easy-np"
-  }
+	"maxFile": 262144,
+	"maxBinary": 65536,
+	"packages": {
+		"easy-comb": { "files": 149, "bytes": 290816 },
+		"easy-gonz": { "files": 137, "bytes": 976896 },
+		"easy-np": { "files": 277, "bytes": 1940480 },
+		"easy-npd": { "files": 237, "bytes": 1811456 },
+		"easy-mok": { "files": 21, "bytes": 135168 }
+	},
+	"allow": {
+		"packages/easy-np/test/fixtures/registry-snapshot.json": 1540096,
+		"packages/easy-npd/test/fixtures/registry-snapshot.json": 1458176
+	},
+	"reasons": {
+		"packages/easy-np/test/fixtures/registry-snapshot.json": "录制的公共源版本冻结表, 无法由脚本推导或按版本下载; 已改为每包一行",
+		"packages/easy-npd/test/fixtures/registry-snapshot.json": "同 easy-np"
+	}
 }

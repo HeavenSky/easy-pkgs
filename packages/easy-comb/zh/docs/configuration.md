@@ -25,14 +25,17 @@ easy-comb 从当前目录开始逐级向上查找，到用户主目录或文件�
 
 ```ts
 // csscomb.config.ts
-import { defineConfig } from 'easy-comb';
+import { defineConfig } from "easy-comb";
 
 export default defineConfig({
-  exclude: ['node_modules/**'],
-  'always-semicolon': true,
-  'color-case': 'lower',
-  'quotes': 'single',
-  'sort-order': [['position', 'top'], ['display', 'width', 'height']],
+	exclude: ["node_modules/**"],
+	"always-semicolon": true,
+	"color-case": "lower",
+	quotes: "single",
+	"sort-order": [
+		["position", "top"],
+		["display", "width", "height"],
+	],
 });
 ```
 
@@ -45,11 +48,14 @@ TypeScript 配置依赖 Node 的类型剥离，因此需要 Node.js 22.18+，而
 
 ```json
 {
-    "exclude": ["node_modules/**"],
-    "always-semicolon": true,
-    "color-case": "lower",
-    "quotes": "single",
-    "sort-order": [["position", "top"], ["display", "width", "height"]]
+	"exclude": ["node_modules/**"],
+	"always-semicolon": true,
+	"color-case": "lower",
+	"quotes": "single",
+	"sort-order": [
+		["position", "top"],
+		["display", "width", "height"]
+	]
 }
 ```
 
@@ -57,13 +63,13 @@ TypeScript 配置依赖 Node 的类型剥离，因此需要 Node.js 22.18+，而
 
 除了[选项](options.md)，配置里还可以写这些键：
 
-| 键 | 作用 |
-| --- | --- |
-| `exclude` | 相对配置文件所在目录的 glob；匹配的文件和目录会被跳过，例如 `["node_modules/**"]`。内置配置和传给 [`configure()`](node-api.md) 的配置里，`exclude` 相对当前目录。 |
-| `syntax` | 额外的扩展名及其解析语法，例如 `{".wxss": "css"}`。 |
-| `template` | 一份样式表，从中检测到的风格用来补齐本配置没设置的选项，见[用 template 补齐未设置的选项](detect-config.md#用-template-补齐未设置的选项)。 |
-| `lint` | 等同于 `--lint`。 |
-| `verbose` | 等同于 `--verbose`。 |
+| 键         | 作用                                                                                                                                                              |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `exclude`  | 相对配置文件所在目录的 glob；匹配的文件和目录会被跳过，例如 `["node_modules/**"]`。内置配置和传给 [`configure()`](node-api.md) 的配置里，`exclude` 相对当前目录。 |
+| `syntax`   | 额外的扩展名及其解析语法，例如 `{".wxss": "css"}`。                                                                                                               |
+| `template` | 一份样式表，从中检测到的风格用来补齐本配置没设置的选项，见[用 template 补齐未设置的选项](detect-config.md#用-template-补齐未设置的选项)。                         |
+| `lint`     | 等同于 `--lint`。                                                                                                                                                 |
+| `verbose`  | 等同于 `--verbose`。                                                                                                                                              |
 
 ## 修复加载失败的 TypeScript 配置
 

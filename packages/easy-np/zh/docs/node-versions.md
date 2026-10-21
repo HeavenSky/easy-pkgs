@@ -30,8 +30,8 @@ node-gyp 不随 easy-np 安装。首次编译原生模块时，easy-np 联网安
 - 每个 Node.js 版本各装一份，与 easy-npd 互相独立；不再被引用且超过 1 小时的旧安装目录在下次安装时删除。
 - `npm_config_node_gyp` 指向已有的 `node-gyp.js` 时直接使用它。
 - 无法联网时：
-  1. 全局安装 node-gyp：`npm i -g node-gyp`。
-  2. 让 easy-np 使用它：`export npm_config_node_gyp="$(npm root -g)/node-gyp/bin/node-gyp.js"`。在 Windows 上，提示这一步的报错会给出 PowerShell 与 cmd.exe 的写法。
+    1. 全局安装 node-gyp：`npm i -g node-gyp`。
+    2. 让 easy-np 使用它：`export npm_config_node_gyp="$(npm root -g)/node-gyp/bin/node-gyp.js"`。在 Windows 上，提示这一步的报错会给出 PowerShell 与 cmd.exe 的写法。
 
 | Node.js                                       | node-gyp（依赖的安装脚本与 `binding.gyp` 构建时按需安装）                                | 已知风险                                                                                                   |
 | --------------------------------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |

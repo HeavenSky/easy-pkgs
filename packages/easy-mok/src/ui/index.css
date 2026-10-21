@@ -1,14 +1,23 @@
 @import "tailwindcss";
 
 @theme {
-	--font-sans: ui-sans-serif, system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+	--font-sans:
+		ui-sans-serif, system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
 	--font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 @layer base {
-	html, body, #root { height: 100%; }
-	body { @apply bg-zinc-50 text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100; }
-	:focus-visible { @apply outline-2 outline-offset-2 outline-sky-500; }
+	html,
+	body,
+	#root {
+		height: 100%;
+	}
+	body {
+		@apply bg-zinc-50 text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100;
+	}
+	:focus-visible {
+		@apply outline-2 outline-offset-2 outline-sky-500;
+	}
 }
 
 /* 原生 select 的箭头贴边绘制且不受 padding 影响, 改为自绘箭头以控制右侧留白 */

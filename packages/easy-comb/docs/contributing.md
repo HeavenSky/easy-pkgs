@@ -22,18 +22,18 @@ The official WPT, css-parsing-tests, sass-spec and less.js suites check that for
 
 1. In `packages/_official_style_suites`, install the dependencies the check uses:
 
-   ```bash
-   npm ci
-   ```
+    ```bash
+    npm ci
+    ```
 
 2. In `packages/easy-comb`, run the check:
 
-   ```bash
-   npm run test:official
-   ```
+    ```bash
+    npm run test:official
+    ```
 
-   The first run downloads the suites at their [pinned versions](../../_official_style_suites/suites.json) into `.cache/official/` at the repository root.
-   The result is compared with the per-suite counts in [test/official-baseline.json](../test/official-baseline.json), 18,461 valid cases in total; see [comb.mjs](../../_official_style_suites/comb.mjs) for what counts as a failure.
+    The first run downloads the suites at their [pinned versions](../../_official_style_suites/suites.json) into `.cache/official/` at the repository root.
+    The result is compared with the per-suite counts in [test/official-baseline.json](../test/official-baseline.json), 18,461 valid cases in total; see [comb.mjs](../../_official_style_suites/comb.mjs) for what counts as a failure.
 
 ## Regenerate the built-in property order
 

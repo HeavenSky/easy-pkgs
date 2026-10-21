@@ -10,16 +10,16 @@ gonzales-pe 4.3.0 能解析的输入 easy-gonz 都能解析，所以多数项目
 
 1. 替换依赖：
 
-   ```bash
-   npm uninstall gonzales-pe && npm install easy-gonz
-   ```
+    ```bash
+    npm uninstall gonzales-pe && npm install easy-gonz
+    ```
 
 2. 修改引用；`easy-gonz/lib/gonzales` 这类深层路径同样可用：
 
-   ```diff
-   - const gonzales = require('gonzales-pe');
-   + const gonzales = require('easy-gonz');
-   ```
+    ```diff
+    - const gonzales = require('gonzales-pe');
+    + const gonzales = require('easy-gonz');
+    ```
 
 3. 运行测试。有失败时按下面各节排查，先看[检查按节点类型遍历语法树的代码](#检查按节点类型遍历语法树的代码)。
 
@@ -47,17 +47,17 @@ API 保持不变：下面这些在 easy-gonz 中的行为与 gonzales-pe 4.3.0 �
 - 科学计数法：`1e3px` 过去是 `number` `1` 加单位 `e3px`，`1.5E-2` 过去是 `number` `1.5` 加 `ident` `E-2`；现在分别是 `dimension` `1e3px` 和 `number` `1.5E-2`。指数之后数字即结束：`3e-2.1` 是 `number` `3e-2` 后跟 `number` `.1`。
 - SCSS 和缩进 Sass 自定义属性的值如果不是普通值（如 `--x: {a: b}`），整个值是一个 `raw` 节点，与 Sass 和 postcss-scss 一致；CSS 和 Less 仍会把这样的值拆成 `block` 等子节点。对 SCSS，4.3.0 会把花括号解析成 `block` 和 `declaration` 节点；对缩进 Sass，4.3.0 直接报错。
 - 缩进 Sass：
-  - `declarationDelimiter` 保留原文写法（`;`、`\r\n`），不再一律是 `\n`。
-  - 选择器在换行处结束：`a⏎b` 是两条规则，与 dart-sass 一致。
-  - 嵌套块之后的顶层 `//` 注释留在顶层。
-  - 以运算符、`,` 或 `not` 这类关键字结尾的行，会延续到下一行。
-  - 括号跨行的选择器（`a:b(c⏎  )`）后面跟嵌套块时是 `ruleset`，不再被当成声明。
-  - 顶层的 `+name` 带嵌套块时是包含该块的 `include`，与嵌套时的行为一致，不再是以 `+` 组合符开头的 `ruleset`。
+    - `declarationDelimiter` 保留原文写法（`;`、`\r\n`），不再一律是 `\n`。
+    - 选择器在换行处结束：`a⏎b` 是两条规则，与 dart-sass 一致。
+    - 嵌套块之后的顶层 `//` 注释留在顶层。
+    - 以运算符、`,` 或 `not` 这类关键字结尾的行，会延续到下一行。
+    - 括号跨行的选择器（`a:b(c⏎  )`）后面跟嵌套块时是 `ruleset`，不再被当成声明。
+    - 顶层的 `+name` 带嵌套块时是包含该块的 `include`，与嵌套时的行为一致，不再是以 `+` 组合符开头的 `ruleset`。
 - Less：
-  - `@page :first {}` 是 `atrule`，不再是 `declaration`。
-  - `.@{x}-class {}` 是 `ruleset`，不再是 `mixin`。
-  - 反引号包裹的 JavaScript 是一个 `ident`。
-  - `value` 不再吞掉后面的块：用 `context: 'value'` 解析 `a {b: c}` 时，在块之前停止。
+    - `@page :first {}` 是 `atrule`，不再是 `declaration`。
+    - `.@{x}-class {}` 是 `ruleset`，不再是 `mixin`。
+    - 反引号包裹的 JavaScript 是一个 `ident`。
+    - `value` 不再吞掉后面的块：用 `context: 'value'` 解析 `a {b: c}` 时，在块之前停止。
 - 以下参数过去会被截短或丢字，现在都是完整节点：含 `//` 的 `url-prefix()` / `domain()` 参数、字符串后还有其他文本的 `url()`，以及 `:has(> a)` 这类参数。
 - `:nth-child(2n + 1 of .a)` 和 `:nth-last-child(… of …)` 中的 An+B 部分按 `:nth-child(2n + 1)` 的方式读取（`+` 是 `operator`），后面是 `ident` `of` 和 `selector` 列表。
 - 输入末尾未闭合的注释（`/* x`）过去的结束位置超出最后一个字符；现在 `end` 就是最后一个字符。

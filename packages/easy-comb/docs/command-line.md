@@ -43,16 +43,16 @@ With `--verbose` (`-v`), each processed file is printed: `!` marks a file that n
 
 ## Look up command-line options
 
-| Option | Effect |
-| --- | --- |
+| Option                | Effect                                                                                                                                                                                                                                                          |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `-c, --config <path>` | Use this config file instead of searching for one. It may be any [config file format](configuration.md#where-easy-comb-looks-for-a-config), or a `.css` file whose style is [detected and used as the config](detect-config.md#use-a-stylesheet-as-the-config). |
-| `-d, --detect <file>` | Print the options detected in a stylesheet as JSON and exit, see [Generate a config from a stylesheet](detect-config.md). |
-| `--syntax <name>` | Parse standard input as `css` (the default), `scss`, `less` or `sass`; files keep the syntax of their extension. |
-| `-l, --lint` | Report files that need changes without modifying them; exit with `1` if there are any. |
-| `-v, --verbose` | Print every processed file and a summary. |
-| `-t, --tty-mode` | Never read standard input. |
-| `-h, --help` | Show the help and exit. |
-| `-V, --version` | Print the version of easy-comb and exit. |
+| `-d, --detect <file>` | Print the options detected in a stylesheet as JSON and exit, see [Generate a config from a stylesheet](detect-config.md).                                                                                                                                       |
+| `--syntax <name>`     | Parse standard input as `css` (the default), `scss`, `less` or `sass`; files keep the syntax of their extension.                                                                                                                                                |
+| `-l, --lint`          | Report files that need changes without modifying them; exit with `1` if there are any.                                                                                                                                                                          |
+| `-v, --verbose`       | Print every processed file and a summary.                                                                                                                                                                                                                       |
+| `-t, --tty-mode`      | Never read standard input.                                                                                                                                                                                                                                      |
+| `-h, --help`          | Show the help and exit.                                                                                                                                                                                                                                         |
+| `-V, --version`       | Print the version of easy-comb and exit.                                                                                                                                                                                                                        |
 
 A `--config` file that doesn't exist stops the run with `Configuration file <path> was not found.`; a file that fails to load stops it with `Error parsing configuration file <path>.` followed by the cause. Both exit with `1`.
 `--config`, `--detect` or `--syntax` without a value prints `Option --config requires a <path> argument.` (`<file>` for `--detect`, `<name>` for `--syntax`) and exits with `1`.

@@ -12,10 +12,16 @@ export const useLiveEvents = () => {
 	const [status, setStatus] = useState<LiveStatus>("connecting");
 	const bootRef = useRef<string | null>(null);
 
-	useEffect(() => onBootId(boot => {
-		if (bootRef.current && bootRef.current !== boot) { qc.invalidateQueries(); }
-		bootRef.current = boot;
-	}), [qc]);
+	useEffect(
+		() =>
+			onBootId(boot => {
+				if (bootRef.current && bootRef.current !== boot) {
+					qc.invalidateQueries();
+				}
+				bootRef.current = boot;
+			}),
+		[qc]
+	);
 
 	useEffect(() => {
 		const source = new EventSource(`${API_BASE}/events`);
@@ -23,7 +29,9 @@ export const useLiveEvents = () => {
 		let wasDown = false;
 		source.onopen = () => {
 			setStatus("open");
-			if (wasDown) { qc.invalidateQueries(); }
+			if (wasDown) {
+				qc.invalidateQueries();
+			}
 			wasDown = false;
 		};
 		source.onerror = () => {
@@ -32,26 +40,48 @@ export const useLiveEvents = () => {
 		};
 		source.addEventListener("changed", event => {
 			const { scope } = JSON.parse((event as MessageEvent).data) as { scope: string };
-			if (scope === "routes") { invalidateRoutes(qc); }
-			if (scope === "state") { qc.invalidateQueries({ queryKey: keys.meta }); qc.invalidateQueries({ queryKey: keys.routes }); qc.invalidateQueries({ queryKey: ["route"] }); }
-			if (scope === "groups") { qc.invalidateQueries({ queryKey: keys.groups }); qc.invalidateQueries({ queryKey: keys.routes }); qc.invalidateQueries({ queryKey: keys.meta }); }
-			if (scope === "logs") { qc.invalidateQueries({ queryKey: keys.logs }); }
-			if (scope === "ignore") { qc.invalidateQueries({ queryKey: keys.ignore }); }
+			if (scope === "routes") {
+				invalidateRoutes(qc);
+			}
+			if (scope === "state") {
+				qc.invalidateQueries({ queryKey: keys.meta });
+				qc.invalidateQueries({ queryKey: keys.routes });
+				qc.invalidateQueries({ queryKey: ["route"] });
+			}
+			if (scope === "groups") {
+				qc.invalidateQueries({ queryKey: keys.groups });
+				qc.invalidateQueries({ queryKey: keys.routes });
+				qc.invalidateQueries({ queryKey: keys.meta });
+			}
+			if (scope === "logs") {
+				qc.invalidateQueries({ queryKey: keys.logs });
+			}
+			if (scope === "ignore") {
+				qc.invalidateQueries({ queryKey: keys.ignore });
+			}
 		});
 		source.addEventListener("log", event => {
 			const parsed = LogSummary.safeParse(JSON.parse((event as MessageEvent).data));
-			if (!parsed.success) { return; }
+			if (!parsed.success) {
+				return;
+			}
 			qc.setQueryData<LogSummary[]>(keys.logs, prev => {
-				if (!prev) { return prev; }
+				if (!prev) {
+					return prev;
+				}
 				const next = [...prev, parsed.data];
 				return next.length > LOG_LIMIT ? next.slice(next.length - LOG_LIMIT) : next;
 			});
-			if (parsed.data.routeId && !hitTimer) { // 命中次数随日志变化, 合并到每秒一次刷新
-				hitTimer = setTimeout(() => { hitTimer = null; qc.invalidateQueries({ queryKey: keys.routes }); }, 1000);
+			if (parsed.data.routeId && !hitTimer) {
+				// 命中次数随日志变化, 合并到每秒一次刷新
+				hitTimer = setTimeout(() => {
+					hitTimer = null;
+					qc.invalidateQueries({ queryKey: keys.routes });
+				}, 1000);
 			}
 		});
 		return () => {
-			hitTimer && clearTimeout(hitTimer);
+			if (hitTimer) clearTimeout(hitTimer);
 			source.close();
 		};
 	}, [qc]);

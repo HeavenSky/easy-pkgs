@@ -1,1 +1,1 @@
-module.exports = {"color-case": "upper"};
+module.exports = { "color-case": "upper" };

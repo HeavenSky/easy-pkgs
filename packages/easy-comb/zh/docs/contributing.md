@@ -22,18 +22,18 @@ WPT、css-parsing-tests、sass-spec、less.js 这几套官方测试集用来检�
 
 1. 在 `packages/_official_style_suites` 下安装这项检查所需的依赖：
 
-   ```bash
-   npm ci
-   ```
+    ```bash
+    npm ci
+    ```
 
 2. 在 `packages/easy-comb` 下运行检查：
 
-   ```bash
-   npm run test:official
-   ```
+    ```bash
+    npm run test:official
+    ```
 
-   首次运行会把各测试集按[固定版本](../../../_official_style_suites/suites.json)下载到仓库根目录的 `.cache/official/`。
-   结果与 [test/official-baseline.json](../../test/official-baseline.json) 中各测试集的用例数比对，合计 18,461 条合法用例；什么算失败见 [comb.mjs](../../../_official_style_suites/comb.mjs)。
+    首次运行会把各测试集按[固定版本](../../../_official_style_suites/suites.json)下载到仓库根目录的 `.cache/official/`。
+    结果与 [test/official-baseline.json](../../test/official-baseline.json) 中各测试集的用例数比对，合计 18,461 条合法用例；什么算失败见 [comb.mjs](../../../_official_style_suites/comb.mjs)。
 
 ## 重新生成内置属性顺序
 

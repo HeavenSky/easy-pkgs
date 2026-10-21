@@ -20,29 +20,29 @@ easy-mok 面向对接后端接口的前端开发者：接口还没写完、不�
 
 1. 在项目里安装 easy-mok：
 
-   ```bash
-   npm i -D easy-mok
-   ```
+    ```bash
+    npm i -D easy-mok
+    ```
 
 2. 新建 `src/mocks/user.js`，保存后立即生效：
 
-   ```js
-   const { scenes } = require("easy-mok");
+    ```js
+    const { scenes } = require("easy-mok");
 
-   module.exports = {
-   	"GET /api/user/:id": scenes({
-   		default: { id: 1, name: "Alice" },
-   		empty: null,
-   		error: (req, res) => res.status(500).json({ message: "Internal error" }),
-   	}),
-   };
-   ```
+    module.exports = {
+    	"GET /api/user/:id": scenes({
+    		default: { id: 1, name: "Alice" },
+    		empty: null,
+    		error: (req, res) => res.status(500).json({ message: "Internal error" }),
+    	}),
+    };
+    ```
 
 3. 启动 mock 服务，然后打开 `http://127.0.0.1:4100/__mock/` 切换场景：
 
-   ```bash
-   npx easy-mok
-   ```
+    ```bash
+    npx easy-mok
+    ```
 
 这时 `curl http://127.0.0.1:4100/api/user/1` 返回 `{"id":1,"name":"Alice"}`。想让现有的 Vite dev server 直接提供这些 mock，加上插件即可：
 
@@ -75,16 +75,16 @@ webpack-dev-server、Express、Fastify 等其他宿主见[接入现有 dev serve
 
 表中只有 easy-mok 能在运行时切换场景而不改代码；它不生成数据，也不在单元测试里运行。
 
-| | easy-mok | Mock.js | vite-plugin-mock | MSW | json-server |
-|---|---|---|---|---|---|
-| 运行位置 | dev server 中间件或独立服务 | 浏览器内拦截 XHR | Vite dev server | Service Worker / Node | 独立服务 |
-| 不改代码切场景 | 管理页、悬浮条、请求头 | 否 | 否 | 否，需在代码中用 `.use()` 覆盖 handler | 否 |
-| 图形化管理页 | 有 | 无 | 无 | 无 | — |
-| 请求日志与存为 mock | 有 | 无 | 无 | 无 | 无 |
-| 单个接口放行到真实后端 | 管理页一键切换 | — | — | 在代码的 handler 里返回 `passthrough()` | — |
-| 随机数据生成 | 无，可在 mock 文件里引入 Mock.js 等 | 有 | 借助 Mock.js | 无 | 无 |
-| 按数据文件自动生成 REST CRUD | 无 | 无 | 无 | 无 | 有 |
-| 在单元测试中直接拦截请求 | 无，需要起服务 | — | 无 | 有 | 无 |
+|                              | easy-mok                            | Mock.js          | vite-plugin-mock | MSW                                     | json-server |
+| ---------------------------- | ----------------------------------- | ---------------- | ---------------- | --------------------------------------- | ----------- |
+| 运行位置                     | dev server 中间件或独立服务         | 浏览器内拦截 XHR | Vite dev server  | Service Worker / Node                   | 独立服务    |
+| 不改代码切场景               | 管理页、悬浮条、请求头              | 否               | 否               | 否，需在代码中用 `.use()` 覆盖 handler  | 否          |
+| 图形化管理页                 | 有                                  | 无               | 无               | 无                                      | —           |
+| 请求日志与存为 mock          | 有                                  | 无               | 无               | 无                                      | 无          |
+| 单个接口放行到真实后端       | 管理页一键切换                      | —                | —                | 在代码的 handler 里返回 `passthrough()` | —           |
+| 随机数据生成                 | 无，可在 mock 文件里引入 Mock.js 等 | 有               | 借助 Mock.js     | 无                                      | 无          |
+| 按数据文件自动生成 REST CRUD | 无                                  | 无               | 无               | 无                                      | 有          |
+| 在单元测试中直接拦截请求     | 无，需要起服务                      | —                | 无               | 有                                      | 无          |
 
 「—」表示该项对这个工具不适用。
 

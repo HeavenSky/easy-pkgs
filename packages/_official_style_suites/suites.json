@@ -1,20 +1,27 @@
 {
-  "css-parsing-tests": {
-    "repo": "https://github.com/SimonSapin/css-parsing-tests.git",
-    "commit": "203ce36bffd617db7f118c551e32794561fb273d"
-  },
-  "wpt": {
-    "repo": "https://github.com/web-platform-tests/wpt.git",
-    "commit": "69ffa04085dc4485cc883460a90af09ff48d6e6f",
-    "sparse": ["/css/*/parsing/", "/css/css-syntax/", "/css/css-nesting/", "/css/mediaqueries/", "/css/selectors/", "/LICENSE.md"]
-  },
-  "sass-spec": {
-    "repo": "https://github.com/sass/sass-spec.git",
-    "commit": "85d5d7125d5fa5a1832039d6f611a1220cc47eab"
-  },
-  "less": {
-    "repo": "https://github.com/less/less.js.git",
-    "commit": "713331655e437401dfea6cd233893a69762734e1",
-    "sparse": ["/packages/test-data/"]
-  }
+	"css-parsing-tests": {
+		"repo": "https://github.com/SimonSapin/css-parsing-tests.git",
+		"commit": "203ce36bffd617db7f118c551e32794561fb273d"
+	},
+	"wpt": {
+		"repo": "https://github.com/web-platform-tests/wpt.git",
+		"commit": "69ffa04085dc4485cc883460a90af09ff48d6e6f",
+		"sparse": [
+			"/css/*/parsing/",
+			"/css/css-syntax/",
+			"/css/css-nesting/",
+			"/css/mediaqueries/",
+			"/css/selectors/",
+			"/LICENSE.md"
+		]
+	},
+	"sass-spec": {
+		"repo": "https://github.com/sass/sass-spec.git",
+		"commit": "85d5d7125d5fa5a1832039d6f611a1220cc47eab"
+	},
+	"less": {
+		"repo": "https://github.com/less/less.js.git",
+		"commit": "713331655e437401dfea6cd233893a69762734e1",
+		"sparse": ["/packages/test-data/"]
+	}
 }

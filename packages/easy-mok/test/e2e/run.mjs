@@ -7,14 +7,21 @@ import { chromium } from "playwright-core";
 const PORT = 4110;
 const BASE = `http://127.0.0.1:${PORT}`;
 const root = path.resolve(import.meta.dirname, "../..");
-const server = spawn(process.execPath, ["test/dev-server.js"], { cwd: root, env: { ...process.env, PORT: String(PORT) }, stdio: ["ignore", "pipe", "inherit"] });
+const server = spawn(process.execPath, ["test/dev-server.js"], {
+	cwd: root,
+	env: { ...process.env, PORT: String(PORT) },
+	stdio: ["ignore", "pipe", "inherit"],
+});
 await new Promise((resolve, reject) => {
 	server.stdout.on("data", d => String(d).includes("[dev]") && resolve(undefined));
 	server.on("exit", code => reject(new Error(`演示服务退出: ${code}`)));
 });
 
 const results = [];
-const check = (name, ok, detail = "") => { results.push({ name, ok, detail }); console.log(`${ok ? "✓" : "✗"} ${name}${detail ? ` - ${detail}` : ""}`); };
+const check = (name, ok, detail = "") => {
+	results.push({ name, ok, detail });
+	console.log(`${ok ? "✓" : "✗"} ${name}${detail ? ` - ${detail}` : ""}`);
+};
 
 const browser = await chromium.connectOverCDP("http://127.0.0.1:9222");
 const context = browser.contexts()[0];
@@ -48,10 +55,17 @@ try {
 	await page.keyboard.insertText("req => ({ script: req.params.id })");
 	await form.getByRole("button", { name: "保存" }).click();
 	await page.getByText("已新建场景「e2escript」").waitFor();
-	const scripted = await page.evaluate(async () => (await fetch("/api/user/5?__scene=e2escript")).json());
+	const scripted = await page.evaluate(async () =>
+		(await fetch("/api/user/5?__scene=e2escript")).json()
+	);
 	check("管理页新建的脚本场景按处理函数执行", scripted?.script === "5", JSON.stringify(scripted));
 	const routeId = Buffer.from("GET /api/user/:id").toString("base64url");
-	await page.evaluate(async id => { await fetch(`/__mock/api/routes/${id}/scenes/e2escript`, { method: "DELETE", headers: { "x-mock-ui": "1" } }); }, routeId);
+	await page.evaluate(async id => {
+		await fetch(`/__mock/api/routes/${id}/scenes/e2escript`, {
+			method: "DELETE",
+			headers: { "x-mock-ui": "1" },
+		});
+	}, routeId);
 
 	const biz = await context.newPage();
 	await biz.goto(`${BASE}/`);

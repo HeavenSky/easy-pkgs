@@ -1,5 +1,6 @@
 "use strict";
-const { compileRoute, execRoute, parseKey, routeIdOf, keyOfRouteId, ParamError } = require("../helpers/src").loadSrc("route");
+const { compileRoute, execRoute, parseKey, routeIdOf, keyOfRouteId, ParamError } =
+	require("../helpers/src").loadSrc("route");
 
 // 期望值取自 path-to-regexp@0.1.13 的实际匹配结果(同 express 4 路由: 不区分大小写, 非 strict, end)
 const CASES = [
@@ -36,12 +37,21 @@ describe("compileRoute", () => {
 	});
 
 	it("同段多参数按 0.1.13 的 backtrack 取值", () => {
-		expect(execRoute(compileRoute("/flights/:from-:to"), "/flights/A-B-C")).toEqual({ from: "A-B", to: "C" });
+		expect(execRoute(compileRoute("/flights/:from-:to"), "/flights/A-B-C")).toEqual({
+			from: "A-B",
+			to: "C",
+		});
 	});
 
 	it("URL 解码失败同 express 4 抛 400", () => {
 		expect(() => execRoute(compileRoute("/:id"), "/%E4")).toThrow(ParamError);
-		try { execRoute(compileRoute("/:id"), "/%zz"); } catch (err) { expect(err.status).toBe(400); }
+		let error;
+		try {
+			execRoute(compileRoute("/:id"), "/%zz");
+		} catch (err) {
+			error = err;
+		}
+		expect(error?.status).toBe(400);
 	});
 
 	it("重复参数名: 后出现的 undefined 不覆盖已有值", () => {
@@ -58,7 +68,11 @@ describe("compileRoute", () => {
 
 describe("parseKey", () => {
 	it("解析方法, 权重与路径", () => {
-		expect(parseKey("get|POST:2 /a/:id")).toEqual({ methods: ["GET", "POST"], weight: 2, path: "/a/:id" });
+		expect(parseKey("get|POST:2 /a/:id")).toEqual({
+			methods: ["GET", "POST"],
+			weight: 2,
+			path: "/a/:id",
+		});
 		expect(parseKey("METHOD /x")).toEqual({ methods: ["ALL"], weight: 0, path: "/x" });
 		expect(parseKey("ALL:-1 /x/*")).toEqual({ methods: ["ALL"], weight: -1, path: "/x/*" });
 		expect(parseKey("GET:abc /x").weight).toBe(0);
@@ -84,7 +98,7 @@ describe("0.1.13 的边界写法", () => {
 	});
 
 	it("0.1.13 无法编译的写法同样抛错", () => {
-		expect(() => compileRoute("/a/(?<n>\\d+)")).toThrow();
-		expect(() => compileRoute("/x(")).toThrow();
+		expect(() => compileRoute("/a/(?<n>\\d+)")).toThrow(SyntaxError);
+		expect(() => compileRoute("/x(")).toThrow(SyntaxError);
 	});
 });

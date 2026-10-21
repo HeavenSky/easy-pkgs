@@ -1,8 +1,8 @@
-'use strict';
+"use strict";
 
 module.exports = {
-  mark: require('./mark'),
-  parse: require('./parse'),
-  stringify: require('./stringify'),
-  tokenizer: require('./tokenizer')
+	mark: require("./mark"),
+	parse: require("./parse"),
+	stringify: require("./stringify"),
+	tokenizer: require("./tokenizer"),
 };

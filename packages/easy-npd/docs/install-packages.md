@@ -91,12 +91,7 @@ When you pass `<pkg>`, npd saves it to `dependencies` with a `^` range unless yo
 npd reads npm `overrides` from the root `package.json`: package names, `name@<range>` selectors, nested objects, and `.` and `$name` references.
 
 ```json
-{
-  "overrides": {
-    "foo": "1.0.0",
-    "bar@^2": { "baz": "$baz" }
-  }
-}
+{ "overrides": { "foo": "1.0.0", "bar@^2": { "baz": "$baz" } } }
 ```
 
 - Overrides do not rewrite the direct dependencies of the root `package.json`.

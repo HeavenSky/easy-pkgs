@@ -47,7 +47,12 @@ app.use(createMock({ folder: "src/mocks" }));
 const { createMock } = require("easy-mok");
 
 // webpack-dev-server 4+
-devServer: { setupMiddlewares: (m, s) => { s.app.use(createMock()); return m; } };
+devServer: {
+	setupMiddlewares: (m, s) => {
+		s.app.use(createMock());
+		return m;
+	};
+}
 ```
 
 webpack-dev-server 1-3 在 `setup` 钩子里写同样的 `app.use(createMock())`。
@@ -66,9 +71,14 @@ http.createServer((req, res) => mock(req, res, () => origin(req, res)));
 ```js
 const mock = createMock();
 fastify.addHook("onRequest", (request, reply, done) => {
-	if (!mock.match(request.raw)) { return done(); }
+	if (!mock.match(request.raw)) {
+		return done();
+	}
 	reply.hijack();
-	mock(request.raw, reply.raw, () => { reply.raw.statusCode = 404; reply.raw.end(); });
+	mock(request.raw, reply.raw, () => {
+		reply.raw.statusCode = 404;
+		reply.raw.end();
+	});
 });
 ```
 

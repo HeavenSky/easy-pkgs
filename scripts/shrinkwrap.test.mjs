@@ -29,7 +29,10 @@ test("去掉 packages 与 dependencies 中的 dev 条目和根节点的 devDepen
 			"node_modules/d": { version: "1.0.0", dev: true },
 		},
 		dependencies: {
-			a: { version: "1.0.0", dependencies: { e: { version: "1.0.0", dev: true }, f: { version: "1.0.0" } } },
+			a: {
+				version: "1.0.0",
+				dependencies: { e: { version: "1.0.0", dev: true }, f: { version: "1.0.0" } },
+			},
 			d: { version: "1.0.0", dev: true },
 		},
 	});

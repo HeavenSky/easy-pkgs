@@ -25,5 +25,5 @@ createRoot(document.getElementById("root") as HTMLElement).render(
 			</Router>
 			<Toaster position="bottom-right" richColors closeButton />
 		</QueryClientProvider>
-	</StrictMode>,
+	</StrictMode>
 );

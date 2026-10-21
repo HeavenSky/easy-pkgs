@@ -15,13 +15,20 @@ export const writeJsonAtomic = (file: string, data: unknown) => {
 	try {
 		fs.renameSync(tmp, file);
 	} catch (err) {
-		try { fs.unlinkSync(tmp); } catch (_error) { /* 临时文件可能已不存在 */ }
+		try {
+			fs.unlinkSync(tmp);
+		} catch {
+			/* 临时文件可能已不存在 */
+		}
 		throw err;
 	}
 };
 
-export const isPlainObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v)
-	&& (Object.getPrototypeOf(v) === Object.prototype || Object.getPrototypeOf(v) === null);
+export const isPlainObject = (v: unknown): v is Record<string, unknown> =>
+	!!v &&
+	typeof v === "object" &&
+	!Array.isArray(v) &&
+	(Object.getPrototypeOf(v) === Object.prototype || Object.getPrototypeOf(v) === null);
 
 /** 面向管理接口调用方的错误, code 与 HTTP 状态见方案第 8.1 节 */
 export class MockError extends Error {
@@ -29,7 +36,13 @@ export class MockError extends Error {
 	status: number;
 	details: Record<string, unknown> | undefined;
 
-	constructor(code: string, status: number, message: string, details?: Record<string, unknown>, opt?: { cause?: unknown }) {
+	constructor(
+		code: string,
+		status: number,
+		message: string,
+		details?: Record<string, unknown>,
+		opt?: { cause?: unknown }
+	) {
 		super(message, opt);
 		this.code = code;
 		this.status = status;
@@ -41,7 +54,12 @@ export const NAME_RE = /^[\p{L}\p{N}_-]{1,64}$/u;
 
 export const assertName = (name: unknown, what: string) => {
 	if (typeof name !== "string" || !NAME_RE.test(name)) {
-		throw new MockError("INVALID_NAME", 400, `${what}只能包含字母, 数字, 下划线与连字符, 长度 1-64`, { name });
+		throw new MockError(
+			"INVALID_NAME",
+			400,
+			`${what}只能包含字母, 数字, 下划线与连字符, 长度 1-64`,
+			{ name }
+		);
 	}
 	return name;
 };

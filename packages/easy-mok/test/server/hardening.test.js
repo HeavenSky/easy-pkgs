@@ -13,19 +13,33 @@ const { createMock, mockVitePlugin } = loadSrc();
 const { createJournal } = loadSrc("journal.ts");
 
 /** @param {number} port @param {string} urlPath @param {Record<string, string>} headers */
-const rawGet = (port, urlPath, headers = {}) => new Promise((resolve, reject) => {
-	http.get({ host: "127.0.0.1", port, path: urlPath, headers }, res => {
-		let text = "";
-		res.on("data", c => { text += c; });
-		res.on("end", () => resolve({ status: res.statusCode, body: text, headers: res.headers }));
-	}).on("error", reject);
-});
+const rawGet = (port, urlPath, headers = {}) =>
+	new Promise((resolve, reject) => {
+		http.get({ host: "127.0.0.1", port, path: urlPath, headers }, res => {
+			let text = "";
+			res.on("data", c => {
+				text += c;
+			});
+			res.on("end", () =>
+				resolve({ status: res.statusCode, body: text, headers: res.headers })
+			);
+		}).on("error", reject);
+	});
 
 /** 起一个原生 http 宿主, 未命中时回落 404 */
 const startRaw = async app => {
-	const server = http.createServer((req, res) => app(req, res, () => { res.statusCode = 404; res.end("fallback"); }));
+	const server = http.createServer((req, res) =>
+		app(req, res, () => {
+			res.statusCode = 404;
+			res.end("fallback");
+		})
+	);
 	const port = await listen(server);
-	return { port, base: `http://127.0.0.1:${port}`, close: () => new Promise(resolve => server.close(resolve)) };
+	return {
+		port,
+		base: `http://127.0.0.1:${port}`,
+		close: () => new Promise(resolve => server.close(resolve)),
+	};
 };
 
 describe("包装在 node_modules/.pnpm 下", () => {
@@ -35,11 +49,18 @@ describe("包装在 node_modules/.pnpm 下", () => {
 		fs.cpSync(path.join(PKG, "src/server"), path.join(root, "src/server"), { recursive: true });
 		fs.cpSync(path.join(PKG, "src/float"), path.join(root, "src/float"), { recursive: true });
 		fs.copyFileSync(path.join(PKG, "package.json"), path.join(root, "package.json"));
-		if (fs.existsSync(path.join(PKG, "dist/ui"))) { fs.cpSync(path.join(PKG, "dist/ui"), path.join(root, "dist/ui"), { recursive: true }); }
+		if (fs.existsSync(path.join(PKG, "dist/ui"))) {
+			fs.cpSync(path.join(PKG, "dist/ui"), path.join(root, "dist/ui"), { recursive: true });
+		}
 		fs.symlinkSync(path.join(PKG, "node_modules"), path.join(root, "node_modules"));
 		const copy = createJiti(__filename)(path.join(root, "src/server/index.ts"));
 		const dir = makeFixture({ "mocks/a.js": "module.exports = { 'GET /a': 1 };" });
-		const app = copy.createMock({ cwd: dir, folder: "mocks", stateFile: "s.json", watch: false });
+		const app = copy.createMock({
+			cwd: dir,
+			folder: "mocks",
+			stateFile: "s.json",
+			watch: false,
+		});
 		const host = await startRaw(app);
 		const loader = await rawGet(host.port, "/__mock/float.js", { host: "localhost" });
 		expect(loader.status).toBe(200);
@@ -54,15 +75,16 @@ describe("包装在 node_modules/.pnpm 下", () => {
 describe("入口过滤", () => {
 	it("跳过工程配置与 _ / . 开头的路径, __gui__.json 照常加载, 被引用的 _ 文件改动仍触发重载", async () => {
 		const dir = makeFixture({
-			"real/mocks/a.ts": "import { v } from \"./_lib/util\";\nimport d from \"./_data/d.json\";\nexport default { \"GET /a\": { v, d: d.d } };\n",
+			"real/mocks/a.ts":
+				'import { v } from "./_lib/util";\nimport d from "./_data/d.json";\nexport default { "GET /a": { v, d: d.d } };\n',
 			"real/mocks/_lib/util.ts": "export const v: number = 1;\n",
-			"real/mocks/_data/d.json": "{ \"d\": 1 }",
+			"real/mocks/_data/d.json": '{ "d": 1 }',
 			"real/mocks/_draft.js": "module.exports = { 'GET /draft': 1 };",
 			"real/mocks/.hidden.js": "module.exports = { 'GET /hidden': 1 };",
-			"real/mocks/package.json": "{ \"name\": \"x\" }",
-			"real/mocks/tsconfig.json": "{ \"compilerOptions\": {} }",
-			"real/mocks/sub/tsconfig.app.json": "{ \"compilerOptions\": {} }",
-			"real/mocks/__gui__.json": "{ \"GET /gui\": { \"gui\": true } }",
+			"real/mocks/package.json": '{ "name": "x" }',
+			"real/mocks/tsconfig.json": '{ "compilerOptions": {} }',
+			"real/mocks/sub/tsconfig.app.json": '{ "compilerOptions": {} }',
+			"real/mocks/__gui__.json": '{ "GET /gui": { "gui": true } }',
 		});
 		fs.symlinkSync(path.join(dir, "real"), path.join(dir, "link"));
 		const app = createMock({ cwd: dir, folder: "link/mocks", stateFile: "s.json" }); // 经软链访问 mock 目录
@@ -74,9 +96,12 @@ describe("入口过滤", () => {
 		expect(await get("/a")).toEqual({ v: 1, d: 1 });
 		expect(await get("/gui")).toEqual({ gui: true });
 		expect((await fetch(host.base + "/draft")).status).toBe(404);
-		fs.writeFileSync(path.join(dir, "real/mocks/_lib/util.ts"), "export const v: number = 2;\n");
+		fs.writeFileSync(
+			path.join(dir, "real/mocks/_lib/util.ts"),
+			"export const v: number = 2;\n"
+		);
 		await waitFor(async () => (await get("/a")).v === 2);
-		fs.writeFileSync(path.join(dir, "real/mocks/_data/d.json"), "{ \"d\": 2 }");
+		fs.writeFileSync(path.join(dir, "real/mocks/_data/d.json"), '{ "d": 2 }');
 		await waitFor(async () => (await get("/a")).d === 2);
 		await app.close();
 		await host.close();
@@ -92,8 +117,12 @@ describe("响应与诊断", () => {
 	let warns = [];
 
 	beforeAll(async () => {
-		vi.spyOn(console, "error").mockImplementation((...a) => { errors.push(a.join(" ")); });
-		vi.spyOn(console, "warn").mockImplementation((...a) => { warns.push(a.map(String).join(" ")); });
+		vi.spyOn(console, "error").mockImplementation((...a) => {
+			errors.push(a.join(" "));
+		});
+		vi.spyOn(console, "warn").mockImplementation((...a) => {
+			warns.push(a.map(String).join(" "));
+		});
 		dir = makeFixture({
 			"state.json": JSON.stringify({ logLevel: "silent" }),
 			"mocks/a.js": `module.exports = {
@@ -105,7 +134,8 @@ describe("响应与诊断", () => {
 			"mocks/b.js": "module.exports = { 'GET /dup': 2 };",
 			"mocks/c.js": "module.exports = { 'bad key': 1 };",
 			"mocks/broken.js": "module.exports = {",
-			"mocks/tla.mjs": "const x = await Promise.resolve(1);\nexport default { 'GET /tla': x };\n",
+			"mocks/tla.mjs":
+				"const x = await Promise.resolve(1);\nexport default { 'GET /tla': x };\n",
 		});
 		app = createMock({ cwd: dir, folder: "mocks", stateFile: "state.json", watch: false });
 		host = await startRaw(app);
@@ -169,14 +199,16 @@ describe("非 express 宿主", () => {
 		const dir = makeFixture({ "m/a.js": "module.exports = { 'GET /a': 1 };" });
 		const app = createMock({ cwd: dir, folder: "m", stateFile: "s.json", watch: false });
 		let seen = null;
-		const server = http.createServer((req, res) => app(req, res, () => {
-			seen = {
-				req: Object.getPrototypeOf(req) === http.IncomingMessage.prototype,
-				res: Object.getPrototypeOf(res) === http.ServerResponse.prototype,
-				extra: ["res" in req, res.req === req, "locals" in res], // Node 自身就有 res.req
-			};
-			res.end("fallback");
-		}));
+		const server = http.createServer((req, res) =>
+			app(req, res, () => {
+				seen = {
+					req: Object.getPrototypeOf(req) === http.IncomingMessage.prototype,
+					res: Object.getPrototypeOf(res) === http.ServerResponse.prototype,
+					extra: ["res" in req, res.req === req, "locals" in res], // Node 自身就有 res.req
+				};
+				res.end("fallback");
+			})
+		);
 		const port = await listen(server);
 		expect(await (await fetch(`http://127.0.0.1:${port}/miss`)).text()).toBe("fallback");
 		expect(seen).toEqual({ req: true, res: true, extra: [false, true, false] });
@@ -190,7 +222,15 @@ describe("vite 插件", () => {
 		const dir = makeFixture({ "m/a.js": "module.exports = { 'GET /a': { a: 1 } };" });
 		const plugin = mockVitePlugin({ cwd: dir, folder: "m", stateFile: "s.json" });
 		let mw = null;
-		const fakeServer = { middlewares: { use: fn => { mw = fn; } }, httpServer: null, config: { server: { allowedHosts: [".corp.test"] } } };
+		const fakeServer = {
+			middlewares: {
+				use: fn => {
+					mw = fn;
+				},
+			},
+			httpServer: null,
+			config: { server: { allowedHosts: [".corp.test"] } },
+		};
 		const prevHosts = process.env.MOCK_HOSTS;
 		delete process.env.MOCK_HOSTS;
 		await plugin.configureServer(fakeServer);
@@ -207,7 +247,9 @@ describe("vite 插件", () => {
 		expect(second).toHaveBeenCalledTimes(1);
 		expect(plugin.transformIndexHtml()).toEqual([]);
 		await host.close();
-		if (prevHosts !== undefined) { process.env.MOCK_HOSTS = prevHosts; }
+		if (prevHosts !== undefined) {
+			process.env.MOCK_HOSTS = prevHosts;
+		}
 	});
 });
 
@@ -216,17 +258,39 @@ describe("mock 路由的 Host 校验", () => {
 	let ctx;
 
 	beforeAll(async () => {
-		ctx = await startHost({ files: { "mocks/a.js": "module.exports = { 'GET /a': { a: 1 } };" }, options: { hosts: ["dev.example.com", ".corp.test"] } });
+		ctx = await startHost({
+			files: { "mocks/a.js": "module.exports = { 'GET /a': { a: 1 } };" },
+			options: { hosts: ["dev.example.com", ".corp.test"] },
+		});
 	});
 
-	afterAll(async () => { await ctx.close(); });
+	afterAll(async () => {
+		await ctx.close();
+	});
 
 	it("放行本机名, IP 与 hosts, 其余返回带 MOCK_HOSTS 提示的 403", async () => {
 		const status = async host => (await rawGet(ctx.port, "/a", { host })).status;
-		for (const ok of ["localhost:1", "LOCALHOST", "localhost.", "app.localhost", "127.0.0.1:5173", "192.168.1.2:3000", "[::1]:80", "10.0.0.8", "dev.example.com", "corp.test", "a.b.corp.test:8080"]) {
+		for (const ok of [
+			"localhost:1",
+			"LOCALHOST",
+			"localhost.",
+			"app.localhost",
+			"127.0.0.1:5173",
+			"192.168.1.2:3000",
+			"[::1]:80",
+			"10.0.0.8",
+			"dev.example.com",
+			"corp.test",
+			"a.b.corp.test:8080",
+		]) {
 			expect([ok, await status(ok)]).toEqual([ok, 200]);
 		}
-		for (const bad of ["evil.test", "dev.example.com.evil.test", "xcorp.test", "localhost.evil.test"]) {
+		for (const bad of [
+			"evil.test",
+			"dev.example.com.evil.test",
+			"xcorp.test",
+			"localhost.evil.test",
+		]) {
 			expect([bad, await status(bad)]).toEqual([bad, 403]);
 		}
 		const denied = await rawGet(ctx.port, "/a", { host: "evil.test" });
@@ -235,17 +299,41 @@ describe("mock 路由的 Host 校验", () => {
 	});
 
 	it("跨域与写操作的绕过变体", async () => {
-		const acao = async origin => (await rawGet(ctx.port, "/a", { host: `localhost:${ctx.port}`, origin })).headers["access-control-allow-origin"] || null;
-		for (const bad of ["null", "http://127.0.0.1.nip.io", "http://127.evil.test", "http://localhost.evil.test", "http://localhost@evil.test", "http://x.dev.example.com", "file://"]) {
+		const acao = async origin =>
+			(await rawGet(ctx.port, "/a", { host: `localhost:${ctx.port}`, origin })).headers[
+				"access-control-allow-origin"
+			] || null;
+		for (const bad of [
+			"null",
+			"http://127.0.0.1.nip.io",
+			"http://127.evil.test",
+			"http://localhost.evil.test",
+			"http://localhost@evil.test",
+			"http://x.dev.example.com",
+			"file://",
+		]) {
 			expect([bad, await acao(bad)]).toEqual([bad, null]);
 		}
-		for (const ok of ["HTTP://LOCALHOST:3000", "http://[::1]:3000", "http://[::ffff:127.0.0.1]:3000", "http://evil.localhost", "http://a.corp.test"]) {
+		for (const ok of [
+			"HTTP://LOCALHOST:3000",
+			"http://[::1]:3000",
+			"http://[::ffff:127.0.0.1]:3000",
+			"http://evil.localhost",
+			"http://a.corp.test",
+		]) {
 			expect([ok, await acao(ok)]).toEqual([ok, ok]);
 		}
 		expect(await acao("https://192.168.1.2")).toBeNull(); // 私有网段来源只在 lan 开启时放行
-		const patch = headers => ctx.api("/state", { method: "PATCH", body: "{}", headers: { "content-type": "application/json", ...headers } });
+		const patch = headers =>
+			ctx.api("/state", {
+				method: "PATCH",
+				body: "{}",
+				headers: { "content-type": "application/json", ...headers },
+			});
 		expect((await patch({ "content-type": "application/json-patch+json" })).status).toBe(400);
-		expect((await patch({ "content-type": "application/json; charset=utf-8" })).status).toBe(200);
+		expect((await patch({ "content-type": "application/json; charset=utf-8" })).status).toBe(
+			200
+		);
 		expect((await patch({ "x-mock-ui": "true" })).status).toBe(403);
 		expect((await patch({ origin: "null" })).status).toBe(403);
 	});
@@ -254,7 +342,9 @@ describe("mock 路由的 Host 校验", () => {
 		const { isTrustedOrigin } = loadSrc("security.ts");
 		const none = new Set();
 		expect(isTrustedOrigin("http://192.168.1.9:5173", "192.168.1.5:3000", none)).toBe(false);
-		expect(isTrustedOrigin("http://192.168.1.9:5173", "192.168.1.5:3000", none, true)).toBe(true);
+		expect(isTrustedOrigin("http://192.168.1.9:5173", "192.168.1.5:3000", none, true)).toBe(
+			true
+		);
 		expect(isTrustedOrigin("http://10.0.0.2", "localhost:3000", none, true)).toBe(true);
 		expect(isTrustedOrigin("http://192.168.1.5:5173", "192.168.1.5:3000", none)).toBe(true);
 		expect(isTrustedOrigin("http://[fd00::5]:5173", "[fd00::5]:3000", none)).toBe(true);
@@ -264,13 +354,23 @@ describe("mock 路由的 Host 校验", () => {
 		// URL 把 IPv4 映射地址规范成十六进制([::ffff:7f00:1]), 按对应的 IPv4 判断
 		expect(isTrustedOrigin("http://[::ffff:127.0.0.1]", "localhost:3000", none)).toBe(true);
 		expect(isTrustedOrigin("http://[::ffff:192.168.1.9]", "localhost:3000", none)).toBe(false);
-		expect(isTrustedOrigin("http://[::ffff:192.168.1.9]", "localhost:3000", none, true)).toBe(true);
-		expect(isTrustedOrigin("http://[::ffff:8.8.8.8]", "localhost:3000", none, true)).toBe(false);
+		expect(isTrustedOrigin("http://[::ffff:192.168.1.9]", "localhost:3000", none, true)).toBe(
+			true
+		);
+		expect(isTrustedOrigin("http://[::ffff:8.8.8.8]", "localhost:3000", none, true)).toBe(
+			false
+		);
 	});
 
 	it("hosts 含 * 时不校验", async () => {
 		const dir = makeFixture({ "m/a.js": "module.exports = { 'GET /a': 1 };" });
-		const app = createMock({ cwd: dir, folder: "m", stateFile: "s.json", watch: false, hosts: ["*"] });
+		const app = createMock({
+			cwd: dir,
+			folder: "m",
+			stateFile: "s.json",
+			watch: false,
+			hosts: ["*"],
+		});
 		const host = await startRaw(app);
 		expect((await rawGet(host.port, "/a", { host: "anything.test" })).status).toBe(200);
 		await app.close();
@@ -283,8 +383,18 @@ describe("请求日志内存上限", () => {
 		const journal = createJournal({ size: 500, totalBytes: 1000 });
 		for (let i = 0; i < 6; i++) {
 			const res = new EventEmitter();
-			Object.assign(res, { write: () => true, end() { this.emit("finish"); }, getHeaders: () => ({ "content-type": "text/plain" }), headersSent: true, statusCode: 200 });
-			journal.capture({ method: "GET", url: `/r${i}`, headers: {} }, res, () => ({ kind: "mock" }));
+			Object.assign(res, {
+				write: () => true,
+				end() {
+					this.emit("finish");
+				},
+				getHeaders: () => ({ "content-type": "text/plain" }),
+				headersSent: true,
+				statusCode: 200,
+			});
+			journal.capture({ method: "GET", url: `/r${i}`, headers: {} }, res, () => ({
+				kind: "mock",
+			}));
 			res.end("x".repeat(400));
 		}
 		const list = journal.list();

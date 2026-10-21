@@ -43,8 +43,26 @@ describe("规则匹配", () => {
 	});
 
 	it("内置规则覆盖浏览器探测与 dev server 噪音, 不忽略可能是业务资源的路径", () => {
-		const ig = createIgnore({ defaults: true, extra: [], state: () => ({ defaults: true, disabled: [], custom: [] }) });
-		for (const p of ["/.well-known/appspecific/com.chrome.devtools.json", "/favicon.ico", "/apple-touch-icon.png", "/robots.txt", "/__webpack_hmr", "/sockjs-node/info", "/ws", "/@vite/client", "/@fs/x", "/@id/x", "/node_modules/.vite/deps/a.js", "/a.hot-update.json", "/__mock/x"]) {
+		const ig = createIgnore({
+			defaults: true,
+			extra: [],
+			state: () => ({ defaults: true, disabled: [], custom: [] }),
+		});
+		for (const p of [
+			"/.well-known/appspecific/com.chrome.devtools.json",
+			"/favicon.ico",
+			"/apple-touch-icon.png",
+			"/robots.txt",
+			"/__webpack_hmr",
+			"/sockjs-node/info",
+			"/ws",
+			"/@vite/client",
+			"/@fs/x",
+			"/@id/x",
+			"/node_modules/.vite/deps/a.js",
+			"/a.hot-update.json",
+			"/__mock/x",
+		]) {
 			expect([p, ig.test("GET", p)]).toEqual([p, true]);
 		}
 		for (const p of ["/manifest.json", "/sw.js", "/api/user", "/ws/chat", "/static/app.js"]) {
@@ -55,14 +73,22 @@ describe("规则匹配", () => {
 
 	it("总开关, 逐条停用, 选项与自定义规则叠加", () => {
 		let state = { defaults: true, disabled: ["/favicon.ico"], custom: ["/health"] };
-		const ig = createIgnore({ defaults: true, extra: ["GET /static/**", "bad"], state: () => state });
+		const ig = createIgnore({
+			defaults: true,
+			extra: ["GET /static/**", "bad"],
+			state: () => state,
+		});
 		expect(ig.test("GET", "/favicon.ico")).toBe(false);
 		expect(ig.test("GET", "/robots.txt")).toBe(true);
 		expect(ig.test("GET", "/static/a.js")).toBe(true);
 		expect(ig.test("GET", "/health")).toBe(true);
 		state = { defaults: false, disabled: [], custom: [] };
 		expect(ig.test("GET", "/robots.txt")).toBe(false);
-		const off = createIgnore({ defaults: false, extra: [], state: () => ({ defaults: true, disabled: [], custom: [] }) });
+		const off = createIgnore({
+			defaults: false,
+			extra: [],
+			state: () => ({ defaults: true, disabled: [], custom: [] }),
+		});
 		expect(off.test("GET", "/robots.txt")).toBe(false);
 	});
 });
@@ -74,15 +100,32 @@ describe("忽略后的记录与接口", () => {
 	const urls = () => ctx.mock.mock.journal.list().map(e => e.url);
 
 	beforeAll(async () => {
-		ctx = await startHost({ files: { "mocks/a.js": "module.exports = { 'GET /.well-known/mocked': { ok: 1 }, 'GET /api/x': { x: 1 }, 'GET /api/pass': 1 };" } });
+		ctx = await startHost({
+			files: {
+				"mocks/a.js":
+					"module.exports = { 'GET /.well-known/mocked': { ok: 1 }, 'GET /api/x': { x: 1 }, 'GET /api/pass': 1 };",
+			},
+		});
 	});
-	afterAll(async () => { await ctx.close(); });
+	afterAll(async () => {
+		await ctx.close();
+	});
 
 	it("内置规则命中的请求不进日志, 命中的 mock 照常响应; 终端日志也不打印", async () => {
-		ctx.mock.mock.store.update(s => { s.logLevel = "all"; });
+		ctx.mock.mock.store.update(s => {
+			s.logLevel = "all";
+		});
 		const log = vi.spyOn(console, "log").mockImplementation(() => {});
-		expect((await ctx.fetch("/.well-known/appspecific/com.chrome.devtools.json", { headers: FETCH })).status).toBe(404);
-		expect(await (await ctx.fetch("/.well-known/mocked", { headers: FETCH })).json()).toEqual({ ok: 1 });
+		expect(
+			(
+				await ctx.fetch("/.well-known/appspecific/com.chrome.devtools.json", {
+					headers: FETCH,
+				})
+			).status
+		).toBe(404);
+		expect(await (await ctx.fetch("/.well-known/mocked", { headers: FETCH })).json()).toEqual({
+			ok: 1,
+		});
 		await ctx.fetch("/api/x", { headers: FETCH });
 		await ctx.fetch("/nope", { headers: FETCH });
 		await sleep(30);
@@ -90,7 +133,9 @@ describe("忽略后的记录与接口", () => {
 		expect(urls().some(u => u.startsWith("/.well-known"))).toBe(false);
 		expect(log.mock.calls.flat().join(" ")).not.toMatch(/well-known/);
 		log.mockRestore();
-		ctx.mock.mock.store.update(s => { s.logLevel = "silent"; });
+		ctx.mock.mock.store.update(s => {
+			s.logLevel = "silent";
+		});
 	});
 
 	it("自定义规则持久化, 接口校验与安全校验, 关闭内置规则后重新记录", async () => {
@@ -98,15 +143,32 @@ describe("忽略后的记录与接口", () => {
 		const bad = await ctx.api("/ignore", { method: "PUT", json: { custom: ["/ok", "nope"] } });
 		expect(bad.status).toBe(400);
 		expect(bad.body.error.code).toBe("INVALID_RULE");
-		expect((await ctx.api("/ignore", { method: "PUT", json: { disabled: ["/not-builtin"] } })).status).toBe(400);
-		expect((await ctx.api("/ignore/validate", { method: "POST", json: { rules: ["/a", "x"] } })).body.errors).toHaveLength(1);
-		const noHeader = await fetch(`${ctx.base}/__mock/api/ignore`, { method: "PUT", headers: { "content-type": "application/json" }, body: "{}" });
+		expect(
+			(await ctx.api("/ignore", { method: "PUT", json: { disabled: ["/not-builtin"] } }))
+				.status
+		).toBe(400);
+		expect(
+			(await ctx.api("/ignore/validate", { method: "POST", json: { rules: ["/a", "x"] } }))
+				.body.errors
+		).toHaveLength(1);
+		const noHeader = await fetch(`${ctx.base}/__mock/api/ignore`, {
+			method: "PUT",
+			headers: { "content-type": "application/json" },
+			body: "{}",
+		});
 		expect(noHeader.status).toBe(403);
-		const ok = await ctx.api("/ignore", { method: "PUT", json: { custom: ["GET /api/**"], disabled: ["/favicon.ico"] } });
+		const ok = await ctx.api("/ignore", {
+			method: "PUT",
+			json: { custom: ["GET /api/**"], disabled: ["/favicon.ico"] },
+		});
 		expect(ok.status).toBe(200);
 		expect(ok.body.custom).toEqual(["GET /api/**"]);
 		const saved = JSON.parse(fs.readFileSync(path.join(ctx.dir, "state.json"), "utf8"));
-		expect(saved.ignore).toEqual({ defaults: true, disabled: ["/favicon.ico"], custom: ["GET /api/**"] });
+		expect(saved.ignore).toEqual({
+			defaults: true,
+			disabled: ["/favicon.ico"],
+			custom: ["GET /api/**"],
+		});
 		ctx.mock.mock.journal.clear();
 		expect(await (await ctx.fetch("/api/x", { headers: FETCH })).json()).toEqual({ x: 1 });
 		const id = Buffer.from("GET /api/pass").toString("base64url");
@@ -122,7 +184,10 @@ describe("忽略后的记录与接口", () => {
 	});
 
 	it("选项 ignore 与 ignoreDefaults: false", async () => {
-		const other = await startHost({ files: { "mocks/a.js": "module.exports = {};" }, options: { ignore: ["/health"], ignoreDefaults: false } });
+		const other = await startHost({
+			files: { "mocks/a.js": "module.exports = {};" },
+			options: { ignore: ["/health"], ignoreDefaults: false },
+		});
 		await other.fetch("/health", { headers: FETCH });
 		await other.fetch("/robots.txt", { headers: FETCH });
 		await sleep(30);

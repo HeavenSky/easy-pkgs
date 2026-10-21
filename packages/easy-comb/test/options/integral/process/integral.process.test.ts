@@ -1,25 +1,25 @@
-import Test from '../../../helpers/option-test.ts';
+import Test from "../../../helpers/option-test.ts";
 
-describe('Option `integral`, process', function() {
-  describe('css', function() {
-    it('Process result must be equal to expected.css', function() {
-      let test = new Test(this);
-      test.useConfig('csscomb');
-      return test.shouldBeEqual('integral.css', 'integral.expected.css');
-    });
+describe("Option `integral`, process", function () {
+	describe("css", function () {
+		it("Process result must be equal to expected.css", function () {
+			let test = new Test(this);
+			test.useConfig("csscomb");
+			return test.shouldBeEqual("integral.css", "integral.expected.css");
+		});
 
-    it('Issue 374', function() {
-      let test = new Test(this);
-      test.useConfig('csscomb');
-      return test.shouldBeEqual('issue-374.css');
-    });
-  });
+		it("Issue 374", function () {
+			let test = new Test(this);
+			test.useConfig("csscomb");
+			return test.shouldBeEqual("issue-374.css");
+		});
+	});
 
-  describe('sass', function() {
-    it('Issue 252', function() {
-      let test = new Test(this);
-      test.useConfig('csscomb');
-      return test.shouldBeEqual('issue-252.sass', 'issue-252.expected.sass');
-    });
-  });
+	describe("sass", function () {
+		it("Issue 252", function () {
+			let test = new Test(this);
+			test.useConfig("csscomb");
+			return test.shouldBeEqual("issue-252.sass", "issue-252.expected.sass");
+		});
+	});
 });

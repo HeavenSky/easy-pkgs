@@ -16,8 +16,5 @@ export default defineConfig(({ command }) => ({
 		emptyOutDir: true,
 		chunkSizeWarningLimit: 900,
 	},
-	server: {
-		port: 4101,
-		proxy: { "/__mock/api": { target: DEV_API, changeOrigin: false } },
-	},
+	server: { port: 4101, proxy: { "/__mock/api": { target: DEV_API, changeOrigin: false } } },
 }));

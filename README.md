@@ -2,13 +2,13 @@
 
 本仓库接手并持续维护停更或偏离方向的开源 npm 包: 每个包放在 `packages/<名称>/`, 各自安装依赖, 测试, 版本与发布, 不共享代码. 新接手一个项目, 或要在本仓库开发时读本页; 各包的用法见其 README, 上游来源以 [`upstreams.json`](./upstreams.json) 为准.
 
-| 包                                            | 用途                                                                        |
-| --------------------------------------------- | --------------------------------------------------------------------------- |
-| [`easy-np`](./packages/easy-np/README.md)     | npm 包安装工具(`np`, `np-x`), `.store` 布局, 支持 npm workspaces            |
-| [`easy-npd`](./packages/easy-npd/README.md)   | npm 包安装工具(`npd`, `npd-x`), `_name@version@name` 扁平布局              |
-| [`easy-comb`](./packages/easy-comb/README.md) | CSS / Less / Sass / SCSS 代码风格格式化与属性排序(csscomb)                 |
-| [`easy-gonz`](./packages/easy-gonz/README.md) | CSS / Less / Sass / SCSS 解析器(gonzales-pe), easy-comb 依赖它               |
-| [`easy-mok`](./packages/easy-mok/README.md) | 开发期 mock 中间件与图形化管理页(自研, 非接手项目)                    |
+| 包                                            | 用途                                                             |
+| --------------------------------------------- | ---------------------------------------------------------------- |
+| [`easy-np`](./packages/easy-np/README.md)     | npm 包安装工具(`np`, `np-x`), `.store` 布局, 支持 npm workspaces |
+| [`easy-npd`](./packages/easy-npd/README.md)   | npm 包安装工具(`npd`, `npd-x`), `_name@version@name` 扁平布局    |
+| [`easy-comb`](./packages/easy-comb/README.md) | CSS / Less / Sass / SCSS 代码风格格式化与属性排序(csscomb)       |
+| [`easy-gonz`](./packages/easy-gonz/README.md) | CSS / Less / Sass / SCSS 解析器(gonzales-pe), easy-comb 依赖它   |
+| [`easy-mok`](./packages/easy-mok/README.md)   | 开发期 mock 中间件与图形化管理页(自研, 非接手项目)               |
 
 ## 接手流程
 
@@ -33,11 +33,13 @@
 npm run install:all          # 在每个包目录下按 lockfile 执行 npm ci
 npm test                     # 依次执行每个包的 test
 npm test -- easy-np          # 只执行指定的包
-npm run lint                 # 依次执行每个包的 lint, 没有该脚本的包跳过
+npm run lint                 # 在根目录用 oxlint 检查全部包并自动修复; lint:check 只检查
+npm run fmt                  # 在根目录用 oxfmt 格式化全部包; fmt:check 只检查
 npm run build
 ```
 
-- 每个包 MUST 提供 `test` 脚本; `lint:check` 与 `build` 有则由 CI 执行. 根目录的这些命令由 `scripts/each.mjs` 在各包内依次执行.
+- 每个包 MUST 提供 `test` 脚本; `typecheck` 与 `build` 有则由 CI 执行. 根目录的 `install:all`, `test`, `build` 由 `scripts/each.mjs` 在各包内依次执行.
+- lint 与格式化统一在根目录: oxlint 与 oxfmt 只装在根目录的 devDependencies, 各包不再声明 `lint` / `fmt` 脚本与依赖. oxlint 使用默认规则, 不另配规则: 根目录 `.oxlintrc.json` 只用 `ignorePatterns` 排除入库的测试 fixture, `lint:check` 带 `--deny-warnings`, 出现 warning 即失败, 改代码消除而不是关规则或写豁免注释; 格式化选项在根目录 `.oxfmtrc.json`. 接手新包时删掉上游自带的 lint / 格式化配置与依赖. 根目录执行 `npm ci` 才能运行这两个工具.
 - 不发布的内部包放在 `packages/_<名称>/`, `package.json` 写 `"private": true`: CI 通用 job 跳过 `_` 开头的目录, `release.yml` 拒绝发布 private 包; 目前只有 `_official_style_suites`(包名 `official-style-suites`, 官方样式测试集的下载, 抽取与判定, 见下文 CI 一节).
 - 一个修复要同时用到多个包时, 分别修改并分别提交, 不抽公共代码.
 - 版本号, `CHANGELOG.md` 与发布各自独立.
@@ -55,7 +57,7 @@ npm run build
 
 ## CI
 
-`.github/workflows/ci.yml` 自动发现 `packages/*`: 除 `easy-np`, `easy-npd` 与 `_` 开头的内部包外, 每个包走通用 job, 在 Node 24 上依次执行 `lint:check`, `typecheck`, `test`, `build`(没有的脚本跳过). `easy-np` 与 `easy-npd` 不走通用 job, 改由专用 job 覆盖 Python, Node 14 至 24 与 Windows; `easy-comb`, `easy-gonz` 与 `easy-mok` 在通用 job 之外另有旧版 Node 冒烟 job, 验证各自 `engines` 下限. 某个包需要更多 Node 版本或平台时, 为它加专用 job; 不再需要通用 job 时把它从 `discover` 的列表中排除. 各 workflow 的 token 只有只读权限, PR 上被新推送取代的运行会被取消, main 上的不取消(release.yml 依赖它的结果).
+`.github/workflows/ci.yml` 自动发现 `packages/*`: 除 `easy-np`, `easy-npd` 与 `_` 开头的内部包外, 每个包走通用 job, 在 Node 24 上依次执行 `typecheck`, `test`, `build`(没有的脚本跳过); `lint` job 在根目录 `npm ci` 后对全仓执行 `lint:check` 与 `fmt:check`. `easy-np` 与 `easy-npd` 不走通用 job, 改由专用 job 覆盖 Python, Node 14 至 24 与 Windows; `easy-comb`, `easy-gonz` 与 `easy-mok` 在通用 job 之外另有旧版 Node 冒烟 job, 验证各自 `engines` 下限. 某个包需要更多 Node 版本或平台时, 为它加专用 job; 不再需要通用 job 时把它从 `discover` 的列表中排除. 各 workflow 的 token 只有只读权限, PR 上被新推送取代的运行会被取消, main 上的不取消(release.yml 依赖它的结果).
 
 `.github/workflows/official.yml` 用各语法的官方测试集(WPT, css-parsing-tests, sass-spec, less.js test-data)检验 easy-gonz 与 easy-comb: 语料按 `packages/_official_style_suites/suites.json` 钉死的版本下载到 `.cache/official/`, 不入库; 各包的 `test/official-baseline.json` 记录已知失败, 出现新失败即不通过, 修好的用例要在同一改动中执行 `npm run test:official -- --update` 移出基线.
 
@@ -99,5 +101,5 @@ npm 登录走 Trusted Publishing, 不需要 `NPM_TOKEN`: 每个包需在 npmjs.c
 
 ### 开发约定
 
-- 两个包的脚本名一致: `test`, `test-cov`, `lint`(带 `--fix`), `lint:check`, `fmt`(带 `--write`), `fmt:check`.
+- 两个包的脚本名一致: `test`, `test-cov`, `ci`; lint 与格式化在根目录执行, 见「开发」一节.
 - 测试按功能放在 `test/<目录>/` 下一层, 支持文件在 `test/support/`; package.json 与 CI 的 mocha spec 写作 `test/*/*.test.js`, 不能写成 `test/**`: fixtures 中依赖包自带的 `*.test.js` 会被当作用例; spec 也不能放进 `.mocharc.js`, 否则命令行指定单个文件时会与它合并成全量.

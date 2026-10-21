@@ -2,8 +2,19 @@ import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tansta
 import { z } from "zod";
 import { request } from "./client";
 import {
-	Groups, IgnoreConfig, IgnoreValidation, LogDetail, LogSummary, Meta, Removed, RouteDetail, RouteSummary, SaveSceneResult, SceneDetail,
-	type Envelope, type LogKind,
+	Groups,
+	IgnoreConfig,
+	IgnoreValidation,
+	LogDetail,
+	LogSummary,
+	Meta,
+	Removed,
+	RouteDetail,
+	RouteSummary,
+	SaveSceneResult,
+	SceneDetail,
+	type Envelope,
+	type LogKind,
 } from "./contract";
 
 export const keys = {
@@ -16,40 +27,51 @@ export const keys = {
 	ignore: ["ignore"] as const,
 };
 
-export const invalidateRoutes = (qc: QueryClient) => Promise.all([
-	qc.invalidateQueries({ queryKey: keys.routes }),
-	qc.invalidateQueries({ queryKey: ["route"] }),
-	qc.invalidateQueries({ queryKey: keys.meta }),
-]);
+export const invalidateRoutes = (qc: QueryClient) =>
+	Promise.all([
+		qc.invalidateQueries({ queryKey: keys.routes }),
+		qc.invalidateQueries({ queryKey: ["route"] }),
+		qc.invalidateQueries({ queryKey: keys.meta }),
+	]);
 
-export const useMeta = () => useQuery({ queryKey: keys.meta, queryFn: ({ signal }) => request(Meta, "/meta", { signal }) });
+export const useMeta = () =>
+	useQuery({ queryKey: keys.meta, queryFn: ({ signal }) => request(Meta, "/meta", { signal }) });
 
-export const useRoutes = () => useQuery({
-	queryKey: keys.routes,
-	queryFn: ({ signal }) => request(z.array(RouteSummary), "/routes", { signal }),
-});
+export const useRoutes = () =>
+	useQuery({
+		queryKey: keys.routes,
+		queryFn: ({ signal }) => request(z.array(RouteSummary), "/routes", { signal }),
+	});
 
-export const useRoute = (id: string | null) => useQuery({
-	queryKey: keys.route(id || ""),
-	queryFn: ({ signal }) => request(RouteDetail, `/routes/${id}`, { signal }),
-	enabled: !!id,
-});
+export const useRoute = (id: string | null) =>
+	useQuery({
+		queryKey: keys.route(id || ""),
+		queryFn: ({ signal }) => request(RouteDetail, `/routes/${id}`, { signal }),
+		enabled: !!id,
+	});
 
-export const useGroups = () => useQuery({ queryKey: keys.groups, queryFn: ({ signal }) => request(Groups, "/groups", { signal }) });
+export const useGroups = () =>
+	useQuery({
+		queryKey: keys.groups,
+		queryFn: ({ signal }) => request(Groups, "/groups", { signal }),
+	});
 
 export const LOG_LIMIT = 500;
-export const useLogs = () => useQuery({
-	queryKey: keys.logs,
-	queryFn: ({ signal }) => request(z.array(LogSummary), `/logs?limit=${LOG_LIMIT}`, { signal }),
-	staleTime: Infinity,
-});
+export const useLogs = () =>
+	useQuery({
+		queryKey: keys.logs,
+		queryFn: ({ signal }) =>
+			request(z.array(LogSummary), `/logs?limit=${LOG_LIMIT}`, { signal }),
+		staleTime: Infinity,
+	});
 
-export const useLog = (id: string | null) => useQuery({
-	queryKey: keys.log(id || ""),
-	queryFn: ({ signal }) => request(LogDetail, `/logs/${id}`, { signal }),
-	enabled: !!id,
-	retry: false,
-});
+export const useLog = (id: string | null) =>
+	useQuery({
+		queryKey: keys.log(id || ""),
+		queryFn: ({ signal }) => request(LogDetail, `/logs/${id}`, { signal }),
+		enabled: !!id,
+		retry: false,
+	});
 
 export interface RouteStatePatch {
 	scene?: string | null;
@@ -70,9 +92,21 @@ export const usePatchRouteState = () => {
 export const useSaveScene = () => {
 	const qc = useQueryClient();
 	return useMutation({
-		mutationFn: ({ id, name, envelope, etag }: { id: string; name: string; envelope: Envelope; etag?: string | null }) =>
+		mutationFn: ({
+			id,
+			name,
+			envelope,
+			etag,
+		}: {
+			id: string;
+			name: string;
+			envelope: Envelope;
+			etag?: string | null;
+		}) =>
 			request(SceneDetail, `/routes/${id}/scenes/${encodeURIComponent(name)}`, {
-				method: "PUT", body: envelope, headers: etag ? { "if-match": `"${etag}"` } : undefined,
+				method: "PUT",
+				body: envelope,
+				headers: etag ? { "if-match": `"${etag}"` } : undefined,
 			}),
 		onSuccess: () => invalidateRoutes(qc),
 	});
@@ -83,7 +117,8 @@ export const useDeleteScene = () => {
 	return useMutation({
 		mutationFn: ({ id, name, etag }: { id: string; name: string; etag?: string | null }) =>
 			request(null, `/routes/${id}/scenes/${encodeURIComponent(name)}`, {
-				method: "DELETE", headers: etag ? { "if-match": `"${etag}"` } : undefined,
+				method: "DELETE",
+				headers: etag ? { "if-match": `"${etag}"` } : undefined,
 			}),
 		onSuccess: () => invalidateRoutes(qc),
 	});
@@ -99,7 +134,8 @@ export interface NewRouteInput {
 export const useCreateRoute = () => {
 	const qc = useQueryClient();
 	return useMutation({
-		mutationFn: (input: NewRouteInput) => request(RouteSummary, "/routes", { method: "POST", body: input }),
+		mutationFn: (input: NewRouteInput) =>
+			request(RouteSummary, "/routes", { method: "POST", body: input }),
 		onSuccess: () => invalidateRoutes(qc),
 	});
 };
@@ -115,35 +151,53 @@ export const useDeleteRoute = () => {
 export const usePatchState = () => {
 	const qc = useQueryClient();
 	return useMutation({
-		mutationFn: (patch: { enabled?: boolean; group?: string | null; logLevel?: "silent" | "hit" | "all" }) =>
-			request(Meta, "/state", { method: "PATCH", body: patch }),
+		mutationFn: (patch: {
+			enabled?: boolean;
+			group?: string | null;
+			logLevel?: "silent" | "hit" | "all";
+		}) => request(Meta, "/state", { method: "PATCH", body: patch }),
 		onSuccess: meta => {
 			qc.setQueryData(keys.meta, meta);
-			return Promise.all([qc.invalidateQueries({ queryKey: keys.routes }), qc.invalidateQueries({ queryKey: keys.groups })]);
+			return Promise.all([
+				qc.invalidateQueries({ queryKey: keys.routes }),
+				qc.invalidateQueries({ queryKey: keys.groups }),
+			]);
 		},
 	});
 };
 
-const groupsMutation = <V,>(fn: (v: V) => Promise<Groups | void>) => () => {
-	const qc = useQueryClient();
-	return useMutation({
-		mutationFn: fn,
-		onSuccess: () => Promise.all([
-			qc.invalidateQueries({ queryKey: keys.groups }),
-			qc.invalidateQueries({ queryKey: keys.meta }),
-			qc.invalidateQueries({ queryKey: keys.routes }),
-		]),
-	});
-};
+const groupsMutation =
+	<V>(fn: (v: V) => Promise<Groups | void>) =>
+	() => {
+		const qc = useQueryClient();
+		return useMutation({
+			mutationFn: fn,
+			onSuccess: () =>
+				Promise.all([
+					qc.invalidateQueries({ queryKey: keys.groups }),
+					qc.invalidateQueries({ queryKey: keys.meta }),
+					qc.invalidateQueries({ queryKey: keys.routes }),
+				]),
+		});
+	};
 
-export const usePutGroup = groupsMutation(({ name, map }: { name: string; map: Record<string, string> }) =>
-	request(Groups, `/groups/${encodeURIComponent(name)}`, { method: "PUT", body: map }));
+export const usePutGroup = groupsMutation(
+	({ name, map }: { name: string; map: Record<string, string> }) =>
+		request(Groups, `/groups/${encodeURIComponent(name)}`, { method: "PUT", body: map })
+);
 export const useRenameGroup = groupsMutation(({ name, to }: { name: string; to: string }) =>
-	request(Groups, `/groups/${encodeURIComponent(name)}/rename`, { method: "POST", body: { to } }));
+	request(Groups, `/groups/${encodeURIComponent(name)}/rename`, { method: "POST", body: { to } })
+);
 export const useDeleteGroup = groupsMutation((name: string) =>
-	request(null, `/groups/${encodeURIComponent(name)}`, { method: "DELETE" }).then(() => undefined));
-export const useSnapshotGroup = groupsMutation(({ name, overwrite }: { name: string; overwrite?: boolean }) =>
-	request(Groups, `/groups/${encodeURIComponent(name)}/snapshot`, { method: "POST", body: { overwrite: !!overwrite } }));
+	request(null, `/groups/${encodeURIComponent(name)}`, { method: "DELETE" }).then(() => undefined)
+);
+export const useSnapshotGroup = groupsMutation(
+	({ name, overwrite }: { name: string; overwrite?: boolean }) =>
+		request(Groups, `/groups/${encodeURIComponent(name)}/snapshot`, {
+			method: "POST",
+			body: { overwrite: !!overwrite },
+		})
+);
 
 export const useCleanup = () => {
 	const qc = useQueryClient();
@@ -168,14 +222,32 @@ export const useClearLogs = () => {
 export const useSaveLogAsScene = () => {
 	const qc = useQueryClient();
 	return useMutation({
-		mutationFn: ({ logId, name, routeId, create, overwrite }: {
-			logId: string; name: string; routeId?: string; create?: { methods: string[]; path: string }; overwrite?: boolean;
-		}) => request(SaveSceneResult, `/logs/${logId}/scene`, { method: "POST", body: { name, routeId, create, overwrite } }),
+		mutationFn: ({
+			logId,
+			name,
+			routeId,
+			create,
+			overwrite,
+		}: {
+			logId: string;
+			name: string;
+			routeId?: string;
+			create?: { methods: string[]; path: string };
+			overwrite?: boolean;
+		}) =>
+			request(SaveSceneResult, `/logs/${logId}/scene`, {
+				method: "POST",
+				body: { name, routeId, create, overwrite },
+			}),
 		onSuccess: () => invalidateRoutes(qc),
 	});
 };
 
-export const useIgnore = () => useQuery({ queryKey: keys.ignore, queryFn: ({ signal }) => request(IgnoreConfig, "/ignore", { signal }) });
+export const useIgnore = () =>
+	useQuery({
+		queryKey: keys.ignore,
+		queryFn: ({ signal }) => request(IgnoreConfig, "/ignore", { signal }),
+	});
 
 export interface IgnorePatch {
 	defaults?: boolean;
@@ -186,8 +258,11 @@ export interface IgnorePatch {
 export const useSaveIgnore = () => {
 	const qc = useQueryClient();
 	return useMutation({
-		mutationFn: (patch: IgnorePatch) => request(IgnoreConfig, "/ignore", { method: "PUT", body: patch }),
-		onSuccess: data => { qc.setQueryData(keys.ignore, data); },
+		mutationFn: (patch: IgnorePatch) =>
+			request(IgnoreConfig, "/ignore", { method: "PUT", body: patch }),
+		onSuccess: data => {
+			qc.setQueryData(keys.ignore, data);
+		},
 	});
 };
 
@@ -196,6 +271,13 @@ export const validateIgnore = (rules: string[], signal?: AbortSignal) =>
 	request(IgnoreValidation, "/ignore/validate", { method: "POST", body: { rules }, signal });
 
 /** 为一条日志生成精确的忽略规则: 方法 + 不含查询串的完整路径 */
-export const exactIgnoreRule = (method: string, url: string) => `${method.toUpperCase()} ${url.split(/[?#]/)[0] || "/"}`;
+export const exactIgnoreRule = (method: string, url: string) =>
+	`${method.toUpperCase()} ${url.split(/[?#]/)[0] || "/"}`;
 
-export const KIND_LABEL: Record<LogKind, string> = { mock: "mock", proxy: "代理", pass: "放行", miss: "未命中", error: "出错" };
+export const KIND_LABEL: Record<LogKind, string> = {
+	mock: "mock",
+	proxy: "代理",
+	pass: "放行",
+	miss: "未命中",
+	error: "出错",
+};

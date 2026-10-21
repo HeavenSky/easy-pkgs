@@ -30,13 +30,7 @@ To approve every pending package at once, run `npd-x approve-scripts --all`.
 Each key in `allowScripts` names packages; `true` allows their install scripts and `false` denies them.
 
 ```json
-{
-  "allowScripts": {
-    "esbuild": true,
-    "sharp@0.33.5": true,
-    "core-js": false
-  }
-}
+{ "allowScripts": { "esbuild": true, "sharp@0.33.5": true, "core-js": false } }
 ```
 
 - A key is a package name (all versions), `<name>@<exact version>`, several exact versions joined by `||`, a git address or a tarball url.

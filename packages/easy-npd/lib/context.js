@@ -1,11 +1,11 @@
-'use strict';
+"use strict";
 
-const Nested = require('./nested');
+const Nested = require("./nested");
 
 class Context {
-  constructor() {
-    this.nested = new Nested([]);
-  }
+	constructor() {
+		this.nested = new Nested([]);
+	}
 }
 
 module.exports = Context;

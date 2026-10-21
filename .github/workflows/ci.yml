@@ -1,230 +1,223 @@
-# 每个包各自安装依赖, 各自 lint 与测试, 不共享 node_modules
+# 每个包各自安装依赖与测试, 不共享 node_modules; lint 与格式化检查统一在根目录执行
 # easy-np 与 easy-npd 有专用 job(Python, Node 14 兼容, Windows); 其余 packages/* 由 generic job 自动纳入
 name: CI
 # 默认以提交信息作标题, 与同一提交触发的 Release 无法区分
 run-name: "CI ${{ github.event_name == 'pull_request' && format('PR #{0}', github.event.number) || github.ref_name }}"
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
 
 permissions:
-  contents: read
+    contents: read
 
 # 只取消 PR 上被新推送取代的运行; main 上的运行是 release.yml 的发布前提, 取消会让发布失败
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+    group: ci-${{ github.ref }}
+    cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  # 列出走通用流程的包; 新增的包不用改本文件, `_` 开头的目录是不发布的内部包, 不在此列
-  discover:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      generic: ${{ steps.list.outputs.generic }}
-    steps:
-      - uses: actions/checkout@v7
-      - id: list
-        run: |
-          generic="$(ls -d packages/*/ | xargs -n1 basename | grep -vxE 'easy-np|easy-npd|_.*' | jq -Rsc 'split("\n") | map(select(. != ""))')"
-          echo "generic=$generic" >> "$GITHUB_OUTPUT"
+    # 列出走通用流程的包; 新增的包不用改本文件, `_` 开头的目录是不发布的内部包, 不在此列
+    discover:
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        outputs:
+            generic: ${{ steps.list.outputs.generic }}
+        steps:
+            - uses: actions/checkout@v7
+            - id: list
+              run: |
+                  generic="$(ls -d packages/*/ | xargs -n1 basename | grep -vxE 'easy-np|easy-npd|_.*' | jq -Rsc 'split("\n") | map(select(. != ""))')"
+                  echo "generic=$generic" >> "$GITHUB_OUTPUT"
 
-  # 各包 test/ 的文件数与字节数不得超过 test-budget.json, 防止接手新包或录制快照时测试数据再次膨胀; 顺带跑 scripts/ 的单测
-  test-budget:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24.x
-      - run: npm run budget
-      - run: npm run test:scripts
+    # 各包 test/ 的文件数与字节数不得超过 test-budget.json, 防止接手新包或录制快照时测试数据再次膨胀; 顺带跑 scripts/ 的单测
+    test-budget:
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - uses: actions/checkout@v7
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 24.x
+            - run: npm run budget
+            - run: npm run test:scripts
 
-  # easy-comb 的运行时下限是 Node ^16.17 || >=18.3, 而测试依赖 Node 22.18+ 的类型剥离:
-  # 用新版 Node 构建, 再在旧版本上冒烟运行编译产物
-  easy-comb-compat:
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: ['16.17', 16, '18.3', 18, 20]
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    defaults:
-      run:
-        working-directory: packages/easy-comb
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24.x
-      - run: npm ci
-      - run: npm run build
-      - uses: actions/setup-node@v7
-        with:
-          node-version: ${{ matrix.node-version }}
-      - run: printf 'a{color:#FFF;top:0}' | node bin/csscomb.js - | grep -q '#fff'
-      - run: node bin/csscomb.js --lint test/core/process-directory/fixture/a.css || test $? -eq 1
-      - run: node --input-type=module -e "import C from './dist/csscomb.js'; if (!(await new C('csscomb').processString('a{color:#FFF}')).includes('#fff')) process.exit(1)"
+    # easy-comb 的运行时下限是 Node ^16.17 || >=18.3, 而测试依赖 Node 22.18+ 的类型剥离:
+    # 用新版 Node 构建, 再在旧版本上冒烟运行编译产物
+    easy-comb-compat:
+        strategy:
+            fail-fast: false
+            matrix:
+                node-version: ["16.17", 16, "18.3", 18, 20]
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        defaults:
+            run:
+                working-directory: packages/easy-comb
+        steps:
+            - uses: actions/checkout@v7
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 24.x
+            - run: npm ci
+            - run: npm run build
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: ${{ matrix.node-version }}
+            - run: printf 'a{color:#FFF;top:0}' | node bin/csscomb.js - | grep -q '#fff'
+            - run: node bin/csscomb.js --lint test/core/process-directory/fixture/a.css || test $? -eq 1
+            - run: node --input-type=module -e "import C from './dist/csscomb.js'; if (!(await new C('csscomb').processString('a{color:#FFF}')).includes('#fff')) process.exit(1)"
 
-  # easy-mok 的运行时下限是 Node 18, 而 vitest 与构建链需要新版 Node: 用 Node 24 构建, 再在旧版本上冒烟运行编译产物
-  easy-mok-compat:
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: [18, 20]
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    defaults:
-      run:
-        working-directory: packages/easy-mok
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24.x
-      - run: npm ci
-      - run: npm run build
-      - uses: actions/setup-node@v7
-        with:
-          node-version: ${{ matrix.node-version }}
-      - run: |
-          mkdir -p "$RUNNER_TEMP/mocks"
-          echo 'module.exports = { "GET /api/ping": { ok: true } };' > "$RUNNER_TEMP/mocks/ping.js"
-          node -e "
-            require('./dist/server').startMock({ folder: process.argv[1], port: 0 }).then(async (s) => {
-              const ping = await fetch(s.url + '/api/ping');
-              const ok = ping.status === 200 && (await ping.json()).ok === true;
-              const ui = await fetch(s.url + '/__mock/');
-              await s.close();
-              if (!ok || ui.status !== 200) process.exit(1);
-            });
-          " "$RUNNER_TEMP/mocks"
+    # easy-mok 的运行时下限是 Node 18, 而 vitest 与构建链需要新版 Node: 用 Node 24 构建, 再在旧版本上冒烟运行编译产物
+    easy-mok-compat:
+        strategy:
+            fail-fast: false
+            matrix:
+                node-version: [18, 20]
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        defaults:
+            run:
+                working-directory: packages/easy-mok
+        steps:
+            - uses: actions/checkout@v7
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 24.x
+            - run: npm ci
+            - run: npm run build
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: ${{ matrix.node-version }}
+            - run: |
+                  mkdir -p "$RUNNER_TEMP/mocks"
+                  echo 'module.exports = { "GET /api/ping": { ok: true } };' > "$RUNNER_TEMP/mocks/ping.js"
+                  node -e "
+                    require('./dist/server').startMock({ folder: process.argv[1], port: 0 }).then(async (s) => {
+                      const ping = await fetch(s.url + '/api/ping');
+                      const ok = ping.status === 200 && (await ping.json()).ok === true;
+                      const ui = await fetch(s.url + '/__mock/');
+                      await s.close();
+                      if (!ok || ui.status !== 200) process.exit(1);
+                    });
+                  " "$RUNNER_TEMP/mocks"
 
-  # easy-gonz 的运行时下限是 Node 6, 而 node:test 需要 Node 18+: 旧版本只跑不依赖 node:test 的语料冒烟与 bin.
-  # 用 docker 官方镜像而不是 setup-node, 后者能否安装 Node 6 未经验证; 包没有运行时依赖, 不需要 npm i
-  easy-gonz-compat:
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: [6, 8, 10, 12, 14, 16, 18, 20, 22]
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v7
-      - run: >-
-          docker run --rm -v "$PWD/packages/easy-gonz:/w" -w /w node:${{ matrix.node-version }}
-          sh -c 'node test/corpus.js && printf "a{b:c}" | node bin/gonzales.js -s css - > /dev/null'
+    # easy-gonz 的运行时下限是 Node 6, 而 node:test 需要 Node 18+: 旧版本只跑不依赖 node:test 的语料冒烟与 bin.
+    # 用 docker 官方镜像而不是 setup-node, 后者能否安装 Node 6 未经验证; 包没有运行时依赖, 不需要 npm i
+    easy-gonz-compat:
+        strategy:
+            fail-fast: false
+            matrix:
+                node-version: [6, 8, 10, 12, 14, 16, 18, 20, 22]
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        steps:
+            - uses: actions/checkout@v7
+            - run: >-
+                  docker run --rm -v "$PWD/packages/easy-gonz:/w" -w /w node:${{ matrix.node-version }}
+                  sh -c 'node test/corpus.js && printf "a{b:c}" | node bin/gonzales.js -s css - > /dev/null'
 
-  # 依次执行包内的 lint:check(若有), test, build(若有); 需要更多 Node 版本或平台时给该包加专用 job
-  generic:
-    needs: discover
-    if: needs.discover.outputs.generic != '[]'
-    strategy:
-      fail-fast: false
-      matrix:
-        package: ${{ fromJSON(needs.discover.outputs.generic) }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    defaults:
-      run:
-        working-directory: packages/${{ matrix.package }}
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24.x
-      - run: npm ci
-      - run: npm run lint:check --if-present
-      - run: npm run typecheck --if-present
-      - run: npm test
-      - run: npm run build --if-present
+    # 依次执行包内的 typecheck(若有), test, build(若有); 需要更多 Node 版本或平台时给该包加专用 job
+    generic:
+        needs: discover
+        if: needs.discover.outputs.generic != '[]'
+        strategy:
+            fail-fast: false
+            matrix:
+                package: ${{ fromJSON(needs.discover.outputs.generic) }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        defaults:
+            run:
+                working-directory: packages/${{ matrix.package }}
+        steps:
+            - uses: actions/checkout@v7
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 24.x
+            - run: npm ci
+            - run: npm run typecheck --if-present
+            - run: npm test
+            - run: npm run build --if-present
 
-  # oxlint / oxfmt 需要 node ^20.19 || >=22.12, 与测试用的 node 版本分开跑
-  lint:
-    strategy:
-      fail-fast: false
-      matrix:
-        package: [easy-np, easy-npd]
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    defaults:
-      run:
-        working-directory: packages/${{ matrix.package }}
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22.x
-      - run: npm ci
-      - run: npm run lint:check
+    # oxlint / oxfmt 只装在根目录, 用 oxlint 默认规则与根目录 .oxfmtrc.json, 一次检查全部包;
+    # 它们需要 node ^20.19 || >=22.12, 与测试用的 node 版本分开跑
+    lint:
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - uses: actions/checkout@v7
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 24.x
+            - run: npm ci
+            - run: npm run lint:check
+            - run: npm run fmt:check
 
-  # engines 下限 Node 14.19.3: mocha 11 不支持, 用 mocha 10 跑全量用例
-  # Node 14 自带的 npm 6 不认 npx -y, mocha 10 改为全局安装
-  test-legacy-node:
-    strategy:
-      fail-fast: false
-      matrix:
-        package: [easy-np, easy-npd]
-        node-version: [14.19.3, 16.x]
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    defaults:
-      run:
-        working-directory: packages/${{ matrix.package }}
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
-        with:
-          python-version: '3.11'
-      - uses: actions/setup-node@v7
-        with:
-          node-version: ${{ matrix.node-version }}
-      - run: npm ci
-      - run: npm i -g mocha@10
-      - run: mocha "test/*/*.test.js"
-        env:
-          NODE_OPTIONS: --max_old_space_size=6144
+    # engines 下限 Node 14.19.3: mocha 11 不支持, 用 mocha 10 跑全量用例
+    # Node 14 自带的 npm 6 不认 npx -y, mocha 10 改为全局安装
+    test-legacy-node:
+        strategy:
+            fail-fast: false
+            matrix:
+                package: [easy-np, easy-npd]
+                node-version: [14.19.3, 16.x]
+        runs-on: ubuntu-latest
+        timeout-minutes: 45
+        defaults:
+            run:
+                working-directory: packages/${{ matrix.package }}
+        steps:
+            - uses: actions/checkout@v7
+            - uses: actions/setup-python@v7
+              with:
+                  python-version: "3.11"
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: ${{ matrix.node-version }}
+            - run: npm ci
+            - run: npm i -g mocha@10
+            - run: mocha "test/*/*.test.js"
+              env:
+                  NODE_OPTIONS: --max_old_space_size=6144
 
-  test:
-    strategy:
-      fail-fast: false
-      matrix:
-        package: [easy-np, easy-npd]
-        node-version: [18.x, 22.x, 24.x]
-        os: [ubuntu-latest, windows-latest]
-        # Windows 测 Node 22 与 24, Node 18 由 Linux 覆盖
-        exclude:
-          - os: windows-latest
-            node-version: 18.x
-        # 覆盖率只在这一组收集, 其余组跳过 c8 插桩
-        include:
-          - os: ubuntu-latest
-            node-version: 22.x
-            coverage: true
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 45
-    defaults:
-      run:
-        working-directory: packages/${{ matrix.package }}
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
-        with:
-          python-version: '3.11'
-      - uses: actions/setup-node@v7
-        with:
-          node-version: ${{ matrix.node-version }}
-      - run: npm ci
-      - if: matrix.coverage
-        run: npm run test-cov
-        env:
-          NODE_OPTIONS: --max_old_space_size=6144
-      # 不用 npm test: 它会先跑 lint, 而 oxlint 不支持 Node 18, lint 已由上面的 job 负责
-      - if: ${{ !matrix.coverage }}
-        run: npx mocha "test/*/*.test.js"
-        env:
-          NODE_OPTIONS: --max_old_space_size=6144
+    test:
+        strategy:
+            fail-fast: false
+            matrix:
+                package: [easy-np, easy-npd]
+                node-version: [18.x, 22.x, 24.x]
+                os: [ubuntu-latest, windows-latest]
+                # Windows 测 Node 22 与 24, Node 18 由 Linux 覆盖
+                exclude:
+                    - os: windows-latest
+                      node-version: 18.x
+                # 覆盖率只在这一组收集, 其余组跳过 c8 插桩
+                include:
+                    - os: ubuntu-latest
+                      node-version: 22.x
+                      coverage: true
+        runs-on: ${{ matrix.os }}
+        timeout-minutes: 45
+        defaults:
+            run:
+                working-directory: packages/${{ matrix.package }}
+        steps:
+            - uses: actions/checkout@v7
+            - uses: actions/setup-python@v7
+              with:
+                  python-version: "3.11"
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: ${{ matrix.node-version }}
+            - run: npm ci
+            - if: matrix.coverage
+              run: npm run test-cov
+              env:
+                  NODE_OPTIONS: --max_old_space_size=6144
+            - if: ${{ !matrix.coverage }}
+              run: npx mocha "test/*/*.test.js"
+              env:
+                  NODE_OPTIONS: --max_old_space_size=6144

@@ -1,15 +1,22 @@
 {
-  "name": "easy-pkgs",
-  "private": true,
-  "description": "接手并持续维护停更或偏离方向的开源 npm 包, 每个包独立安装, 测试与发布",
-  "scripts": {
-    "install:all": "node scripts/each.mjs install",
-    "lint": "node scripts/each.mjs lint",
-    "test": "node scripts/each.mjs test",
-    "build": "node scripts/each.mjs build",
-    "adopt": "node scripts/adopt.mjs",
-    "upstream": "node scripts/upstream.mjs",
-    "budget": "node scripts/test-budget.mjs",
-    "test:scripts": "node --test scripts/*.test.mjs"
-  }
+	"name": "easy-pkgs",
+	"private": true,
+	"description": "接手并持续维护停更或偏离方向的开源 npm 包, 每个包独立安装, 测试与发布",
+	"scripts": {
+		"install:all": "node scripts/each.mjs install",
+		"lint": "oxlint --fix",
+		"lint:check": "oxlint --deny-warnings",
+		"fmt": "oxfmt --write",
+		"fmt:check": "oxfmt --check",
+		"test": "node scripts/each.mjs test",
+		"build": "node scripts/each.mjs build",
+		"adopt": "node scripts/adopt.mjs",
+		"upstream": "node scripts/upstream.mjs",
+		"budget": "node scripts/test-budget.mjs",
+		"test:scripts": "node --test scripts/*.test.mjs"
+	},
+	"devDependencies": {
+		"oxfmt": "^0.74.0",
+		"oxlint": "^1.89.0"
+	}
 }

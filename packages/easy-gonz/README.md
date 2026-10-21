@@ -17,18 +17,21 @@ Unlike postcss, easy-gonz covers all four syntaxes with one parser and returns s
 This script renames `$w` to `$width` in an SCSS file that uses Sass modules:
 
 ```js
-const gonzales = require('easy-gonz');
+const gonzales = require("easy-gonz");
 
-const ast = gonzales.parse(`@use 'sass:math';
+const ast = gonzales.parse(
+	`@use 'sass:math';
 .card {
   width: math.div($w, 2); // half width
   @include theme.shadow;
-}`, { syntax: 'scss' });
+}`,
+	{ syntax: "scss" }
+);
 
 // Rename $w to $width everywhere.
-ast.traverseByType('variable', (node) => {
-  const name = node.first('ident');
-  if (name.content === 'w') name.content = 'width';
+ast.traverseByType("variable", node => {
+	const name = node.first("ident");
+	if (name.content === "w") name.content = "width";
 });
 
 console.log(ast.toString());
@@ -37,10 +40,10 @@ console.log(ast.toString());
 It prints:
 
 ```scss
-@use 'sass:math';
+@use "sass:math";
 .card {
-  width: math.div($width, 2); // half width
-  @include theme.shadow;
+	width: math.div($width, 2); // half width
+	@include theme.shadow;
 }
 ```
 
@@ -51,21 +54,21 @@ gonzales-pe 4.3.0 throws on the same input (`Please check validity of the block 
 
 1. Install the package:
 
-   ```bash
-   npm install easy-gonz
-   ```
+    ```bash
+    npm install easy-gonz
+    ```
 
 2. Print the tree of a rule as an outline; the first line is `-> stylesheet`:
 
-   ```bash
-   printf 'a { color: red }' | npx gonzales -s css --simple -
-   ```
+    ```bash
+    printf 'a { color: red }' | npx gonzales -s css --simple -
+    ```
 
 3. Check the round trip in code; it prints `true`:
 
-   ```bash
-   node -e "const g = require('easy-gonz'); const src = '.a { &:hover { color: red } }'; console.log(g.parse(src).toString() === src)"
-   ```
+    ```bash
+    node -e "const g = require('easy-gonz'); const src = '.a { &:hover { color: red } }'; console.log(g.parse(src).toString() === src)"
+    ```
 
 Coming from gonzales-pe, change one line, then read [Migrate from gonzales-pe](docs/migrate-from-gonzales-pe.md) if your code matches on node types:
 
@@ -85,14 +88,14 @@ Coming from gonzales-pe, change one line, then read [Migrate from gonzales-pe](d
 Each valid case must parse, print back byte for byte, and match the structure of the reference parser (the postcss stack; indented Sass has none).
 The check is [gonz.mjs](../_official_style_suites/gonz.mjs), run by `npm run test:official` against the suite versions pinned in [suites.json](../_official_style_suites/suites.json); setup steps are in [Run the official test suites](docs/development.md#run-the-official-test-suites).
 
-| Suite | Syntax | Valid cases | easy-gonz | postcss stack |
-| --- | --- | --: | --: | --: |
-| [WPT](https://github.com/web-platform-tests/wpt) parsing tests | CSS | 4,414 | 100% | 99.9% |
-| WPT `<style>` blocks | CSS | 715 | 100% | 98.0% |
-| [css-parsing-tests](https://github.com/SimonSapin/css-parsing-tests) | CSS | 1,243 | 100% | 98.1% |
-| [sass-spec](https://github.com/sass/sass-spec) | SCSS | 11,456 | 100% | 99.5% |
-| sass-spec | indented Sass | 348 | 100% | not supported |
-| [less.js test-data](https://github.com/less/less.js/tree/master/packages/test-data) | Less | 285 | 100% | 87.4% |
+| Suite                                                                               | Syntax        | Valid cases | easy-gonz | postcss stack |
+| ----------------------------------------------------------------------------------- | ------------- | ----------: | --------: | ------------: |
+| [WPT](https://github.com/web-platform-tests/wpt) parsing tests                      | CSS           |       4,414 |      100% |         99.9% |
+| WPT `<style>` blocks                                                                | CSS           |         715 |      100% |         98.0% |
+| [css-parsing-tests](https://github.com/SimonSapin/css-parsing-tests)                | CSS           |       1,243 |      100% |         98.1% |
+| [sass-spec](https://github.com/sass/sass-spec)                                      | SCSS          |      11,456 |      100% |         99.5% |
+| sass-spec                                                                           | indented Sass |         348 |      100% | not supported |
+| [less.js test-data](https://github.com/less/less.js/tree/master/packages/test-data) | Less          |         285 |      100% |         87.4% |
 
 The postcss stack is postcss, postcss-scss and postcss-less, with selectors and values re-parsed by postcss-selector-parser and postcss-value-parser.
 Every case it passes, easy-gonz passes too.
@@ -103,15 +106,15 @@ Use postcss with postcss-scss or postcss-less if you need its plugin ecosystem a
 Use @csstools/css-parser-algorithms if you parse only CSS and want component values exactly as the CSS Syntax spec defines them.
 easy-gonz still throws on most invalid SCSS and indented Sass, so it is not an error-tolerant parser for those two syntaxes.
 
-| Parser | Syntaxes | Selectors and values | Runtime deps | Node.js |
-| --- | --- | --- | --- | --- |
-| easy-gonz | CSS, Less, SCSS, Sass | Nodes | none | >=6 |
-| gonzales-pe 4.3.0 | CSS, Less, SCSS, Sass | Nodes | minimist | >=0.6 (declared) |
-| postcss 8 + postcss-scss / postcss-less | CSS, SCSS, Less | Strings; extra parsers needed | 3 | >=12 |
-| postcss-sass 0.5.0 | Sass, converted from a gonzales-pe 4.3.0 tree | Strings (postcss AST) | gonzales-pe 4.3.0, postcss | ^10, ^12, >=14 |
-| sugarss 5 | SugarSS, a different indented syntax | Strings (postcss AST) | postcss (peer) | >=18 |
-| sass-parser 0.4 (Sass team) | CSS, SCSS, Sass | Not assessed here | postcss, sass | >=18 |
-| @csstools/css-parser-algorithms 4 | CSS only | Generic component values | @csstools/css-tokenizer (peer) | >=20.19 |
+| Parser                                  | Syntaxes                                      | Selectors and values          | Runtime deps                   | Node.js          |
+| --------------------------------------- | --------------------------------------------- | ----------------------------- | ------------------------------ | ---------------- |
+| easy-gonz                               | CSS, Less, SCSS, Sass                         | Nodes                         | none                           | >=6              |
+| gonzales-pe 4.3.0                       | CSS, Less, SCSS, Sass                         | Nodes                         | minimist                       | >=0.6 (declared) |
+| postcss 8 + postcss-scss / postcss-less | CSS, SCSS, Less                               | Strings; extra parsers needed | 3                              | >=12             |
+| postcss-sass 0.5.0                      | Sass, converted from a gonzales-pe 4.3.0 tree | Strings (postcss AST)         | gonzales-pe 4.3.0, postcss     | ^10, ^12, >=14   |
+| sugarss 5                               | SugarSS, a different indented syntax          | Strings (postcss AST)         | postcss (peer)                 | >=18             |
+| sass-parser 0.4 (Sass team)             | CSS, SCSS, Sass                               | Not assessed here             | postcss, sass                  | >=18             |
+| @csstools/css-parser-algorithms 4       | CSS only                                      | Generic component values      | @csstools/css-tokenizer (peer) | >=20.19          |
 
 Of these, only easy-gonz and gonzales-pe 4.3.0 read all four syntaxes with one API and give selectors and values their own nodes.
 

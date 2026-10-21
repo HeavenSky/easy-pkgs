@@ -6,13 +6,17 @@ import { Router } from "wouter";
 import { memoryLocation } from "wouter/memory-location";
 
 export const renderUi = (ui: ReactNode, path = "/") => {
-	const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+	const client = new QueryClient({
+		defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+	});
 	const location = memoryLocation({ path, record: true });
 	const utils = render(
 		<QueryClientProvider client={client}>
-			<Router hook={location.hook} searchHook={location.searchHook}>{ui}</Router>
+			<Router hook={location.hook} searchHook={location.searchHook}>
+				{ui}
+			</Router>
 			<Toaster />
-		</QueryClientProvider>,
+		</QueryClientProvider>
 	);
 	return { ...utils, client, location };
 };
@@ -35,5 +39,12 @@ export const routeSummary = (over: Record<string, unknown> = {}) => ({
 });
 
 export const sceneDetail = (over: Record<string, unknown> = {}) => ({
-	name: "default", source: "code", kind: "data", editable: false, overrides: false, content: { id: 1 }, etag: null, ...over,
+	name: "default",
+	source: "code",
+	kind: "data",
+	editable: false,
+	overrides: false,
+	content: { id: 1 },
+	etag: null,
+	...over,
 });

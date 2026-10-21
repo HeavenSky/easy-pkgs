@@ -9,25 +9,30 @@
 `sort-order` 是属性名列表，或由若干分组组成的列表；easy-comb 在组与组之间空一行。
 
 ```json
-{ "sort-order": [["position", "top"], ["margin", "padding"]] }
+{
+	"sort-order": [
+		["position", "top"],
+		["margin", "padding"]
+	]
+}
 ```
 
 ```css
 /* 排序前 */
 p {
-    padding: 0;
-    top: 0;
-    margin: 0;
-    position: absolute;
+	padding: 0;
+	top: 0;
+	margin: 0;
+	position: absolute;
 }
 
 /* 排序后 */
 p {
-    position: absolute;
-    top: 0;
+	position: absolute;
+	top: 0;
 
-    margin: 0;
-    padding: 0;
+	margin: 0;
+	padding: 0;
 }
 ```
 
@@ -57,13 +62,13 @@ p {
 
 在 Less、Sass 和 SCSS 中，下面这些关键字可以像属性名一样写进列表：
 
-| 关键字 | 代表 |
-| --- | --- |
-| `$variable` | 变量声明 |
-| `$include` | 所有没有按名字列出的 mixin 引入 |
-| `$include mixin-name` | 引入该 mixin 的语句 |
-| `$extend` | 继承（extend） |
-| `$import` | `@import` |
+| 关键字                | 代表                            |
+| --------------------- | ------------------------------- |
+| `$variable`           | 变量声明                        |
+| `$include`            | 所有没有按名字列出的 mixin 引入 |
+| `$include mixin-name` | 引入该 mixin 的语句             |
+| `$extend`             | 继承（extend）                  |
+| `$import`             | `@import`                       |
 
 ```json
 { "sort-order": [["$variable"], ["$include"], ["top", "padding"], ["$include media"]] }
@@ -72,27 +77,27 @@ p {
 ```scss
 /* 排序前 */
 p {
-    padding: 0;
-    @include media("desktop") {
-        color: black;
-    }
-    $color: tomato;
-    top: 0;
-    @include mixin($color);
+	padding: 0;
+	@include media("desktop") {
+		color: black;
+	}
+	$color: tomato;
+	top: 0;
+	@include mixin($color);
 }
 
 /* 排序后 */
 p {
-    $color: tomato;
+	$color: tomato;
 
-    @include mixin($color);
+	@include mixin($color);
 
-    top: 0;
-    padding: 0;
+	top: 0;
+	padding: 0;
 
-    @include media("desktop") {
-        color: black;
-    }
+	@include media("desktop") {
+		color: black;
+	}
 }
 ```
 

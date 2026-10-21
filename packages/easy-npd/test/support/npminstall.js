@@ -1,34 +1,34 @@
-'use strict';
+"use strict";
 
-const npminstall = require('../..');
-const utils = require('../../lib/utils');
-const Context = require('../../lib/context');
+const npminstall = require("../..");
+const utils = require("../../lib/utils");
+const Context = require("../../lib/context");
 
 const context = new Context();
 
 module.exports = async options => {
-  await formatOptions(options);
-  return await npminstall(options, context);
+	await formatOptions(options);
+	return await npminstall(options, context);
 };
 
 module.exports.installGlobal = async options => {
-  await formatOptions(options);
-  return await npminstall.installGlobal(options, context);
+	await formatOptions(options);
+	return await npminstall.installGlobal(options, context);
 };
 
 async function formatOptions(options) {
-  if (process.env.local) {
-    options.registry = 'https://registry.npmmirror.com';
-    options.binaryMirrors = await utils.getBinaryMirrors(options.registry);
-    options.env = options.env || {};
-    for (const key in options.binaryMirrors.ENVS) {
-      options.env[key] = options.binaryMirrors.ENVS[key];
-    }
-  }
-  if (options.customBinaryMirrors) {
-    options.binaryMirrors = options.binaryMirrors || {};
-    for (const key in options.customBinaryMirrors) {
-      options.binaryMirrors[key] = options.customBinaryMirrors[key];
-    }
-  }
+	if (process.env.local) {
+		options.registry = "https://registry.npmmirror.com";
+		options.binaryMirrors = await utils.getBinaryMirrors(options.registry);
+		options.env = options.env || {};
+		for (const key in options.binaryMirrors.ENVS) {
+			options.env[key] = options.binaryMirrors.ENVS[key];
+		}
+	}
+	if (options.customBinaryMirrors) {
+		options.binaryMirrors = options.binaryMirrors || {};
+		for (const key in options.customBinaryMirrors) {
+			options.binaryMirrors[key] = options.customBinaryMirrors[key];
+		}
+	}
 }

@@ -12,10 +12,10 @@
 
 ## Use the lockfile options
 
-| Option                        | Meaning                                                                                                            |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `--lockfile`, `--no-lockfile` | Read and write `np-lock.json` or not; on by default, `np` always adds `--no-lockfile`                              |
-| `--frozen-lockfile`           | Install only from `np-lock.json`, fail on a missing entry, never write back; cannot be combined with package names |
+| Option                        | Meaning                                                                                                                                  |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `--lockfile`, `--no-lockfile` | Read and write `np-lock.json` or not; on by default, `np` always adds `--no-lockfile`                                                    |
+| `--frozen-lockfile`           | Install only from `np-lock.json`, fail on a missing entry, never write back; cannot be combined with package names                       |
 | `--from-package-lock=<file>`  | Install the versions locked in a `package-lock.json` or `npm-shrinkwrap.json` (lockfileVersion >= 2), ignoring its optional dependencies |
 
 ## What np-lock.json records

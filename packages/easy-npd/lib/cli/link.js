@@ -1,166 +1,157 @@
-'use strict';
+"use strict";
 
-const debug = require('debug')('npd:cli:link');
-const npa = require('npm-package-arg');
-const semver = require('semver');
-const assert = require('assert');
-const chalk = require('chalk');
-const path = require('path');
-const parseArgs = require('minimist');
-const utils = require('../utils');
-const bin = require('../bin');
-const { REGISTRY_TYPES } = require('../npa_types');
-const help = require('./help');
+const debug = require("debug")("npd:cli:link");
+const npa = require("npm-package-arg");
+const semver = require("semver");
+const assert = require("assert");
+const chalk = require("chalk");
+const path = require("path");
+const parseArgs = require("minimist");
+const utils = require("../utils");
+const bin = require("../bin");
+const { REGISTRY_TYPES } = require("../npa_types");
+const help = require("./help");
 
 module.exports = async function link(args) {
-  try {
-    await main(args);
-  } catch (err) {
-    utils.exitWithError('npd-x link', err);
-  }
+	try {
+		await main(args);
+	} catch (err) {
+		utils.exitWithError("npd-x link", err);
+	}
 };
 
 async function main(args) {
-  const orignalArgv = args;
-  utils.rejectRemovedArgs(args, { root: 'run npd-x link in that folder instead' });
-  const argv = parseArgs(orignalArgv, {
-    string: ['prefix'],
-    boolean: ['version', 'help'],
-    alias: {
-      v: 'version',
-      h: 'help',
-    },
-  });
+	const orignalArgv = args;
+	utils.rejectRemovedArgs(args, { root: "run npd-x link in that folder instead" });
+	const argv = parseArgs(orignalArgv, {
+		string: ["prefix"],
+		boolean: ["version", "help"],
+		alias: { v: "version", h: "help" },
+	});
 
-  if (argv.version) {
-    console.log(`npd-x v${require('../../package.json').version}`);
-    process.exit(0);
-  }
+	if (argv.version) {
+		console.log(`npd-x v${require("../../package.json").version}`);
+		process.exit(0);
+	}
 
-  if (argv.help) {
-    console.log(help.link());
-    process.exit(0);
-  }
+	if (argv.help) {
+		console.log(help.link());
+		process.exit(0);
+	}
 
-  const root = process.cwd();
+	const root = process.cwd();
 
-  const globalMeta = utils.getGlobalInstallMeta(argv.prefix);
-  const globalModuleDir = path.join(globalMeta.targetDir, 'node_modules');
+	const globalMeta = utils.getGlobalInstallMeta(argv.prefix);
+	const globalModuleDir = path.join(globalMeta.targetDir, "node_modules");
 
-  const folders = argv._.map(name => utils.formatPath(name));
+	const folders = argv._.map(name => utils.formatPath(name));
 
-  const installArgs = [];
-  for (const arg of orignalArgv) {
-    if (arg[0] !== '-') {
-      continue;
-    }
-    installArgs.push(arg);
-  }
+	const installArgs = [];
+	for (const arg of orignalArgv) {
+		if (arg[0] !== "-") {
+			continue;
+		}
+		installArgs.push(arg);
+	}
 
-  if (folders.length === 0) {
-    // 1. npd
-    // 2. link CWD to targetDir/node_modules/{name}
-    // 3. link bins to binDir
-    const pkgFile = path.join(root, 'package.json');
-    const pkg = await utils.readJSON(pkgFile);
-    assert(pkg.name, `package.name does not exist in ${pkgFile}`);
-    const linkDir = path.join(globalMeta.targetDir, 'node_modules', pkg.name);
+	if (folders.length === 0) {
+		// 1. npd
+		// 2. link CWD to targetDir/node_modules/{name}
+		// 3. link bins to binDir
+		const pkgFile = path.join(root, "package.json");
+		const pkg = await utils.readJSON(pkgFile);
+		assert(pkg.name, `package.name does not exist in ${pkgFile}`);
+		const linkDir = path.join(globalMeta.targetDir, "node_modules", pkg.name);
 
-    console.info(chalk.gray(`\`$ npd ${installArgs.join(' ')}\` on ${root}`));
-    const installBin = path.join(__dirname, '../../bin/i.js');
-    await utils.fork(installBin, installArgs, {
-      cwd: root,
-    });
-    await utils.removePackageBins(linkDir, globalMeta.binDir);
-    await utils.forceSymlink(root, linkDir);
-    console.info(`link ${chalk.magenta(linkDir)}@ -> ${root}`);
-    await bin(root, pkg, linkDir, {
-      console,
-      binDir: globalMeta.binDir,
-      targetDir: root,
-    });
-    return;
-  }
+		console.info(chalk.gray(`\`$ npd ${installArgs.join(" ")}\` on ${root}`));
+		const installBin = path.join(__dirname, "../../bin/i.js");
+		await utils.fork(installBin, installArgs, { cwd: root });
+		await utils.removePackageBins(linkDir, globalMeta.binDir);
+		await utils.forceSymlink(root, linkDir);
+		console.info(`link ${chalk.magenta(linkDir)}@ -> ${root}`);
+		await bin(root, pkg, linkDir, { console, binDir: globalMeta.binDir, targetDir: root });
+		return;
+	}
 
-  // link folders to current dir
-  const targetDir = path.join(root, 'node_modules');
-  const env = Object.assign(
-    {
-      // should keep npm_rootpath be current dir
-      npm_rootpath: root,
-    },
-    process.env
-  );
-  const installBin = path.join(__dirname, '../../bin/i.js');
+	// link folders to current dir
+	const targetDir = path.join(root, "node_modules");
+	const env = Object.assign(
+		{
+			// should keep npm_rootpath be current dir
+			npm_rootpath: root,
+		},
+		process.env
+	);
+	const installBin = path.join(__dirname, "../../bin/i.js");
 
-  for (let folder of folders) {
-    // 1.
-    // if folder is package(not relative path), try
-    //   1) if ${globalModuleDir}/package exists and match required spec
-    //   2) otherwise install package from npm to ${globalModuleDir}
-    // else cd folder && npd
-    //
-    // 2. link folder to CWD/node_modules/{name}
-    // 3. link bins
+	for (let folder of folders) {
+		// 1.
+		// if folder is package(not relative path), try
+		//   1) if ${globalModuleDir}/package exists and match required spec
+		//   2) otherwise install package from npm to ${globalModuleDir}
+		// else cd folder && npd
+		//
+		// 2. link folder to CWD/node_modules/{name}
+		// 3. link bins
 
-    let pkg;
-    debug('link %s', folder);
-    // try to parse it as a package, if it is a path(./module/path), pkgInfo.name will be null
-    const pkgInfo = npa(folder, root);
-    if (pkgInfo.name) {
-      debug('link source %s is a npm module', folder);
-      folder = path.join(globalModuleDir, pkgInfo.name);
-      pkg = await utils.readJSON(path.join(globalModuleDir, pkgInfo.name, 'package.json'));
+		let pkg;
+		debug("link %s", folder);
+		// try to parse it as a package, if it is a path(./module/path), pkgInfo.name will be null
+		const pkgInfo = npa(folder, root);
+		if (pkgInfo.name) {
+			debug("link source %s is a npm module", folder);
+			folder = path.join(globalModuleDir, pkgInfo.name);
+			pkg = await utils.readJSON(path.join(globalModuleDir, pkgInfo.name, "package.json"));
 
-      // when these situations need install
-      // 1. pkg not exist in global module directory
-      // 2. pkgInfo with tag, hosted, git spec
-      // 3. pkgInfo with version and range spec, and pkg.version not satisfies with spec
+			// when these situations need install
+			// 1. pkg not exist in global module directory
+			// 2. pkgInfo with tag, hosted, git spec
+			// 3. pkgInfo with version and range spec, and pkg.version not satisfies with spec
 
-      const pkgNotExist = !pkg.name;
-      const specIsTag = pkgInfo.type === 'tag' && !!pkgInfo.rawSpec;
-      const specNotSemver = !REGISTRY_TYPES.includes(pkgInfo.type);
-      const specNotSatisfies =
-        (pkgInfo.type === 'range' || pkgInfo.type === 'version') && !semver.satisfies(pkg.version, pkgInfo.spec);
+			const pkgNotExist = !pkg.name;
+			const specIsTag = pkgInfo.type === "tag" && !!pkgInfo.rawSpec;
+			const specNotSemver = !REGISTRY_TYPES.includes(pkgInfo.type);
+			const specNotSatisfies =
+				(pkgInfo.type === "range" || pkgInfo.type === "version") &&
+				!semver.satisfies(pkg.version, pkgInfo.spec);
 
-      if (pkgNotExist || specIsTag || specNotSemver || specNotSatisfies) {
-        debug('%s does not satisfy the requirement, try to install %s from npm', folder, pkgInfo.raw);
-        // try install from npm registry
-        console.info(chalk.gray(`\`$ npd --global ${pkgInfo.raw}`));
-        await utils.fork(installBin, installArgs.concat(['-g', pkgInfo.raw]), {
-          env,
-        });
-      }
+			if (pkgNotExist || specIsTag || specNotSemver || specNotSatisfies) {
+				debug(
+					"%s does not satisfy the requirement, try to install %s from npm",
+					folder,
+					pkgInfo.raw
+				);
+				// try install from npm registry
+				console.info(chalk.gray(`\`$ npd --global ${pkgInfo.raw}`));
+				await utils.fork(installBin, installArgs.concat(["-g", pkgInfo.raw]), { env });
+			}
 
-      const pkgFile = path.join(folder, 'package.json');
-      pkg = await utils.readJSON(pkgFile);
-      assert(pkg.name, `package.name does not exist in ${pkgFile}`);
-    } else {
-      if (!path.isAbsolute(folder)) {
-        folder = path.join(root, folder);
-      }
-      // read from folder
-      if (!(await utils.exists(folder))) {
-        throw utils.userError(`${folder} does not exist`);
-      }
+			const pkgFile = path.join(folder, "package.json");
+			pkg = await utils.readJSON(pkgFile);
+			assert(pkg.name, `package.name does not exist in ${pkgFile}`);
+		} else {
+			if (!path.isAbsolute(folder)) {
+				folder = path.join(root, folder);
+			}
+			// read from folder
+			if (!(await utils.exists(folder))) {
+				throw utils.userError(`${folder} does not exist`);
+			}
 
-      const pkgFile = path.join(folder, 'package.json');
-      pkg = await utils.readJSON(pkgFile);
-      assert(pkg.name, `package.name does not exist in ${pkgFile}`);
+			const pkgFile = path.join(folder, "package.json");
+			pkg = await utils.readJSON(pkgFile);
+			assert(pkg.name, `package.name does not exist in ${pkgFile}`);
 
-      // install dependencies
-      console.info(chalk.gray(`\`$ npd ${installArgs.join(' ')}\` on ${folder}`));
-      await utils.fork(installBin, installArgs, {
-        cwd: folder,
-        env,
-      });
-    }
+			// install dependencies
+			console.info(chalk.gray(`\`$ npd ${installArgs.join(" ")}\` on ${folder}`));
+			await utils.fork(installBin, installArgs, { cwd: folder, env });
+		}
 
-    // link folder to CWD/node_modules/{name}
-    const linkDir = path.join(targetDir, pkg.name);
-    await utils.forceSymlink(folder, linkDir);
-    // link bins
-    console.info(`link ${chalk.magenta(linkDir)}@ -> ${folder}`);
-    await bin(root, pkg, linkDir, { console });
-  }
+		// link folder to CWD/node_modules/{name}
+		const linkDir = path.join(targetDir, pkg.name);
+		await utils.forceSymlink(folder, linkDir);
+		// link bins
+		console.info(`link ${chalk.magenta(linkDir)}@ -> ${folder}`);
+		await bin(root, pkg, linkDir, { console });
+	}
 }

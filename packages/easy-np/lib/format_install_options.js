@@ -1,150 +1,155 @@
-const util = require('node:util');
-const debug = util.debuglog('np:format_install_options');
-const { randomUUID } = require('node:crypto');
-const assert = require('node:assert');
-const path = require('node:path');
-const EventEmitter = require('node:events');
-const awaitEvent = require('await-event');
-const ora = require('ora');
-const globalConfig = require('./config');
-const utils = require('./utils');
+const util = require("node:util");
+const debug = util.debuglog("np:format_install_options");
+const { randomUUID } = require("node:crypto");
+const assert = require("node:assert");
+const path = require("node:path");
+const EventEmitter = require("node:events");
+const awaitEvent = require("await-event");
+const ora = require("ora");
+const globalConfig = require("./config");
+const utils = require("./utils");
 
 module.exports = function formatInstallOptions(options) {
-  options.trace = !!options.trace;
-  if (options.trace) {
-    // make sure detail enable when trace enable
-    options.detail = true;
-  }
+	options.trace = !!options.trace;
+	if (options.trace) {
+		// make sure detail enable when trace enable
+		options.detail = true;
+	}
 
-  options.spinner = options.detail ? null : ora();
-  options.events = new EventEmitter();
-  // close EventEmitter memory leak warning
-  options.events.setMaxListeners(0);
-  options.events.await = awaitEvent;
-  options.runscriptCount = 0;
-  // 失败的包不中止安装: { displayName, error }, 安装结束时汇总
-  options.failures = [];
-  // 失败后被跳过的可选依赖: { displayName, error, name? }, 带 name 的是脚本失败, 可用 rebuild 重跑
-  options.optionalFailures = [];
-  // 本次运行完成了自身步骤的包目录, 运行没有失败时统一清除阶段标记
-  options.stagedDirs = new Set();
-  // 延后到整棵树链接完成后运行的依赖脚本, 按 store 目录去重: Map<dir, task>
-  options.scriptTasks = new Map();
-  // 可选依赖被链接到的位置, 其中的包脚本失败时据此撤掉: Map<store 目录, [{ linkDir, binDir }]>
-  options.optionalLinks = new Map();
-  // 每个 store 包目录被谁需要: Map<store 目录, { required, roots: Map<可选依赖的 store 目录, { dir, name, displayName }> }>
-  options.scriptNeeds = new Map();
-  // 安装阶段就因子树失败被跳过的可选依赖的 store 目录
-  options.skippedOptionalDirs = new Set();
-  // 本次运行已遍历过子依赖的 store 包目录; 启用锁文件时已完成的包也要遍历一次, 子树才会记进 np-lock.json
-  options.visitedStoreDirs = new Set();
-  options.runscriptTime = 0;
-  // [
-  //    {package: pkg, parentDir: 'parentDir', packageDir: 'packageDir', peerDependencies: unmatched},
-  //   ...
-  // ]
-  options.peerDependencies = [];
-  // {
-  //   pkg: Set('version1', 'version2')
-  // }
-  options.packageVersions = {};
+	options.spinner = options.detail ? null : ora();
+	options.events = new EventEmitter();
+	// close EventEmitter memory leak warning
+	options.events.setMaxListeners(0);
+	options.events.await = awaitEvent;
+	options.runscriptCount = 0;
+	// 失败的包不中止安装: { displayName, error }, 安装结束时汇总
+	options.failures = [];
+	// 失败后被跳过的可选依赖: { displayName, error, name? }, 带 name 的是脚本失败, 可用 rebuild 重跑
+	options.optionalFailures = [];
+	// 本次运行完成了自身步骤的包目录, 运行没有失败时统一清除阶段标记
+	options.stagedDirs = new Set();
+	// 延后到整棵树链接完成后运行的依赖脚本, 按 store 目录去重: Map<dir, task>
+	options.scriptTasks = new Map();
+	// 可选依赖被链接到的位置, 其中的包脚本失败时据此撤掉: Map<store 目录, [{ linkDir, binDir }]>
+	options.optionalLinks = new Map();
+	// 每个 store 包目录被谁需要: Map<store 目录, { required, roots: Map<可选依赖的 store 目录, { dir, name, displayName }> }>
+	options.scriptNeeds = new Map();
+	// 安装阶段就因子树失败被跳过的可选依赖的 store 目录
+	options.skippedOptionalDirs = new Set();
+	// 本次运行已遍历过子依赖的 store 包目录; 启用锁文件时已完成的包也要遍历一次, 子树才会记进 np-lock.json
+	options.visitedStoreDirs = new Set();
+	options.runscriptTime = 0;
+	// [
+	//    {package: pkg, parentDir: 'parentDir', packageDir: 'packageDir', peerDependencies: unmatched},
+	//   ...
+	// ]
+	options.peerDependencies = [];
+	// {
+	//   pkg: Set('version1', 'version2')
+	// }
+	options.packageVersions = {};
 
-  // support forbiddenLicenses
-  if (options.forbiddenLicenses && options.forbiddenLicenses.length) {
-    options.forbiddenLicensesRegex = new RegExp(options.forbiddenLicenses.join('|'), 'i');
-  }
+	// support forbiddenLicenses
+	if (options.forbiddenLicenses && options.forbiddenLicenses.length) {
+		options.forbiddenLicensesRegex = new RegExp(options.forbiddenLicenses.join("|"), "i");
+	}
 
-  options.latestVersions = new Map();
-  // store latest packages
-  options.latestPackages = new Map();
-  options.cache = {
-    dependenciesTree: {},
-  };
+	options.latestVersions = new Map();
+	// store latest packages
+	options.latestPackages = new Map();
+	options.cache = { dependenciesTree: {} };
 
-  // use depsTree
-  if (options.dependenciesTree) {
-    Object.assign(options.cache.dependenciesTree, options.dependenciesTree);
-  }
+	// use depsTree
+	if (options.dependenciesTree) {
+		Object.assign(options.cache.dependenciesTree, options.dependenciesTree);
+	}
 
-  assert(options.root && typeof options.root === 'string', 'options.root required and must be string');
-  options.registry = options.registry || 'https://registry.npmjs.com';
-  // try to read _authToken
-  // '//packages.aliyun.com/xxxxxx/npm/npm-registry/:_authToken': 'xxxxx'
-  const registryKey = options.registry.replace('https://', '').replace('http://', '');
-  options.registryAuthorization =
-    globalConfig.npmrc[`//${registryKey}/:_authToken`] || globalConfig.npmrc[`//${registryKey}:_authToken`];
+	assert(
+		options.root && typeof options.root === "string",
+		"options.root required and must be string"
+	);
+	options.registry = options.registry || "https://registry.npmjs.com";
+	// try to read _authToken
+	// '//packages.aliyun.com/xxxxxx/npm/npm-registry/:_authToken': 'xxxxx'
+	const registryKey = options.registry.replace("https://", "").replace("http://", "");
+	options.registryAuthorization =
+		globalConfig.npmrc[`//${registryKey}/:_authToken`] ||
+		globalConfig.npmrc[`//${registryKey}:_authToken`];
 
-  if (!options.targetDir) {
-    options.targetDir = options.root;
-  }
-  if (!options.storeDir) {
-    options.storeDir = path.join(options.targetDir, 'node_modules');
-  }
-  options.timeout = options.timeout || 60000;
-  options.streamingTimeout = options.streamingTimeout || 120000;
-  // 兜底遮住各处日志中漏掉的 URL 凭据
-  const format = args => utils.redactUrl(util.format(...args));
-  const print = method => {
-    return (...args) => console[method](format(args));
-  };
-  const quiet = (...args) => debug.enabled && debug(format(args));
-  const customConsole = {
-    info: options.detail ? print('info') : quiet,
-    log: options.detail ? print('log') : quiet,
-    error: print('error'),
-    warn: print('warn'),
-  };
-  options.console = options.console || customConsole;
-  options.env = options.env || {};
-  options.start = Date.now();
-  options.totalTarballSize = 0;
-  options.totalJSONSize = 0;
-  options.totalJSONCount = 0;
-  options.totalCacheJSONCount = 0;
-  options.totalEtagHitCount = 0;
-  options.totalEtagMissCount = 0;
-  options.localPackages = 0;
-  options.remotePackages = 0;
-  options.registryPackages = 0;
-  options.gitPackages = 0;
-  options.binaryMirrors = options.binaryMirrors || {};
-  // https://github.com/cnpm/cnpm/issues/317
-  options.env.INIT_CWD = process.cwd();
+	if (!options.targetDir) {
+		options.targetDir = options.root;
+	}
+	if (!options.storeDir) {
+		options.storeDir = path.join(options.targetDir, "node_modules");
+	}
+	options.timeout = options.timeout || 60000;
+	options.streamingTimeout = options.streamingTimeout || 120000;
+	// 兜底遮住各处日志中漏掉的 URL 凭据
+	const format = args => utils.redactUrl(util.format(...args));
+	const print = method => {
+		return (...args) => console[method](format(args));
+	};
+	const quiet = (...args) => debug.enabled && debug(format(args));
+	const customConsole = {
+		info: options.detail ? print("info") : quiet,
+		log: options.detail ? print("log") : quiet,
+		error: print("error"),
+		warn: print("warn"),
+	};
+	options.console = options.console || customConsole;
+	options.env = options.env || {};
+	options.start = Date.now();
+	options.totalTarballSize = 0;
+	options.totalJSONSize = 0;
+	options.totalJSONCount = 0;
+	options.totalCacheJSONCount = 0;
+	options.totalEtagHitCount = 0;
+	options.totalEtagMissCount = 0;
+	options.localPackages = 0;
+	options.remotePackages = 0;
+	options.registryPackages = 0;
+	options.gitPackages = 0;
+	options.binaryMirrors = options.binaryMirrors || {};
+	// https://github.com/cnpm/cnpm/issues/317
+	options.env.INIT_CWD = process.cwd();
 
-  options.pendingMessages = [];
+	options.pendingMessages = [];
 
-  // log packages update in 7 days
-  options.recentlyUpdateMinDateTime = options.recentlyUpdateMinDateTime || Date.now() - 7 * 24 * 3600000;
-  // { name@version:  }
-  options.recentlyUpdates = new Map();
-  // production mode: log all message to console
-  // other: only show today message to console
-  options.onlyShowTodayUpdateToConsole = !options.production;
-  // record all the packages' name which install from remote/git
-  options.remoteNames = {};
+	// log packages update in 7 days
+	options.recentlyUpdateMinDateTime =
+		options.recentlyUpdateMinDateTime || Date.now() - 7 * 24 * 3600000;
+	// { name@version:  }
+	options.recentlyUpdates = new Map();
+	// production mode: log all message to console
+	// other: only show today message to console
+	options.onlyShowTodayUpdateToConsole = !options.production;
+	// record all the packages' name which install from remote/git
+	options.remoteNames = {};
 
-  options.publicHoistPattern = options.publicHoistPattern ? new RegExp(options.publicHoistPattern, 'i') : null;
-  options.publicHoistLatestVersions = new Map();
+	options.publicHoistPattern = options.publicHoistPattern
+		? new RegExp(options.publicHoistPattern, "i")
+		: null;
+	options.publicHoistLatestVersions = new Map();
 
-  options.pkgs = options.pkgs || [];
+	options.pkgs = options.pkgs || [];
 
-  options.referer = 'install';
-  if (options.pkgs.length > 0) {
-    options.referer += ' ' + options.pkgs.map(pkg => pkg.name).join(' ');
-  }
-  if (options.production) {
-    options.referer += ' --production';
-  }
-  options.referer += ` --uuid=${randomUUID()}`;
+	options.referer = "install";
+	if (options.pkgs.length > 0) {
+		options.referer += " " + options.pkgs.map(pkg => pkg.name).join(" ");
+	}
+	if (options.production) {
+		options.referer += " --production";
+	}
+	options.referer += ` --uuid=${randomUUID()}`;
 
-  options.installRoot = options.pkgs.length === 0;
+	options.installRoot = options.pkgs.length === 0;
 
-  options.progresses = {
-    installTasks: 0,
-    finishedInstallTasks: 0,
-    linkTasks: 0,
-    finishedLinkTasks: 0,
-  };
+	options.progresses = {
+		installTasks: 0,
+		finishedInstallTasks: 0,
+		linkTasks: 0,
+		finishedLinkTasks: 0,
+	};
 
-  return options;
+	return options;
 };

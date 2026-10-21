@@ -76,7 +76,6 @@
 - [variable](#variable)
 - [variablesList](#variableslist)
 
-
 ## arguments
 
 ### 说明
@@ -112,7 +111,6 @@
 }
 ```
 
-
 ## atkeyword
 
 ### 说明
@@ -140,7 +138,6 @@
 ### 参考
 
 [CSS 2.1](http://www.w3.org/TR/CSS21/syndata.html#tokenization)
-
 
 ## atrule
 
@@ -180,7 +177,6 @@
 
 [CSS 2.1](http://www.w3.org/TR/CSS21/syndata.html#at-rules)
 
-
 ## attributeFlags
 
 ### 说明
@@ -209,7 +205,6 @@ i
 
 [CSS Selectors Level 4](http://www.w3.org/TR/selectors4/#attribute-case)
 
-
 ## attributeMatch
 
 ### 说明
@@ -235,7 +230,6 @@ i
 
 [CSS Selectors Level 4](http://www.w3.org/TR/selectors4/#grammar)
 
-
 ## attributeName
 
 ### 说明
@@ -259,7 +253,6 @@ panda
   }]
 }
 ```
-
 
 ## attributeSelector
 
@@ -297,7 +290,6 @@ a=b
 }
 ```
 
-
 ## attributeValue
 
 ### 说明
@@ -321,7 +313,6 @@ b
   }]
 }
 ```
-
 
 ## block
 
@@ -358,7 +349,6 @@ b
 }
 ```
 
-
 ## brackets
 
 ### 说明
@@ -394,7 +384,6 @@ b
 }
 ```
 
-
 ## class
 
 ### 说明
@@ -419,7 +408,6 @@ b
 }
 ```
 
-
 ## color
 
 ### 说明
@@ -441,7 +429,6 @@ b
 }
 ```
 
-
 ## combinator
 
 ### 说明
@@ -454,15 +441,11 @@ b
 
 ```js
 // 输入
-~
-
-// 语法树
-{
-  type: 'combinator',
-  content: '~'
-}
+~(
+	// 语法树
+	{ type: "combinator", content: "~" }
+);
 ```
-
 
 ## condition
 
@@ -508,7 +491,6 @@ b
   }],
 }
 ```
-
 
 ## conditionalStatement
 
@@ -594,7 +576,6 @@ b
 }
 ```
 
-
 ## customProperty
 
 ### 说明
@@ -622,7 +603,6 @@ b
 ### 参考
 
 [CSS Custom Properties](https://www.w3.org/TR/css-variables-1/#defining-variables)
-
 
 ## declaration
 
@@ -660,7 +640,6 @@ a:b
 }
 ```
 
-
 ## declarationDelimiter
 
 ### 说明
@@ -681,7 +660,6 @@ a:b
   content: ';'
 }
 ```
-
 
 ## default
 
@@ -704,7 +682,6 @@ Sass 变量赋值后的 `!default` 标记。
 }
 ```
 
-
 ## delimiter
 
 ### 说明
@@ -725,7 +702,6 @@ Sass 变量赋值后的 `!default` 标记。
   content: ','
 }
 ```
-
 
 ## dimension
 
@@ -754,7 +730,6 @@ Sass 变量赋值后的 `!default` 标记。
 }
 ```
 
-
 ## escapedString
 
 ### 说明
@@ -776,7 +751,6 @@ Less 的转义字符串 `~"..."`；`content` 是去掉 `~` 的带引号字符串
 }
 ```
 
-
 ## expression
 
 ### 说明
@@ -797,7 +771,6 @@ expression()
   content: ''
 }
 ```
-
 
 ## extend
 
@@ -870,7 +843,6 @@ Sass 和 SCSS 写成 `@extend` 规则，被继承的选择器是一个 `selector
 }
 ```
 
-
 ## function
 
 ### 说明
@@ -900,7 +872,6 @@ f(5)
   }]
 }
 ```
-
 
 ## functionsList
 
@@ -935,7 +906,6 @@ f(a)...
 }
 ```
 
-
 ## global
 
 ### 说明
@@ -956,7 +926,6 @@ Sass 变量赋值后的 `!global` 标记。
   content: '!global'
 }
 ```
-
 
 ## id
 
@@ -982,7 +951,6 @@ ID 选择器 `#name`，`#` 不在 `content` 里。
 }
 ```
 
-
 ## ident
 
 ### 说明
@@ -1004,7 +972,6 @@ panda
 }
 ```
 
-
 ## important
 
 ### 说明
@@ -1025,7 +992,6 @@ panda
   content: '!important'
 }
 ```
-
 
 ## include
 
@@ -1060,7 +1026,6 @@ mixin 调用：Sass 和 SCSS 写作 `@include name`，缩进 Sass 写作 `+name`
 }
 ```
 
-
 ## interpolatedVariable
 
 ### 说明
@@ -1084,7 +1049,6 @@ Less 的变量插值 `@{name}`，例如出现在选择器或属性名里。
   }]
 }
 ```
-
 
 ## interpolation
 
@@ -1113,7 +1077,6 @@ Sass 插值 `#{...}`；`content` 是花括号里的表达式。
 }
 ```
 
-
 ## keyframesSelector
 
 ### 说明
@@ -1141,7 +1104,6 @@ from
 ### 参考
 
 [Keyframes 规范](http://www.w3.org/TR/css3-animations/#keyframes)
-
 
 ## loop
 
@@ -1227,7 +1189,6 @@ Sass 的循环指令 `@for`、`@each` 或 `@while`，连同其表达式与 `bloc
 }
 ```
 
-
 ## mixin
 
 ### 说明
@@ -1285,7 +1246,6 @@ mixin 定义：Sass 和 SCSS 写作 `@mixin name`，缩进 Sass 写作 `=name`�
 }
 ```
 
-
 ## module
 
 ### 说明
@@ -1299,21 +1259,11 @@ Sass 模块成员的命名空间，即 `math.div()`、`math.$pi` 或 `@include m
 ```js
 // 输入
 math.$pi
-
 // 语法树
-[{
-  type: 'module',
-  content: [{
-    type: 'ident',
-    content: 'math'
-  }]
-}, {
-  type: 'variable',
-  content: [{
-    type: 'ident',
-    content: 'pi'
-  }]
-}]
+[
+	({ type: "module", content: [{ type: "ident", content: "math" }] },
+	{ type: "variable", content: [{ type: "ident", content: "pi" }] })
+];
 ```
 
 ```js
@@ -1339,7 +1289,6 @@ math.$pi
 }
 ```
 
-
 ## multilineComment
 
 ### 说明
@@ -1361,7 +1310,6 @@ math.$pi
 }
 ```
 
-
 ## namePrefix
 
 ### 说明
@@ -1374,24 +1322,16 @@ math.$pi
 
 ```js
 // 输入
-panda|
-
-// 语法树
-{
-  type: 'namePrefix',
-  content: [{
-    type: 'namespacePrefix',
-    content: [{
-      type: 'ident',
-      content: 'panda'
-    }]
-  }, {
-    type: 'namespaceSeparator',
-    content: '|'
-  }]
-}
+panda |
+	// 语法树
+	{
+		type: "namePrefix",
+		content: [
+			{ type: "namespacePrefix", content: [{ type: "ident", content: "panda" }] },
+			{ type: "namespaceSeparator", content: "|" },
+		],
+	};
 ```
-
 
 ## namespacePrefix
 
@@ -1417,7 +1357,6 @@ panda
 }
 ```
 
-
 ## namespaceSeparator
 
 ### 说明
@@ -1438,7 +1377,6 @@ panda
   content: '|'
 }
 ```
-
 
 ## number
 
@@ -1461,7 +1399,6 @@ panda
 }
 ```
 
-
 ## operator
 
 ### 说明
@@ -1483,7 +1420,6 @@ panda
 }
 ```
 
-
 ## optional
 
 ### 说明
@@ -1504,7 +1440,6 @@ Sass `@extend` 后面的 `!optional` 标记。
   content: '!optional'
 }
 ```
-
 
 ## parentheses
 
@@ -1530,7 +1465,6 @@ Sass `@extend` 后面的 `!optional` 标记。
 }
 ```
 
-
 ## parentSelector
 
 ### 说明
@@ -1551,7 +1485,6 @@ Sass `@extend` 后面的 `!optional` 标记。
   content: '&'
 }
 ```
-
 
 ## parentSelectorExtension
 
@@ -1586,7 +1519,6 @@ Sass `@extend` 后面的 `!optional` 标记。
 }
 ```
 
-
 ## percentage
 
 ### 说明
@@ -1599,18 +1531,10 @@ Sass `@extend` 后面的 `!optional` 标记。
 
 ```js
 // 输入
-10%
-
-// 语法树
-{
-  type: 'percentage',
-  content: [{
-    type: 'number',
-    content: '10'
-  }]
-}
+10 %
+	// 语法树
+	{ type: "percentage", content: [{ type: "number", content: "10" }] };
 ```
-
 
 ## placeholder
 
@@ -1636,7 +1560,6 @@ Sass 的占位选择器 `%name`，用作规则的选择器或 `@extend` 的目�
 }
 ```
 
-
 ## progid
 
 ### 说明
@@ -1657,7 +1580,6 @@ progid:DXImageTransform.Microsoft.Alpha(Opacity=80)
   content: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=80)'
 }
 ```
-
 
 ## property
 
@@ -1683,7 +1605,6 @@ color
 }
 ```
 
-
 ## propertyDelimiter
 
 ### 说明
@@ -1704,7 +1625,6 @@ color
   content: ':'
 }
 ```
-
 
 ## pseudoClass
 
@@ -1745,7 +1665,6 @@ color
 }
 ```
 
-
 ## pseudoElement
 
 ### 说明
@@ -1770,7 +1689,6 @@ color
 }
 ```
 
-
 ## raw
 
 ### 说明
@@ -1792,7 +1710,6 @@ color
   content: '}'
 }
 ```
-
 
 ## ruleset
 
@@ -1845,7 +1762,6 @@ a{color:tomato}
 }
 ```
 
-
 ## space
 
 ### 说明
@@ -1858,7 +1774,7 @@ a{color:tomato}
 
 ```js
 // 输入
-  
+
 
 // 语法树
 {
@@ -1866,7 +1782,6 @@ a{color:tomato}
   content: '  '
 }
 ```
-
 
 ## selector
 
@@ -1895,7 +1810,6 @@ a{color:tomato}
 }
 ```
 
-
 ## singlelineComment
 
 ### 说明
@@ -1917,7 +1831,6 @@ a{color:tomato}
 }
 ```
 
-
 ## string
 
 ### 说明
@@ -1938,7 +1851,6 @@ a{color:tomato}
   content: '"test"',
 }
 ```
-
 
 ## stylesheet
 
@@ -2042,7 +1954,6 @@ a {color: tomato} div {color: potato}
 }
 ```
 
-
 ## typeSelector
 
 ### 说明
@@ -2066,7 +1977,6 @@ div
   }]
 }
 ```
-
 
 ## unicodeRange
 
@@ -2103,7 +2013,6 @@ U+A5, U+4E00-9FFF
   }]
 }
 ```
-
 
 ## universalSelector
 
@@ -2153,7 +2062,6 @@ ns|*
 
 [CSS Selectors Level 3](https://www.w3.org/TR/css3-selectors/#universal-selector)
 
-
 ## urange
 
 ### 说明
@@ -2174,7 +2082,6 @@ U+A5
   content: 'U+A5',
 }
 ```
-
 
 ## uri
 
@@ -2200,7 +2107,6 @@ url("http://test.com")
 }
 ```
 
-
 ## value
 
 ### 说明
@@ -2225,7 +2131,6 @@ tomato
 }
 ```
 
-
 ## variable
 
 ### 说明
@@ -2249,7 +2154,6 @@ $panda
   }]
 }
 ```
-
 
 ## variablesList
 

@@ -1,31 +1,31 @@
 // npd 与 npd-x 全部命令的帮助文本; 子命令名与别名由 index.js 的命令表传入
-'use strict';
+"use strict";
 
 const SUMMARIES = {
-  install: 'install dependencies with npm / pnpm style defaults',
-  uninstall: 'remove packages, their version folders and hoisted links nothing uses',
-  update: 'remove node_modules then reinstall',
-  link: 'link local folders or global packages',
-  fetch: 'only download and extract packages, no dependencies or scripts',
-  rebuild: 'rerun lifecycle scripts of installed dependencies',
-  'approve-scripts': 'allow install scripts of dependencies in package.json allowScripts',
-  'deny-scripts': 'deny install scripts of dependencies in package.json allowScripts',
-  prune: 'remove _<name>@<version>@<name> folders in node_modules that nothing links to',
+	install: "install dependencies with npm / pnpm style defaults",
+	uninstall: "remove packages, their version folders and hoisted links nothing uses",
+	update: "remove node_modules then reinstall",
+	link: "link local folders or global packages",
+	fetch: "only download and extract packages, no dependencies or scripts",
+	rebuild: "rerun lifecycle scripts of installed dependencies",
+	"approve-scripts": "allow install scripts of dependencies in package.json allowScripts",
+	"deny-scripts": "deny install scripts of dependencies in package.json allowScripts",
+	prune: "remove _<name>@<version>@<name> folders in node_modules that nothing links to",
 };
 
 // commands: [{ name, aliases }], 顺序即展示顺序
 exports.commands = commands => {
-  const rows = commands.map(cmd => [[cmd.name, ...cmd.aliases].join(', '), SUMMARIES[cmd.name]]);
-  rows.push(['help <command>', 'show help of a command']);
-  const width = Math.max(...rows.map(row => row[0].length)) + 2;
-  return `
+	const rows = commands.map(cmd => [[cmd.name, ...cmd.aliases].join(", "), SUMMARIES[cmd.name]]);
+	rows.push(["help <command>", "show help of a command"]);
+	const width = Math.max(...rows.map(row => row[0].length)) + 2;
+	return `
 Usage:
 
   npd-x <command> [options]
 
 Commands:
 
-${rows.map(([names, summary]) => `  ${names.padEnd(width)}${summary}`).join('\n')}
+${rows.map(([names, summary]) => `  ${names.padEnd(width)}${summary}`).join("\n")}
 
 Run "npd-x <command> -h" for the options of a command.
 npd is npd-x install with --no-lockfile --dangerously-allow-all-scripts added.

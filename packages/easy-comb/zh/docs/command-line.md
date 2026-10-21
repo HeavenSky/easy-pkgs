@@ -43,16 +43,16 @@ $ csscomb -lv assets/css
 
 ## 查阅命令行参数
 
-| 参数 | 作用 |
-| --- | --- |
+| 参数                  | 作用                                                                                                                                                                                       |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `-c, --config <path>` | 用这份配置文件，不再自动查找。可以是任一种[配置文件格式](configuration.md#easy-comb-去哪里找配置)，也可以是 `.css` 文件，此时[检测它的风格作为配置](detect-config.md#把样式表直接当配置)。 |
-| `-d, --detect <file>` | 以 JSON 打印从样式表中检测到的选项后退出，见[从样式表生成配置](detect-config.md)。 |
-| `--syntax <name>` | 按 `css`（默认）、`scss`、`less` 或 `sass` 解析标准输入；文件仍按扩展名决定语法。 |
-| `-l, --lint` | 报告需要改动的文件，但不修改；有这样的文件时以 `1` 退出。 |
-| `-v, --verbose` | 打印每个处理过的文件和汇总。 |
-| `-t, --tty-mode` | 永远不读标准输入。 |
-| `-h, --help` | 显示帮助后退出。 |
-| `-V, --version` | 打印 easy-comb 的版本号后退出。 |
+| `-d, --detect <file>` | 以 JSON 打印从样式表中检测到的选项后退出，见[从样式表生成配置](detect-config.md)。                                                                                                         |
+| `--syntax <name>`     | 按 `css`（默认）、`scss`、`less` 或 `sass` 解析标准输入；文件仍按扩展名决定语法。                                                                                                          |
+| `-l, --lint`          | 报告需要改动的文件，但不修改；有这样的文件时以 `1` 退出。                                                                                                                                  |
+| `-v, --verbose`       | 打印每个处理过的文件和汇总。                                                                                                                                                               |
+| `-t, --tty-mode`      | 永远不读标准输入。                                                                                                                                                                         |
+| `-h, --help`          | 显示帮助后退出。                                                                                                                                                                           |
+| `-V, --version`       | 打印 easy-comb 的版本号后退出。                                                                                                                                                            |
 
 `--config` 指向的文件不存在时报 `Configuration file <path> was not found.` 并停止；文件加载失败时报 `Error parsing configuration file <path>.`，后面跟着原因。两种情况都以 `1` 退出。
 `--config`、`--detect` 或 `--syntax` 没跟值时打印 `Option --config requires a <path> argument.`（`--detect` 是 `<file>`，`--syntax` 是 `<name>`），并以 `1` 退出。

@@ -10,7 +10,7 @@ const lock = JSON.parse(fs.readFileSync(path.join(dir, "package-lock.json"), "ut
 const packages = {};
 for (const [key, entry] of Object.entries(lock.packages || {})) {
 	if (key === "") {
-		const { devDependencies, ...root } = entry;
+		const { devDependencies: _devDependencies, ...root } = entry;
 		packages[key] = root;
 	} else if (!entry.dev) {
 		packages[key] = entry;
@@ -18,17 +18,27 @@ for (const [key, entry] of Object.entries(lock.packages || {})) {
 }
 
 const pruneDeps = deps => {
-	if (!deps) { return deps; }
+	if (!deps) {
+		return deps;
+	}
 	const out = {};
 	for (const [name, entry] of Object.entries(deps)) {
-		if (entry.dev) { continue; }
-		out[name] = entry.dependencies ? { ...entry, dependencies: pruneDeps(entry.dependencies) } : entry;
+		if (entry.dev) {
+			continue;
+		}
+		out[name] = entry.dependencies
+			? { ...entry, dependencies: pruneDeps(entry.dependencies) }
+			: entry;
 	}
 	return out;
 };
 
 const shrinkwrap = { ...lock, packages };
-if (lock.dependencies) { shrinkwrap.dependencies = pruneDeps(lock.dependencies); }
+if (lock.dependencies) {
+	shrinkwrap.dependencies = pruneDeps(lock.dependencies);
+}
 const file = path.join(dir, "npm-shrinkwrap.json");
 fs.writeFileSync(file, `${JSON.stringify(shrinkwrap, null, 2)}\n`);
-console.log(`已生成 ${file}: ${Object.keys(packages).length - 1} 个依赖(原 lockfile ${Object.keys(lock.packages || {}).length - 1} 个)`);
+console.log(
+	`已生成 ${file}: ${Object.keys(packages).length - 1} 个依赖(原 lockfile ${Object.keys(lock.packages || {}).length - 1} 个)`
+);

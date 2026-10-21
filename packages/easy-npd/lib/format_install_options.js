@@ -1,155 +1,155 @@
-'use strict';
+"use strict";
 
-const debug = require('debug')('npd:format_install_options');
-const os = require('os');
-const { randomUUID } = require('crypto');
-const awaitEvent = require('await-event');
-const assert = require('assert');
-const path = require('path');
-const EventEmitter = require('events');
-const util = require('util');
-const ora = require('ora');
-const { redactUrl } = require('./utils');
-const foreignConfig = require('./foreign_config');
+const debug = require("debug")("npd:format_install_options");
+const os = require("os");
+const { randomUUID } = require("crypto");
+const awaitEvent = require("await-event");
+const assert = require("assert");
+const path = require("path");
+const EventEmitter = require("events");
+const util = require("util");
+const ora = require("ora");
+const { redactUrl } = require("./utils");
+const foreignConfig = require("./foreign_config");
 
 module.exports = function formatInstallOptions(options) {
-  options.trace = !!options.trace;
-  if (options.trace) {
-    // make sure detail enable when trace enable
-    options.detail = true;
-  }
+	options.trace = !!options.trace;
+	if (options.trace) {
+		// make sure detail enable when trace enable
+		options.detail = true;
+	}
 
-  options.spinner = options.detail ? null : ora();
-  options.events = new EventEmitter();
-  // close EventEmitter memory leak warning
-  options.events.setMaxListeners(0);
-  options.events.await = awaitEvent;
+	options.spinner = options.detail ? null : ora();
+	options.events = new EventEmitter();
+	// close EventEmitter memory leak warning
+	options.events.setMaxListeners(0);
+	options.events.await = awaitEvent;
 
-  options.postInstallTasks = [];
-  // 本次运行写过阶段标记的包目录, 脚本全部成功后统一清除
-  options.stagedDirs = new Set();
-  // 启用锁文件时已装好的包也要遍历一次子依赖, 才能把整棵子树记进 np-lock.json; 每个包目录只遍历一次
-  options.visitedStoreDirs = new Set();
-  // 失败的包不中止安装: { displayName, error }, 安装结束时汇总
-  options.failures = [];
-  // 失败后被跳过的可选依赖: { displayName, error, name? }, 带 name 的是脚本失败, 可用 rebuild 重跑
-  options.optionalFailures = [];
-  // [
-  //    {package: pkg, displayName, parentDir: 'parentDir', peerDependencies: { name: range }},
-  //   ...
-  // ]
-  options.peerDependencies = [];
-  // [
-  //   { parentDir, realPkg, realPkgDir }
-  // ]
-  options.linkPeerDependencies = [];
-  // {
-  //   pkg: Set('version1', 'version2')
-  // }
-  options.packageVersions = {};
+	options.postInstallTasks = [];
+	// 本次运行写过阶段标记的包目录, 脚本全部成功后统一清除
+	options.stagedDirs = new Set();
+	// 启用锁文件时已装好的包也要遍历一次子依赖, 才能把整棵子树记进 np-lock.json; 每个包目录只遍历一次
+	options.visitedStoreDirs = new Set();
+	// 失败的包不中止安装: { displayName, error }, 安装结束时汇总
+	options.failures = [];
+	// 失败后被跳过的可选依赖: { displayName, error, name? }, 带 name 的是脚本失败, 可用 rebuild 重跑
+	options.optionalFailures = [];
+	// [
+	//    {package: pkg, displayName, parentDir: 'parentDir', peerDependencies: { name: range }},
+	//   ...
+	// ]
+	options.peerDependencies = [];
+	// [
+	//   { parentDir, realPkg, realPkgDir }
+	// ]
+	options.linkPeerDependencies = [];
+	// {
+	//   pkg: Set('version1', 'version2')
+	// }
+	options.packageVersions = {};
 
-  // support forbiddenLicenses
-  if (options.forbiddenLicenses && options.forbiddenLicenses.length) {
-    options.forbiddenLicensesRegex = new RegExp(options.forbiddenLicenses.join('|'), 'i');
-  }
+	// support forbiddenLicenses
+	if (options.forbiddenLicenses && options.forbiddenLicenses.length) {
+		options.forbiddenLicensesRegex = new RegExp(options.forbiddenLicenses.join("|"), "i");
+	}
 
-  options.latestVersions = new Map();
-  // 包名 => latestVersions 中那个版本的目录; git / url / 本地包的目录名带来源后缀, 不能按名称与版本拼出
-  options.latestPackages = new Map();
-  options.cache = {
-    dependenciesTree: {},
-  };
+	options.latestVersions = new Map();
+	// 包名 => latestVersions 中那个版本的目录; git / url / 本地包的目录名带来源后缀, 不能按名称与版本拼出
+	options.latestPackages = new Map();
+	options.cache = { dependenciesTree: {} };
 
-  // use depsTree
-  if (options.dependenciesTree) {
-    Object.assign(options.cache.dependenciesTree, options.dependenciesTree);
-  }
+	// use depsTree
+	if (options.dependenciesTree) {
+		Object.assign(options.cache.dependenciesTree, options.dependenciesTree);
+	}
 
-  assert(options.root && typeof options.root === 'string', 'options.root required and must be string');
-  options.registry = options.registry || 'https://registry.npmjs.com';
-  // 与 easy-np 一致读取 .npmrc 中 registry 的 _authToken, 如 '//packages.aliyun.com/xxx/npm/npm-registry/:_authToken'
-  const registryKey = options.registry.replace('https://', '').replace('http://', '');
-  options.registryAuthorization =
-    foreignConfig.npmrcGet(`//${registryKey}/:_authToken`) || foreignConfig.npmrcGet(`//${registryKey}:_authToken`);
-  if (!options.targetDir) {
-    options.targetDir = options.root;
-  }
-  if (!options.storeDir) {
-    options.storeDir = path.join(options.targetDir, 'node_modules');
-  }
-  options.timeout = options.timeout || 60000;
-  options.streamingTimeout = options.streamingTimeout || 120000;
-  const baseConsole = options.detail
-    ? console
-    : {
-        info: debug,
-        log: debug,
-        error: console.error,
-        warn: console.warn,
-      };
-  // 兜底脱敏: 各处日志可能直接拼入带凭据的 registry, tarball 或 git 地址
-  const customConsole = {};
-  for (const method of ['info', 'log', 'error', 'warn']) {
-    customConsole[method] = (...args) => baseConsole[method]('%s', redactUrl(util.format(...args)));
-  }
-  options.console = options.console || customConsole;
-  options.env = options.env || {};
-  options.start = Date.now();
-  options.totalTarballSize = 0;
-  options.totalJSONSize = 0;
-  options.totalJSONCount = 0;
-  options.totalCacheJSONCount = 0;
-  options.totalEtagHitCount = 0;
-  options.totalEtagMissCount = 0;
-  options.localPackages = 0;
-  options.remotePackages = 0;
-  options.registryPackages = 0;
-  options.gitPackages = 0;
-  options.binaryMirrors = options.binaryMirrors || {};
-  const defaultCacheDir = path.join(os.homedir(), '.np_tarball');
-  if (typeof options.cacheDir !== 'string') {
-    options.cacheDir = defaultCacheDir;
-  }
-  // https://github.com/sass/node-sass/blob/master/lib/extensions.js#L270
-  // make sure npm_config_cache env exists
-  options.env.npm_config_cache = options.env.npm_config_cache || options.cacheDir || defaultCacheDir;
+	assert(
+		options.root && typeof options.root === "string",
+		"options.root required and must be string"
+	);
+	options.registry = options.registry || "https://registry.npmjs.com";
+	// 与 easy-np 一致读取 .npmrc 中 registry 的 _authToken, 如 '//packages.aliyun.com/xxx/npm/npm-registry/:_authToken'
+	const registryKey = options.registry.replace("https://", "").replace("http://", "");
+	options.registryAuthorization =
+		foreignConfig.npmrcGet(`//${registryKey}/:_authToken`) ||
+		foreignConfig.npmrcGet(`//${registryKey}:_authToken`);
+	if (!options.targetDir) {
+		options.targetDir = options.root;
+	}
+	if (!options.storeDir) {
+		options.storeDir = path.join(options.targetDir, "node_modules");
+	}
+	options.timeout = options.timeout || 60000;
+	options.streamingTimeout = options.streamingTimeout || 120000;
+	const baseConsole = options.detail
+		? console
+		: { info: debug, log: debug, error: console.error, warn: console.warn };
+	// 兜底脱敏: 各处日志可能直接拼入带凭据的 registry, tarball 或 git 地址
+	const customConsole = {};
+	for (const method of ["info", "log", "error", "warn"]) {
+		customConsole[method] = (...args) =>
+			baseConsole[method]("%s", redactUrl(util.format(...args)));
+	}
+	options.console = options.console || customConsole;
+	options.env = options.env || {};
+	options.start = Date.now();
+	options.totalTarballSize = 0;
+	options.totalJSONSize = 0;
+	options.totalJSONCount = 0;
+	options.totalCacheJSONCount = 0;
+	options.totalEtagHitCount = 0;
+	options.totalEtagMissCount = 0;
+	options.localPackages = 0;
+	options.remotePackages = 0;
+	options.registryPackages = 0;
+	options.gitPackages = 0;
+	options.binaryMirrors = options.binaryMirrors || {};
+	const defaultCacheDir = path.join(os.homedir(), ".np_tarball");
+	if (typeof options.cacheDir !== "string") {
+		options.cacheDir = defaultCacheDir;
+	}
+	// https://github.com/sass/node-sass/blob/master/lib/extensions.js#L270
+	// make sure npm_config_cache env exists
+	options.env.npm_config_cache =
+		options.env.npm_config_cache || options.cacheDir || defaultCacheDir;
 
-  // https://github.com/cnpm/cnpm/issues/317
-  options.env.INIT_CWD = process.cwd();
+	// https://github.com/cnpm/cnpm/issues/317
+	options.env.INIT_CWD = process.cwd();
 
-  options.pendingMessages = [];
+	options.pendingMessages = [];
 
-  // log packages update in 7 days
-  options.recentlyUpdateMinDateTime = options.recentlyUpdateMinDateTime || Date.now() - 7 * 24 * 3600000;
-  // { name@version:  }
-  options.recentlyUpdates = new Map();
-  // production mode: log all message to console
-  // other: only show today message to console
-  options.onlyShowTodayUpdateToConsole = !options.production;
-  // record all the packages' name which install from remote/git
-  options.remoteNames = {};
+	// log packages update in 7 days
+	options.recentlyUpdateMinDateTime =
+		options.recentlyUpdateMinDateTime || Date.now() - 7 * 24 * 3600000;
+	// { name@version:  }
+	options.recentlyUpdates = new Map();
+	// production mode: log all message to console
+	// other: only show today message to console
+	options.onlyShowTodayUpdateToConsole = !options.production;
+	// record all the packages' name which install from remote/git
+	options.remoteNames = {};
 
-  options.pkgs = options.pkgs || [];
+	options.pkgs = options.pkgs || [];
 
-  options.referer = 'install';
-  if (options.pkgs.length > 0) {
-    options.referer += ' ' + options.pkgs.map(pkg => pkg.name).join(' ');
-  }
-  if (options.production) {
-    options.referer += ' --production';
-  }
-  options.referer += ` --uuid=${randomUUID()}`;
+	options.referer = "install";
+	if (options.pkgs.length > 0) {
+		options.referer += " " + options.pkgs.map(pkg => pkg.name).join(" ");
+	}
+	if (options.production) {
+		options.referer += " --production";
+	}
+	options.referer += ` --uuid=${randomUUID()}`;
 
-  options.installRoot = options.pkgs.length === 0;
+	options.installRoot = options.pkgs.length === 0;
 
-  options.progresses = {
-    installTasks: 0,
-    finishedInstallTasks: 0,
-    linkTasks: 0,
-    finishedLinkTasks: 0,
-  };
+	options.progresses = {
+		installTasks: 0,
+		finishedInstallTasks: 0,
+		linkTasks: 0,
+		finishedLinkTasks: 0,
+	};
 
-  debug('options: %j', options);
+	debug("options: %j", options);
 
-  return options;
+	return options;
 };

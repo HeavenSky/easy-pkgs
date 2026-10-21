@@ -5,20 +5,44 @@ const API = `${BASE}api`;
 const COOKIE = "__mock_group";
 const STORE_KEY = "__mock_float__";
 
-interface Saved { x: number; y: number; open: boolean }
-interface LogItem { id: string; method: string; url: string; kind: string; scene: string | null; status: number }
+interface Saved {
+	x: number;
+	y: number;
+	open: boolean;
+}
+interface LogItem {
+	id: string;
+	method: string;
+	url: string;
+	kind: string;
+	scene: string | null;
+	status: number;
+}
 
 const load = (): Saved => {
 	try {
 		const raw = JSON.parse(localStorage.getItem(STORE_KEY) || "null") as Saved | null;
-		if (raw && typeof raw.x === "number" && typeof raw.y === "number") { return raw; }
-	} catch { /* 使用默认位置 */ }
+		if (raw && typeof raw.x === "number" && typeof raw.y === "number") {
+			return raw;
+		}
+	} catch {
+		/* 使用默认位置 */
+	}
 	return { x: 16, y: 16, open: false };
 };
-const save = (s: Saved) => { try { localStorage.setItem(STORE_KEY, JSON.stringify(s)); } catch { /* 隐私模式下忽略 */ } };
+const save = (s: Saved) => {
+	try {
+		localStorage.setItem(STORE_KEY, JSON.stringify(s));
+	} catch {
+		/* 隐私模式下忽略 */
+	}
+};
 
 const readGroup = () => {
-	const hit = document.cookie.split(";").map(s => s.trim()).find(s => s.startsWith(`${COOKIE}=`));
+	const hit = document.cookie
+		.split(";")
+		.map(s => s.trim())
+		.find(s => s.startsWith(`${COOKIE}=`));
 	return hit ? decodeURIComponent(hit.slice(COOKIE.length + 1)) : "";
 };
 const writeGroup = (name: string) => {
@@ -29,7 +53,9 @@ const writeGroup = (name: string) => {
 
 const getJson = async <T>(path: string): Promise<T> => {
 	const res = await fetch(API + path, { headers: { "x-mock-ui": "1" } });
-	if (!res.ok) { throw new Error(`HTTP ${res.status}`); }
+	if (!res.ok) {
+		throw new Error(`HTTP ${res.status}`);
+	}
 	return res.json() as Promise<T>;
 };
 
@@ -101,7 +127,18 @@ const mount = () => {
 				<div class="row s">全局场景组: ${meta.group ? esc(meta.group) : "无"}; mock ${meta.enabled.effective ? "已开启" : "已关闭"}</div>
 				${mine !== initialGroup ? `<div class="row hint">场景组已切换, <button class="btn" data-act="reload" type="button">刷新页面</button> 后生效</div>` : ""}
 				<div class="row s">最近命中</div>
-				<ul>${logs.length ? logs.slice().reverse().map(l => `<li><span class="m">${esc(l.method)}</span><span class="u" title="${esc(l.url)}">${esc(l.url)}</span><span class="s">${esc(l.scene || l.kind)}</span><span class="${l.status >= 400 ? "err" : "s"}">${l.status || ""}</span></li>`).join("") : `<li class="s">暂无</li>`}</ul>`;
+				<ul>${
+					logs.length
+						? logs
+								.slice()
+								.reverse()
+								.map(
+									l =>
+										`<li><span class="m">${esc(l.method)}</span><span class="u" title="${esc(l.url)}">${esc(l.url)}</span><span class="s">${esc(l.scene || l.kind)}</span><span class="${l.status >= 400 ? "err" : "s"}">${l.status || ""}</span></li>`
+								)
+								.join("")
+						: `<li class="s">暂无</li>`
+				}</ul>`;
 		} catch (err) {
 			panel.innerHTML = `<div class="err">无法连接 easy-mok 管理接口: ${esc((err as Error).message)}</div>`;
 		}
@@ -111,7 +148,7 @@ const mount = () => {
 		state.open = open;
 		panel.hidden = !open;
 		save(state);
-		timer && clearInterval(timer);
+		if (timer) clearInterval(timer);
 		timer = null;
 		if (open) {
 			render();
@@ -121,12 +158,20 @@ const mount = () => {
 
 	panel.addEventListener("change", e => {
 		const t = e.target as HTMLSelectElement;
-		if (t.dataset.act === "group") { writeGroup(t.value); render(); }
+		if (t.dataset.act === "group") {
+			writeGroup(t.value);
+			render();
+		}
 	});
 	panel.addEventListener("click", e => {
 		const act = (e.target as HTMLElement).dataset.act;
-		if (act === "open") { window.open(BASE, "_blank"); }
-		if (act === "reload") { initialGroup = readGroup(); location.reload(); }
+		if (act === "open") {
+			window.open(BASE, "_blank");
+		}
+		if (act === "reload") {
+			initialGroup = readGroup();
+			location.reload();
+		}
 	});
 
 	// 拖动移动位置, 位移很小时视为点击
@@ -138,8 +183,12 @@ const mount = () => {
 		let moved = false;
 		fab.setPointerCapture(down.pointerId);
 		const move = (e: PointerEvent) => {
-			if (Math.abs(e.clientX - sx) + Math.abs(e.clientY - sy) > 4) { moved = true; }
-			if (!moved) { return; }
+			if (Math.abs(e.clientX - sx) + Math.abs(e.clientY - sy) > 4) {
+				moved = true;
+			}
+			if (!moved) {
+				return;
+			}
 			state.x = ox - (e.clientX - sx);
 			state.y = oy - (e.clientY - sy);
 			place();
@@ -147,7 +196,8 @@ const mount = () => {
 		const up = () => {
 			fab.removeEventListener("pointermove", move);
 			fab.removeEventListener("pointerup", up);
-			moved ? save(state) : setOpen(!state.open);
+			if (moved) save(state);
+			else setOpen(!state.open);
 		};
 		fab.addEventListener("pointermove", move);
 		fab.addEventListener("pointerup", up);
@@ -157,4 +207,8 @@ const mount = () => {
 	setOpen(state.open);
 };
 
-if (document.body) { mount(); } else { document.addEventListener("DOMContentLoaded", mount); }
+if (document.body) {
+	mount();
+} else {
+	document.addEventListener("DOMContentLoaded", mount);
+}

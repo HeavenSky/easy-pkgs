@@ -1,74 +1,77 @@
-import gonzales from 'easy-gonz';
-import type { Node } from 'easy-gonz';
-import { defineOption } from '../option.ts';
-import { text } from '../node.ts';
+import gonzales from "easy-gonz";
+import type { Node } from "easy-gonz";
+import { defineOption } from "../option.ts";
+import { text } from "../node.ts";
 
 export default defineOption({
-  name: 'space-after-combinator',
+	name: "space-after-combinator",
 
-  runBefore: 'block-indent',
+	runBefore: "block-indent",
 
-  syntax: ['css', 'less', 'sass', 'scss'],
+	syntax: ["css", "less", "sass", "scss"],
 
-  accepts: {
-    number: true,
-    string: /^[ \t\n]*$/
-  },
+	accepts: { number: true, string: /^[ \t\n]*$/ },
 
-  /**
-   * Processes tree node.
-   */
-  process(ast: Node) {
-    const value = this.value;
+	/**
+	 * Processes tree node.
+	 */
+	process(ast: Node) {
+		const value = this.value;
 
-    ast.traverseByType('combinator', function(combinator, i, parent) {
-      if (!parent || i === undefined) return;
-      const nextNode = parent.get(i + 1);
+		ast.traverseByType("combinator", function (combinator, i, parent) {
+			if (!parent || i === undefined) return;
+			const nextNode = parent.get(i + 1);
 
-      // 选择器末尾的组合符(`a > {}`, `:is(a +)`, 缩进语法里换行前的 `+`)后面的空白归外层节点(`{` 前的空白, 换行)所有,
-      // 在选择器里再补一个空格, 再解析时它会并进外层空白, 每格式化一次多一个空格
-      if (!nextNode) return;
+			// 选择器末尾的组合符(`a > {}`, `:is(a +)`, 缩进语法里换行前的 `+`)后面的空白归外层节点(`{` 前的空白, 换行)所有,
+			// 在选择器里再补一个空格, 再解析时它会并进外层空白, 每格式化一次多一个空格
+			if (!nextNode) return;
 
-      if (combinator.syntax === 'sass') {
-        // 缩进语法里换行结束语句, 不能并掉
-        if (nextNode.is('space') && text(nextNode).indexOf('\n') !== -1) return;
-        // 行首的 `+` 两种写法意义不同: `+ c` 是以组合符开头的选择器, `+c` 是 mixin 调用(解析器在顶层会把它当成选择器);
-        // 去掉或补上空格都会把一种改成另一种, 原样保留. 跨行选择器里换行后的 `+` 同样在行首
-        const prev = parent.get(i - 1);
-        const lineStart = i === 0 || Boolean(prev) && prev!.is('space') && /[\n\r\f]/.test(text(prev!));
-        if (lineStart && combinator.content === '+' && (value === '' || !nextNode.is('space'))) return;
-      }
+			if (combinator.syntax === "sass") {
+				// 缩进语法里换行结束语句, 不能并掉
+				if (nextNode.is("space") && text(nextNode).indexOf("\n") !== -1) return;
+				// 行首的 `+` 两种写法意义不同: `+ c` 是以组合符开头的选择器, `+c` 是 mixin 调用(解析器在顶层会把它当成选择器);
+				// 去掉或补上空格都会把一种改成另一种, 原样保留. 跨行选择器里换行后的 `+` 同样在行首
+				const prev = parent.get(i - 1);
+				const lineStart =
+					i === 0 || (Boolean(prev) && prev!.is("space") && /[\n\r\f]/.test(text(prev!)));
+				if (
+					lineStart &&
+					combinator.content === "+" &&
+					(value === "" || !nextNode.is("space"))
+				)
+					return;
+			}
 
-      if (nextNode && nextNode.is('space')) {
-        nextNode.content = value;
-      } else {
-        const space = gonzales.createNode({
-          type: 'space',
-          content: value,
-          syntax: ast.syntax
-        });
-        parent.insert(i + 1, space);
-      }
-    });
-  },
+			if (nextNode && nextNode.is("space")) {
+				nextNode.content = value;
+			} else {
+				const space = gonzales.createNode({
+					type: "space",
+					content: value,
+					syntax: ast.syntax,
+				});
+				parent.insert(i + 1, space);
+			}
+		});
+	},
 
-  /**
-   * Detects the value of an option at the tree node.
-   */
-  detect(ast: Node) {
-    const detected: string[] = [];
+	/**
+	 * Detects the value of an option at the tree node.
+	 */
+	detect(ast: Node) {
+		const detected: string[] = [];
 
-    ast.traverseByType('combinator', function(combinator, i, parent) {
-      if (!parent || i === undefined) return;
-      const nextNode = parent.get(i + 1)!;
+		ast.traverseByType("combinator", function (combinator, i, parent) {
+			if (!parent || i === undefined) return;
+			const nextNode = parent.get(i + 1)!;
 
-      if (nextNode.is('space')) {
-        detected.push(text(nextNode));
-      } else {
-        detected.push('');
-      }
-    });
+			if (nextNode.is("space")) {
+				detected.push(text(nextNode));
+			} else {
+				detected.push("");
+			}
+		});
 
-    return detected;
-  }
+		return detected;
+	},
 });

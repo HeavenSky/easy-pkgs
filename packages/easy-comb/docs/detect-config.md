@@ -24,11 +24,7 @@ When the `--config` path ends in `.css`, easy-comb detects its style on every ru
 ## Fill unset options from a template stylesheet
 
 ```json
-{
-    "template": "example.css",
-    "leading-zero": false,
-    "vendor-prefix-align": true
-}
+{ "template": "example.css", "leading-zero": false, "vendor-prefix-align": true }
 ```
 
 With `template`, the options detected in that stylesheet fill in every option that the config doesn't set itself, so your config only lists the options you want to change.

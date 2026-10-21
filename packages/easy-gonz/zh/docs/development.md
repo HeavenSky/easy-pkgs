@@ -9,27 +9,27 @@
 
 1. 克隆仓库并进入包目录：
 
-   ```bash
-   git clone https://github.com/HeavenSky/easy-pkgs.git
-   cd easy-pkgs/packages/easy-gonz
-   ```
+    ```bash
+    git clone https://github.com/HeavenSky/easy-pkgs.git
+    cd easy-pkgs/packages/easy-gonz
+    ```
 
-2. 安装开发依赖（只有 oxlint）：
+2. 安装依赖：
 
-   ```bash
-   npm ci
-   ```
+    ```bash
+    npm ci
+    ```
 
 3. 运行测试；刚克隆的代码应全部通过：
 
-   ```bash
-   npm test
-   ```
+    ```bash
+    npm test
+    ```
 
 ## 编写能在 Node.js 6 上运行的代码
 
 `src/` 和 `bin/` 下的代码只能用 Node.js 6 支持的语法：不能用 `**`、async 函数、对象展开与剩余属性，也不能用可选链。
-`npm run lint:check` 运行 oxlint；`npm run lint` 会同时应用它的自动修复。
+lint 与格式化在仓库根目录执行：`npm run lint:check` 运行 oxlint，`npm run fmt:check` 运行 oxfmt；`npm run lint` 与 `npm run fmt` 会同时应用修复。
 
 ## 添加解析器测试用例
 
@@ -77,21 +77,21 @@ printf 'a-23' | node bin/gonzales.js -s css -c ident -
 
 1. 在仓库根目录下安装参考解析器：
 
-   ```bash
-   (cd packages/_official_style_suites && npm ci)
-   ```
+    ```bash
+    (cd packages/_official_style_suites && npm ci)
+    ```
 
 2. 在仓库根目录下，按 [suites.json](../../../_official_style_suites/suites.json) 钉死的提交，把测试集下载到 `.cache/official/`：
 
-   ```bash
-   node packages/_official_style_suites/fetch.mjs
-   ```
+    ```bash
+    node packages/_official_style_suites/fetch.mjs
+    ```
 
 3. 在 `packages/easy-gonz` 下运行检查；它打印一张汇总表，每个测试集一行，出现新的失败即不通过：
 
-   ```bash
-   npm run test:official
-   ```
+    ```bash
+    npm run test:official
+    ```
 
 某项改动让已知失败的用例通过时，在同一改动里运行 `npm run test:official -- --update`，把它移出基线。
 `npm run test:official -- --gap <suite>` 列出该测试集中 postcss 系工具链通过而 easy-gonz 未通过的用例；`<suite>` 取汇总表的行名，例如 `less` 或 `sass-spec-scss`。

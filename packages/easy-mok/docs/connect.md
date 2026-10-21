@@ -47,7 +47,12 @@ app.use(createMock({ folder: "src/mocks" }));
 const { createMock } = require("easy-mok");
 
 // webpack-dev-server 4+
-devServer: { setupMiddlewares: (m, s) => { s.app.use(createMock()); return m; } };
+devServer: {
+	setupMiddlewares: (m, s) => {
+		s.app.use(createMock());
+		return m;
+	};
+}
 ```
 
 For webpack-dev-server 1-3, register the same `app.use(createMock())` in the `setup` hook.
@@ -66,9 +71,14 @@ The third argument runs when no mock matches, so unmatched requests fall back to
 ```js
 const mock = createMock();
 fastify.addHook("onRequest", (request, reply, done) => {
-	if (!mock.match(request.raw)) { return done(); }
+	if (!mock.match(request.raw)) {
+		return done();
+	}
 	reply.hijack();
-	mock(request.raw, reply.raw, () => { reply.raw.statusCode = 404; reply.raw.end(); });
+	mock(request.raw, reply.raw, () => {
+		reply.raw.statusCode = 404;
+		reply.raw.end();
+	});
 });
 ```
 

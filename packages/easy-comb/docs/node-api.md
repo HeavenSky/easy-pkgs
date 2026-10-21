@@ -8,7 +8,7 @@ The package is an ES module with TypeScript declarations; the full signatures ar
 ## Import the package
 
 ```js
-import Comb from 'easy-comb';
+import Comb from "easy-comb";
 ```
 
 From CommonJS, load it with `const { default: Comb } = await import('easy-comb')`.
@@ -17,12 +17,12 @@ On Node.js 20.19+ and 22.12+, `require('easy-comb')` also works; the class is th
 ## Format files and strings
 
 ```js
-import Comb from 'easy-comb';
+import Comb from "easy-comb";
 
-const comb = new Comb(await Comb.getCustomConfig());  // nearest config file
-await comb.processPath('assets/css');
+const comb = new Comb(await Comb.getCustomConfig()); // nearest config file
+await comb.processPath("assets/css");
 
-const css = await new Comb('csscomb').processString('a{color:#FFF}');
+const css = await new Comb("csscomb").processString("a{color:#FFF}");
 ```
 
 `new Comb(config?)` creates an instance with all built-in options registered.
@@ -32,22 +32,22 @@ const css = await new Comb('csscomb').processString('a{color:#FFF}');
 
 All instance methods return promises, except `configure` and `use`, which return the instance.
 
-| Method | Result |
-| --- | --- |
-| `processPath(path)`, `processDirectory(path)`, `processFile(path)` | Fix files in place. `processFile` resolves with `1` if the file changed, `0` if not, or `undefined` if the file is skipped (unsupported extension or `exclude`); `processDirectory` resolves with an array of `1`/`0`, one per file; `processPath` resolves like `processFile` for a file and like `processDirectory` for a directory. |
-| `processString(text, {syntax, filename})` | Resolve with the fixed string. `syntax` is `css`, `less`, `sass` or `scss` and defaults to `css`. |
-| `lintPath(path)`, `lintDirectory(path)`, `lintFile(path)`, `lintString(text, {syntax, filename})` | Resolve with an array of errors; `lintDirectory`, and `lintPath` on a directory, resolve with one such array per file. See [Read lint errors](#read-lint-errors). |
-| `configure(config)` | Apply a config. Invalid values and unknown options are reported with `console.warn` and ignored. `exclude` globs are relative to the current directory. |
-| `use(option)` | Register a custom option, see [`OptionDefinition`](../src/option.ts). |
+| Method                                                                                            | Result                                                                                                                                                                                                                                                                                                                                 |
+| ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `processPath(path)`, `processDirectory(path)`, `processFile(path)`                                | Fix files in place. `processFile` resolves with `1` if the file changed, `0` if not, or `undefined` if the file is skipped (unsupported extension or `exclude`); `processDirectory` resolves with an array of `1`/`0`, one per file; `processPath` resolves like `processFile` for a file and like `processDirectory` for a directory. |
+| `processString(text, {syntax, filename})`                                                         | Resolve with the fixed string. `syntax` is `css`, `less`, `sass` or `scss` and defaults to `css`.                                                                                                                                                                                                                                      |
+| `lintPath(path)`, `lintDirectory(path)`, `lintFile(path)`, `lintString(text, {syntax, filename})` | Resolve with an array of errors; `lintDirectory`, and `lintPath` on a directory, resolve with one such array per file. See [Read lint errors](#read-lint-errors).                                                                                                                                                                      |
+| `configure(config)`                                                                               | Apply a config. Invalid values and unknown options are reported with `console.warn` and ignored. `exclude` globs are relative to the current directory.                                                                                                                                                                                |
+| `use(option)`                                                                                     | Register a custom option, see [`OptionDefinition`](../src/option.ts).                                                                                                                                                                                                                                                                  |
 
 ## Static methods
 
-| Method | Result |
-| --- | --- |
-| `Comb.getConfig(name?)` | A copy of the built-in config; `name` can only be `'csscomb'`. |
-| `Comb.getCustomConfig(path?)` | A promise of the config loaded from `path`, or from the [nearest config file](configuration.md#where-easy-comb-looks-for-a-config); `null` if none is found or it fails to load. |
-| `Comb.getCustomConfigPath(path?)` | The path of the config file `getCustomConfig()` would load, or `null`. |
-| `Comb.detectInFile(path, options?)`, `Comb.detectInString(text, options?)` | The options detected in a stylesheet; `options` is a list of option names that limits which ones are detected. |
+| Method                                                                     | Result                                                                                                                                                                           |
+| -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Comb.getConfig(name?)`                                                    | A copy of the built-in config; `name` can only be `'csscomb'`.                                                                                                                   |
+| `Comb.getCustomConfig(path?)`                                              | A promise of the config loaded from `path`, or from the [nearest config file](configuration.md#where-easy-comb-looks-for-a-config); `null` if none is found or it fails to load. |
+| `Comb.getCustomConfigPath(path?)`                                          | The path of the config file `getCustomConfig()` would load, or `null`.                                                                                                           |
+| `Comb.detectInFile(path, options?)`, `Comb.detectInString(text, options?)` | The options detected in a stylesheet; `options` is a list of option names that limits which ones are detected.                                                                   |
 
 `getCustomConfig()` ignores `template`; only the `csscomb` command fills options in from a [template stylesheet](detect-config.md#fill-unset-options-from-a-template-stylesheet).
 

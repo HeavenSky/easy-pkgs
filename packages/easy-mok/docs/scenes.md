@@ -38,7 +38,7 @@ When a fixed JSON body is not enough, choose **JS script** (`JS 脚本`) in the 
 ```js
 // the last statement must be a function; helpers and comments may come before it
 const user = require("./_data/user.json"); // relative to the mock folder
-(req, res, next) => ({ ...user, id: req.params.id, page: req.query.page })
+(req, res, next) => ({ ...user, id: req.params.id, page: req.query.page });
 ```
 
 The function receives the parsed `req.params`, `req.query`, and `req.body`. Its return value becomes the response body, unless it responds itself with `res` or calls `next()` to hand the request to your dev server. The status code and headers in the editor are defaults the script can override. Local files the script requires reload on save, like those of mock files. The script is saved in the route's scene file under `__scenes__/`; a script that does not compile is rejected on save, and a hand-edited one that does not compile shows up on the diagnostics page.

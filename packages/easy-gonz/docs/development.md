@@ -9,27 +9,27 @@ There is no build step: `src/` is published as is.
 
 1. Clone the repository and go to the package:
 
-   ```bash
-   git clone https://github.com/HeavenSky/easy-pkgs.git
-   cd easy-pkgs/packages/easy-gonz
-   ```
+    ```bash
+    git clone https://github.com/HeavenSky/easy-pkgs.git
+    cd easy-pkgs/packages/easy-gonz
+    ```
 
-2. Install the dev dependencies (oxlint only):
+2. Install the dependencies:
 
-   ```bash
-   npm ci
-   ```
+    ```bash
+    npm ci
+    ```
 
 3. Run the tests; every test passes on a clean checkout:
 
-   ```bash
-   npm test
-   ```
+    ```bash
+    npm test
+    ```
 
 ## Write code that runs on Node.js 6
 
 Code under `src/` and `bin/` must only use syntax Node.js 6 supports: no `**`, async functions, object spread or rest, or optional chaining.
-`npm run lint:check` runs oxlint; `npm run lint` also applies its fixes.
+Linting and formatting run from the repository root: `npm run lint:check` runs oxlint and `npm run fmt:check` runs oxfmt; `npm run lint` and `npm run fmt` also apply the fixes.
 
 ## Add parser test cases
 
@@ -77,21 +77,21 @@ It needs Node.js 22.18 or later.
 
 1. From the repository root, install the reference parsers:
 
-   ```bash
-   (cd packages/_official_style_suites && npm ci)
-   ```
+    ```bash
+    (cd packages/_official_style_suites && npm ci)
+    ```
 
 2. From the repository root, download the suites at the commits pinned in [suites.json](../../_official_style_suites/suites.json) into `.cache/official/`:
 
-   ```bash
-   node packages/_official_style_suites/fetch.mjs
-   ```
+    ```bash
+    node packages/_official_style_suites/fetch.mjs
+    ```
 
 3. From `packages/easy-gonz`, run the check; it prints one summary table with a row per suite and fails on any new failure:
 
-   ```bash
-   npm run test:official
-   ```
+    ```bash
+    npm run test:official
+    ```
 
 When a change makes a known failure pass, remove it from the baseline in the same change with `npm run test:official -- --update`.
 `npm run test:official -- --gap <suite>` lists the cases of that suite the postcss stack passes and easy-gonz does not; `<suite>` is a row name of the table, such as `less` or `sass-spec-scss`.

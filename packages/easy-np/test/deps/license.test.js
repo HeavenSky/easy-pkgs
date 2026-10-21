@@ -1,24 +1,28 @@
-const coffee = require('coffee');
-const helper = require('../support/helper');
+const coffee = require("coffee");
+const helper = require("../support/helper");
 
-describe('test/deps/license.test.js', () => {
-  const cwd = helper.fixtures('forbidden-license');
-  const cleanup = helper.cleanup(cwd);
+describe("test/deps/license.test.js", () => {
+	const cwd = helper.fixtures("forbidden-license");
+	const cleanup = helper.cleanup(cwd);
 
-  beforeEach(cleanup);
-  afterEach(cleanup);
+	beforeEach(cleanup);
+	afterEach(cleanup);
 
-  it('should install forbidden license error', async () => {
-    await coffee
-      .fork(helper.npminstall, ['--forbidden-licenses=mit,sic', './forbidden'], { cwd })
-      .expect('stderr', /package forbidden's license\(MIT-v3\.0\) is not allowed/)
-      .end();
-  });
+	it("should install forbidden license error", async () => {
+		await coffee
+			.fork(helper.npminstall, ["--forbidden-licenses=mit,sic", "./forbidden"], { cwd })
+			.expect("stderr", /package forbidden's license\(MIT-v3\.0\) is not allowed/)
+			.end();
+	});
 
-  it('should install none / allowed license ok', async () => {
-    await coffee
-      .fork(helper.npminstall, ['--forbidden-licenses=mit,sic', './allow', './none', '--detail'], { cwd })
-      .expect('stdout', /2 packages installed from local file/)
-      .end();
-  });
+	it("should install none / allowed license ok", async () => {
+		await coffee
+			.fork(
+				helper.npminstall,
+				["--forbidden-licenses=mit,sic", "./allow", "./none", "--detail"],
+				{ cwd }
+			)
+			.expect("stdout", /2 packages installed from local file/)
+			.end();
+	});
 });

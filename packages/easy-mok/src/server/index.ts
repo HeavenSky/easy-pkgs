@@ -61,7 +61,11 @@ const resolveOptions = (options: MockOptions = {}) => {
 	const ui = options.ui ?? env.MOCK_UI !== "0";
 	let folder = path.resolve(cwd, options.folder || "src/mocks");
 	// 取真实路径: require.cache 与依赖以真实路径为键, 软链路径下的监听事件会对不上
-	try { folder = fs.realpathSync(folder); } catch (_error) { /* 目录可能尚未创建 */ }
+	try {
+		folder = fs.realpathSync(folder);
+	} catch {
+		/* 目录可能尚未创建 */
+	}
 	return {
 		cwd,
 		folder,
@@ -69,9 +73,17 @@ const resolveOptions = (options: MockOptions = {}) => {
 		ui,
 		float: ui && (options.float ?? env.MOCK_FLOAT !== "0"),
 		lan: options.lan ?? env.MOCK_LAN === "1",
-		hosts: options.hosts || String(env.MOCK_HOSTS || "").split(",").map(s => s.trim()).filter(Boolean),
+		hosts:
+			options.hosts ||
+			String(env.MOCK_HOSTS || "")
+				.split(",")
+				.map(s => s.trim())
+				.filter(Boolean),
 		logSize: options.logSize || 500,
-		stateFile: path.resolve(cwd, options.stateFile || "node_modules/.cache/easy-mok/state.json"),
+		stateFile: path.resolve(
+			cwd,
+			options.stateFile || "node_modules/.cache/easy-mok/state.json"
+		),
 		watch: options.watch !== false,
 		ignore: (options.ignore || []).map(String),
 		ignoreDefaults: options.ignoreDefaults !== false,
@@ -82,10 +94,16 @@ export type ResolvedOptions = ReturnType<typeof resolveOptions>;
 
 /** mock 目录不存在时只警告不抛错, 否则之后的请求全部未命中而毫无提示; 关闭监听时创建后需重启 */
 const warnMissingFolder = (folder: string, watching: boolean) => {
-	if (fs.existsSync(folder)) { return; }
-	const later = watching ? "创建后自动加载, 无需重启" : "创建后需重启 easy-mok 才能加载(已关闭文件监听)";
-	console.warn(`[easy-mok] mock 目录不存在: ${folder}\n  所有请求都不会命中 mock. 请创建该目录并放入 mock 文件(如 mkdir -p "${folder}"), ${later};`
-		+ " 或用 folder 选项 / --folder / MOCK_FOLDER 指向已有目录");
+	if (fs.existsSync(folder)) {
+		return;
+	}
+	const later = watching
+		? "创建后自动加载, 无需重启"
+		: "创建后需重启 easy-mok 才能加载(已关闭文件监听)";
+	console.warn(
+		`[easy-mok] mock 目录不存在: ${folder}\n  所有请求都不会命中 mock. 请创建该目录并放入 mock 文件(如 mkdir -p "${folder}"), ${later};` +
+			" 或用 folder 选项 / --folder / MOCK_FOLDER 指向已有目录"
+	);
 };
 
 export interface MockApp extends Express {
@@ -116,13 +134,30 @@ export const createMock = (options?: MockOptions): MockApp => {
 	const store = createStateStore(opt.stateFile);
 	let responder: ReturnType<typeof createResponder> | null = null; // 注册表启动时先加载一次, 此时还没有代理需要清理
 	const registry = createRegistry({
-		folder: opt.folder, builtin: opt.builtin, fileStore, watch: opt.watch,
+		folder: opt.folder,
+		builtin: opt.builtin,
+		fileStore,
+		watch: opt.watch,
 		cacheDir: path.resolve(opt.cwd, "node_modules/.cache/easy-mok/jiti"),
-		onReload: () => { responder && responder.prune(); events.emit("changed", { scope: "routes" }); },
+		onReload: () => {
+			if (responder) responder.prune();
+			events.emit("changed", { scope: "routes" });
+		},
 	});
 	const journal = createJournal({ size: opt.logSize, onLog: entry => events.emit("log", entry) });
-	const ignore = createIgnore({ defaults: opt.ignoreDefaults, extra: opt.ignore, state: () => store.get().ignore });
-	const handler = createResponder({ registry, store, journal, hosts: opt.hosts, lan: opt.lan, ignore });
+	const ignore = createIgnore({
+		defaults: opt.ignoreDefaults,
+		extra: opt.ignore,
+		state: () => store.get().ignore,
+	});
+	const handler = createResponder({
+		registry,
+		store,
+		journal,
+		hosts: opt.hosts,
+		lan: opt.lan,
+		ignore,
+	});
 	responder = handler;
 
 	const app = express();
@@ -130,8 +165,18 @@ export const createMock = (options?: MockOptions): MockApp => {
 	app.set("etag", false);
 	if (opt.ui) {
 		const admin = createAdmin({
-			registry, store, journal, events, fileStore, guard: createGuard({ lan: opt.lan, hosts: opt.hosts }),
-			bootId, folder: opt.folder, version, float: opt.float, ignore, sceneKind: handler.sceneKind,
+			registry,
+			store,
+			journal,
+			events,
+			fileStore,
+			guard: createGuard({ lan: opt.lan, hosts: opt.hosts }),
+			bootId,
+			folder: opt.folder,
+			version,
+			float: opt.float,
+			ignore,
+			sceneKind: handler.sceneKind,
 		});
 		app.use("/__mock", admin.router);
 	}
@@ -139,37 +184,56 @@ export const createMock = (options?: MockOptions): MockApp => {
 
 	// express 进入时把 req/res 的原型换成自己的并挂上 req.res, res.req, res.locals; express 宿主挂载子应用时会还原,
 	// connect(vite), 原生 http 等宿主不会, 未命中交回宿主前在这里还原, 免得宿主后续中间件拿到被改过的对象
-	const handle = (app as any).handle.bind(app) as (req: any, res: any, callback?: (err?: unknown) => void) => void;
+	const handle = (app as any).handle.bind(app) as (
+		req: any,
+		res: any,
+		callback?: (err?: unknown) => void
+	) => void;
 	(app as any).handle = (req: any, res: any, callback?: (err?: unknown) => void) => {
-		if (!callback) { return handle(req, res); }
+		if (!callback) {
+			return handle(req, res);
+		}
 		const reqProto = Object.getPrototypeOf(req);
 		const resProto = Object.getPrototypeOf(res);
 		const own = (obj: object, key: string) => Object.prototype.hasOwnProperty.call(obj, key);
-		const saved = { reqRes: own(req, "res") ? [req.res] : null, resReq: own(res, "req") ? [res.req] : null, locals: own(res, "locals") ? [res.locals] : null };
+		const saved = {
+			reqRes: own(req, "res") ? [req.res] : null,
+			resReq: own(res, "req") ? [res.req] : null,
+			locals: own(res, "locals") ? [res.locals] : null,
+		};
 		return handle(req, res, (err?: unknown) => {
 			Object.setPrototypeOf(req, reqProto);
 			Object.setPrototypeOf(res, resProto);
-			saved.reqRes ? (req.res = saved.reqRes[0]) : delete req.res;
-			saved.resReq ? (res.req = saved.resReq[0]) : delete res.req;
-			saved.locals ? (res.locals = saved.locals[0]) : delete res.locals;
+			if (saved.reqRes) req.res = saved.reqRes[0];
+			else delete req.res;
+			if (saved.resReq) res.req = saved.resReq[0];
+			else delete res.req;
+			if (saved.locals) res.locals = saved.locals[0];
+			else delete res.locals;
 			callback(err);
 		});
 	};
 
 	return Object.assign(app, {
 		match: handler.match,
-		close: async () => { events.close(); handler.close(); await registry.close(); },
+		close: async () => {
+			events.close();
+			handler.close();
+			await registry.close();
+		},
 		floatScript: opt.float ? FLOAT_PATH : null,
 		mock: { options: opt, registry, store, journal, events, bootId },
 	}) as MockApp;
 };
 
 /** 兼容旧签名: createMockware(folder) */
-export const createMockware = (folder?: string, options?: MockOptions): MockApp => createMock({ ...options, folder: folder || options?.folder });
+export const createMockware = (folder?: string, options?: MockOptions): MockApp =>
+	createMock({ ...options, folder: folder || options?.folder });
 export const mockVite = createMockware;
 
 /** vite allowedHosts 转为 hosts: true 表示不校验, 数组原样沿用(. 开头匹配子域名) */
-const viteHosts = (allowed: unknown): string[] => (allowed === true ? ["*"] : Array.isArray(allowed) ? allowed.map(String) : []);
+const viteHosts = (allowed: unknown): string[] =>
+	allowed === true ? ["*"] : Array.isArray(allowed) ? allowed.map(String) : [];
 
 /**
  * vite 插件: 挂载 mock 并在开发页面注入悬浮条. 未指定 hosts 与 MOCK_HOSTS 时沿用 vite 的 server.allowedHosts.
@@ -187,16 +251,35 @@ export const mockVitePlugin = (options?: MockOptions) => {
 		apply: "serve" as const,
 		async configureServer(server: any) {
 			await close(); // vite 重启时会再次调用, 先关掉上一个实例
-			const hosts = options?.hosts || (process.env.MOCK_HOSTS ? undefined : viteHosts(server.config?.server?.allowedHosts));
+			const hosts =
+				options?.hosts ||
+				(process.env.MOCK_HOSTS
+					? undefined
+					: viteHosts(server.config?.server?.allowedHosts));
 			const current = createMock({ ...options, hosts });
 			app = current;
 			server.middlewares.use(current);
-			server.httpServer && server.httpServer.once("close", () => { app === current && close(); });
+			if (server.httpServer)
+				server.httpServer.once("close", () => {
+					if (app === current) close();
+				});
 		},
 		/** vite 关闭开发服务器时调用插件的 buildEnd, middlewareMode 下没有 httpServer 只能靠它 */
 		buildEnd: close,
-		transformIndexHtml(): Array<{ tag: string; attrs: Record<string, unknown>; injectTo: "body" }> {
-			return app && app.floatScript ? [{ tag: "script", attrs: { src: app.floatScript, defer: true }, injectTo: "body" }] : [];
+		transformIndexHtml(): Array<{
+			tag: string;
+			attrs: Record<string, unknown>;
+			injectTo: "body";
+		}> {
+			return app && app.floatScript
+				? [
+						{
+							tag: "script",
+							attrs: { src: app.floatScript, defer: true },
+							injectTo: "body",
+						},
+					]
+				: [];
 		},
 	};
 };

@@ -10,16 +10,16 @@ Every change is also listed per version in the [CHANGELOG](../CHANGELOG.md).
 
 1. Replace the dependency:
 
-   ```bash
-   npm uninstall gonzales-pe && npm install easy-gonz
-   ```
+    ```bash
+    npm uninstall gonzales-pe && npm install easy-gonz
+    ```
 
 2. Change the import; deep imports such as `easy-gonz/lib/gonzales` work too:
 
-   ```diff
-   - const gonzales = require('gonzales-pe');
-   + const gonzales = require('easy-gonz');
-   ```
+    ```diff
+    - const gonzales = require('gonzales-pe');
+    + const gonzales = require('easy-gonz');
+    ```
 
 3. Run your tests. If they fail, look for the cause in the sections below, starting with [Check code that walks the tree by node type](#check-code-that-walks-the-tree-by-node-type).
 
@@ -47,17 +47,17 @@ Code that matches on node types or child positions may need an update.
 - Scientific notation: `1e3px` was `number` `1` with unit `e3px`, and `1.5E-2` was `number` `1.5` plus `ident` `E-2`; they are now `dimension` `1e3px` and `number` `1.5E-2`. A number ends after its exponent: `3e-2.1` is `number` `3e-2` followed by `number` `.1`.
 - If the value of an SCSS or indented Sass custom property is not a plain value (such as `--x: {a: b}`), the whole value is one `raw` node, matching Sass and postcss-scss; CSS and Less still parse such a value into `block` and other child nodes. For SCSS, 4.3.0 parsed the braces into `block` and `declaration` nodes; for indented Sass, it threw.
 - Indented Sass:
-  - `declarationDelimiter` keeps what was written (`;`, `\r\n`) instead of always `\n`.
-  - A selector ends at a line break: `a⏎b` is two rules, as in dart-sass.
-  - A top-level `//` comment after a nested block stays at the top level.
-  - A line that ends with an operator, `,` or a keyword such as `not` continues on the next line.
-  - A selector whose parentheses span lines (`a:b(c⏎  )`) followed by a nested block is a `ruleset`, not declarations.
-  - A top-level `+name` with a nested block is an `include` holding that block, as it already was when nested, not a `ruleset` starting with a `+` combinator.
+    - `declarationDelimiter` keeps what was written (`;`, `\r\n`) instead of always `\n`.
+    - A selector ends at a line break: `a⏎b` is two rules, as in dart-sass.
+    - A top-level `//` comment after a nested block stays at the top level.
+    - A line that ends with an operator, `,` or a keyword such as `not` continues on the next line.
+    - A selector whose parentheses span lines (`a:b(c⏎  )`) followed by a nested block is a `ruleset`, not declarations.
+    - A top-level `+name` with a nested block is an `include` holding that block, as it already was when nested, not a `ruleset` starting with a `+` combinator.
 - Less:
-  - `@page :first {}` is an `atrule`, not a `declaration`.
-  - `.@{x}-class {}` is a `ruleset`, not a `mixin`.
-  - Backtick JavaScript is one `ident`.
-  - A `value` no longer swallows a following block: `a {b: c}` parsed with `context: 'value'` stops before the block.
+    - `@page :first {}` is an `atrule`, not a `declaration`.
+    - `.@{x}-class {}` is a `ruleset`, not a `mixin`.
+    - Backtick JavaScript is one `ident`.
+    - A `value` no longer swallows a following block: `a {b: c}` parsed with `context: 'value'` stops before the block.
 - These arguments used to be cut short or lose text and are now complete nodes: `url-prefix()` and `domain()` arguments with `//`, `url()` with a string followed by other text, and `:has(> a)`-style arguments.
 - In `:nth-child(2n + 1 of .a)` and `:nth-last-child(… of …)`, the An+B part is read as in `:nth-child(2n + 1)` (`+` is an `operator`), followed by `ident` `of` and the `selector` list.
 - An unclosed comment at the end of input (`/* x`) ended past the last character; its `end` is now the last character.

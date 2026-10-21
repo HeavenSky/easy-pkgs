@@ -15,7 +15,9 @@ export const createEvents = () => {
 	timer.unref();
 
 	const emit = (event: EventName, data: unknown) => {
-		if (!clients.size) { return; }
+		if (!clients.size) {
+			return;
+		}
 		const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 		clients.forEach(res => res.write(payload));
 	};
@@ -23,7 +25,10 @@ export const createEvents = () => {
 	const connect = (req: IncomingMessage, res: Res) => {
 		if (clients.size >= MAX_CLIENTS) {
 			const oldest = clients.values().next().value;
-			if (oldest) { clients.delete(oldest); oldest.end(); }
+			if (oldest) {
+				clients.delete(oldest);
+				oldest.end();
+			}
 		}
 		// no-transform 让 compression 中间件跳过本响应, 否则事件被缓冲直到连接结束
 		res.writeHead(200, {
@@ -43,5 +48,12 @@ export const createEvents = () => {
 		clients.clear();
 	};
 
-	return { emit, connect, close, get size() { return clients.size; } };
+	return {
+		emit,
+		connect,
+		close,
+		get size() {
+			return clients.size;
+		},
+	};
 };

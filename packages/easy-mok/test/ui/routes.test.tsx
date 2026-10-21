@@ -15,7 +15,14 @@ const detail = (route = routeSummary()) => ({
 	scenes: [
 		sceneDetail(),
 		sceneDetail({ name: "empty", content: null }),
-		sceneDetail({ name: "slow", source: "json", kind: "envelope", editable: true, content: { status: 200, body: { a: 1 } }, etag: "e1" }),
+		sceneDetail({
+			name: "slow",
+			source: "json",
+			kind: "envelope",
+			editable: true,
+			content: { status: 200, body: { a: 1 } },
+			etag: "e1",
+		}),
 	],
 });
 
@@ -27,8 +34,10 @@ describe("路由详情", () => {
 			http.patch(`*/__mock/api/routes/${ID}/state`, async ({ request }) => {
 				patched = await request.json();
 				expect(request.headers.get("x-mock-ui")).toBe("1");
-				return HttpResponse.json(routeSummary({ active: { name: "empty", level: "route", fallback: false } }));
-			}),
+				return HttpResponse.json(
+					routeSummary({ active: { name: "empty", level: "route", fallback: false } })
+				);
+			})
 		);
 		renderUi(<RouteDetail id={ID} />);
 		await userEvent.click(await screen.findByRole("radio", { name: /^empty/ }));
@@ -43,10 +52,37 @@ describe("路由详情", () => {
 			http.put(`*/__mock/api/routes/${ID}/scenes/slow`, ({ request }) => {
 				ifMatch.push(request.headers.get("if-match"));
 				if (ifMatch.length === 1) {
-					return HttpResponse.json({ error: { code: "CONFLICT", message: "场景已被其他人修改", details: { current: sceneDetail({ name: "slow", source: "json", kind: "envelope", editable: true, content: { body: "别处" }, etag: "e2" }) } } }, { status: 409 });
+					return HttpResponse.json(
+						{
+							error: {
+								code: "CONFLICT",
+								message: "场景已被其他人修改",
+								details: {
+									current: sceneDetail({
+										name: "slow",
+										source: "json",
+										kind: "envelope",
+										editable: true,
+										content: { body: "别处" },
+										etag: "e2",
+									}),
+								},
+							},
+						},
+						{ status: 409 }
+					);
 				}
-				return HttpResponse.json(sceneDetail({ name: "slow", source: "json", kind: "envelope", editable: true, content: { status: 201, body: { a: 1 } }, etag: "e3" }));
-			}),
+				return HttpResponse.json(
+					sceneDetail({
+						name: "slow",
+						source: "json",
+						kind: "envelope",
+						editable: true,
+						content: { status: 201, body: { a: 1 } },
+						etag: "e3",
+					})
+				);
+			})
 		);
 		renderUi(<RouteDetail id={ID} />);
 		await userEvent.click(await screen.findByRole("button", { name: "编辑场景 slow" }));
@@ -68,7 +104,14 @@ describe("路由详情", () => {
 	});
 
 	it("接口失败时显示错误与重试", async () => {
-		server.use(http.get(`*/__mock/api/routes/${ID}`, () => HttpResponse.json({ error: { code: "NOT_FOUND", message: "路由不存在或已被删除" } }, { status: 404 })));
+		server.use(
+			http.get(`*/__mock/api/routes/${ID}`, () =>
+				HttpResponse.json(
+					{ error: { code: "NOT_FOUND", message: "路由不存在或已被删除" } },
+					{ status: 404 }
+				)
+			)
+		);
 		renderUi(<RouteDetail id={ID} />);
 		expect(await screen.findByRole("alert")).toHaveTextContent("路由不存在或已被删除");
 		expect(screen.getByRole("button", { name: "重试" })).toBeInTheDocument();
@@ -77,7 +120,20 @@ describe("路由详情", () => {
 
 describe("新建路由", () => {
 	it("前端校验路径, 服务端字段错误回填到表单", async () => {
-		server.use(http.post("*/__mock/api/routes", () => HttpResponse.json({ error: { code: "CONFLICT", message: "路由已存在: GET /api/x", details: { field: "path" } } }, { status: 409 })));
+		server.use(
+			http.post("*/__mock/api/routes", () =>
+				HttpResponse.json(
+					{
+						error: {
+							code: "CONFLICT",
+							message: "路由已存在: GET /api/x",
+							details: { field: "path" },
+						},
+					},
+					{ status: 409 }
+				)
+			)
+		);
 		renderUi(<NewRouteDialog open onClose={() => undefined} onCreated={() => undefined} />);
 		const path = screen.getByLabelText(/^路径/);
 		await userEvent.clear(path);
@@ -93,11 +149,29 @@ describe("新建路由", () => {
 	it("响应体填 null 时原样提交并提示创建成功", async () => {
 		let posted: unknown = null;
 		let createdId = "";
-		server.use(http.post("*/__mock/api/routes", async ({ request }) => {
-			posted = await request.json();
-			return HttpResponse.json(routeSummary({ id: "R0VUIC9hcGkvZW1wdHk", key: "GET /api/empty", path: "/api/empty", source: { type: "gui", file: "/p/src/mocks/__gui__.json", line: null } }), { status: 201 });
-		}));
-		renderUi(<NewRouteDialog open onClose={() => undefined} onCreated={id => { createdId = id; }} />);
+		server.use(
+			http.post("*/__mock/api/routes", async ({ request }) => {
+				posted = await request.json();
+				return HttpResponse.json(
+					routeSummary({
+						id: "R0VUIC9hcGkvZW1wdHk",
+						key: "GET /api/empty",
+						path: "/api/empty",
+						source: { type: "gui", file: "/p/src/mocks/__gui__.json", line: null },
+					}),
+					{ status: 201 }
+				);
+			})
+		);
+		renderUi(
+			<NewRouteDialog
+				open
+				onClose={() => undefined}
+				onCreated={id => {
+					createdId = id;
+				}}
+			/>
+		);
 		const path = screen.getByLabelText(/^路径/);
 		await userEvent.clear(path);
 		await userEvent.type(path, "/api/empty");
@@ -106,7 +180,12 @@ describe("新建路由", () => {
 		await userEvent.type(body, "null");
 		await userEvent.click(screen.getByRole("button", { name: "创建" }));
 		expect(await screen.findByText("已新建 GET /api/empty")).toBeInTheDocument();
-		expect(posted).toEqual({ methods: ["GET"], path: "/api/empty", weight: 0, response: { status: 200, body: null } });
+		expect(posted).toEqual({
+			methods: ["GET"],
+			path: "/api/empty",
+			weight: 0,
+			response: { status: 200, body: null },
+		});
 		expect(createdId).toBe("R0VUIC9hcGkvZW1wdHk");
 	});
 
@@ -119,10 +198,18 @@ describe("新建路由", () => {
 describe("来源链接", () => {
 	it("中文与特殊字符路径: 显示原始路径, 链接按段编码", async () => {
 		const file = "/项目/隐患 #1/a?.js";
-		server.use(http.get(`*/__mock/api/routes/${ID}`, () => HttpResponse.json(detail(routeSummary({ source: { type: "code", file, line: 3 } })))));
+		server.use(
+			http.get(`*/__mock/api/routes/${ID}`, () =>
+				HttpResponse.json(detail(routeSummary({ source: { type: "code", file, line: 3 } })))
+			)
+		);
 		renderUi(<RouteDetail id={ID} />);
-		const link = await screen.findByRole("link", { name: new RegExp(`${file.replace(/[?#.]/g, "\\$&")}:3`) });
-		expect(link.getAttribute("href")).toBe(`vscode://file/${encodeURIComponent("项目")}/${encodeURIComponent("隐患 #1")}/${encodeURIComponent("a?.js")}:3`);
+		const link = await screen.findByRole("link", {
+			name: new RegExp(`${file.replace(/[?#.]/g, "\\$&")}:3`),
+		});
+		expect(link.getAttribute("href")).toBe(
+			`vscode://file/${encodeURIComponent("项目")}/${encodeURIComponent("隐患 #1")}/${encodeURIComponent("a?.js")}:3`
+		);
 		expect(vscodeLink("C:\\work\\m.js", null)).toBe("vscode://file/C:/work/m.js");
 		expect(vscodeLink(null)).toBeNull();
 	});

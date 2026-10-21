@@ -16,15 +16,15 @@ npx easy-mok --help
 
 On start it prints the mock URL and the admin page URL. `Ctrl+C` (SIGINT) or SIGTERM closes the server and file watching, then exits. If the mock folder does not exist, easy-mok warns once; see [Create the mock folder](connect.md#create-the-mock-folder).
 
-| Flag | Environment variable | Default | Meaning |
-|---|---|---|---|
-| `--folder <dir>` | `MOCK_FOLDER` | `src/mocks` | Mock folder, relative to the current directory |
-| `--port <port>` | `MOCK_PORT` | 4100 | 0 picks a random port; if the port is taken, easy-mok asks you to pick another and exits with code 1 |
-| `--host <address>` | `MOCK_HOST` | `127.0.0.1` | With `0.0.0.0`, LAN addresses are printed too |
-| `--builtin <file>` | `MOCK_BUILTIN` | none | Built-in routes loaded before the mock files, through jiti |
-| `--ignore <a,b>` | `MOCK_IGNORE` | none | Extra request-ignore rules, see [Keep noise out of the request log](ignore-rules.md) |
-| `--no-ui` / `--no-float` / `--lan` / `--hosts a,b` | `MOCK_UI=0` / `MOCK_FLOAT=0` / `MOCK_LAN=1` / `MOCK_HOSTS` | Same as the [options](options.md) | |
-| `-h, --help` / `-v, --version` | | | |
+| Flag                                               | Environment variable                                       | Default                           | Meaning                                                                                              |
+| -------------------------------------------------- | ---------------------------------------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `--folder <dir>`                                   | `MOCK_FOLDER`                                              | `src/mocks`                       | Mock folder, relative to the current directory                                                       |
+| `--port <port>`                                    | `MOCK_PORT`                                                | 4100                              | 0 picks a random port; if the port is taken, easy-mok asks you to pick another and exits with code 1 |
+| `--host <address>`                                 | `MOCK_HOST`                                                | `127.0.0.1`                       | With `0.0.0.0`, LAN addresses are printed too                                                        |
+| `--builtin <file>`                                 | `MOCK_BUILTIN`                                             | none                              | Built-in routes loaded before the mock files, through jiti                                           |
+| `--ignore <a,b>`                                   | `MOCK_IGNORE`                                              | none                              | Extra request-ignore rules, see [Keep noise out of the request log](ignore-rules.md)                 |
+| `--no-ui` / `--no-float` / `--lan` / `--hosts a,b` | `MOCK_UI=0` / `MOCK_FLOAT=0` / `MOCK_LAN=1` / `MOCK_HOSTS` | Same as the [options](options.md) |                                                                                                      |
+| `-h, --help` / `-v, --version`                     |                                                            |                                   |                                                                                                      |
 
 Command-line flags take precedence over environment variables.
 

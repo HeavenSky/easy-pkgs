@@ -6,186 +6,186 @@ name: Release
 run-name: Release ${{ github.ref_name }}
 
 on:
-  push:
-    tags: ['*@*']
+    push:
+        tags: ["*@*"]
 
 permissions:
-  contents: read
+    contents: read
 
 concurrency:
-  group: release-${{ github.ref }}
-  cancel-in-progress: false
+    group: release-${{ github.ref }}
+    cancel-in-progress: false
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    permissions:
-      actions: read # 查询 CI 结果
-      contents: read
-    outputs:
-      name: ${{ steps.pkg.outputs.name }}
-      version: ${{ steps.pkg.outputs.version }}
-      dist_tag: ${{ steps.pkg.outputs.dist_tag }}
-      prerelease: ${{ steps.pkg.outputs.prerelease }}
-    env:
-      TAG: ${{ github.ref_name }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-
-      # 从 tag 解析包名与版本, 与 package.json 的 version 不一致时直接失败
-      - name: Resolve package
-        id: pkg
-        run: |
-          name="${TAG%@*}"
-          version="${TAG##*@}"
-          if [ ! -f "packages/$name/package.json" ]; then
-            echo "::error::packages/$name 不存在"
-            exit 1
-          fi
-          if [ "$(node -p "require('./packages/$name/package.json').private === true")" = true ]; then
-            echo "::error::packages/$name 是 private 包, 不发布"
-            exit 1
-          fi
-          actual="$(node -p "require('./packages/$name/package.json').version")"
-          if [ "$actual" != "$version" ]; then
-            echo "::error::tag 版本 $version 与 packages/$name/package.json 的 $actual 不一致"
-            exit 1
-          fi
-          # 带预发布后缀(例: 0.0.5-beta.1)的版本发布到 next, 不覆盖 latest
-          case "$version" in
-            *-*) dist_tag=next; prerelease=true ;;
-            *) dist_tag=latest; prerelease=false ;;
-          esac
-          {
-            echo "name=$name"
-            echo "version=$version"
-            echo "dist_tag=$dist_tag"
-            echo "prerelease=$prerelease"
-          } >> "$GITHUB_OUTPUT"
-
-      # 不重复跑 lint 与单测: 等待同一提交在 main 上的 CI 结束, 通过才发布
-      - name: Wait for CI
+    build:
+        runs-on: ubuntu-latest
+        timeout-minutes: 60
+        permissions:
+            actions: read # 查询 CI 结果
+            contents: read
+        outputs:
+            name: ${{ steps.pkg.outputs.name }}
+            version: ${{ steps.pkg.outputs.version }}
+            dist_tag: ${{ steps.pkg.outputs.dist_tag }}
+            prerelease: ${{ steps.pkg.outputs.prerelease }}
         env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          started=$SECONDS
-          while :; do
-            state="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$GITHUB_SHA&event=push&per_page=1" \
-              --jq '.workflow_runs[0] | if . == null then "missing" else "\(.status)/\(.conclusion // "")" end')"
-            case "$state" in
-              completed/success) echo "CI 已通过"; exit 0 ;;
-              completed/*) echo "::error::CI 未通过($state), 不发布"; exit 1 ;;
-              missing)
-                # 与 main 同时推送时 CI 可能稍后才出现; 5 分钟仍没有说明该提交没推到 main
-                if [ $((SECONDS - started)) -gt 300 ]; then
-                  echo "::error::提交 $GITHUB_SHA 没有 CI 运行记录, 先把它推送到 main"
-                  exit 1
-                fi ;;
-            esac
-            echo "CI 状态: $state, 30 秒后重试"
-            sleep 30
-          done
+            TAG: ${{ github.ref_name }}
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  persist-credentials: false
 
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24.x
-          package-manager-cache: false
+            # 从 tag 解析包名与版本, 与 package.json 的 version 不一致时直接失败
+            - name: Resolve package
+              id: pkg
+              run: |
+                  name="${TAG%@*}"
+                  version="${TAG##*@}"
+                  if [ ! -f "packages/$name/package.json" ]; then
+                    echo "::error::packages/$name 不存在"
+                    exit 1
+                  fi
+                  if [ "$(node -p "require('./packages/$name/package.json').private === true")" = true ]; then
+                    echo "::error::packages/$name 是 private 包, 不发布"
+                    exit 1
+                  fi
+                  actual="$(node -p "require('./packages/$name/package.json').version")"
+                  if [ "$actual" != "$version" ]; then
+                    echo "::error::tag 版本 $version 与 packages/$name/package.json 的 $actual 不一致"
+                    exit 1
+                  fi
+                  # 带预发布后缀(例: 0.0.5-beta.1)的版本发布到 next, 不覆盖 latest
+                  case "$version" in
+                    *-*) dist_tag=next; prerelease=true ;;
+                    *) dist_tag=latest; prerelease=false ;;
+                  esac
+                  {
+                    echo "name=$name"
+                    echo "version=$version"
+                    echo "dist_tag=$dist_tag"
+                    echo "prerelease=$prerelease"
+                  } >> "$GITHUB_OUTPUT"
 
-      # 有 build 脚本的包(例如产物在 dist/ 的 TypeScript 包)先安装依赖并构建; 打包跳过 prepack 等生命周期脚本
-      # files 中声明了 npm-shrinkwrap.json 的包, 打包前由仓库脚本从 lockfile 生成(不执行依赖代码), 并确认已打进包
-      - name: Build and pack
-        working-directory: packages/${{ steps.pkg.outputs.name }}
-        run: |
-          if node -e "process.exit(require('./package.json').scripts?.build ? 0 : 1)"; then
-            npm ci
-            npm run build
-          fi
-          shrinkwrap=false
-          if node -e "process.exit((require('./package.json').files || []).includes('npm-shrinkwrap.json') ? 0 : 1)"; then
-            shrinkwrap=true
-            node ../../scripts/shrinkwrap.mjs .
-          fi
-          mkdir -p "$RUNNER_TEMP/pack"
-          npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/pack"
-          if [ "$shrinkwrap" = true ] && ! tar tzf "$RUNNER_TEMP"/pack/*.tgz | grep -qx 'package/npm-shrinkwrap.json'; then
-            echo "::error::package.json 的 files 声明了 npm-shrinkwrap.json, 但包里没有"
-            exit 1
-          fi
-          ls -l "$RUNNER_TEMP/pack"
+            # 不重复跑 lint 与单测: 等待同一提交在 main 上的 CI 结束, 通过才发布
+            - name: Wait for CI
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  started=$SECONDS
+                  while :; do
+                    state="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$GITHUB_SHA&event=push&per_page=1" \
+                      --jq '.workflow_runs[0] | if . == null then "missing" else "\(.status)/\(.conclusion // "")" end')"
+                    case "$state" in
+                      completed/success) echo "CI 已通过"; exit 0 ;;
+                      completed/*) echo "::error::CI 未通过($state), 不发布"; exit 1 ;;
+                      missing)
+                        # 与 main 同时推送时 CI 可能稍后才出现; 5 分钟仍没有说明该提交没推到 main
+                        if [ $((SECONDS - started)) -gt 300 ]; then
+                          echo "::error::提交 $GITHUB_SHA 没有 CI 运行记录, 先把它推送到 main"
+                          exit 1
+                        fi ;;
+                    esac
+                    echo "CI 状态: $state, 30 秒后重试"
+                    sleep 30
+                  done
 
-      - uses: actions/upload-artifact@v7
-        with:
-          name: package
-          path: ${{ runner.temp }}/pack/*.tgz
-          if-no-files-found: error
-          retention-days: 7
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 24.x
+                  package-manager-cache: false
 
-  publish:
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      id-token: write # npm Trusted Publishing
-    env:
-      NAME: ${{ needs.build.outputs.name }}
-      VERSION: ${{ needs.build.outputs.version }}
-    steps:
-      - uses: actions/download-artifact@v8
-        with:
-          name: package
-          path: pack
-      # Trusted Publishing 需要 npm >= 11.5.1 与 Node >= 22.14.0
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24.x
-          registry-url: https://registry.npmjs.org
-          package-manager-cache: false
-      - run: npm i -g npm@11
-      # 只发布 build 产出的 tarball, 不安装依赖也不执行任何脚本
-      - name: Publish
-        run: |
-          if [ "$(npm view "$NAME@$VERSION" version 2>/dev/null)" = "$VERSION" ]; then
-            echo "$NAME@$VERSION 已在 npm 上, 跳过发布"
-            exit 0
-          fi
-          # 必须带 ./: 写成 pack/x.tgz 会被 npm 当成 GitHub 简写 <用户>/<仓库> 去 git 拉取
-          npm publish ./pack/*.tgz --provenance --access public --tag "${{ needs.build.outputs.dist_tag }}"
+            # 有 build 脚本的包(例如产物在 dist/ 的 TypeScript 包)先安装依赖并构建; 打包跳过 prepack 等生命周期脚本
+            # files 中声明了 npm-shrinkwrap.json 的包, 打包前由仓库脚本从 lockfile 生成(不执行依赖代码), 并确认已打进包
+            - name: Build and pack
+              working-directory: packages/${{ steps.pkg.outputs.name }}
+              run: |
+                  if node -e "process.exit(require('./package.json').scripts?.build ? 0 : 1)"; then
+                    npm ci
+                    npm run build
+                  fi
+                  shrinkwrap=false
+                  if node -e "process.exit((require('./package.json').files || []).includes('npm-shrinkwrap.json') ? 0 : 1)"; then
+                    shrinkwrap=true
+                    node ../../scripts/shrinkwrap.mjs .
+                  fi
+                  mkdir -p "$RUNNER_TEMP/pack"
+                  npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/pack"
+                  if [ "$shrinkwrap" = true ] && ! tar tzf "$RUNNER_TEMP"/pack/*.tgz | grep -qx 'package/npm-shrinkwrap.json'; then
+                    echo "::error::package.json 的 files 声明了 npm-shrinkwrap.json, 但包里没有"
+                    exit 1
+                  fi
+                  ls -l "$RUNNER_TEMP/pack"
 
-  release:
-    needs: [build, publish]
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: write # 创建 GitHub Release
-    env:
-      TAG: ${{ github.ref_name }}
-      NAME: ${{ needs.build.outputs.name }}
-      VERSION: ${{ needs.build.outputs.version }}
-      PRERELEASE: ${{ needs.build.outputs.prerelease }}
-      GH_TOKEN: ${{ github.token }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-          sparse-checkout: packages/${{ needs.build.outputs.name }}/CHANGELOG.md
-          sparse-checkout-cone-mode: false
-      # 取 CHANGELOG 中「## <版本>」到下一个二级标题之间的内容作为 Release 说明
-      - name: GitHub Release
-        run: |
-          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            echo "Release $TAG 已存在, 跳过"
-            exit 0
-          fi
-          awk -v v="$VERSION" '
-            /^## / { if (found) exit; if ($0 == "## " v || index($0, "## " v " ") == 1) { found = 1; next } }
-            found { print }
-          ' "packages/$NAME/CHANGELOG.md" > release-notes.md
-          if [ ! -s release-notes.md ]; then
-            echo "CHANGELOG 中没有 $VERSION 的条目" > release-notes.md
-          fi
-          flags=()
-          if [ "$PRERELEASE" = true ]; then flags+=(--prerelease); fi
-          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --notes-file release-notes.md --verify-tag "${flags[@]}"
+            - uses: actions/upload-artifact@v7
+              with:
+                  name: package
+                  path: ${{ runner.temp }}/pack/*.tgz
+                  if-no-files-found: error
+                  retention-days: 7
+
+    publish:
+        needs: build
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        permissions:
+            id-token: write # npm Trusted Publishing
+        env:
+            NAME: ${{ needs.build.outputs.name }}
+            VERSION: ${{ needs.build.outputs.version }}
+        steps:
+            - uses: actions/download-artifact@v8
+              with:
+                  name: package
+                  path: pack
+            # Trusted Publishing 需要 npm >= 11.5.1 与 Node >= 22.14.0
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 24.x
+                  registry-url: https://registry.npmjs.org
+                  package-manager-cache: false
+            - run: npm i -g npm@11
+            # 只发布 build 产出的 tarball, 不安装依赖也不执行任何脚本
+            - name: Publish
+              run: |
+                  if [ "$(npm view "$NAME@$VERSION" version 2>/dev/null)" = "$VERSION" ]; then
+                    echo "$NAME@$VERSION 已在 npm 上, 跳过发布"
+                    exit 0
+                  fi
+                  # 必须带 ./: 写成 pack/x.tgz 会被 npm 当成 GitHub 简写 <用户>/<仓库> 去 git 拉取
+                  npm publish ./pack/*.tgz --provenance --access public --tag "${{ needs.build.outputs.dist_tag }}"
+
+    release:
+        needs: [build, publish]
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        permissions:
+            contents: write # 创建 GitHub Release
+        env:
+            TAG: ${{ github.ref_name }}
+            NAME: ${{ needs.build.outputs.name }}
+            VERSION: ${{ needs.build.outputs.version }}
+            PRERELEASE: ${{ needs.build.outputs.prerelease }}
+            GH_TOKEN: ${{ github.token }}
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  persist-credentials: false
+                  sparse-checkout: packages/${{ needs.build.outputs.name }}/CHANGELOG.md
+                  sparse-checkout-cone-mode: false
+            # 取 CHANGELOG 中「## <版本>」到下一个二级标题之间的内容作为 Release 说明
+            - name: GitHub Release
+              run: |
+                  if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+                    echo "Release $TAG 已存在, 跳过"
+                    exit 0
+                  fi
+                  awk -v v="$VERSION" '
+                    /^## / { if (found) exit; if ($0 == "## " v || index($0, "## " v " ") == 1) { found = 1; next } }
+                    found { print }
+                  ' "packages/$NAME/CHANGELOG.md" > release-notes.md
+                  if [ ! -s release-notes.md ]; then
+                    echo "CHANGELOG 中没有 $VERSION 的条目" > release-notes.md
+                  fi
+                  flags=()
+                  if [ "$PRERELEASE" = true ]; then flags+=(--prerelease); fi
+                  gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --notes-file release-notes.md --verify-tag "${flags[@]}"

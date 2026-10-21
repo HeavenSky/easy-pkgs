@@ -9,25 +9,30 @@ This page shows how to put properties, preprocessor variables and mixins in the 
 `sort-order` is a list of property names, or a list of groups; easy-comb separates groups with an empty line.
 
 ```json
-{ "sort-order": [["position", "top"], ["margin", "padding"]] }
+{
+	"sort-order": [
+		["position", "top"],
+		["margin", "padding"]
+	]
+}
 ```
 
 ```css
 /* before */
 p {
-    padding: 0;
-    top: 0;
-    margin: 0;
-    position: absolute;
+	padding: 0;
+	top: 0;
+	margin: 0;
+	position: absolute;
 }
 
 /* after */
 p {
-    position: absolute;
-    top: 0;
+	position: absolute;
+	top: 0;
 
-    margin: 0;
-    padding: 0;
+	margin: 0;
+	padding: 0;
 }
 ```
 
@@ -57,13 +62,13 @@ To put them somewhere else, add `"..."` to the list where they belong:
 
 In Less, Sass and SCSS, these keywords can be used in the list like property names:
 
-| Keyword | Places |
-| --- | --- |
-| `$variable` | Variable declarations |
-| `$include` | Every mixin include that isn't listed by name |
-| `$include mixin-name` | Includes of that mixin |
-| `$extend` | Extends |
-| `$import` | `@import` |
+| Keyword               | Places                                        |
+| --------------------- | --------------------------------------------- |
+| `$variable`           | Variable declarations                         |
+| `$include`            | Every mixin include that isn't listed by name |
+| `$include mixin-name` | Includes of that mixin                        |
+| `$extend`             | Extends                                       |
+| `$import`             | `@import`                                     |
 
 ```json
 { "sort-order": [["$variable"], ["$include"], ["top", "padding"], ["$include media"]] }
@@ -72,27 +77,27 @@ In Less, Sass and SCSS, these keywords can be used in the list like property nam
 ```scss
 /* before */
 p {
-    padding: 0;
-    @include media("desktop") {
-        color: black;
-    }
-    $color: tomato;
-    top: 0;
-    @include mixin($color);
+	padding: 0;
+	@include media("desktop") {
+		color: black;
+	}
+	$color: tomato;
+	top: 0;
+	@include mixin($color);
 }
 
 /* after */
 p {
-    $color: tomato;
+	$color: tomato;
 
-    @include mixin($color);
+	@include mixin($color);
 
-    top: 0;
-    padding: 0;
+	top: 0;
+	padding: 0;
 
-    @include media("desktop") {
-        color: black;
-    }
+	@include media("desktop") {
+		color: black;
+	}
 }
 ```
 

@@ -26,9 +26,13 @@ document.getElementById("p").onclick = () => show("/api/upstream/hello");
 </script>
 ${mock.floatScript ? `<script src="${mock.floatScript}"></script>` : ""}`);
 });
-app.use((req, res) => res.status(404).json({ host: true, message: "宿主 404", url: req.originalUrl }));
+app.use((req, res) =>
+	res.status(404).json({ host: true, message: "宿主 404", url: req.originalUrl })
+);
 
-http.createServer(app).listen(PORT, "127.0.0.1", () => console.log(`[dev] http://127.0.0.1:${PORT}/  管理页 http://127.0.0.1:${PORT}/__mock/`));
+http.createServer(app).listen(PORT, "127.0.0.1", () =>
+	console.log(`[dev] http://127.0.0.1:${PORT}/  管理页 http://127.0.0.1:${PORT}/__mock/`)
+);
 http.createServer((req, res) => {
 	res.writeHead(200, { "content-type": "application/json" });
 	res.end(JSON.stringify({ upstream: true, path: req.url, at: Date.now() }));

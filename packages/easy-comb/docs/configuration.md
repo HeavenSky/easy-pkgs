@@ -25,14 +25,17 @@ The exact list is `CONFIG_FILES` in [src/config.ts](../src/config.ts).
 
 ```ts
 // csscomb.config.ts
-import { defineConfig } from 'easy-comb';
+import { defineConfig } from "easy-comb";
 
 export default defineConfig({
-  exclude: ['node_modules/**'],
-  'always-semicolon': true,
-  'color-case': 'lower',
-  'quotes': 'single',
-  'sort-order': [['position', 'top'], ['display', 'width', 'height']],
+	exclude: ["node_modules/**"],
+	"always-semicolon": true,
+	"color-case": "lower",
+	quotes: "single",
+	"sort-order": [
+		["position", "top"],
+		["display", "width", "height"],
+	],
 });
 ```
 
@@ -45,11 +48,14 @@ The same config as JSON:
 
 ```json
 {
-    "exclude": ["node_modules/**"],
-    "always-semicolon": true,
-    "color-case": "lower",
-    "quotes": "single",
-    "sort-order": [["position", "top"], ["display", "width", "height"]]
+	"exclude": ["node_modules/**"],
+	"always-semicolon": true,
+	"color-case": "lower",
+	"quotes": "single",
+	"sort-order": [
+		["position", "top"],
+		["display", "width", "height"]
+	]
 }
 ```
 
@@ -57,13 +63,13 @@ The same config as JSON:
 
 Besides the [options](options.md), a config may contain these keys:
 
-| Key | Effect |
-| --- | --- |
-| `exclude` | Globs relative to the directory of the config file; matching files and directories are skipped, e.g. `["node_modules/**"]`. In the built-in config and in a config passed to [`configure()`](node-api.md), they are relative to the current directory. |
-| `syntax` | Extra file extensions and the syntax to parse them with, e.g. `{".wxss": "css"}`. |
-| `template` | A stylesheet whose detected style fills in the options this config doesn't set, see [Fill unset options from a template stylesheet](detect-config.md#fill-unset-options-from-a-template-stylesheet). |
-| `lint` | Same as `--lint`. |
-| `verbose` | Same as `--verbose`. |
+| Key        | Effect                                                                                                                                                                                                                                                 |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `exclude`  | Globs relative to the directory of the config file; matching files and directories are skipped, e.g. `["node_modules/**"]`. In the built-in config and in a config passed to [`configure()`](node-api.md), they are relative to the current directory. |
+| `syntax`   | Extra file extensions and the syntax to parse them with, e.g. `{".wxss": "css"}`.                                                                                                                                                                      |
+| `template` | A stylesheet whose detected style fills in the options this config doesn't set, see [Fill unset options from a template stylesheet](detect-config.md#fill-unset-options-from-a-template-stylesheet).                                                   |
+| `lint`     | Same as `--lint`.                                                                                                                                                                                                                                      |
+| `verbose`  | Same as `--verbose`.                                                                                                                                                                                                                                   |
 
 ## Fix a TypeScript config that fails to load
 

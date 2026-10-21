@@ -8,8 +8,12 @@ export const confirmLeave = () => !dirty || window.confirm("有未保存的修�
 export const useUnsaved = (isDirty: boolean) => {
 	useEffect(() => {
 		dirty = isDirty;
-		if (!isDirty) { return undefined; }
-		const onBeforeUnload = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+		if (!isDirty) {
+			return undefined;
+		}
+		const onBeforeUnload = (e: BeforeUnloadEvent) => {
+			e.preventDefault();
+		};
 		window.addEventListener("beforeunload", onBeforeUnload);
 		return () => {
 			dirty = false;

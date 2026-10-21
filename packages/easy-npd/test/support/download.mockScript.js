@@ -1,6 +1,6 @@
-'use strict';
-const mm = require('mm');
+"use strict";
+const mm = require("mm");
 
 (() => {
-  mm(process, 'platform', 'mock_platform');
+	mm(process, "platform", "mock_platform");
 })();

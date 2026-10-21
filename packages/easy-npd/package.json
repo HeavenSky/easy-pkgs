@@ -1,92 +1,85 @@
 {
-  "name": "easy-npd",
-  "version": "0.0.6",
-  "description": "Install npm dependencies that resume where a failed install stopped, retry across the fastest public registries, and run dependency install scripts only after you approve them.",
-  "keywords": [
-    "dedup",
-    "hoist",
-    "installer",
-    "npm",
-    "npm install",
-    "npminstall"
-  ],
-  "homepage": "https://github.com/HeavenSky/easy-pkgs/tree/main/packages/easy-npd#readme",
-  "bugs": {
-    "url": "https://github.com/HeavenSky/easy-pkgs/issues"
-  },
-  "license": "MIT",
-  "author": "calla <aurora.calla@outlook.com>",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/HeavenSky/easy-pkgs.git",
-    "directory": "packages/easy-npd"
-  },
-  "bin": {
-    "npd": "bin/i.js",
-    "npd-x": "bin/x.js"
-  },
-  "files": [
-    "npm-shrinkwrap.json",
-    "lib",
-    "bin",
-    "node-gyp-bin",
-    "CHANGELOG.md"
-  ],
-  "main": "lib/index.js",
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
-  },
-  "scripts": {
-    "test": "npm run lint:check && mocha \"test/*/*.test.js\"",
-    "test-cov": "c8 --reporter=text --reporter=lcov mocha \"test/*/*.test.js\"",
-    "test-local": "npm_china=true local=true mocha --full-trace \"test/*/*.test.js\"",
-    "lint": "oxlint --fix",
-    "lint:check": "oxlint",
-    "fmt": "oxfmt --write",
-    "fmt:check": "oxfmt --check",
-    "ci": "npm run lint && npm run test-cov",
-    "prepublishOnly": "npm run lint:check"
-  },
-  "dependencies": {
-    "await-event": "^2.1.0",
-    "bin-links": "^2.3.0",
-    "binary-mirror-config": "^1.19.0",
-    "bytes": "^3.1.0",
-    "cacheable-lookup": "^6.1.0",
-    "chalk": "^2.4.2",
-    "cmd-shim-hotfix": "^3.0.3",
-    "dayjs": "^1.11.23",
-    "debug": "^4.1.1",
-    "destroy": "^1.0.4",
-    "detect-libc": "^2.0.1",
-    "fs-extra": "^7.0.1",
-    "js-yaml": "^4.1.0",
-    "minimatch": "^3.0.4",
-    "minimist": "^1.2.0",
-    "ms": "^2.1.1",
-    "node-homedir": "^1.1.1",
-    "normalize-package-data": "^5.0.0",
-    "npm-normalize-package-bin": "^3.0.0",
-    "npm-package-arg": "^8.1.5",
-    "npm-packlist": "^5.1.3",
-    "ora": "^4.0.5",
-    "p-map": "^2.1.0",
-    "rc": "^1.2.8",
-    "runscript": "^1.3.0",
-    "semver": "^7.0.0",
-    "tar": "7.5.22",
-    "urllib": "3.27.3",
-    "utility": "^1.16.1"
-  },
-  "devDependencies": {
-    "c8": "^9.1.0",
-    "coffee": "5",
-    "mm": "3",
-    "mocha": "^11.7.0",
-    "oxfmt": "^0.70.0",
-    "oxlint": "^1.85.0"
-  },
-  "engines": {
-    "node": ">=14.19.3"
-  }
+	"name": "easy-npd",
+	"version": "0.0.6",
+	"description": "Install npm dependencies that resume where a failed install stopped, retry across the fastest public registries, and run dependency install scripts only after you approve them.",
+	"keywords": [
+		"dedup",
+		"hoist",
+		"installer",
+		"npm",
+		"npm install",
+		"npminstall"
+	],
+	"homepage": "https://github.com/HeavenSky/easy-pkgs/tree/main/packages/easy-npd#readme",
+	"bugs": {
+		"url": "https://github.com/HeavenSky/easy-pkgs/issues"
+	},
+	"license": "MIT",
+	"author": "calla <aurora.calla@outlook.com>",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/HeavenSky/easy-pkgs.git",
+		"directory": "packages/easy-npd"
+	},
+	"bin": {
+		"npd": "bin/i.js",
+		"npd-x": "bin/x.js"
+	},
+	"files": [
+		"npm-shrinkwrap.json",
+		"lib",
+		"bin",
+		"node-gyp-bin",
+		"CHANGELOG.md"
+	],
+	"main": "lib/index.js",
+	"publishConfig": {
+		"registry": "https://registry.npmjs.org/"
+	},
+	"scripts": {
+		"test": "mocha \"test/*/*.test.js\"",
+		"test-cov": "c8 --reporter=text --reporter=lcov mocha \"test/*/*.test.js\"",
+		"test-local": "npm_china=true local=true mocha --full-trace \"test/*/*.test.js\"",
+		"ci": "npm run test-cov"
+	},
+	"dependencies": {
+		"await-event": "^2.1.0",
+		"bin-links": "^2.3.0",
+		"binary-mirror-config": "^1.19.0",
+		"bytes": "^3.1.0",
+		"cacheable-lookup": "^6.1.0",
+		"chalk": "^2.4.2",
+		"cmd-shim-hotfix": "^3.0.3",
+		"dayjs": "^1.11.23",
+		"debug": "^4.1.1",
+		"destroy": "^1.0.4",
+		"detect-libc": "^2.0.1",
+		"fs-extra": "^7.0.1",
+		"js-yaml": "^4.1.0",
+		"minimatch": "^3.0.4",
+		"minimist": "^1.2.0",
+		"ms": "^2.1.1",
+		"node-homedir": "^1.1.1",
+		"normalize-package-data": "^5.0.0",
+		"npm-normalize-package-bin": "^3.0.0",
+		"npm-package-arg": "^8.1.5",
+		"npm-packlist": "^5.1.3",
+		"ora": "^4.0.5",
+		"p-map": "^2.1.0",
+		"rc": "^1.2.8",
+		"runscript": "^1.3.0",
+		"semver": "^7.0.0",
+		"tar": "7.5.22",
+		"urllib": "3.27.3",
+		"utility": "^1.16.1"
+	},
+	"devDependencies": {
+		"c8": "^9.1.0",
+		"coffee": "5",
+		"mm": "3",
+		"mocha": "^11.7.0"
+	},
+	"engines": {
+		"node": ">=14.19.3"
+	}
 }

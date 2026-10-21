@@ -9,13 +9,34 @@ import { renderUi } from "./render";
 import { FakeEventSource, server } from "./setup";
 
 const meta = {
-	name: "easy-mok", version: "0.0.1", bootId: "b1", folder: "/p/src/mocks", stateFile: "/p/state.json",
-	enabled: { code: true, state: true, effective: true }, group: null, logLevel: "hit", readOnly: false, float: true,
-	counts: { routes: 0, files: 0 }, diagnostics: [{ type: "load-error", message: "boom" }], env: { node: "v26", platform: "darwin" },
+	name: "easy-mok",
+	version: "0.0.1",
+	bootId: "b1",
+	folder: "/p/src/mocks",
+	stateFile: "/p/state.json",
+	enabled: { code: true, state: true, effective: true },
+	group: null,
+	logLevel: "hit",
+	readOnly: false,
+	float: true,
+	counts: { routes: 0, files: 0 },
+	diagnostics: [{ type: "load-error", message: "boom" }],
+	env: { node: "v26", platform: "darwin" },
 };
 
 const log = (id: string, url: string) => ({
-	id, time: 1, method: "GET", url, kind: "mock", routeId: null, routeKey: "GET /a", scene: "default", sceneLevel: "default", sceneFallback: false, status: 200, durationMs: 1,
+	id,
+	time: 1,
+	method: "GET",
+	url,
+	kind: "mock",
+	routeId: null,
+	routeKey: "GET /a",
+	scene: "default",
+	sceneLevel: "default",
+	sceneFallback: false,
+	status: 200,
+	durationMs: 1,
 });
 
 const base = () => [
@@ -37,7 +58,10 @@ describe("应用框架", () => {
 	});
 
 	it("日志页: SSE 实时追加, 暂停期间不刷新列表并计数", async () => {
-		server.use(...base(), http.get("*/__mock/api/logs", () => HttpResponse.json([log("1", "/first")])));
+		server.use(
+			...base(),
+			http.get("*/__mock/api/logs", () => HttpResponse.json([log("1", "/first")]))
+		);
 		renderUi(<App />, "/logs");
 		expect(await screen.findByText("/first")).toBeInTheDocument();
 		act(() => FakeEventSource.last?.emit("log", log("2", "/second")));

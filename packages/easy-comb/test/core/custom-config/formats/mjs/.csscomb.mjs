@@ -1,1 +1,1 @@
-export default {"color-case": "upper"};
+export default { "color-case": "upper" };

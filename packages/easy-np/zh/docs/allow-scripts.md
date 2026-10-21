@@ -25,13 +25,7 @@
 `allowScripts` 写在根 `package.json`：
 
 ```json
-{
-  "allowScripts": {
-    "esbuild": true,
-    "sharp@0.33.5": true,
-    "core-js": false
-  }
-}
+{ "allowScripts": { "esbuild": true, "sharp@0.33.5": true, "core-js": false } }
 ```
 
 - 键写包名（全部版本）、`<name>@<精确版本>` 或用 `||` 连接的多个精确版本、git 地址、tarball URL；范围与 dist-tag 告警后忽略。

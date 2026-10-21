@@ -17,33 +17,46 @@ On top of that it fixes long-standing CSScomb bugs, such as extra semicolons aft
 With the built-in config and no config file, `npx csscomb card.css` turns this:
 
 ```css
-.card{color:#FFFFFF;z-index:2;padding:0 .5em;display:flex;position:relative;
-  -webkit-transition:opacity .3s;transition:opacity .3s;background:url('bg.png') #FF0000}
-A:hover, LI > SPAN{font-weight:bold;color:#AABBCC;}
+.card {
+	color: #ffffff;
+	z-index: 2;
+	padding: 0 0.5em;
+	display: flex;
+	position: relative;
+	-webkit-transition: opacity 0.3s;
+	transition: opacity 0.3s;
+	background: url("bg.png") #ff0000;
+}
+A:hover,
+LI > SPAN {
+	font-weight: bold;
+	color: #aabbcc;
+}
 ```
 
 into this:
 
 ```css
 .card {
-  position: relative;
-  z-index: 2;
+	position: relative;
+	z-index: 2;
 
-  display: flex;
+	display: flex;
 
-  padding: 0 0.5em;
+	padding: 0 0.5em;
 
-  color: #fff;
+	color: #fff;
 
-  background: url("bg.png") #f00;
+	background: url("bg.png") #f00;
 
-  -webkit-transition: opacity 0.3s;
-          transition: opacity 0.3s;
+	-webkit-transition: opacity 0.3s;
+	transition: opacity 0.3s;
 }
 
-a:hover, li > span {
-  font-weight: bold;
-  color: #abc;
+a:hover,
+li > span {
+	font-weight: bold;
+	color: #abc;
 }
 ```
 

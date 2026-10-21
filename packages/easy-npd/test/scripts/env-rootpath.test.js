@@ -1,21 +1,21 @@
-'use strict';
+"use strict";
 
-const coffee = require('coffee');
-const helper = require('../support/helper');
+const coffee = require("coffee");
+const helper = require("../support/helper");
 
-describe('test/scripts/env-rootpath.test.js', () => {
-  const cwd = helper.fixtures('rootpath');
-  const cleanup = helper.cleanup(cwd);
+describe("test/scripts/env-rootpath.test.js", () => {
+	const cwd = helper.fixtures("rootpath");
+	const cleanup = helper.cleanup(cwd);
 
-  beforeEach(cleanup);
-  afterEach(cleanup);
+	beforeEach(cleanup);
+	afterEach(cleanup);
 
-  it('should run preinstall and postinstall', () => {
-    return coffee
-      .fork(helper.npminstall, ['--detail'], { cwd })
-      .debug()
-      .expect('code', 0)
-      .expect('stdout', /hello process\.env\.npm_rootpath is true/)
-      .end();
-  });
+	it("should run preinstall and postinstall", () => {
+		return coffee
+			.fork(helper.npminstall, ["--detail"], { cwd })
+			.debug()
+			.expect("code", 0)
+			.expect("stdout", /hello process\.env\.npm_rootpath is true/)
+			.end();
+	});
 });

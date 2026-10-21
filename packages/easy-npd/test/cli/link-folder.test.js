@@ -1,48 +1,46 @@
-'use strict';
+"use strict";
 
-const assert = require('assert');
-const path = require('path');
-const coffee = require('coffee');
-const helper = require('../support/helper');
-const { rimraf, exists } = require('../../lib/utils');
+const assert = require("assert");
+const path = require("path");
+const coffee = require("coffee");
+const helper = require("../support/helper");
+const { rimraf, exists } = require("../../lib/utils");
 
-const npmlink = path.join(__dirname, '../../bin/x.js');
+const npmlink = path.join(__dirname, "../../bin/x.js");
 
-describe('test/cli/link-folder.test.js', () => {
-  const root = helper.fixtures('link-folder');
+describe("test/cli/link-folder.test.js", () => {
+	const root = helper.fixtures("link-folder");
 
-  async function cleanup() {
-    await rimraf(path.join(root, 'node_modules'));
-    await rimraf(path.join(root, 'linked-package/node_modules'));
-    await rimraf(path.join(root, 'linked-package-2/node_modules'));
-  }
+	async function cleanup() {
+		await rimraf(path.join(root, "node_modules"));
+		await rimraf(path.join(root, "linked-package/node_modules"));
+		await rimraf(path.join(root, "linked-package-2/node_modules"));
+	}
 
-  beforeEach(cleanup);
-  afterEach(cleanup);
+	beforeEach(cleanup);
+	afterEach(cleanup);
 
-  it('should link one folder work', async () => {
-    await coffee
-      .fork(npmlink, ['link', './linked-package'], {
-        cwd: root,
-      })
-      .debug()
-      .expect('stderr', /npm_rootpath:.+link-folder!!!!!/)
-      .end();
+	it("should link one folder work", async () => {
+		await coffee
+			.fork(npmlink, ["link", "./linked-package"], { cwd: root })
+			.debug()
+			.expect("stderr", /npm_rootpath:.+link-folder!!!!!/)
+			.end();
 
-    assert(await exists(path.join(root, 'node_modules/linked-package')));
-  });
+		assert(await exists(path.join(root, "node_modules/linked-package")));
+	});
 
-  it('should link two folder work', async () => {
-    await coffee
-      .fork(npmlink, ['link', './linked-package', './linked-package-2', '--detail'], {
-        cwd: root,
-      })
-      .debug()
-      .end();
+	it("should link two folder work", async () => {
+		await coffee
+			.fork(npmlink, ["link", "./linked-package", "./linked-package-2", "--detail"], {
+				cwd: root,
+			})
+			.debug()
+			.end();
 
-    assert(await exists(path.join(root, 'node_modules/linked-package')));
-    assert(await exists(path.join(root, 'node_modules/linked-package-2')));
-    // bin file should be exists
-    assert(await exists(path.join(root, 'node_modules/.bin/linked-package-2')));
-  });
+		assert(await exists(path.join(root, "node_modules/linked-package")));
+		assert(await exists(path.join(root, "node_modules/linked-package-2")));
+		// bin file should be exists
+		assert(await exists(path.join(root, "node_modules/.bin/linked-package-2")));
+	});
 });

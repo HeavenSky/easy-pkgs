@@ -1,57 +1,52 @@
 {
-  "name": "easy-gonz",
-  "description": "Parse CSS, Less, SCSS and indented Sass into one editable syntax tree that prints back byte for byte.",
-  "version": "0.0.3",
-  "keywords": [
-    "ast",
-    "css",
-    "css-parser",
-    "gonzales",
-    "gonzales-pe",
-    "less",
-    "parser",
-    "sass",
-    "scss"
-  ],
-  "homepage": "https://github.com/HeavenSky/easy-pkgs/tree/main/packages/easy-gonz#readme",
-  "bugs": {
-    "url": "https://github.com/HeavenSky/easy-pkgs/issues"
-  },
-  "license": "MIT",
-  "author": "calla <aurora.calla@outlook.com>",
-  "contributors": [
-    "Tony Ganch <tonyganch+github@gmail.com> (http://tonyganch.com)"
-  ],
-  "main": "./src/gonzales.js",
-  "types": "./gonzales.d.ts",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/HeavenSky/easy-pkgs.git",
-    "directory": "packages/easy-gonz"
-  },
-  "scripts": {
-    "test": "node --test \"test/**/*.test.js\"",
-    "test:update": "node test/corpus.js --update",
-    "test:compat": "node test/corpus.js",
-    "test:official": "node ../_official_style_suites/gonz.mjs",
-    "lint": "oxlint --fix",
-    "lint:check": "oxlint"
-  },
-  "bin": {
-    "gonzales": "./bin/gonzales.js"
-  },
-  "devDependencies": {
-    "oxlint": "^1.88.0"
-  },
-  "engines": {
-    "node": ">=6"
-  },
-  "files": [
-    "CHANGELOG.md",
-    "MIT-LICENSE.txt",
-    "bin",
-    "gonzales.d.ts",
-    "lib",
-    "src"
-  ]
+	"name": "easy-gonz",
+	"version": "0.0.3",
+	"description": "Parse CSS, Less, SCSS and indented Sass into one editable syntax tree that prints back byte for byte.",
+	"keywords": [
+		"ast",
+		"css",
+		"css-parser",
+		"gonzales",
+		"gonzales-pe",
+		"less",
+		"parser",
+		"sass",
+		"scss"
+	],
+	"homepage": "https://github.com/HeavenSky/easy-pkgs/tree/main/packages/easy-gonz#readme",
+	"bugs": {
+		"url": "https://github.com/HeavenSky/easy-pkgs/issues"
+	},
+	"license": "MIT",
+	"author": "calla <aurora.calla@outlook.com>",
+	"contributors": [
+		"Tony Ganch <tonyganch+github@gmail.com> (http://tonyganch.com)"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/HeavenSky/easy-pkgs.git",
+		"directory": "packages/easy-gonz"
+	},
+	"bin": {
+		"gonzales": "./bin/gonzales.js"
+	},
+	"files": [
+		"CHANGELOG.md",
+		"MIT-LICENSE.txt",
+		"bin",
+		"gonzales.d.ts",
+		"lib",
+		"src"
+	],
+	"main": "./src/gonzales.js",
+	"types": "./gonzales.d.ts",
+	"scripts": {
+		"test": "node --test \"test/**/*.test.js\"",
+		"test:update": "node test/corpus.js --update",
+		"test:compat": "node test/corpus.js",
+		"test:official": "node ../_official_style_suites/gonz.mjs"
+	},
+	"engines": {
+		"node": ">=6"
+	}
 }

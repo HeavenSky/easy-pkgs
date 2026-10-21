@@ -23,7 +23,8 @@ const makeFixture = files => {
 };
 
 /** @param {import("http").Server} server */
-const listen = server => new Promise(resolve => server.listen(0, "127.0.0.1", () => resolve(server.address().port)));
+const listen = server =>
+	new Promise(resolve => server.listen(0, "127.0.0.1", () => resolve(server.address().port)));
 
 /**
  * @param {{ host?: "express4" | "express5", files?: Record<string, string>, options?: object, after?: (app: any) => void }} [opt]
@@ -34,26 +35,47 @@ const startHost = async (opt = {}) => {
 	const host = express();
 	const mock = createMock({ cwd: dir, folder: "mocks", stateFile: "state.json", ...opt.options });
 	host.use(mock);
-	if (opt.after) { opt.after(host); } else {
-		host.use((req, res) => { res.status(404).json({ host: true, url: req.originalUrl, isHostApp: res.app === host }); });
+	if (opt.after) {
+		opt.after(host);
+	} else {
+		host.use((req, res) => {
+			res.status(404).json({ host: true, url: req.originalUrl, isHostApp: res.app === host });
+		});
 	}
 	const server = http.createServer(host);
 	const port = await listen(server);
 	const base = `http://127.0.0.1:${port}`;
 	return {
-		dir, mock, host, server, port, base,
+		dir,
+		mock,
+		host,
+		server,
+		port,
+		base,
 		/** @param {string} url @param {RequestInit} [init] */
 		fetch: (url, init) => fetch(base + url, init),
 		/** @param {string} url @param {RequestInit & { json?: unknown }} [init] */
 		api: async (url, init = {}) => {
-			const headers = { "x-mock-ui": "1", ...(init.json !== undefined ? { "content-type": "application/json" } : {}), ...init.headers };
-			const res = await fetch(`${base}/__mock/api${url}`, { ...init, headers, body: init.json !== undefined ? JSON.stringify(init.json) : init.body });
+			const headers = {
+				"x-mock-ui": "1",
+				...(init.json !== undefined ? { "content-type": "application/json" } : {}),
+				...init.headers,
+			};
+			const res = await fetch(`${base}/__mock/api${url}`, {
+				...init,
+				headers,
+				body: init.json !== undefined ? JSON.stringify(init.json) : init.body,
+			});
 			const text = await res.text();
-			return { status: res.status, headers: res.headers, body: text ? JSON.parse(text) : null };
+			return {
+				status: res.status,
+				headers: res.headers,
+				body: text ? JSON.parse(text) : null,
+			};
 		},
 		close: async () => {
 			await mock.close();
-			server.closeAllConnections && server.closeAllConnections();
+			if (server.closeAllConnections) server.closeAllConnections();
 			await new Promise(resolve => server.close(resolve));
 		},
 	};
@@ -65,7 +87,9 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const waitFor = async (check, timeout = 3000) => {
 	const end = Date.now() + timeout;
 	while (Date.now() < end) {
-		if (await check()) { return true; }
+		if (await check()) {
+			return true;
+		}
 		await sleep(50);
 	}
 	throw new Error("waitFor 超时");

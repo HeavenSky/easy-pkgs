@@ -1,10 +1,10 @@
-'use strict';
+"use strict";
 
-const path = require('node:path');
-const assert = require('node:assert');
-const dependencies = require('./dependencies');
+const path = require("node:path");
+const assert = require("node:assert");
+const dependencies = require("./dependencies");
 
-const NODE_MODULES_DIR = 'node_modules/';
+const NODE_MODULES_DIR = "node_modules/";
 
 /**
  * The lockfileConverter converts a npm package-lockfile.json to npd .dependencies-tree.json.
@@ -15,41 +15,38 @@ const NODE_MODULES_DIR = 'node_modules/';
  * @param {Nested} nested Nested
  */
 exports.lockfileConverter = function lockfileConverter(lockfile, options, nested) {
-  assert(
-    lockfile.lockfileVersion >= 2,
-    `lockfileVersion ${lockfile.lockfileVersion} is not supported, regenerate it with npm 7 or later (lockfileVersion >= 2)`
-  );
+	assert(
+		lockfile.lockfileVersion >= 2,
+		`lockfileVersion ${lockfile.lockfileVersion} is not supported, regenerate it with npm 7 or later (lockfileVersion >= 2)`
+	);
 
-  const tree = {};
+	const tree = {};
 
-  const packages = lockfile.packages;
-  for (const pkgPath in packages) {
-    /**
-     * the lockfile contains all the deps so there's no need to be deps type sensitive.
-     */
-    const deps = dependencies(packages[pkgPath], options, nested);
-    const allMap = deps.allMap;
-    for (const key in allMap) {
-      const mani = exports.nodeModulesPath(pkgPath, key, packages);
-      const dist = {
-        integrity: mani.integrity,
-        tarball: mani.resolved,
-      };
-      // we need to remove the integrity and resolved field from the mani
-      // but the mani should be left intact
-      const maniClone = Object.assign({}, mani);
-      delete maniClone.integrity;
-      delete maniClone.resolved;
-      tree[`${key}@${allMap[key]}`] = {
-        name: key,
-        ...maniClone,
-        dist,
-        _id: `${key}@${mani.version}`,
-      };
-    }
-  }
+	const packages = lockfile.packages;
+	for (const pkgPath in packages) {
+		/**
+		 * the lockfile contains all the deps so there's no need to be deps type sensitive.
+		 */
+		const deps = dependencies(packages[pkgPath], options, nested);
+		const allMap = deps.allMap;
+		for (const key in allMap) {
+			const mani = exports.nodeModulesPath(pkgPath, key, packages);
+			const dist = { integrity: mani.integrity, tarball: mani.resolved };
+			// we need to remove the integrity and resolved field from the mani
+			// but the mani should be left intact
+			const maniClone = Object.assign({}, mani);
+			delete maniClone.integrity;
+			delete maniClone.resolved;
+			tree[`${key}@${allMap[key]}`] = {
+				name: key,
+				...maniClone,
+				dist,
+				_id: `${key}@${mani.version}`,
+			};
+		}
+	}
 
-  return tree;
+	return tree;
 };
 
 /**
@@ -81,16 +78,16 @@ exports.lockfileConverter = function lockfileConverter(lockfile, options, nested
  * @param {Object} packages the lockfile packages
  */
 exports.nodeModulesPath = function nodeModulesPath(currentPath, name, packages) {
-  const dirs = currentPath.split(NODE_MODULES_DIR);
-  dirs.push(name);
+	const dirs = currentPath.split(NODE_MODULES_DIR);
+	dirs.push(name);
 
-  do {
-    const dir = path.normalize('.' + dirs.join('/' + NODE_MODULES_DIR));
-    const pkg = packages[dir];
-    if (pkg) {
-      return pkg;
-    }
+	do {
+		const dir = path.normalize("." + dirs.join("/" + NODE_MODULES_DIR));
+		const pkg = packages[dir];
+		if (pkg) {
+			return pkg;
+		}
 
-    dirs.splice(dirs.length - 2, 1);
-  } while (dirs.length > 1);
+		dirs.splice(dirs.length - 2, 1);
+	} while (dirs.length > 1);
 };

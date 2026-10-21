@@ -79,7 +79,6 @@ properties and methods listed in the [API reference](./api.md).
 - [variable](#variable)
 - [variablesList](#variableslist)
 
-
 ## arguments
 
 ### Description
@@ -115,7 +114,6 @@ Used in syntaxes: css, less, sass, scss.
 }
 ```
 
-
 ## atkeyword
 
 ### Description
@@ -143,7 +141,6 @@ Used in syntaxes: css, less, sass, scss.
 ### References
 
 [CSS 2.1](http://www.w3.org/TR/CSS21/syndata.html#tokenization)
-
 
 ## atrule
 
@@ -183,7 +180,6 @@ Used in syntaxes: css, less, sass, scss.
 
 [CSS 2.1](http://www.w3.org/TR/CSS21/syndata.html#at-rules)
 
-
 ## attributeFlags
 
 ### Description
@@ -212,7 +208,6 @@ i
 
 [CSS Selectors Level 4](http://www.w3.org/TR/selectors4/#attribute-case)
 
-
 ## attributeMatch
 
 ### Description
@@ -238,7 +233,6 @@ Used in syntaxes: css, less, sass, scss.
 
 [CSS Selectors Level 4](http://www.w3.org/TR/selectors4/#grammar)
 
-
 ## attributeName
 
 ### Description
@@ -262,7 +256,6 @@ panda
   }]
 }
 ```
-
 
 ## attributeSelector
 
@@ -302,7 +295,6 @@ a=b
 }
 ```
 
-
 ## attributeValue
 
 ### Description
@@ -327,7 +319,6 @@ b
   }]
 }
 ```
-
 
 ## block
 
@@ -366,7 +357,6 @@ Used in syntaxes: css, less, sass, scss.
 }
 ```
 
-
 ## brackets
 
 ### Description
@@ -403,7 +393,6 @@ Used in syntaxes: css, less, sass, scss.
 }
 ```
 
-
 ## class
 
 ### Description
@@ -429,7 +418,6 @@ Used in syntaxes: css, less, sass, scss.
 }
 ```
 
-
 ## color
 
 ### Description
@@ -451,7 +439,6 @@ Used in syntaxes: css, less, sass, scss.
 }
 ```
 
-
 ## combinator
 
 ### Description
@@ -465,15 +452,11 @@ Used in syntaxes: css, less, sass, scss.
 
 ```js
 // String
-~
-
-// Parse tree
-{
-  type: 'combinator',
-  content: '~'
-}
+~(
+	// Parse tree
+	{ type: "combinator", content: "~" }
+);
 ```
-
 
 ## condition
 
@@ -520,7 +503,6 @@ Used in syntaxes: less, sass, scss.
   }],
 }
 ```
-
 
 ## conditionalStatement
 
@@ -607,7 +589,6 @@ Used in syntaxes: sass, scss.
 }
 ```
 
-
 ## customProperty
 
 ### Description
@@ -637,7 +618,6 @@ Used in syntaxes: css, less, sass, scss.
 ### References
 
 [CSS Custom Properties](https://www.w3.org/TR/css-variables-1/#defining-variables)
-
 
 ## declaration
 
@@ -677,7 +657,6 @@ a:b
 }
 ```
 
-
 ## declarationDelimiter
 
 ### Description
@@ -700,7 +679,6 @@ Used in syntaxes: css, less, sass, scss.
 }
 ```
 
-
 ## default
 
 ### Description
@@ -721,7 +699,6 @@ Used in syntaxes: sass, scss.
   content: '!default'
 }
 ```
-
 
 ## delimiter
 
@@ -745,7 +722,6 @@ Used in syntaxes: css, less, sass, scss.
   content: ','
 }
 ```
-
 
 ## dimension
 
@@ -774,7 +750,6 @@ Used in syntaxes: css, less, sass, scss.
 }
 ```
 
-
 ## escapedString
 
 ### Description
@@ -795,7 +770,6 @@ Used in syntaxes: less.
   content: '"nani"'
 }
 ```
-
 
 ## expression
 
@@ -818,7 +792,6 @@ expression()
   content: ''
 }
 ```
-
 
 ## extend
 
@@ -892,7 +865,6 @@ Used in syntaxes: less, sass, scss.
 }
 ```
 
-
 ## function
 
 ### Description
@@ -922,7 +894,6 @@ f(5)
   }]
 }
 ```
-
 
 ## functionsList
 
@@ -958,7 +929,6 @@ f(a)...
 }
 ```
 
-
 ## global
 
 ### Description
@@ -979,7 +949,6 @@ Used in syntaxes: sass, scss.
   content: '!global'
 }
 ```
-
 
 ## id
 
@@ -1005,7 +974,6 @@ Used in syntaxes: css, less, sass, scss.
 }
 ```
 
-
 ## ident
 
 ### Description
@@ -1028,7 +996,6 @@ panda
 }
 ```
 
-
 ## important
 
 ### Description
@@ -1049,7 +1016,6 @@ Used in syntaxes: css, less, sass, scss.
   content: '!important'
 }
 ```
-
 
 ## include
 
@@ -1085,7 +1051,6 @@ Used in syntaxes: less, sass, scss.
 }
 ```
 
-
 ## interpolatedVariable
 
 ### Description
@@ -1110,7 +1075,6 @@ Used in syntaxes: less.
   }]
 }
 ```
-
 
 ## interpolation
 
@@ -1138,7 +1102,6 @@ Used in syntaxes: sass, scss.
   }]
 }
 ```
-
 
 ## keyframesSelector
 
@@ -1168,7 +1131,6 @@ from
 ### References
 
 [Keyframes spec](http://www.w3.org/TR/css3-animations/#keyframes)
-
 
 ## loop
 
@@ -1255,7 +1217,6 @@ Used in syntaxes: sass, scss.
 }
 ```
 
-
 ## mixin
 
 ### Description
@@ -1314,7 +1275,6 @@ Used in syntaxes: less, sass, scss.
 }
 ```
 
-
 ## module
 
 ### Description
@@ -1331,21 +1291,11 @@ Used in syntaxes: sass, scss.
 ```js
 // String
 math.$pi
-
 // Parse tree
-[{
-  type: 'module',
-  content: [{
-    type: 'ident',
-    content: 'math'
-  }]
-}, {
-  type: 'variable',
-  content: [{
-    type: 'ident',
-    content: 'pi'
-  }]
-}]
+[
+	({ type: "module", content: [{ type: "ident", content: "math" }] },
+	{ type: "variable", content: [{ type: "ident", content: "pi" }] })
+];
 ```
 
 ```js
@@ -1371,7 +1321,6 @@ math.$pi
 }
 ```
 
-
 ## multilineComment
 
 ### Description
@@ -1393,7 +1342,6 @@ Used in syntaxes: css, less, sass, scss.
 }
 ```
 
-
 ## namePrefix
 
 ### Description
@@ -1408,24 +1356,16 @@ Used in syntaxes: css, less, sass, scss.
 
 ```js
 // String
-panda|
-
-// Parse tree
-{
-  type: 'namePrefix',
-  content: [{
-    type: 'namespacePrefix',
-    content: [{
-      type: 'ident',
-      content: 'panda'
-    }]
-  }, {
-    type: 'namespaceSeparator',
-    content: '|'
-  }]
-}
+panda |
+	// Parse tree
+	{
+		type: "namePrefix",
+		content: [
+			{ type: "namespacePrefix", content: [{ type: "ident", content: "panda" }] },
+			{ type: "namespaceSeparator", content: "|" },
+		],
+	};
 ```
-
 
 ## namespacePrefix
 
@@ -1451,7 +1391,6 @@ panda
 }
 ```
 
-
 ## namespaceSeparator
 
 ### Description
@@ -1474,7 +1413,6 @@ Used in syntaxes: css, less, sass, scss.
 }
 ```
 
-
 ## number
 
 ### Description
@@ -1496,7 +1434,6 @@ Used in syntaxes: css, less, sass, scss.
   content: '10'
 }
 ```
-
 
 ## operator
 
@@ -1521,7 +1458,6 @@ Used in syntaxes: css, less, sass, scss.
 }
 ```
 
-
 ## optional
 
 ### Description
@@ -1542,7 +1478,6 @@ Used in syntaxes: sass, scss.
   content: '!optional'
 }
 ```
-
 
 ## parentheses
 
@@ -1569,7 +1504,6 @@ Used in syntaxes: css, less, sass, scss.
 }
 ```
 
-
 ## parentSelector
 
 ### Description
@@ -1590,7 +1524,6 @@ Used in syntaxes: css, less, sass, scss.
   content: '&'
 }
 ```
-
 
 ## parentSelectorExtension
 
@@ -1626,7 +1559,6 @@ Used in syntaxes: less, sass, scss.
 }
 ```
 
-
 ## percentage
 
 ### Description
@@ -1639,18 +1571,10 @@ Used in syntaxes: css, less, sass, scss.
 
 ```js
 // String
-10%
-
-// Parse tree
-{
-  type: 'percentage',
-  content: [{
-    type: 'number',
-    content: '10'
-  }]
-}
+10 %
+	// Parse tree
+	{ type: "percentage", content: [{ type: "number", content: "10" }] };
 ```
-
 
 ## placeholder
 
@@ -1677,7 +1601,6 @@ Used in syntaxes: sass, scss.
 }
 ```
 
-
 ## progid
 
 ### Description
@@ -1700,7 +1623,6 @@ progid:DXImageTransform.Microsoft.Alpha(Opacity=80)
   content: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=80)'
 }
 ```
-
 
 ## property
 
@@ -1727,7 +1649,6 @@ color
 }
 ```
 
-
 ## propertyDelimiter
 
 ### Description
@@ -1748,7 +1669,6 @@ Used in syntaxes: css, less, sass, scss.
   content: ':'
 }
 ```
-
 
 ## pseudoClass
 
@@ -1790,7 +1710,6 @@ Used in syntaxes: css, less, sass, scss.
 }
 ```
 
-
 ## pseudoElement
 
 ### Description
@@ -1815,7 +1734,6 @@ Used in syntaxes: css, less, sass, scss.
   }]
 }
 ```
-
 
 ## raw
 
@@ -1842,7 +1760,6 @@ Used in syntaxes: css, less, sass, scss.
   content: '}'
 }
 ```
-
 
 ## ruleset
 
@@ -1896,7 +1813,6 @@ a{color:tomato}
 }
 ```
 
-
 ## space
 
 ### Description
@@ -1909,7 +1825,7 @@ Used in syntaxes: css, less, sass, scss.
 
 ```js
 // String
-  
+
 
 // Parse tree
 {
@@ -1917,7 +1833,6 @@ Used in syntaxes: css, less, sass, scss.
   content: '  '
 }
 ```
-
 
 ## selector
 
@@ -1948,7 +1863,6 @@ Used in syntaxes: css, less, sass, scss.
 }
 ```
 
-
 ## singlelineComment
 
 ### Description
@@ -1971,7 +1885,6 @@ Used in syntaxes: less, sass, scss.
 }
 ```
 
-
 ## string
 
 ### Description
@@ -1992,7 +1905,6 @@ Used in syntaxes: css, less, sass, scss.
   content: '"test"',
 }
 ```
-
 
 ## stylesheet
 
@@ -2097,7 +2009,6 @@ a {color: tomato} div {color: potato}
 }
 ```
 
-
 ## typeSelector
 
 ### Description
@@ -2121,7 +2032,6 @@ div
   }]
 }
 ```
-
 
 ## unicodeRange
 
@@ -2159,7 +2069,6 @@ U+A5, U+4E00-9FFF
   }]
 }
 ```
-
 
 ## universalSelector
 
@@ -2209,7 +2118,6 @@ ns|*
 
 [CSS Selectors Level 3](https://www.w3.org/TR/css3-selectors/#universal-selector)
 
-
 ## urange
 
 ### Description
@@ -2230,7 +2138,6 @@ U+A5
   content: 'U+A5',
 }
 ```
-
 
 ## uri
 
@@ -2257,7 +2164,6 @@ url("http://test.com")
 }
 ```
 
-
 ## value
 
 ### Description
@@ -2283,7 +2189,6 @@ tomato
 }
 ```
 
-
 ## variable
 
 ### Description
@@ -2308,7 +2213,6 @@ $panda
   }]
 }
 ```
-
 
 ## variablesList
 

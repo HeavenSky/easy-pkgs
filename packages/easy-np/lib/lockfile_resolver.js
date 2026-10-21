@@ -1,9 +1,9 @@
-'use strict';
+"use strict";
 
-const assert = require('node:assert');
-const dependencies = require('./dependencies');
+const assert = require("node:assert");
+const dependencies = require("./dependencies");
 
-const NODE_MODULES_DIR = 'node_modules/';
+const NODE_MODULES_DIR = "node_modules/";
 
 /**
  * The lockfileConverter converts a npm package-lockfile.json to np .dependencies-tree.json.
@@ -14,50 +14,42 @@ const NODE_MODULES_DIR = 'node_modules/';
  * @param {Nested} nested Nested
  */
 exports.lockfileConverter = function lockfileConverter(lockfile, options, nested) {
-  assert(
-    lockfile.lockfileVersion >= 2,
-    `lockfileVersion ${lockfile.lockfileVersion} is not supported, regenerate it with npm 7 or later (lockfileVersion >= 2)`
-  );
+	assert(
+		lockfile.lockfileVersion >= 2,
+		`lockfileVersion ${lockfile.lockfileVersion} is not supported, regenerate it with npm 7 or later (lockfileVersion >= 2)`
+	);
 
-  const tree = {};
+	const tree = {};
 
-  const packages = lockfile.packages;
-  for (const pkgPath in packages) {
-    /**
-     * the lockfile contains all the deps so there's no need to be deps type sensitive.
-     */
-    const deps = dependencies(packages[pkgPath], options, nested);
-    const allMap = deps.allMap;
-    for (const key in allMap) {
-      const mani = exports.nodeModulesPath(pkgPath, key, packages);
-      if (!mani || mani.link) continue;
-      const dist = {
-        integrity: mani.integrity,
-        tarball: mani.resolved,
-      };
-      // we need to remove the integrity and resolved field from the mani
-      // but the mani should be left intact
-      const maniClone = Object.assign({}, mani);
-      delete maniClone.integrity;
-      delete maniClone.resolved;
-      // 依赖树按 name@spec 建键, 不区分位置: 同一声明在不同位置锁定了不同版本时保留先遇到的(更靠近根目录), 交给调用方告警
-      const treeKey = `${key}@${allMap[key]}`;
-      if (tree[treeKey]) {
-        if (tree[treeKey].version !== mani.version && options.onConflict) {
-          options.onConflict(treeKey, tree[treeKey].version, mani.version);
-        }
-        continue;
-      }
-      tree[treeKey] = {
-        name: key,
-        ...maniClone,
-        dist,
-        _id: `${key}@${mani.version}`,
-      };
-    }
-  }
+	const packages = lockfile.packages;
+	for (const pkgPath in packages) {
+		/**
+		 * the lockfile contains all the deps so there's no need to be deps type sensitive.
+		 */
+		const deps = dependencies(packages[pkgPath], options, nested);
+		const allMap = deps.allMap;
+		for (const key in allMap) {
+			const mani = exports.nodeModulesPath(pkgPath, key, packages);
+			if (!mani || mani.link) continue;
+			const dist = { integrity: mani.integrity, tarball: mani.resolved };
+			// we need to remove the integrity and resolved field from the mani
+			// but the mani should be left intact
+			const maniClone = Object.assign({}, mani);
+			delete maniClone.integrity;
+			delete maniClone.resolved;
+			// 依赖树按 name@spec 建键, 不区分位置: 同一声明在不同位置锁定了不同版本时保留先遇到的(更靠近根目录), 交给调用方告警
+			const treeKey = `${key}@${allMap[key]}`;
+			if (tree[treeKey]) {
+				if (tree[treeKey].version !== mani.version && options.onConflict) {
+					options.onConflict(treeKey, tree[treeKey].version, mani.version);
+				}
+				continue;
+			}
+			tree[treeKey] = { name: key, ...maniClone, dist, _id: `${key}@${mani.version}` };
+		}
+	}
 
-  return tree;
+	return tree;
 };
 
 /**
@@ -89,13 +81,13 @@ exports.lockfileConverter = function lockfileConverter(lockfile, options, nested
  * @param {Object} packages the lockfile packages
  */
 exports.nodeModulesPath = function nodeModulesPath(currentPath, name, packages) {
-  // 从当前目录逐级向上查找 <dir>/node_modules/<name>; workspace 目录(例如 packages/a)的上一级是根目录
-  let base = currentPath;
-  for (;;) {
-    const dir = base ? `${base}/${NODE_MODULES_DIR}${name}` : `${NODE_MODULES_DIR}${name}`;
-    if (packages[dir]) return packages[dir];
-    if (!base) return undefined;
-    const index = base.lastIndexOf(NODE_MODULES_DIR);
-    base = index > 0 ? base.slice(0, index - 1) : '';
-  }
+	// 从当前目录逐级向上查找 <dir>/node_modules/<name>; workspace 目录(例如 packages/a)的上一级是根目录
+	let base = currentPath;
+	for (;;) {
+		const dir = base ? `${base}/${NODE_MODULES_DIR}${name}` : `${NODE_MODULES_DIR}${name}`;
+		if (packages[dir]) return packages[dir];
+		if (!base) return undefined;
+		const index = base.lastIndexOf(NODE_MODULES_DIR);
+		base = index > 0 ? base.slice(0, index - 1) : "";
+	}
 };

@@ -1,6 +1,6 @@
-const mm = require('mm');
+const mm = require("mm");
 
 (() => {
-  mm(process, 'platform', 'darwin');
-  mm(process, 'arch', 'arm');
+	mm(process, "platform", "darwin");
+	mm(process, "arch", "arm");
 })();

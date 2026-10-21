@@ -1,0 +1,21 @@
+{
+	"$schema": "https://unpkg.com/oxfmt/configuration_schema.json",
+	"arrowParens": "avoid",
+	"ignorePatterns": [
+		"*.min.*",
+		"upstreams.json",
+		"packages/*/test/fixtures/**",
+		"packages/*/test/official-baseline.json",
+		"packages/easy-comb/test/**/*.css",
+		"packages/easy-comb/test/**/*.scss",
+		"packages/easy-comb/test/**/*.json",
+		"packages/easy-gonz/test/corpus/**",
+		"packages/easy-gonz/test/cli/**"
+	],
+	"jsxSingleQuote": false,
+	"objectWrap": "collapse",
+	"singleQuote": false,
+	"tabWidth": 4,
+	"trailingComma": "es5",
+	"useTabs": true
+}

@@ -1,31 +1,27 @@
-const coffee = require('coffee');
-const helper = require('../support/helper');
+const coffee = require("coffee");
+const helper = require("../support/helper");
 
-if (process.platform !== 'win32') {
-  describe('test/install/log.test.js', () => {
-    const [tmp, cleanup] = helper.tmp();
+if (process.platform !== "win32") {
+	describe("test/install/log.test.js", () => {
+		const [tmp, cleanup] = helper.tmp();
 
-    beforeEach(cleanup);
-    afterEach(cleanup);
+		beforeEach(cleanup);
+		afterEach(cleanup);
 
-    it('should install pedding with detail log', () => {
-      return coffee
-        .fork(helper.npminstall, ['pedding', '--detail'], {
-          cwd: tmp,
-        })
-        .expect('stdout', /pedding@\* installed/)
-        .expect('code', 0)
-        .end();
-    });
+		it("should install pedding with detail log", () => {
+			return coffee
+				.fork(helper.npminstall, ["pedding", "--detail"], { cwd: tmp })
+				.expect("stdout", /pedding@\* installed/)
+				.expect("code", 0)
+				.end();
+		});
 
-    it('should install pedding without detail log', () => {
-      return coffee
-        .fork(helper.npminstall, ['pedding'], {
-          cwd: tmp,
-        })
-        .notExpect('stdout', /pedding@\* installed/)
-        .expect('code', 0)
-        .end();
-    });
-  });
+		it("should install pedding without detail log", () => {
+			return coffee
+				.fork(helper.npminstall, ["pedding"], { cwd: tmp })
+				.notExpect("stdout", /pedding@\* installed/)
+				.expect("code", 0)
+				.end();
+		});
+	});
 }

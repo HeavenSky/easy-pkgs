@@ -25,13 +25,7 @@ Only scripts of dependencies need approval, as in npm 12; the scripts of the roo
 `allowScripts` lives in the root `package.json`:
 
 ```json
-{
-  "allowScripts": {
-    "esbuild": true,
-    "sharp@0.33.5": true,
-    "core-js": false
-  }
-}
+{ "allowScripts": { "esbuild": true, "sharp@0.33.5": true, "core-js": false } }
 ```
 
 - A key is a package name (all versions), `<name>@<exact version>` or several exact versions joined with `||`, a git address, or a tarball URL; ranges and dist-tags produce a warning and are ignored.

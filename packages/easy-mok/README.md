@@ -20,29 +20,29 @@ You need Node.js 18 or later.
 
 1. Install easy-mok in your project:
 
-   ```bash
-   npm i -D easy-mok
-   ```
+    ```bash
+    npm i -D easy-mok
+    ```
 
 2. Create `src/mocks/user.js`; easy-mok picks up changes as soon as you save:
 
-   ```js
-   const { scenes } = require("easy-mok");
+    ```js
+    const { scenes } = require("easy-mok");
 
-   module.exports = {
-   	"GET /api/user/:id": scenes({
-   		default: { id: 1, name: "Alice" },
-   		empty: null,
-   		error: (req, res) => res.status(500).json({ message: "Internal error" }),
-   	}),
-   };
-   ```
+    module.exports = {
+    	"GET /api/user/:id": scenes({
+    		default: { id: 1, name: "Alice" },
+    		empty: null,
+    		error: (req, res) => res.status(500).json({ message: "Internal error" }),
+    	}),
+    };
+    ```
 
 3. Start the mock server, then open `http://127.0.0.1:4100/__mock/` to switch scenes:
 
-   ```bash
-   npx easy-mok
-   ```
+    ```bash
+    npx easy-mok
+    ```
 
 `curl http://127.0.0.1:4100/api/user/1` now returns `{"id":1,"name":"Alice"}`. To serve the same mocks from your existing Vite dev server instead, add the plugin:
 
@@ -75,16 +75,16 @@ For webpack-dev-server, Express, Fastify, and other hosts, see [Add easy-mok to 
 
 easy-mok is the one in this table that switches scenes at runtime without code changes; it does not generate data or run inside unit tests.
 
-| | easy-mok | Mock.js | vite-plugin-mock | MSW | json-server |
-|---|---|---|---|---|---|
-| Where it runs | Dev server middleware or standalone server | Intercepts XHR in the browser | Vite dev server | Service Worker / Node | Standalone server |
-| Switch scenes without code changes | Admin page, floating bar, request header | No | No | No; override handlers in code with `.use()` | No |
-| Graphical admin page | Yes | No | No | No | — |
-| Request log and save as mock | Yes | No | No | No | No |
-| Pass one route through to the real backend | One click on the admin page | — | — | Return `passthrough()` from the handler in code | — |
-| Random data generation | No; import Mock.js or similar in a mock file | Yes | Via Mock.js | No | No |
-| REST CRUD generated from a data file | No | No | No | No | Yes |
-| Intercept requests directly in unit tests | No; needs a running server | — | No | Yes | No |
+|                                            | easy-mok                                     | Mock.js                       | vite-plugin-mock | MSW                                             | json-server       |
+| ------------------------------------------ | -------------------------------------------- | ----------------------------- | ---------------- | ----------------------------------------------- | ----------------- |
+| Where it runs                              | Dev server middleware or standalone server   | Intercepts XHR in the browser | Vite dev server  | Service Worker / Node                           | Standalone server |
+| Switch scenes without code changes         | Admin page, floating bar, request header     | No                            | No               | No; override handlers in code with `.use()`     | No                |
+| Graphical admin page                       | Yes                                          | No                            | No               | No                                              | —                 |
+| Request log and save as mock               | Yes                                          | No                            | No               | No                                              | No                |
+| Pass one route through to the real backend | One click on the admin page                  | —                             | —                | Return `passthrough()` from the handler in code | —                 |
+| Random data generation                     | No; import Mock.js or similar in a mock file | Yes                           | Via Mock.js      | No                                              | No                |
+| REST CRUD generated from a data file       | No                                           | No                            | No               | No                                              | Yes               |
+| Intercept requests directly in unit tests  | No; needs a running server                   | —                             | No               | Yes                                             | No                |
 
 A dash means the row does not apply to that tool.
 

@@ -14,16 +14,16 @@ const { scenes } = require("easy-mok");
 
 module.exports = {
 	"GET /api/user/:id": scenes({
-		default: { id: 1, name: "Alice" },             // 对象 / 数组 / 字符串直接返回
+		default: { id: 1, name: "Alice" }, // 对象 / 数组 / 字符串直接返回
 		empty: null,
 		error: (req, res) => res.status(500).json({}), // 带参函数：自行处理，也可调用 next() 交给宿主；形参要显式写出
-		byId: req => ({ id: req.params.id }),          // 既没响应也没调用 next() 时，返回值即响应体
-		now: () => ({ time: Date.now() }),              // 无参函数：每次请求调用，返回值即响应体
+		byId: req => ({ id: req.params.id }), // 既没响应也没调用 next() 时，返回值即响应体
+		now: () => ({ time: Date.now() }), // 无参函数：每次请求调用，返回值即响应体
 		real: () => ({ target: "http://test.example.com", changeOrigin: true }), // 返回含 target / router 的对象：代理配置
 	}),
-	"GET|POST:1 /api/list": [],                         // 多个方法；:1 为权重，高者优先
+	"GET|POST:1 /api/list": [], // 多个方法；:1 为权重，高者优先
 	"ALL /api/legacy/*": () => ({ target: "http://old.example.com" }),
-	MOCK: true,                                         // 写 false 时全局停用 mock
+	MOCK: true, // 写 false 时全局停用 mock
 };
 ```
 

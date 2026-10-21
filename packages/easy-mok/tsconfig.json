@@ -14,5 +14,12 @@
 		"types": ["vite/client"],
 		"paths": { "@/*": ["./src/ui/*"] }
 	},
-	"include": ["src/ui", "src/float/main.ts", "test/ui", "vite.config.mts", "vite.float.config.mts", "vitest.config.mts"]
+	"include": [
+		"src/ui",
+		"src/float/main.ts",
+		"test/ui",
+		"vite.config.mts",
+		"vite.float.config.mts",
+		"vitest.config.mts"
+	]
 }

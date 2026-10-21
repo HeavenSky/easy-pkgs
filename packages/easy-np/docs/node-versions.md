@@ -30,8 +30,8 @@ node-gyp is not installed with easy-np. The first time a native module is compil
 - Each Node.js version gets its own install, separate from easy-npd's; old install directories that are no longer referenced and older than 1 hour are deleted on the next install.
 - When `npm_config_node_gyp` points to an existing `node-gyp.js`, easy-np uses it directly.
 - Without network access:
-  1. Install node-gyp globally: `npm i -g node-gyp`.
-  2. Point easy-np at it: `export npm_config_node_gyp="$(npm root -g)/node-gyp/bin/node-gyp.js"`. On Windows, the error message that asks for this prints the PowerShell and cmd.exe forms.
+    1. Install node-gyp globally: `npm i -g node-gyp`.
+    2. Point easy-np at it: `export npm_config_node_gyp="$(npm root -g)/node-gyp/bin/node-gyp.js"`. On Windows, the error message that asks for this prints the PowerShell and cmd.exe forms.
 
 | Node.js                                       | node-gyp (installed on demand for dependency install scripts and `binding.gyp` builds)                          | Known risks                                                                                                                               |
 | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |

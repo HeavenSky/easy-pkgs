@@ -1,3 +1,3 @@
-'use strict';
+"use strict";
 
-require(require('../lib/node_gyp').resolveBin());
+require(require("../lib/node_gyp").resolveBin());

@@ -50,8 +50,9 @@ describe('test/registry/get.test.js', () => {
       console.error(err);
       const headers = options.headers;
       assert(headers.Authorization);
-      // 主机不存在时, 各平台 DNS 可能报 ENOTFOUND, 也可能查询超时(Windows runner 上见过 queryAaaa ETIMEOUT)
-      assert(/ENOTFOUND|ETIMEOUT|Connect Timeout Error/.test(err.message), err.message);
+      // 主机不存在时, 各平台 DNS 可能报 ENOTFOUND, 也可能查询超时(Windows runner 上见过 queryAaaa ETIMEOUT),
+      // DNS 服务器本身出错时报 ESERVFAIL(Linux runner 上见过 queryAaaa ESERVFAIL), 临时失败报 EAI_AGAIN
+      assert(/ENOTFOUND|ETIMEOUT|ESERVFAIL|EAI_AGAIN|Connect Timeout Error/.test(err.message), err.message);
       assert(err.res.requestUrls.length > 0);
     }
   });

@@ -20,7 +20,7 @@ const dependencies = require('./dependencies');
 const createResolution = require('./resolution');
 const formatInstallOptions = require('./format_install_options');
 const Context = require('./context');
-const { runLifecycleScripts } = require('./lifecycle_scripts');
+const { runLifecycleScripts, runDependencyScripts } = require('./lifecycle_scripts');
 const allowScripts = require('./allow_scripts');
 
 /**
@@ -191,6 +191,9 @@ async function _install(options, context) {
       }
     }
   }
+
+  // 依赖脚本在整棵树(含回退目录, 提升到根目录与 workspace 根目录的链接)就位后运行
+  await runDependencyScripts(options);
 
   if (options.installRoot && !options.ignoreScripts) {
     if (options.failures.length > 0) {

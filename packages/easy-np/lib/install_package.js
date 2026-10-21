@@ -12,7 +12,7 @@ const link = require('./link');
 const dependencies = require('./dependencies');
 const resolve = require('./download/npm').resolve;
 const { REGISTRY_TYPES, LOCAL_TYPES } = require('./npa_types');
-const { runLifecycleScripts } = require('./lifecycle_scripts');
+const { queueDependencyScripts } = require('./lifecycle_scripts');
 const allowScripts = require('./allow_scripts');
 
 module.exports = install;
@@ -125,7 +125,7 @@ async function _install(parentDir, pkg, ancestors, options, context) {
   if (c) {
     const realPkg = c.package;
     const realPkgDir = c.dir;
-    await linkModule(pkg, parentDir, realPkg, realPkgDir, options, displayName);
+    await linkModule(pkg, parentDir, realPkg, realPkgDir, options, displayName, ancestors);
     return {
       exists: true,
       dir: realPkgDir,
@@ -146,7 +146,7 @@ async function _install(parentDir, pkg, ancestors, options, context) {
           options.cache.dependenciesTree[p.raw] = realPkg;
           if (options.lockPackages) options.lockPackages[p.raw] = realPkg;
           const realPkgDir = c.dir;
-          await linkModule(pkg, parentDir, realPkg, realPkgDir, options, displayName);
+          await linkModule(pkg, parentDir, realPkg, realPkgDir, options, displayName, ancestors);
           return {
             exists: true,
             dir: realPkgDir,
@@ -200,7 +200,7 @@ async function _install(parentDir, pkg, ancestors, options, context) {
   const revisit = info.exists && !info.stage && !!options.lockPackages && !options.visitedStoreDirs.has(realPkgDir);
   if (info.exists && !info.stage && !revisit) {
     // make sure bins will be links to ${parentDir}/node_modules/.bin
-    await linkModule(pkg, parentDir, realPkg, realPkgDir, options, displayName);
+    await linkModule(pkg, parentDir, realPkg, realPkgDir, options, displayName, ancestors);
     return {
       exists: true,
       dir: realPkgDir,
@@ -218,11 +218,10 @@ async function _install(parentDir, pkg, ancestors, options, context) {
   }
 
   // install steps:
-  // 1. pre install script
-  // 2. install dependencies (don't install bundledDependencies, but need link)
-  // 3. post install script
-  // 4. link bin files
-  // 5. link package to node_modules dir
+  // 1. install dependencies (don't install bundledDependencies, but need link)
+  // 2. link bin files
+  // 3. link package to node_modules dir
+  // 4. queue lifecycle scripts, they run after the whole tree is linked (lib/lifecycle_scripts.js runDependencyScripts)
 
   if (!revisit) {
     if (realPkg.publish_time && realPkg.publish_time >= options.recentlyUpdateMinDateTime) {
@@ -264,123 +263,121 @@ async function _install(parentDir, pkg, ancestors, options, context) {
     }
   }
 
-  // 停在 deps 或 finish 时重新遍历子依赖, 已完成的子依赖只做链接, 不再重新解压
-  if (stage === utils.FIRST_INSTALL_STAGE || stage === utils.FINISH_INSTALL_STAGE) {
-    // link bundleDependencies' bin
-    // np fsevents
-    const bundledDependencies = await getBundleDependencies(realPkg, realPkgDir);
-    await Promise.all(bundledDependencies.map(name => bundleBin(name, realPkgDir, options, displayName)));
+  // 未完成的包总是重新遍历子依赖, 已完成的子依赖只做链接, 不再重新解压; 停在某个脚本时子依赖的延后脚本也可能未运行
+  const childDirs = [];
+  // link bundleDependencies' bin
+  // np fsevents
+  const bundledDependencies = await getBundleDependencies(realPkg, realPkgDir);
+  await Promise.all(bundledDependencies.map(name => bundleBin(name, realPkgDir, options, displayName)));
 
-    const deps = dependencies(realPkg, options, context.nested);
-    const pkgs = deps.prod;
-    const pkgMaps = deps.prodMap;
+  const deps = dependencies(realPkg, options, context.nested);
+  const pkgs = deps.prod;
+  const pkgMaps = deps.prodMap;
 
-    const nodeModulesDir = path.join(realPkgDir, 'node_modules');
+  const nodeModulesDir = path.join(realPkgDir, 'node_modules');
 
-    const peerDependencies = realPkg.peerDependencies || {};
-    const peerDependenciesMeta = realPkg.peerDependenciesMeta || {};
-    const needLinkPeerDependencies = [];
-    if (Object.keys(peerDependencies).length > 0) {
-      const unmatched = {};
-      const reverseAncestors = ancestorsWithRoot.slice().reverse();
-      for (const name in peerDependencies) {
-        const version = peerDependencies[name];
-        const raw = `${name}@${version}`;
-        context.nested.update([raw], p.raw);
-        // don't need to check if peer dependency is in dependencies
-        if (pkgMaps[name]) continue;
+  const peerDependencies = realPkg.peerDependencies || {};
+  const peerDependenciesMeta = realPkg.peerDependenciesMeta || {};
+  const needLinkPeerDependencies = [];
+  if (Object.keys(peerDependencies).length > 0) {
+    const unmatched = {};
+    const reverseAncestors = ancestorsWithRoot.slice().reverse();
+    for (const name in peerDependencies) {
+      const version = peerDependencies[name];
+      const raw = `${name}@${version}`;
+      context.nested.update([raw], p.raw);
+      // don't need to check if peer dependency is in dependencies
+      if (pkgMaps[name]) continue;
 
-        // if we can get any matched version from ancestor
-        // install it as dependency
-        const childPkg = npa(raw, { where: options.root, nested: context.nested });
-        // check in reverse
-        const res = await matchAncestorDependencies(childPkg, reverseAncestors, options, context);
-        if (res) {
-          pkgs.push({ name, version: res.ancestorSpec });
-          needLinkPeerDependencies.push({ name, version: res.ancestorSpec });
-        } else if (peerDependenciesMeta[name]?.optional !== true) {
-          // 安装结束时仍按实际解析结果校验, 自动安装失败或被跳过时照旧告警
-          unmatched[name] = version;
-          const declared =
-            reverseAncestors.some(ancestor => ancestor.dependencies[name]) ||
-            (options.isWorkspacePackage && context.workspaceRootDepNames?.has(name));
-          if (!options.legacyPeerDeps && !declared) {
-            // 与 npm 7+ 一致: 没有祖先声明的 peer 作为本包的依赖自动安装, 失败时按可选依赖跳过;
-            // 祖先或 workspace 根声明了不兼容版本时不自动安装, 否则同一个 peer 会出现两份实例, 只告警
-            pkgs.push({ name, version, optional: true });
-          }
+      // if we can get any matched version from ancestor
+      // install it as dependency
+      const childPkg = npa(raw, { where: options.root, nested: context.nested });
+      // check in reverse
+      const res = await matchAncestorDependencies(childPkg, reverseAncestors, options, context);
+      if (res) {
+        pkgs.push({ name, version: res.ancestorSpec });
+        needLinkPeerDependencies.push({ name, version: res.ancestorSpec });
+      } else if (peerDependenciesMeta[name]?.optional !== true) {
+        // 安装结束时仍按实际解析结果校验, 自动安装失败或被跳过时照旧告警
+        unmatched[name] = version;
+        const declared =
+          reverseAncestors.some(ancestor => ancestor.dependencies[name]) ||
+          (options.isWorkspacePackage && context.workspaceRootDepNames?.has(name));
+        if (!options.legacyPeerDeps && !declared) {
+          // 与 npm 7+ 一致: 没有祖先声明的 peer 作为本包的依赖自动安装, 失败时按可选依赖跳过;
+          // 祖先或 workspace 根声明了不兼容版本时不自动安装, 否则同一个 peer 会出现两份实例, 只告警
+          pkgs.push({ name, version, optional: true });
         }
       }
-      // 不能改写 realPkg.peerDependencies: 它与锁文件条目是同一个对象, 改写后 np-lock.json 记下的 peer 会被删掉
-      if (!revisit) {
-        options.peerDependencies.push({
-          package: realPkg,
-          packageDir: realPkgDir,
+    }
+    // 不能改写 realPkg.peerDependencies: 它与锁文件条目是同一个对象, 改写后 np-lock.json 记下的 peer 会被删掉
+    if (!revisit) {
+      options.peerDependencies.push({
+        package: realPkg,
+        packageDir: realPkgDir,
+        displayName,
+        parentDir,
+        peerDependencies: unmatched,
+      });
+    }
+  }
+
+  // handle sub-dependencies
+  if (pkgs.length > 0) {
+    await utils.mkdirp(nodeModulesDir);
+    const needPkgs = pkgs.filter(childPkg => !bundledDependencies.includes(childPkg.name));
+    context.nested.update(
+      needPkgs.map(pkg => `${pkg.name}@${pkg.version}`),
+      `${realPkg.name}@${realPkg.version}`
+    );
+
+    const declarer = {
+      displayName: `${realPkg.name}@${realPkg.version}`,
+      name: realPkg.name,
+      version: realPkg.version,
+      dependencies: deps.prodMap,
+      optional: !!pkg.optional,
+      where: realPkgDir,
+      trustedLocal: isLocal && trusted,
+      scriptIdentity: isLocal ? scriptOwner : allowScripts.identityOf(p.type, realPkg, p.fetchSpec),
+      storeDir: realPkgDir,
+    };
+    if (isLocal) declarer.where = p.type === 'directory' ? p.fetchSpec : path.dirname(p.fetchSpec);
+    const mapper = async childPkg => {
+      const res = await install(realPkgDir, childPkg, ancestors.concat(declarer), options, context);
+      if (res && res.dir) childDirs.push(res.dir);
+    };
+    // NOTE: any chance that the installation will speed up slightly if we use
+    // a global queue?
+    await pMap(needPkgs, mapper, 10);
+  }
+  if (needLinkPeerDependencies.length > 0) {
+    for (const peer of needLinkPeerDependencies) {
+      const key = `install:${peer.name}@${peer.version}`;
+      const c = options.cache[key];
+      if (c) {
+        // scoped package
+        const relativePath = pkg.name && pkg.name.startsWith('@') ? `../../${c.package.name}` : `../${c.package.name}`;
+        const linkDir = path.join(realPkgDir, relativePath);
+        const relative = await utils.forceSymlink(c.dir, linkDir);
+        debug(
+          '%s link peer package(%s@%s) %s => %s, parentDir: %s',
           displayName,
-          parentDir,
-          peerDependencies: unmatched,
-        });
-      }
-    }
-
-    // handle sub-dependencies
-    if (pkgs.length > 0) {
-      await utils.mkdirp(nodeModulesDir);
-      const needPkgs = pkgs.filter(childPkg => !bundledDependencies.includes(childPkg.name));
-      context.nested.update(
-        needPkgs.map(pkg => `${pkg.name}@${pkg.version}`),
-        `${realPkg.name}@${realPkg.version}`
-      );
-
-      const declarer = {
-        displayName: `${realPkg.name}@${realPkg.version}`,
-        name: realPkg.name,
-        version: realPkg.version,
-        dependencies: deps.prodMap,
-        optional: !!pkg.optional,
-        where: realPkgDir,
-        trustedLocal: isLocal && trusted,
-        scriptIdentity: isLocal ? scriptOwner : allowScripts.identityOf(p.type, realPkg, p.fetchSpec),
-      };
-      if (isLocal) declarer.where = p.type === 'directory' ? p.fetchSpec : path.dirname(p.fetchSpec);
-      const mapper = async childPkg => {
-        await install(realPkgDir, childPkg, ancestors.concat(declarer), options, context);
-      };
-      // NOTE: any chance that the installation will speed up slightly if we use
-      // a global queue?
-      await pMap(needPkgs, mapper, 10);
-    }
-    if (needLinkPeerDependencies.length > 0) {
-      for (const peer of needLinkPeerDependencies) {
-        const key = `install:${peer.name}@${peer.version}`;
-        const c = options.cache[key];
-        if (c) {
-          // scoped package
-          const relativePath =
-            pkg.name && pkg.name.startsWith('@') ? `../../${c.package.name}` : `../${c.package.name}`;
-          const linkDir = path.join(realPkgDir, relativePath);
-          const relative = await utils.forceSymlink(c.dir, linkDir);
-          debug(
-            '%s link peer package(%s@%s) %s => %s, parentDir: %s',
-            displayName,
-            c.package.name,
-            c.package.version,
-            linkDir,
-            relative,
-            realPkgDir
-          );
-        }
+          c.package.name,
+          c.package.version,
+          linkDir,
+          relative,
+          realPkgDir
+        );
       }
     }
   }
-  // 本包的生命周期脚本在它自己与子依赖都链接好之后运行, 但兄弟依赖与 peer 依赖可能仍在并发安装中;
-  // npm(arborist reify 的 _build 步骤)与 easy-npd 都在整棵树装完后才按依赖顺序运行脚本
 
   // from here, a package is already downloaded and unpacked into
   // <root>/.store/<name>/node_modules/<name>. but there is no sub-dependencies
   // in the same node_modules, following logic will link the package itself into
   // parent's node_modules folder.
-  await linkModule(pkg, parentDir, realPkg, realPkgDir, options, displayName);
+  await linkModule(pkg, parentDir, realPkg, realPkgDir, options, displayName, ancestors);
 
   debug(
     '[%s/%s] installed %s@%s at %s',
@@ -397,18 +394,21 @@ async function _install(parentDir, pkg, ancestors, options, context) {
     };
   }
 
-  const scriptName = scriptOwner ? `${displayName} (declared by ${p.scriptsOwner})` : displayName;
-  const scriptSource = scriptOwner ? { identity: scriptOwner } : undefined;
-  // 可选依赖的脚本失败时阶段停在失败的脚本, 不随本次运行清除, 下次运行重试
-  const failedScript =
-    options.ignoreScripts || stage === utils.FINISH_INSTALL_STAGE
-      ? undefined
-      : await runLifecycleScripts(realPkg, realPkgDir, pkg, scriptName, options, stage, scriptSource);
-  await utils.setInstallStage(realPkgDir, failedScript || utils.FINISH_INSTALL_STAGE);
-  if (failedScript) {
-    options.optionalFailures.push({ displayName, error: new Error(`run ${failedScript} error`), name: realPkg.name });
-  } else {
+  if (options.ignoreScripts || stage === utils.FINISH_INSTALL_STAGE) {
+    await utils.setInstallStage(realPkgDir, utils.FINISH_INSTALL_STAGE);
     options.stagedDirs.add(realPkgDir);
+  } else {
+    // 阶段标记保持不变直到脚本运行完: 中断后下次运行仍经由本包遍历子依赖并重新排队
+    queueDependencyScripts(options, {
+      pkg: realPkg,
+      dir: realPkgDir,
+      origin: pkg,
+      displayName: scriptOwner ? `${displayName} (declared by ${p.scriptsOwner})` : displayName,
+      failureName: displayName,
+      stage,
+      source: scriptOwner ? { identity: scriptOwner } : undefined,
+      deps: childDirs,
+    });
   }
 
   return {
@@ -498,9 +498,15 @@ function forceFlatten(pkg) {
 }
 
 // link module and bin files
-async function linkModule(pkg, parentDir, realPkg, realPkgDir, options, displayName) {
+async function linkModule(pkg, parentDir, realPkg, realPkgDir, options, displayName, ancestors) {
   const linkDir = path.join(parentDir, 'node_modules', pkg.alias || realPkg.name);
-  await utils.removeStaleBins(linkDir, realPkg, bin.getBinDir(parentDir, options));
+  const binDir = bin.getBinDir(parentDir, options);
+  await utils.removeStaleBins(linkDir, realPkg, binDir);
+  noteScriptNeed(options, realPkgDir, pkg.optional ? { dir: realPkgDir, displayName } : nearestOptional(ancestors));
+  if (pkg.optional) {
+    if (!options.optionalLinks.has(realPkgDir)) options.optionalLinks.set(realPkgDir, []);
+    options.optionalLinks.get(realPkgDir).push({ linkDir, binDir });
+  }
   // fix concurrent install same bin name error
   try {
     await bin(parentDir, realPkg, realPkgDir, options, displayName);
@@ -512,4 +518,20 @@ async function linkModule(pkg, parentDir, realPkg, realPkgDir, options, displayN
     await bin(parentDir, realPkg, realPkgDir, options, displayName);
   }
   await link(parentDir, realPkg, realPkgDir, pkg.alias, options);
+}
+
+// 每次链接都记下这个包被谁需要: 任一处按普通依赖需要即为必需; 否则记下所在的可选依赖(最近的可选祖先或它自己),
+// 延后运行的脚本失败时据此决定整体跳过哪些可选依赖, 见 lib/lifecycle_scripts.js runDependencyScripts
+function noteScriptNeed(options, dir, optionalRoot) {
+  let need = options.scriptNeeds.get(dir);
+  if (!need) options.scriptNeeds.set(dir, (need = { required: false, roots: new Map() }));
+  if (optionalRoot) need.roots.set(optionalRoot.dir, optionalRoot.displayName);
+  else need.required = true;
+}
+
+function nearestOptional(ancestors) {
+  for (let i = ancestors.length - 1; i >= 0; i--) {
+    if (ancestors[i].optional) return { dir: ancestors[i].storeDir, displayName: ancestors[i].displayName };
+  }
+  return null;
 }

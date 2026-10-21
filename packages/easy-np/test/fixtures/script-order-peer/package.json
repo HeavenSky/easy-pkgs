@@ -1,0 +1,8 @@
+{
+  "name": "script-order-peer",
+  "version": "1.0.0",
+  "main": "package.json",
+  "dependencies": {
+    "script-order-slow": "file:../script-order-slow"
+  }
+}

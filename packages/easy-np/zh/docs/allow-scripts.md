@@ -18,6 +18,7 @@
 
 - 需要放行的脚本：依赖的 `preinstall`、`install` 与 `postinstall`，依赖带 `binding.gyp` 时的隐式 `node-gyp rebuild`，以及 git 依赖的构建。
 - 未放行的包被跳过，安装结束时列出它们和放行后重跑的命令。
+- 与 npm 一样，放行的依赖脚本在整棵依赖树链接完成后才运行，脚本里可以加载兄弟依赖与 peer 依赖；一个包的脚本在它自己依赖的包的脚本之后运行，互不依赖的包并行运行。
 
 ## 编写 allowScripts
 

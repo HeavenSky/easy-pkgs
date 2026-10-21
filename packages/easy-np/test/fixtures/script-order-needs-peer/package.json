@@ -1,0 +1,10 @@
+{
+  "name": "script-order-needs-peer",
+  "version": "1.0.0",
+  "peerDependencies": {
+    "script-order-peer": "*"
+  },
+  "scripts": {
+    "postinstall": "node -e \"require('script-order-peer')\""
+  }
+}

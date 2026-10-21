@@ -15,7 +15,7 @@ Rerun the same command and easy-np finishes a failed or interrupted install with
 - One failed package (download, sub-dependency or script) does not stop the install: the other packages are installed, and the end of the run lists every failed package.
 - When any dependency failed, the root package's own lifecycle scripts are skipped and run after the next successful install.
 - The next run does not download or extract again, and scripts that already succeeded do not run again.
-- A failed optional dependency, or a failure in its sub-dependencies, only skips that optional dependency, as in npm; the end of the run lists them with the `np-x rebuild <pkg>` command to rerun their scripts.
+- A failed optional dependency, or a failure in its sub-dependencies, only skips that optional dependency, as in npm (when a script of one of its sub-dependencies fails, the already linked optional dependency is removed again); the end of the run lists them with the `np-x rebuild <pkg>` command to rerun their scripts.
 - The progress of each package is recorded in `node_modules/.store/.np-state.json` through the stages `deps`, `preinstall`, `install`, `postinstall` and `finish`; it is cleared when a run has no failure.
 - easy-np does not change the `package.json` of installed packages.
 - After you switch Node.js versions, run `np-x rebuild` to recompile native modules; an ordinary failure or interruption does not need a rebuild.

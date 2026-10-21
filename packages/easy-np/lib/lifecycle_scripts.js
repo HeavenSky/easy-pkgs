@@ -110,6 +110,126 @@ exports.runLifecycleScripts = async function runLifecycleScripts(
   return failedScript;
 };
 
+// 依赖的生命周期脚本延后到整棵树链接完成后统一运行, 与 npm(arborist reify 的 _build)一致: 运行时兄弟依赖与 peer 依赖都已就位.
+// 同一个 store 目录只运行一次; task: { pkg, dir, origin, displayName, failureName, stage, source, deps }
+exports.queueDependencyScripts = (options, task) => {
+  if (!options.scriptTasks.has(task.dir)) options.scriptTasks.set(task.dir, task);
+};
+
+const SCRIPT_CONCURRENCY = 10;
+
+// 子依赖的脚本先于依赖它的包运行, 互不依赖的包并发运行; 依赖成环时按入队顺序先运行一个解开
+exports.runDependencyScripts = async options => {
+  const tasks = [...options.scriptTasks.values()];
+  options.scriptTasks.clear();
+  if (tasks.length === 0) return;
+  const byDir = new Map(tasks.map(task => [task.dir, task]));
+  const waiting = new Map();
+  const dependents = new Map();
+  for (const task of tasks) {
+    const deps = new Set(task.deps.filter(dir => dir !== task.dir && byDir.has(dir)));
+    waiting.set(task, deps.size);
+    for (const dir of deps) {
+      if (!dependents.has(dir)) dependents.set(dir, []);
+      dependents.get(dir).push(task);
+    }
+  }
+  const ready = tasks.filter(task => waiting.get(task) === 0);
+  const started = new Set();
+  const skippedOptionals = new Set();
+  let running = 0;
+  let cursor = 0;
+
+  await new Promise((resolve, reject) => {
+    const start = task => {
+      started.add(task);
+      running++;
+      runDependencyScript(task, options, skippedOptionals).then(() => {
+        running--;
+        for (const dependent of dependents.get(task.dir) || []) {
+          waiting.set(dependent, waiting.get(dependent) - 1);
+          if (waiting.get(dependent) === 0) ready.push(dependent);
+        }
+        next();
+      }, reject);
+    };
+    const next = () => {
+      while (running < SCRIPT_CONCURRENCY && ready.length > 0) {
+        const task = ready.shift();
+        if (!started.has(task)) start(task);
+      }
+      if (running > 0) return;
+      while (cursor < tasks.length && started.has(tasks[cursor])) cursor++;
+      if (cursor < tasks.length) start(tasks[cursor]);
+      else resolve();
+    };
+    next();
+  });
+};
+
+// 按普通依赖需要, 或所在的可选依赖本身在别处按普通依赖需要时, 脚本失败不能当作可选依赖失败跳过
+function requiredDir(options, dir, seen = new Set()) {
+  if (seen.has(dir)) return false;
+  seen.add(dir);
+  const need = options.scriptNeeds.get(dir);
+  if (!need || need.required) return true;
+  for (const root of need.roots.keys()) {
+    if (root !== dir && requiredDir(options, root, seen)) return true;
+  }
+  return false;
+}
+
+async function runDependencyScript(task, options, skippedOptionals) {
+  const required = requiredDir(options, task.dir);
+  const roots = required ? [] : [...options.scriptNeeds.get(task.dir).roots];
+  // 需要它的可选依赖都已因其中某个包的脚本失败被跳过
+  if (roots.length > 0 && roots.every(([dir]) => skippedOptionals.has(dir))) return;
+  // 包自身是可选依赖时脚本失败只记下失败的脚本, 包保留, 可用 np-x rebuild 重跑
+  const origin = { ...task.origin, optional: !required && roots.some(([dir]) => dir === task.dir) };
+  let failedScript;
+  try {
+    failedScript = await exports.runLifecycleScripts(
+      task.pkg,
+      task.dir,
+      origin,
+      task.displayName,
+      options,
+      task.stage,
+      task.source
+    );
+  } catch (err) {
+    if (!required) {
+      // 与 npm 一样整体跳过所在的可选依赖: 撤掉它的链接与 bin, 阶段标记保留, 下次运行重试
+      for (const [dir, displayName] of roots) {
+        if (skippedOptionals.has(dir)) continue;
+        skippedOptionals.add(dir);
+        options.console.error(chalk.yellow(`[${displayName}] optional install error: ${err.stack}`));
+        options.optionalFailures.push({ displayName, error: err });
+        for (const { linkDir, binDir } of options.optionalLinks.get(dir) || []) {
+          await utils.removeStaleBins(linkDir, {}, binDir);
+          await utils.rimraf(linkDir);
+        }
+      }
+      return;
+    }
+    // 不中止其余脚本: 阶段停在失败的脚本, 安装结束时汇总并以失败退出
+    options.failures.push({ displayName: task.failureName, error: err });
+    options.console.error(chalk.red('[np:install:error] %s: %s'), task.failureName, err.message);
+    return;
+  }
+  // 可选依赖的脚本失败时阶段停在失败的脚本, 不随本次运行清除, 下次运行重试
+  await utils.setInstallStage(task.dir, failedScript || utils.FINISH_INSTALL_STAGE);
+  if (failedScript) {
+    options.optionalFailures.push({
+      displayName: task.failureName,
+      error: new Error(`run ${failedScript} error`),
+      name: task.pkg.name,
+    });
+  } else {
+    options.stagedDirs.add(task.dir);
+  }
+}
+
 // 全局安装的包自身作为根传入, 没有依赖声明, 按 registry 包处理;
 // 命令行直接安装本地目录时 name 为空, 拼成 `@../dir` 会被当作 tag 而按依赖处理
 function typeOf(originPkg) {

@@ -10,6 +10,7 @@ easy-np started from [cnpm/npminstall](https://github.com/cnpm/npminstall) 8.0.1
 
 - `np` and `np-x install` warn when the project has an `npm-shrinkwrap.json` or `package-lock.json` but `np-lock.json` is not read (it is missing, or the lockfile is off, as it is by default for `np`), because the versions in the npm lockfile are not used; pass `--from-package-lock=<file>` to install them.
 - `np-x install` warns when `np-lock.json` and another package manager's lockfile both exist, because they are updated separately and may lock different versions.
+- Dependency lifecycle scripts now run after the whole dependency tree is linked, as in npm, instead of right after each package; a `postinstall` that loads a sibling or peer dependency no longer fails when that package is still being installed. A package's scripts still run after those of its dependencies, and independent packages run in parallel (up to 10 at a time).
 - `--from-package-lock` with a lockfileVersion 1 file now says to regenerate it with npm 7 or later; the help and docs state that `npm-shrinkwrap.json` is accepted too.
 
 ## 0.0.5 (2026-10-16)

@@ -133,6 +133,22 @@ describe('test/scripts/resume.test.js', () => {
     assert.deepEqual(await readLog(), ['preinstall', 'postinstall', 'postinstall']);
   });
 
+  it('should run dependency scripts after the whole tree is linked', async () => {
+    // script-order-peer 要等子依赖较慢的 preinstall 跑完才会链接; 依赖脚本若逐包立即运行, needs-peer 的 postinstall 找不到它
+    await fs.writeFile(
+      path.join(root, 'package.json'),
+      JSON.stringify({
+        name: 'script-order-root',
+        version: '1.0.0',
+        dependencies: {
+          'script-order-needs-peer': 'file:../script-order-needs-peer',
+          'script-order-peer': 'file:../script-order-peer',
+        },
+      })
+    );
+    await npminstall({ root });
+  });
+
   it('should skip the optional dependency when a dependency inside it fails', async () => {
     await fs.writeFile(
       path.join(root, 'package.json'),
@@ -145,5 +161,29 @@ describe('test/scripts/resume.test.js', () => {
     // 失败的是可选依赖下的普通子依赖: 与 npm 一样只跳过该可选依赖, 整次安装成功
     await npminstall({ root, env: { RESUME_LOG: logFile, RESUME_FLAG: flagFile } });
     assert.deepEqual(await readLog(), ['preinstall', 'postinstall']);
+    await assert.rejects(fs.lstat(path.join(root, 'node_modules/resume-parent')), /ENOENT/);
+
+    // 下次运行重试该可选依赖, 子依赖从失败的脚本继续
+    await fs.writeFile(flagFile, '');
+    await npminstall({ root, env: { RESUME_LOG: logFile, RESUME_FLAG: flagFile } });
+    assert.deepEqual(await readLog(), ['preinstall', 'postinstall', 'postinstall']);
+    assert.ok(await fs.lstat(path.join(root, 'node_modules/resume-parent')));
+  });
+
+  it('should fail when the failed package is also a required dependency', async () => {
+    await fs.writeFile(
+      path.join(root, 'package.json'),
+      JSON.stringify({
+        name: 'optional-and-required-root',
+        version: '1.0.0',
+        dependencies: { 'resume-scripts': 'file:../resume-scripts' },
+        optionalDependencies: { 'resume-parent': 'file:../resume-parent' },
+      })
+    );
+    // resume-scripts 在可选依赖里, 但根包也直接依赖它: 脚本失败不能当作可选依赖失败跳过
+    await assert.rejects(
+      npminstall({ root, env: { RESUME_LOG: logFile, RESUME_FLAG: flagFile } }),
+      /resume-scripts.*: run postinstall error/
+    );
   });
 });

@@ -18,6 +18,7 @@ Only scripts of dependencies need approval, as in npm 12; the scripts of the roo
 
 - Scripts that need approval: `preinstall`, `install` and `postinstall` of dependencies, the implicit `node-gyp rebuild` when a dependency has `binding.gyp`, and building git dependencies.
 - Packages that are not approved are skipped; the end of the install lists them with the commands to approve and rerun them.
+- Approved dependency scripts run after the whole dependency tree is linked, as in npm, so a script can load its siblings and peer dependencies; a package's scripts run after those of its own dependencies, and packages that do not depend on each other run in parallel.
 
 ## Write allowScripts
 

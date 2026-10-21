@@ -5952,6 +5952,7 @@ function checkUriRawCharacters(i) {
       case TokenType.LessThanSign:
       case TokenType.EqualsSign:
       case TokenType.GreaterThanSign:
+      case TokenType.QuestionMark:
       case TokenType.QuotationMark:
       case TokenType.CommercialAt:
       case TokenType.LeftSquareBracket:

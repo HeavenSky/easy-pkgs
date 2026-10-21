@@ -198,3 +198,9 @@ uri 1:1-1:21 {*}
   interpolation 1:14-1:20
     variable 1:16-1:19
       ident 1:17-1:19 "bar"
+
+=== query.0 [css less sass scss]
+url(//a.com/x?b=c+d#e)
+---
+uri 1:1-1:22 {*}
+  raw 1:5-1:21 "//a.com/x?b=c+d#e"

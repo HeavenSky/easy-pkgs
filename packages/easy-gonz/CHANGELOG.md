@@ -9,6 +9,7 @@ easy-gonz is based on [tonyganch/gonzales-pe](https://github.com/tonyganch/gonza
 ### Fixed
 
 - Indented Sass: a comment indented with tabs now continues on the more deeply indented lines that follow, as it already did with spaces; before, it ended after its first line and the continuation lines were parsed as code.
+- Indented Sass: an unquoted `url()` containing `?` (such as `@import url(//fonts.googleapis.com/css?family=Open+Sans)`) no longer fails to parse; SCSS already accepted it (csscomb #242).
 - `stringify` called without a node now reports `stringify expects a node, got <value>` instead of `We need tree to translate`.
 
 ## 0.0.2 (2026-10-16)

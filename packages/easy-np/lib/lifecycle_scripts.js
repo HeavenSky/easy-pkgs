@@ -1,4 +1,5 @@
 const path = require('node:path');
+const fs = require('node:fs/promises');
 const os = require('node:os');
 const chalk = require('chalk');
 const npa = require('npm-package-arg');
@@ -136,7 +137,7 @@ exports.runDependencyScripts = async options => {
   }
   const ready = tasks.filter(task => waiting.get(task) === 0);
   const started = new Set();
-  const skippedOptionals = new Set();
+  const skippedOptionals = new Set(options.skippedOptionalDirs);
   let running = 0;
   let cursor = 0;
 
@@ -179,6 +180,20 @@ function requiredDir(options, dir, seen = new Set()) {
   return false;
 }
 
+// 回退目录, public-hoist-pattern 提升到根目录与 workspace 根目录的链接按包名统一创建, 只撤掉指向被跳过目录的那些
+async function removeHoistedLinks(name, dir, options) {
+  const nodeModulesDirs = [path.join(options.storeDir, '.store/node_modules'), options.storeDir];
+  if (options.enableWorkspace && options.isWorkspacePackage) {
+    nodeModulesDirs.push(path.join(options.workspaceRoot, 'node_modules'));
+  }
+  const realDir = await fs.realpath(dir).catch(() => dir);
+  for (const nodeModulesDir of nodeModulesDirs) {
+    const linkDir = path.join(nodeModulesDir, name);
+    if (!(await utils.isStoreLink(linkDir))) continue;
+    if ((await fs.realpath(linkDir).catch(() => null)) === realDir) await utils.rimraf(linkDir);
+  }
+}
+
 async function runDependencyScript(task, options, skippedOptionals) {
   const required = requiredDir(options, task.dir);
   const roots = required ? [] : [...options.scriptNeeds.get(task.dir).roots];
@@ -200,7 +215,7 @@ async function runDependencyScript(task, options, skippedOptionals) {
   } catch (err) {
     if (!required) {
       // 与 npm 一样整体跳过所在的可选依赖: 撤掉它的链接与 bin, 阶段标记保留, 下次运行重试
-      for (const [dir, displayName] of roots) {
+      for (const [dir, { name, displayName }] of roots) {
         if (skippedOptionals.has(dir)) continue;
         skippedOptionals.add(dir);
         options.console.error(chalk.yellow(`[${displayName}] optional install error: ${err.stack}`));
@@ -209,6 +224,7 @@ async function runDependencyScript(task, options, skippedOptionals) {
           await utils.removeStaleBins(linkDir, {}, binDir);
           await utils.rimraf(linkDir);
         }
+        await removeHoistedLinks(name, dir, options);
       }
       return;
     }

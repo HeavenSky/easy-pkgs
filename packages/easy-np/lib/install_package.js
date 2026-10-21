@@ -18,10 +18,13 @@ const allowScripts = require('./allow_scripts');
 module.exports = install;
 
 async function install(parentDir, pkg, ancestors, options, context) {
+  const state = {};
   try {
-    return await _install(parentDir, pkg, ancestors, options, context);
+    return await _install(parentDir, pkg, ancestors, options, context, state);
   } catch (err) {
     if (pkg.optional) {
+      // 子树中已排队的脚本不再运行, 见 lib/lifecycle_scripts.js runDependencyScripts
+      if (state.dir) options.skippedOptionalDirs.add(state.dir);
       if (err.name === 'UnSupportedPlatformError') {
         // ignore log error
         debug('%s', err.message);
@@ -41,7 +44,7 @@ async function install(parentDir, pkg, ancestors, options, context) {
   }
 }
 
-async function _install(parentDir, pkg, ancestors, options, context) {
+async function _install(parentDir, pkg, ancestors, options, context, state) {
   const rootPkgDependencies = options.production
     ? options.rootPkgDependencies.prodMap
     : options.rootPkgDependencies.allMap;
@@ -164,6 +167,7 @@ async function _install(parentDir, pkg, ancestors, options, context) {
   if (!realPkgDir) {
     return;
   }
+  state.dir = realPkgDir;
 
   // record version
   options.packageVersions[realPkg.name] = options.packageVersions[realPkg.name] || new Set();
@@ -502,11 +506,11 @@ async function linkModule(pkg, parentDir, realPkg, realPkgDir, options, displayN
   const linkDir = path.join(parentDir, 'node_modules', pkg.alias || realPkg.name);
   const binDir = bin.getBinDir(parentDir, options);
   await utils.removeStaleBins(linkDir, realPkg, binDir);
-  noteScriptNeed(options, realPkgDir, pkg.optional ? { dir: realPkgDir, displayName } : nearestOptional(ancestors));
-  if (pkg.optional) {
-    if (!options.optionalLinks.has(realPkgDir)) options.optionalLinks.set(realPkgDir, []);
-    options.optionalLinks.get(realPkgDir).push({ linkDir, binDir });
-  }
+  noteScriptNeed(
+    options,
+    realPkgDir,
+    pkg.optional ? { dir: realPkgDir, name: realPkg.name, displayName } : nearestOptional(ancestors)
+  );
   // fix concurrent install same bin name error
   try {
     await bin(parentDir, realPkg, realPkgDir, options, displayName);
@@ -517,7 +521,12 @@ async function linkModule(pkg, parentDir, realPkg, realPkgDir, options, displayN
     // retry
     await bin(parentDir, realPkg, realPkgDir, options, displayName);
   }
-  await link(parentDir, realPkg, realPkgDir, pkg.alias, options);
+  // 记下实际的链接位置(store 中的依赖链接在父包旁边, 不在 parentDir/node_modules 下), 脚本失败被跳过时据此撤掉
+  const linkedDir = await link(parentDir, realPkg, realPkgDir, pkg.alias, options);
+  if (pkg.optional) {
+    if (!options.optionalLinks.has(realPkgDir)) options.optionalLinks.set(realPkgDir, []);
+    options.optionalLinks.get(realPkgDir).push({ linkDir: linkedDir, binDir });
+  }
 }
 
 // 每次链接都记下这个包被谁需要: 任一处按普通依赖需要即为必需; 否则记下所在的可选依赖(最近的可选祖先或它自己),
@@ -525,13 +534,14 @@ async function linkModule(pkg, parentDir, realPkg, realPkgDir, options, displayN
 function noteScriptNeed(options, dir, optionalRoot) {
   let need = options.scriptNeeds.get(dir);
   if (!need) options.scriptNeeds.set(dir, (need = { required: false, roots: new Map() }));
-  if (optionalRoot) need.roots.set(optionalRoot.dir, optionalRoot.displayName);
+  if (optionalRoot) need.roots.set(optionalRoot.dir, optionalRoot);
   else need.required = true;
 }
 
 function nearestOptional(ancestors) {
   for (let i = ancestors.length - 1; i >= 0; i--) {
-    if (ancestors[i].optional) return { dir: ancestors[i].storeDir, displayName: ancestors[i].displayName };
+    const { optional, storeDir, name, displayName } = ancestors[i];
+    if (optional) return { dir: storeDir, name, displayName };
   }
   return null;
 }

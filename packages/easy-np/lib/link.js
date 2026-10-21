@@ -39,4 +39,5 @@ module.exports = async (parentDir, pkg, realDir, alias, options) => {
   await utils.mkdirp(path.dirname(linkDir));
   const relative = await utils.forceSymlink(realDir, linkDir);
   debug('%s link %s => %s, parentDir: %s', displayName, linkDir, relative, parentDir);
+  return linkDir;
 };

@@ -32,8 +32,10 @@ module.exports = function formatInstallOptions(options) {
   options.scriptTasks = new Map();
   // 可选依赖被链接到的位置, 其中的包脚本失败时据此撤掉: Map<store 目录, [{ linkDir, binDir }]>
   options.optionalLinks = new Map();
-  // 每个 store 包目录被谁需要: Map<store 目录, { required, roots: Map<可选依赖的 store 目录, displayName> }>
+  // 每个 store 包目录被谁需要: Map<store 目录, { required, roots: Map<可选依赖的 store 目录, { dir, name, displayName }> }>
   options.scriptNeeds = new Map();
+  // 安装阶段就因子树失败被跳过的可选依赖的 store 目录
+  options.skippedOptionalDirs = new Set();
   // 本次运行已遍历过子依赖的 store 包目录; 启用锁文件时已完成的包也要遍历一次, 子树才会记进 np-lock.json
   options.visitedStoreDirs = new Set();
   options.runscriptTime = 0;

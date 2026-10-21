@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Breaking changes
+
+- When easy-mok is mounted under a sub-path, WebSocket proxies now forward the path without the mount prefix, like ordinary proxied requests already did; if you added the prefix back with `pathRewrite` or expected it upstream, remove that workaround.
+
+### Fixed
+
+- A CORS origin written as an IPv4-mapped IPv6 address, such as `http://[::ffff:127.0.0.1]`, is now judged by the IPv4 address it maps to, so the loopback form counts as this machine and the private-network form follows the `lan` setting.
+
 ## 0.0.3 (2026-10-16)
 
 ### Changed

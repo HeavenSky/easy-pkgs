@@ -82,7 +82,7 @@ fastify.addHook("onRequest", (request, reply, done) => {
 app.use("/api", createMock()); // "GET /user" 对应 /api/user
 ```
 
-mock 按挂载后的路径匹配，管理页随之移到 `/api/__mock/`。挂在子路径下时，WebSocket 代理转发给上游会保留挂载前缀，普通代理请求则去掉前缀；需要时在上游用 `pathRewrite` 处理。
+mock 按挂载后的路径匹配，管理页随之移到 `/api/__mock/`。代理转发给上游的路径不含挂载前缀，普通请求与 WebSocket 升级一致。
 
 ## 随宿主一起关闭
 

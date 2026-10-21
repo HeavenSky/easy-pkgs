@@ -17,13 +17,13 @@ const trackSockets = server => {
 	return server;
 };
 
-/** 上游: 普通请求回显名字, WebSocket 升级回 101 并带上名字, 统计收到的升级次数 */
+/** 上游: 普通请求回显名字, WebSocket 升级回 101 并带上名字与收到的路径, 统计收到的升级次数 */
 const startUpstream = async name => {
 	const server = trackSockets(http.createServer((req, res) => res.end(JSON.stringify({ up: name, url: req.url }))));
 	server.upgrades = 0;
 	server.on("upgrade", (req, socket) => {
 		server.upgrades++;
-		socket.end(`HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nX-Up: ${name}\r\n\r\n`);
+		socket.end(`HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nX-Up: ${name}\r\nX-Url: ${req.url}\r\n\r\n`);
 	});
 	const port = await listen(server);
 	return { server, port, close: () => { server.destroyAll(); return new Promise(resolve => server.close(resolve)); } };
@@ -183,6 +183,31 @@ describe("子路径挂载", () => {
 		expect((await fetch(`${b}/api/__mock/api/meta`)).status).toBe(200);
 		await mock.close();
 		await new Promise(resolve => server.close(resolve));
+	});
+
+	it("WebSocket 代理与普通代理一样转发去掉挂载前缀的路径", async () => {
+		const up = await startUpstream("U");
+		const dir = makeFixture({
+			"state.json": JSON.stringify({ logLevel: "silent" }),
+			"mocks/px.js": `module.exports = { "GET /ws/*": () => ({ target: "http://127.0.0.1:${up.port}", ws: true }) };`,
+		});
+		const mock = createMock({ cwd: dir, folder: "mocks", stateFile: "state.json", watch: false });
+		const host = express5();
+		host.use("/api", mock);
+		const server = trackSockets(http.createServer(host));
+		const port = await listen(server);
+		// 普通请求经过一次后才挂上 upgrade 分发
+		expect((await (await fetch(`http://127.0.0.1:${port}/api/ws/x?a=1`)).json()).url).toBe("/ws/x?a=1");
+		const url = await new Promise(resolve => {
+			const req = http.request({ host: "127.0.0.1", port, path: "/api/ws/y?b=2", headers: { connection: "Upgrade", upgrade: "websocket" } });
+			req.on("upgrade", (res, socket) => { socket.destroy(); resolve(res.headers["x-url"]); });
+			req.end();
+		});
+		expect(url).toBe("/ws/y?b=2");
+		await mock.close();
+		server.destroyAll();
+		await new Promise(resolve => server.close(resolve));
+		await up.close();
 	});
 });
 

@@ -82,7 +82,7 @@ Pass a path to `app.use()` to serve mocks only below it.
 app.use("/api", createMock()); // "GET /user" matches /api/user
 ```
 
-Mocks match the path after the mount point, and the admin page moves to `/api/__mock/`. For WebSocket proxies under a sub-path, the path forwarded upstream keeps the mount prefix, while ordinary proxied requests are forwarded without it; use `pathRewrite` on the upstream side if needed.
+Mocks match the path after the mount point, and the admin page moves to `/api/__mock/`. Proxies forward the path without the mount prefix, for both ordinary requests and WebSocket upgrades.
 
 ## Shut it down with your host
 

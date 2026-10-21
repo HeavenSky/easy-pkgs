@@ -239,7 +239,7 @@ describe("mock 路由的 Host 校验", () => {
 		for (const bad of ["null", "http://127.0.0.1.nip.io", "http://127.evil.test", "http://localhost.evil.test", "http://localhost@evil.test", "http://x.dev.example.com", "file://"]) {
 			expect([bad, await acao(bad)]).toEqual([bad, null]);
 		}
-		for (const ok of ["HTTP://LOCALHOST:3000", "http://[::1]:3000", "http://evil.localhost", "http://a.corp.test"]) {
+		for (const ok of ["HTTP://LOCALHOST:3000", "http://[::1]:3000", "http://[::ffff:127.0.0.1]:3000", "http://evil.localhost", "http://a.corp.test"]) {
 			expect([ok, await acao(ok)]).toEqual([ok, ok]);
 		}
 		expect(await acao("https://192.168.1.2")).toBeNull(); // 私有网段来源只在 lan 开启时放行
@@ -261,6 +261,11 @@ describe("mock 路由的 Host 校验", () => {
 		expect(isTrustedOrigin("http://8.8.8.8", "8.8.8.8:3000", none)).toBe(true); // 同机不同端口, 与公网与否无关
 		expect(isTrustedOrigin("http://evil.test:5173", "evil.test:3000", none)).toBe(false); // 域名仍要求 Host 完全一致
 		expect(isTrustedOrigin("http://8.8.8.8", "localhost:3000", none, true)).toBe(false);
+		// URL 把 IPv4 映射地址规范成十六进制([::ffff:7f00:1]), 按对应的 IPv4 判断
+		expect(isTrustedOrigin("http://[::ffff:127.0.0.1]", "localhost:3000", none)).toBe(true);
+		expect(isTrustedOrigin("http://[::ffff:192.168.1.9]", "localhost:3000", none)).toBe(false);
+		expect(isTrustedOrigin("http://[::ffff:192.168.1.9]", "localhost:3000", none, true)).toBe(true);
+		expect(isTrustedOrigin("http://[::ffff:8.8.8.8]", "localhost:3000", none, true)).toBe(false);
 	});
 
 	it("hosts 含 * 时不校验", async () => {

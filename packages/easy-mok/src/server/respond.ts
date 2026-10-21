@@ -225,7 +225,13 @@ export const createResponder = ({ registry, store, journal, hosts = [], lan = fa
 		const scene = hit.route.scenes.get(activeScene(req, hit.route, state, uri).name);
 		if (!scene || scene.kind !== "proxy") { return; }
 		acquire(scene.value as Function, hit.route.key).then(slot => {
-			if ("owned" in slot && slot.proxy && slot.ws) { slot.proxy.upgrade(req, socket, head); }
+			if (!("owned" in slot && slot.proxy && slot.ws)) { return; }
+			// 与普通代理请求一致转发去掉挂载前缀的路径(express 挂载时普通请求的 req.url 已不含前缀)
+			if (base) {
+				const rest = String(req.url || "/").replace(/^[a-z][a-z\d+.-]*:\/\/[^/?]*/i, "").slice(base.length);
+				req.url = rest.startsWith("/") ? rest : `/${rest}`;
+			}
+			slot.proxy.upgrade(req, socket, head);
 		}).catch(err => console.warn("[easy-mok] WebSocket 代理出错:", hit.route.key, err));
 	};
 	const upgradeListeners = new Map<EventEmitter, (...args: any[]) => void>();

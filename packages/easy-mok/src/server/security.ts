@@ -3,7 +3,16 @@ import net from "net";
 import type { IncomingMessage } from "http";
 import { MockError } from "./util";
 
-const normalizeIp = (ip: string) => String(ip || "").replace(/^::ffff:/i, "").replace(/%.*$/, "");
+/** 去掉 IPv6 zone 与 IPv4 映射前缀; URL 把 [::ffff:127.0.0.1] 规范成 [::ffff:7f00:1], 十六进制形式也还原成点分 IPv4 */
+const normalizeIp = (ip: string) => {
+	const v = String(ip || "").replace(/%.*$/, "");
+	const hex = /^::ffff:([\da-f]{1,4}):([\da-f]{1,4})$/i.exec(v);
+	if (hex) {
+		const [hi, lo] = [parseInt(hex[1], 16), parseInt(hex[2], 16)];
+		return `${hi >> 8}.${hi & 255}.${lo >> 8}.${lo & 255}`;
+	}
+	return v.replace(/^::ffff:/i, "");
+};
 
 export const isLoopback = (ip: string) => {
 	const v = normalizeIp(ip);

@@ -19,4 +19,4 @@
 | 把项目从 npminstall 迁过来                       | [从 npminstall 迁移](migrate-from-npminstall.md)        |
 | 按报错信息排查问题                               | [排查常见报错](troubleshooting.md)                      |
 
-各版本的变更见 [CHANGELOG](../../CHANGELOG.md)（仅英文）。
+各版本的变更见 [更新日志](../CHANGELOG.md)。

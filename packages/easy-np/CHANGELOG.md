@@ -1,5 +1,7 @@
 # Changelog
 
+**English** · [简体中文](./zh/CHANGELOG.md)
+
 easy-np started from [cnpm/npminstall](https://github.com/cnpm/npminstall) 8.0.1; for upstream history see the [npminstall CHANGELOG](https://github.com/cnpm/npminstall/blob/master/CHANGELOG.md).
 
 0.0.0 lists every change relative to npminstall 8.0.1; later versions list the changes relative to the previous version.

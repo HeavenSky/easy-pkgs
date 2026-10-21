@@ -19,4 +19,4 @@
 | 从 cnpm/npminstall 切换过来                                     | [从 npminstall 迁移](migrate-from-npminstall.md)          |
 | 解决一条报错                                                    | [故障排查](troubleshooting.md)                            |
 
-版本历史见 [CHANGELOG](../../CHANGELOG.md)（仅英文）。
+版本历史见 [更新日志](../CHANGELOG.md)。

@@ -1,5 +1,7 @@
 # Changelog
 
+**English** · [简体中文](./zh/CHANGELOG.md)
+
 easy-comb is based on [csscomb/csscomb.js](https://github.com/csscomb/csscomb.js) 4.3.0 (commit `ce7ad83`). For earlier upstream releases, see the [csscomb CHANGELOG](https://github.com/csscomb/csscomb.js/blob/master/CHANGELOG.md).
 
 0.0.1 lists all changes relative to csscomb 4.3.0; later versions list only the changes since the previous version.

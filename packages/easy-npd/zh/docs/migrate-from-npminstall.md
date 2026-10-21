@@ -72,4 +72,4 @@
 | `npd-x uninstall --ignore-scripts`                                         | 声明了但没有作用                             | 移除；传入时报错                                                            |
 | 卸载时执行 preuninstall / uninstall / postuninstall                        | 执行被卸载包的脚本，不受 `allowScripts` 约束 | 移除；与 npm 7+ 一致，卸载不执行生命周期脚本                                |
 
-各版本的变更见 [CHANGELOG](../../CHANGELOG.md)（仅英文）；上游历史见 [npminstall 6.x CHANGELOG](https://github.com/cnpm/npminstall/blob/6.x/CHANGELOG.md)。
+各版本的变更见 [更新日志](../CHANGELOG.md)；上游历史见 [npminstall 6.x CHANGELOG](https://github.com/cnpm/npminstall/blob/6.x/CHANGELOG.md)。

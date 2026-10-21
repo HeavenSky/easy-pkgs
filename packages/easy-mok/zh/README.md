@@ -95,7 +95,7 @@ easy-mok 是一个服务，拦截不了单元测试里的请求，这种场景�
 ## 进一步阅读
 
 - [使用手册](docs/README.md)：接入 dev server、独立运行、写 mock、切换场景，以及全部选项。
-- [更新日志](../CHANGELOG.md)（英文）
+- [更新日志](CHANGELOG.md)
 
 ## License
 

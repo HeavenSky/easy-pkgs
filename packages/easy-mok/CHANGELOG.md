@@ -1,5 +1,7 @@
 # Changelog
 
+**English** · [简体中文](./zh/CHANGELOG.md)
+
 ## 0.0.4 (2026-10-21)
 
 ### Breaking changes

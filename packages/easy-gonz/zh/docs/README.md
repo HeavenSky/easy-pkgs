@@ -10,4 +10,4 @@
 | 了解每种语法产出哪些节点类型、节点之间怎样嵌套                       | [节点类型](node-types.md)                          |
 | 把项目从 gonzales-pe 4.3.0 迁移过来，并确认哪些语法树有变化          | [从 gonzales-pe 迁移](migrate-from-gonzales-pe.md) |
 | 修改解析器、添加测试用例、运行官方测试集                             | [开发与测试 easy-gonz](development.md)             |
-| 查看各版本的变化（仅英文）                                           | [CHANGELOG](../../CHANGELOG.md)                    |
+| 查看各版本的变化                                                     | [更新日志](../CHANGELOG.md)                        |

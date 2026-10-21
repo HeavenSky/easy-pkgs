@@ -62,7 +62,7 @@ easy-npd 不支持 npm workspaces：有 `workspaces` 字段时只安装根目录
 
 - [使用指南](docs/README.md)：一页一个任务，从安装参数到故障排查
 - [从 npminstall 迁移](docs/migrate-from-npminstall.md)：改名的命令、移除的参数与行为差异
-- [CHANGELOG](../CHANGELOG.md)（仅英文）
+- [更新日志](CHANGELOG.md)
 
 ## License
 

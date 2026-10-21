@@ -127,7 +127,7 @@ postcss 系工具链指 postcss、postcss-scss 和 postcss-less，选择器和�
 - [节点类型](docs/node-types.md)：每种语法产出哪些节点，节点之间怎样嵌套。
 - [从 gonzales-pe 迁移](docs/migrate-from-gonzales-pe.md)：哪些保持不变，哪些语法树有变化。
 - [开发与测试 easy-gonz](docs/development.md)：语料格式、`npm test` 和官方测试集。
-- [CHANGELOG](../CHANGELOG.md)：各版本的变化（仅英文）。
+- [更新日志](CHANGELOG.md)：各版本的变化。
 - [easy-comb](../../easy-comb/zh/README.md) 是 CSScomb 的维护版 fork，基于 easy-gonz 构建。
 - 问题和建议请提交到 [issues](https://github.com/HeavenSky/easy-pkgs/issues)。
 

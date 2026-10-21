@@ -17,4 +17,4 @@
 | 从自定义域名、局域网或其他来源访问 mock                                         | [放行其他主机、局域网与跨域页面](security.md) |
 | 构建和测试 easy-mok 本身                                                        | [从源码构建与测试](development.md)            |
 
-版本变化见[更新日志](../../CHANGELOG.md)（英文）。
+版本变化见[更新日志](../CHANGELOG.md)。

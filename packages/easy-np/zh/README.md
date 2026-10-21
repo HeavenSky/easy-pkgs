@@ -72,7 +72,7 @@ $ npx esbuild --version
 - [使用手册](docs/README.md)：按任务组织的全部命令、参数与配置文件。
 - [从 npminstall 迁移](docs/migrate-from-npminstall.md)：改名的命令、移除的参数与行为差异。
 - [故障排查](docs/troubleshooting.md)：报错信息与解决办法。
-- [CHANGELOG](../CHANGELOG.md)：每个版本改了什么（仅英文）。
+- [更新日志](CHANGELOG.md)：每个版本改了什么。
 
 ## 许可证
 

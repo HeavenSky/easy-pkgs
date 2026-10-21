@@ -18,4 +18,4 @@ easy-comb 是什么、为什么用，见 [README](../README.md)。
 | 在 CI、提交前或编辑器里检查风格  | [在 CI、提交前和编辑器中运行 easy-comb](integrations.md) |
 | 构建、测试或修改 easy-comb 本身  | [参与开发 easy-comb](contributing.md)                    |
 
-各版本的变化见 [CHANGELOG](../../CHANGELOG.md)（英文）。
+各版本的变化见 [更新日志](../CHANGELOG.md)。

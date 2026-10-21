@@ -4,7 +4,7 @@
 
 按本页把项目从 gonzales-pe 4.3.0 换成 easy-gonz，并找出代码可能察觉到差异的地方；前提是 Node.js 6 或更高版本。
 gonzales-pe 4.3.0 能解析的输入 easy-gonz 都能解析，所以多数项目只需换个包名。
-各版本的完整变化另见 [CHANGELOG](../../CHANGELOG.md)。
+各版本的完整变化另见 [更新日志](../CHANGELOG.md)。
 
 ## 换掉依赖包
 

@@ -1,5 +1,7 @@
 # Changelog
 
+**English** · [简体中文](./zh/CHANGELOG.md)
+
 easy-gonz is based on [tonyganch/gonzales-pe](https://github.com/tonyganch/gonzales-pe) 4.3.0 (commit `ab2e8ae` on the dev branch). For earlier upstream releases, see the [gonzales-pe CHANGELOG](https://github.com/tonyganch/gonzales-pe/blob/dev/CHANGELOG.md).
 
 0.0.1 lists all changes relative to gonzales-pe 4.3.0; later versions list only the changes since the previous version.

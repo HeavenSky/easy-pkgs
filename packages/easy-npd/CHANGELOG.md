@@ -1,5 +1,7 @@
 # Changelog
 
+**English** · [简体中文](./zh/CHANGELOG.md)
+
 easy-npd starts from [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.8.0; for upstream history see the [npminstall 6.x CHANGELOG](https://github.com/cnpm/npminstall/blob/6.x/CHANGELOG.md) and the older [History.md](https://github.com/cnpm/npminstall/blob/6.x/History.md).
 
 0.0.0 lists every change relative to npminstall 6.8.0; later versions list changes relative to the previous version.

@@ -4,6 +4,13 @@ easy-gonz is based on [tonyganch/gonzales-pe](https://github.com/tonyganch/gonza
 
 0.0.1 lists all changes relative to gonzales-pe 4.3.0; later versions list only the changes since the previous version.
 
+## Unreleased
+
+### Fixed
+
+- Indented Sass: a comment indented with tabs now continues on the more deeply indented lines that follow, as it already did with spaces; before, it ended after its first line and the continuation lines were parsed as code.
+- `stringify` called without a node now reports `stringify expects a node, got <value>` instead of `We need tree to translate`.
+
 ## 0.0.2 (2026-10-16)
 
 ### Breaking changes

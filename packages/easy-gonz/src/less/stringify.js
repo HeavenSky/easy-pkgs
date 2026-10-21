@@ -3,8 +3,8 @@
 var comment = require('../comment');
 
 module.exports = function stringify(tree) {
-  // TODO: Better error message
-  if (!tree) throw new Error('We need tree to translate');
+  // 只经 node.toString() 调用, tree 总是节点; 保留检查防止直接调用时报出难懂的 TypeError
+  if (!tree) throw new Error('stringify expects a node, got ' + tree);
 
   function _t(tree) {
     var type = tree.type;

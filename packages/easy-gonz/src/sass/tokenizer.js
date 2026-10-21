@@ -212,6 +212,10 @@ module.exports = function(css, tabSize) {
     col++;
   }
 
+  function isIndent(ch) {
+    return ch === ' ' || ch === '\t';
+  }
+
   /**
   * Parse a multiline comment
   * @param {string} css Unparsed part of CSS string
@@ -223,9 +227,9 @@ module.exports = function(css, tabSize) {
     // Get current indent level:
     var il = 0;
     var _pos = pos - 1;
+    // Sass 允许用空格或 tab 缩进(同一文件内不能混用), 两者都按一个字符计
     for (; _pos > -1; _pos--) {
-      // TODO: Can be tabs:
-      if (css.charAt(_pos) === ' ') il++;
+      if (isIndent(css.charAt(_pos))) il++;
       else break;
     }
 
@@ -246,7 +250,7 @@ module.exports = function(css, tabSize) {
           // Get next non-blank line's indent level:
           var _il = 0;
           for (_pos = pos + 1; _pos < css.length; _pos++) {
-            if (css.charAt(_pos) === ' ') _il++;
+            if (isIndent(css.charAt(_pos))) _il++;
             else if (css.charAt(_pos) === '\n') _il = 0;
             else if (css.charAt(_pos) !== '\r') break;
           }
@@ -299,8 +303,7 @@ module.exports = function(css, tabSize) {
     var il = 0;
     var onlyToken = false;
     for (_pos = pos - 1; _pos > -1; _pos--) {
-      // TODO: Can be tabs:
-      if (css.charAt(_pos) === ' ') il++;
+      if (isIndent(css.charAt(_pos))) il++;
       else if (css.charAt(_pos) === '\n') {
         onlyToken = true;
         break;
@@ -324,7 +327,7 @@ module.exports = function(css, tabSize) {
           // Get new line's indent level:
           var _il = 0;
           for (_pos = pos + 1; _pos < css.length; _pos++) {
-            if (css.charAt(_pos) === ' ') _il++;
+            if (isIndent(css.charAt(_pos))) _il++;
             else break;
           }
 

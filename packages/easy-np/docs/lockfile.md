@@ -27,7 +27,8 @@
 - Partial installs only add entries: installs with `<pkg>`, run inside a workspace directory, run with `--workspaces`/`--only`/`--omit`, or that skip non-standard fields.
 - When an installed version differs from the locked one, easy-np replaces it with the locked version; `np-x update` ignores the locked versions, resolves the ranges again and writes the result back.
 - `np <pkg>` records the declaration it saves into `package.json`; a tag, `*`, or no version on the command line is resolved again on every install.
-- When the project already has another package manager's lockfile and no `np-lock.json`, no `np-lock.json` is created; if that lockfile is `npm-shrinkwrap.json` or `package-lock.json`, the install warns that it is not used and suggests `--from-package-lock`.
+- When the project already has another package manager's lockfile and no `np-lock.json`, no `np-lock.json` is created.
+- When the project has an `npm-shrinkwrap.json` or `package-lock.json` and `np-lock.json` is not read (it is missing, or the lockfile is off, which includes `np`), the install warns that the npm lockfile is not used and suggests `--from-package-lock`.
 - When `np-lock.json` and another package manager's lockfile both exist, the install warns that they are updated separately and may drift apart.
 - With `--from-package-lock` or `-g`, `np-lock.json` is neither read nor written.
 - Git dependencies are locked to a commit, tarball URL dependencies to a sha512 integrity; local folder dependencies are not locked.

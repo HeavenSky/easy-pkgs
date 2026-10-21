@@ -31,7 +31,7 @@
 5. pnpm 设置与 `.npmrc` 中的 `lockfile`、`package-lock`
 6. 默认：开启
 
-即使开启了锁文件，项目已有其他包管理器的锁文件而没有 `np-lock.json` 时也不生成，若该锁文件是 `npm-shrinkwrap.json` 或 `package-lock.json` 则告警并提示改用 `--from-package-lock`；`np-lock.json` 与其他锁文件同时存在时告警两者可能漂移；用 `--from-package-lock` 或 `-g` 时不读写 `np-lock.json`。
+即使开启了锁文件，项目已有其他包管理器的锁文件而没有 `np-lock.json` 时也不生成。项目有 `npm-shrinkwrap.json` 或 `package-lock.json`，而 `np-lock.json` 没被读取（不存在，或锁文件关闭，`npd` 默认即是）时，告警 npm 的锁文件未被使用并提示改用 `--from-package-lock`；`np-lock.json` 与其他锁文件同时存在时告警两者可能漂移；用 `--from-package-lock` 或 `-g` 时不读写 `np-lock.json`。
 
 ## 了解 np-lock.json 记录什么
 

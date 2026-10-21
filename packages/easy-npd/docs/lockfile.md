@@ -31,7 +31,7 @@ The first source that has a setting decides:
 5. `lockfile` and `package-lock` in pnpm settings and `.npmrc`
 6. Default: on
 
-Even when the lockfile is on, npd does not create one if the project already has another package manager's lockfile and no `np-lock.json`, and warns when that lockfile is `npm-shrinkwrap.json` or `package-lock.json`, suggesting `--from-package-lock`; when `np-lock.json` and another lockfile both exist, npd warns that they may drift apart; with `--from-package-lock` or `-g`, npd never reads or writes `np-lock.json`.
+Even when the lockfile is on, npd does not create one if the project already has another package manager's lockfile and no `np-lock.json`. When the project has an `npm-shrinkwrap.json` or `package-lock.json` and `np-lock.json` is not read (it is missing, or the lockfile is off, which includes `npd`), npd warns that the npm lockfile is not used and suggests `--from-package-lock`. When `np-lock.json` and another lockfile both exist, npd warns that they may drift apart; with `--from-package-lock` or `-g`, npd never reads or writes `np-lock.json`.
 
 ## Know what np-lock.json records
 

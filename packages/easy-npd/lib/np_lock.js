@@ -43,8 +43,6 @@ exports.foreignLockfiles = async root => {
   return found;
 };
 
-exports.hasForeignLockfile = async root => (await exports.foreignLockfiles(root)).length > 0;
-
 // 返回 { 'name@spec': manifest }; 文件损坏或版本不支持时报错, 不静默回退为联网解析
 exports.read = async root => {
   const file = path.join(root, LOCKFILE_NAME);

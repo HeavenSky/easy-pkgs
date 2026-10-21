@@ -27,7 +27,8 @@
 - 以下安装只追加条目：带 `<pkg>`、在 workspace 目录中运行、带 `--workspaces`/`--only`/`--omit` 运行，以及跳过了非标准字段的安装。
 - 已安装版本与锁定版本不同时，easy-np 直接换成锁定版本；`np-x update` 忽略锁定版本，按范围重新解析并写回。
 - `np <pkg>` 记录的是写进 `package.json` 的那条声明；命令行上写的 tag、`*` 或不写版本，每次安装都重新解析。
-- 项目已有其他包管理器的锁文件且没有 `np-lock.json` 时，不生成 `np-lock.json`；若该锁文件是 `npm-shrinkwrap.json` 或 `package-lock.json`，安装时告警它未被使用，并提示改用 `--from-package-lock`。
+- 项目已有其他包管理器的锁文件且没有 `np-lock.json` 时，不生成 `np-lock.json`。
+- 项目有 `npm-shrinkwrap.json` 或 `package-lock.json`，而 `np-lock.json` 没被读取（不存在，或锁文件关闭，`np` 默认即是）时，安装时告警 npm 的锁文件未被使用，并提示改用 `--from-package-lock`。
 - `np-lock.json` 与其他包管理器的锁文件同时存在时，安装时告警两者各自更新，可能锁定不同版本。
 - 使用 `--from-package-lock` 或 `-g` 时，不读写 `np-lock.json`。
 - git 依赖锁定 commit，tarball URL 依赖锁定 sha512 integrity，本地目录依赖不锁定。

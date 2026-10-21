@@ -345,6 +345,18 @@ describe('test/lockfile/np-lock.test.js', () => {
     await assert.rejects(fs.stat(lockFile), /ENOENT/);
   });
 
+  it('should warn that package-lock.json is not used when the lockfile is off', async () => {
+    await writePkg({ pedding: '1.1.0' });
+    await fs.writeFile(path.join(tmp, 'package-lock.json'), '{}');
+    // np 默认带 --no-lockfile
+    await coffee
+      .fork(helper.npminstall, [], { cwd: tmp, env: { ...process.env, np_lockfile: '' } })
+      .expect('code', 0)
+      .expect('stderr', /np WARN package-lock\.json is not used, pass --from-package-lock=package-lock\.json/)
+      .end();
+    await assert.rejects(fs.stat(lockFile), /ENOENT/);
+  });
+
   it('should warn when np-lock.json and a foreign lockfile both exist', async () => {
     await writePkg({ pedding: '1.1.0' });
     await run(helper.npminstall, []).expect('code', 0).end();

@@ -552,6 +552,8 @@ async function main(args, { ignorePkgNames = false, ignoreLockfile = false, mode
       rootConfig.lockfile,
       foreignConfig.lockfile(pnpmSettings),
     ].find(value => typeof value === 'boolean') ?? true;
+  const foreign = argv.global || lockfilePath ? [] : await npLock.foreignLockfiles(root);
+  let npLockUsed = false;
   if (!argv.global && !lockfilePath && lockfileEnabled) {
     if (argv['frozen-lockfile'] && pkgs.length > 0 && mode === 'install') {
       throw utils.userError(
@@ -562,19 +564,12 @@ async function main(args, { ignorePkgNames = false, ignoreLockfile = false, mode
     if (argv['frozen-lockfile'] && !lockExists) {
       throw utils.userError(`--frozen-lockfile requires ${npLock.LOCKFILE_NAME} in ${root}`);
     }
-    const foreign = await npLock.foreignLockfiles(root);
-    const npmLock = foreign.find(name => name === 'npm-shrinkwrap.json' || name === 'package-lock.json');
-    if (lockExists && foreign.length > 0) {
+    npLockUsed = lockExists;
+    if (lockExists && foreign.length > 0 && mode === 'install') {
       console.warn(
         chalk.yellow('np WARN both %s and %s exist, they are updated separately and may lock different versions'),
         npLock.LOCKFILE_NAME,
         foreign.join(', ')
-      );
-    } else if (!lockExists && npmLock) {
-      console.warn(
-        chalk.yellow('np WARN %s is not used, pass --from-package-lock=%s to install the versions it locks'),
-        npmLock,
-        npmLock
       );
     }
     if (lockExists || foreign.length === 0) {
@@ -588,6 +583,18 @@ async function main(args, { ignorePkgNames = false, ignoreLockfile = false, mode
       config.frozenLockfile = !!argv['frozen-lockfile'];
       lockState = { previous };
     }
+  }
+  // 没读 np-lock.json(不存在, 或锁文件关闭, 包括 np 默认带的 --no-lockfile)时, npm 的锁文件同样没被使用
+  const npmLock =
+    mode === 'install' &&
+    !npLockUsed &&
+    foreign.find(name => name === 'npm-shrinkwrap.json' || name === 'package-lock.json');
+  if (npmLock) {
+    console.warn(
+      chalk.yellow('np WARN %s is not used, pass --from-package-lock=%s to install the versions it locks'),
+      npmLock,
+      npmLock
+    );
   }
 
   process.on('exit', code => {

@@ -23,7 +23,7 @@
 
 各包不启用 npm workspaces: 依赖版本会互相冲突, 依赖提升也会掩盖漏声明的依赖.
 
-各包根目录的 `package-lock.json` 入库, CI, 官方测试集与发布一律 `npm ci`, 缺 lockfile 或与 `package.json` 不一致即失败. 增删或升级依赖后重新生成并与 `package.json` 一起提交:
+仓库根目录与各包根目录的 `package-lock.json` 都入库(根目录的只装 oxlint 与 oxfmt), 只用 npm 的 lockfile, 不混用 pnpm-lock: CI, 官方测试集与发布一律 `npm ci`, 缺 lockfile 或与 `package.json` 不一致即失败. 增删或升级依赖后重新生成并与 `package.json` 一起提交:
 
 - 先删掉该包的 `node_modules` 再 `npm i --registry=https://registry.npmjs.org/`: 只删 lockfile 时 npm 会沿用 `node_modules/.package-lock.json` 里的旧下载地址, 镜像地址写进 lockfile 后 CI 会从镜像下载.
 - `easy-np` 与 `easy-npd` 加 `--lockfile-version=2`: 它们的 CI 在 Node 14(npm 6)上 `npm ci`, npm 6 读不了 v3 lockfile.
@@ -57,7 +57,7 @@ npm run build
 
 ## CI
 
-`.github/workflows/ci.yml` 自动发现 `packages/*`: 除 `easy-np`, `easy-npd` 与 `_` 开头的内部包外, 每个包走通用 job, 在 Node 24 上依次执行 `typecheck`, `test`, `build`(没有的脚本跳过); `lint` job 在根目录 `npm ci` 后对全仓执行 `lint:check` 与 `fmt:check`. `easy-np` 与 `easy-npd` 不走通用 job, 改由专用 job 覆盖 Python, Node 14 至 24 与 Windows; `easy-comb`, `easy-gonz` 与 `easy-mok` 在通用 job 之外另有旧版 Node 冒烟 job, 验证各自 `engines` 下限. 某个包需要更多 Node 版本或平台时, 为它加专用 job; 不再需要通用 job 时把它从 `discover` 的列表中排除. 各 workflow 的 token 只有只读权限, PR 上被新推送取代的运行会被取消, main 上的不取消(release.yml 依赖它的结果).
+`.github/workflows/ci.yml` 自动发现 `packages/*`: 除 `easy-np`, `easy-npd` 与 `_` 开头的内部包外, 每个包走通用 job, 在 Node 24 上依次执行 `typecheck`, `test`, `build`(没有的脚本跳过); `lint` job 在根目录 `npm ci` 后对全仓执行 `lint:check` 与 `fmt:check`. `easy-np` 与 `easy-npd` 不走通用 job, 改由专用 job 覆盖 Python, Node 14 至 24 与 Windows; `easy-comb`, `easy-gonz` 与 `easy-mok` 在通用 job 之外另有旧版 Node 冒烟 job, 验证各自 `engines` 下限. 某个包需要更多 Node 版本或平台时, 为它加专用 job; 不再需要通用 job 时把它从 `discover` 的列表中排除. 执行 `npm ci` 的 job 由 setup-node 按该 job 所装目录的 `package-lock.json` 缓存 npm 下载目录, release.yml 发布时不用缓存. 各 workflow 的 token 只有只读权限, PR 上被新推送取代的运行会被取消, main 上的不取消(release.yml 依赖它的结果).
 
 `.github/workflows/official.yml` 用各语法的官方测试集(WPT, css-parsing-tests, sass-spec, less.js test-data)检验 easy-gonz 与 easy-comb: 语料按 `packages/_official_style_suites/suites.json` 钉死的版本下载到 `.cache/official/`, 不入库; 各包的 `test/official-baseline.json` 记录已知失败, 出现新失败即不通过, 修好的用例要在同一改动中执行 `npm run test:official -- --update` 移出基线.
 
@@ -98,6 +98,8 @@ npm 登录走 Trusted Publishing, 不需要 `NPM_TOKEN`: 每个包需在 npmjs.c
 - node-gyp: 两个包都不自带 node-gyp, 首次编译原生模块时按当前 Node.js 版本安装到 `~/.np_tarball/np-node-gyp`(easy-np)与 `~/.np_tarball/npd-node-gyp`(easy-npd), 两者各自独立, 不互相读取.
 - 锁文件: 两个包读写项目根目录同一份 `np-lock.json`, 格式见各包 `lib/np_lock.js`.
 - 同步修改: 改任一个包的缓存路径, 文件名, manifest 缓存, 测速缓存或 `np-lock.json` 的 JSON 结构时, MUST 同步修改另一个包; 否则两者会静默读到对方写入的不兼容文件.
+- 目录布局: easy-np 把包版本放在 `node_modules/.np/<name>@<version>/node_modules/<name>`, easy-npd 放在 `node_modules/.npd/_<name>@<version>@<name>`; 两者目录名不同, 但同一个 `node_modules` 仍不能混用两个安装器.
+- 依赖脚本: 两个包按同一套模型调度生命周期脚本(各自的 `lib/lifecycle_scripts.js`): 整棵依赖树链接完成后运行, 子依赖先行, 互不依赖的包并发 10 个, 根项目脚本最后运行; 改任一个包的调度语义时 MUST 同步修改另一个包.
 
 ### 开发约定
 

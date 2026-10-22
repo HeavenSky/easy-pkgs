@@ -59,7 +59,7 @@ _ms@2.1.2@ms
 ## 什么时候该换别的工具
 
 easy-npd 不支持 npm workspaces：有 `workspaces` 字段时只安装根目录的依赖。
-需要 workspaces 或 `node_modules/.store` 布局时用 [easy-np](../../easy-np/zh/README.md)；它与 easy-npd 共用 `~/.nprc`、磁盘缓存和 `np-lock.json`，两者可以同时全局安装。
+需要 workspaces 或 `node_modules/.np` 布局时用 [easy-np](../../easy-np/zh/README.md)；它与 easy-npd 共用 `~/.nprc`、磁盘缓存和 `np-lock.json`，两者可以同时全局安装。
 
 ## 进一步阅读
 

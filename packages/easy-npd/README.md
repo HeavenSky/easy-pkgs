@@ -57,7 +57,7 @@ To get npm / pnpm defaults (a lockfile and approved scripts only), run `npd-x in
 ## Know when to pick something else
 
 easy-npd does not support npm workspaces: with a `workspaces` field it installs only the root dependencies.
-For workspaces or a `node_modules/.store` layout, use [easy-np](../easy-np/README.md); it shares `~/.nprc`, the disk cache and `np-lock.json` with easy-npd, and both can be installed globally side by side.
+For workspaces or a `node_modules/.np` layout, use [easy-np](../easy-np/README.md); it shares `~/.nprc`, the disk cache and `np-lock.json` with easy-npd, and both can be installed globally side by side.
 
 ## Read further
 

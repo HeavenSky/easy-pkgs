@@ -6,7 +6,7 @@ easy-npd starts from [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.8.0
 
 0.0.0 lists every change relative to npminstall 6.8.0; later versions list changes relative to the previous version.
 
-## Unreleased
+## 0.0.7 (2026-10-22)
 
 ### Breaking changes
 
@@ -15,9 +15,9 @@ easy-npd starts from [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.8.0
 
 ### Changed
 
-- `npd-x rebuild <pkg> ...` reruns the listed packages in dependency order, whatever order you list them in.
 - Approved dependency scripts, `preinstall` and the implicit `node-gyp rebuild` included, now run after the whole dependency tree is linked, as in npm and easy-np, so a script can load its siblings and peer dependencies. A package's scripts run after those of its own dependencies, and packages that do not depend on each other run in parallel (up to 10 at a time) instead of one by one.
 - When a script of a package inside an optional dependency fails, the already linked optional dependency is removed again, as in npm; the next `npd` retries it.
+- `npd-x rebuild <pkg> ...` reruns the listed packages in dependency order, whatever order you list them in.
 - The stages recorded for resuming are now `deps`, `preinstall`, `install`, `postinstall` and `finish`, as in easy-np; a package that an older version left between its `preinstall` and `install` reruns its `preinstall` once.
 
 ## 0.0.6 (2026-10-21)

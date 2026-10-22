@@ -9,6 +9,7 @@ const download = require("./download");
 const utils = require("./utils");
 const { queueDependencyScripts } = require("./lifecycle_scripts");
 const allowScripts = require("./allow_scripts");
+const installProgress = require("./install_progress");
 const npa = require("./npa");
 const bin = require("./bin");
 const link = require("./link");
@@ -77,9 +78,8 @@ async function _install(parentDir, pkg, ancestors, options, context, state) {
 		pkg.version,
 		parentDir
 	);
-	if (options.spinner) {
-		options.spinner.text = `[${options.progresses.finishedInstallTasks}/${options.progresses.installTasks}] Installing ${pkg.name}@${pkg.version}`;
-	}
+	options.progresses.current = `${pkg.name}@${pkg.version}`;
+	installProgress.render(options);
 	// 只有根项目, 受信本地包与 overrides / resolutions 声明的依赖受信; 其余依赖声明的本地路径必须按声明者目录解析并按声明者审核脚本, 否则未放行的包能借 file: 依赖执行脚本
 	const parent = ancestors[ancestors.length - 1] || options.rootDeclarer;
 	const trusted = !parent || (!!pkg.overridden && !options.rootDeclarer) || parent.trustedLocal;
@@ -178,6 +178,7 @@ async function _install(parentDir, pkg, ancestors, options, context, state) {
 
 	// record version
 	options.packageVersions[realPkg.name] = options.packageVersions[realPkg.name] || new Set();
+	if (!options.packageVersions[realPkg.name].has(realPkg.version)) options.progresses.packages++;
 	options.packageVersions[realPkg.name].add(realPkg.version);
 
 	// update package name when installing using git
@@ -206,8 +207,10 @@ async function _install(parentDir, pkg, ancestors, options, context, state) {
 	}
 	options.visitedStoreDirs.add(realPkgDir);
 	const stage = revisit ? utils.FINISH_INSTALL_STAGE : info.stage || utils.FIRST_INSTALL_STAGE;
+	// 逐包明细只在 --detail 时显示, 默认在安装阶段结束后汇总成一行(lib/local_install.js)
 	if (info.stage) {
-		options.console.warn(
+		options.progresses.resumedPackages++;
+		options.console.info(
 			chalk.yellow("[npd:resume] %s continue from %s, root: %j"),
 			displayName,
 			options.rebuild ? "the beginning (npd-x rebuild)" : stage,

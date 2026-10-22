@@ -9,6 +9,7 @@ const utils = require("./utils");
 const { BINARY_ATTEMPTS } = require("./get");
 const { useBinarySource } = require("./download/npm");
 const allowScripts = require("./allow_scripts");
+const scriptProgress = require("./script_progress");
 
 // scripts that should run in root package and linked package
 exports.DEFAULT_ROOT_SCRIPTS = [
@@ -161,7 +162,9 @@ exports.runDependencyScripts = async options => {
 	let running = 0;
 	let cursor = 0;
 
-	await new Promise((resolve, reject) => {
+	// 运行期间展示后台脚本的耗时与下载进度
+	options.scriptProgress = scriptProgress.start(options);
+	const queue = new Promise((resolve, reject) => {
 		const start = task => {
 			started.add(task);
 			running++;
@@ -186,6 +189,12 @@ exports.runDependencyScripts = async options => {
 		};
 		next();
 	});
+	try {
+		await queue;
+	} finally {
+		options.scriptProgress.stop();
+		options.scriptProgress = null;
+	}
 };
 
 // 按普通依赖需要, 或所在的可选依赖本身在别处按普通依赖需要时, 脚本失败不能当作可选依赖失败跳过

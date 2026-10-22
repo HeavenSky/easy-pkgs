@@ -1,6 +1,5 @@
 const debug = require("node:util").debuglog("np:install");
 const path = require("node:path");
-const os = require("node:os");
 const chalk = require("chalk");
 const semver = require("semver");
 const pMap = require("p-map");
@@ -14,6 +13,7 @@ const resolve = require("./download/npm").resolve;
 const { REGISTRY_TYPES, LOCAL_TYPES } = require("./npa_types");
 const { queueDependencyScripts } = require("./lifecycle_scripts");
 const allowScripts = require("./allow_scripts");
+const installProgress = require("./install_progress");
 
 module.exports = install;
 
@@ -73,9 +73,8 @@ async function _install(parentDir, pkg, ancestors, options, context, state) {
 		pkg.version,
 		parentDir
 	);
-	if (options.spinner) {
-		options.spinner.text = `[${options.progresses.finishedInstallTasks}/${options.progresses.installTasks}] Installing ${pkg.name}@${pkg.version}${os.EOL}`;
-	}
+	options.progresses.current = `${pkg.name}@${pkg.version}`;
+	installProgress.render(options);
 	// 依赖(registry, git, url 包及其本地依赖)声明的本地路径按声明者目录解析, 不受信: 只执行依赖脚本, 按声明者的身份审核;
 	// 全局安装时被装的包就是根, 它的 overrides 与本地依赖同样不受信
 	const globalRoot = options.globalRootDeclarer;
@@ -185,6 +184,7 @@ async function _install(parentDir, pkg, ancestors, options, context, state) {
 
 	// record version
 	options.packageVersions[realPkg.name] = options.packageVersions[realPkg.name] || new Set();
+	if (!options.packageVersions[realPkg.name].has(realPkg.version)) options.progresses.packages++;
 	options.packageVersions[realPkg.name].add(realPkg.version);
 
 	// update package name when installing using git
@@ -221,8 +221,10 @@ async function _install(parentDir, pkg, ancestors, options, context, state) {
 	}
 	options.visitedStoreDirs.add(realPkgDir);
 	const stage = revisit ? utils.FINISH_INSTALL_STAGE : info.stage || utils.FIRST_INSTALL_STAGE;
+	// 逐包明细只在 --detail 时显示, 默认在安装阶段结束后汇总成一行(lib/local_install.js)
 	if (info.stage) {
-		options.console.warn(
+		options.progresses.resumedPackages++;
+		options.console.info(
 			chalk.yellow("[np:resume] %s continue from %s, root: %j"),
 			displayName,
 			options.rebuild ? "the beginning (np-x rebuild)" : stage,

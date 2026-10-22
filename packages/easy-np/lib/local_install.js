@@ -22,6 +22,7 @@ const formatInstallOptions = require("./format_install_options");
 const Context = require("./context");
 const { runLifecycleScripts, runDependencyScripts } = require("./lifecycle_scripts");
 const allowScripts = require("./allow_scripts");
+const installProgress = require("./install_progress");
 
 /**
  * npm install
@@ -164,8 +165,14 @@ async function _install(options, context) {
 	};
 
 	// multi-thread installation
-	await pMap(pkgs, mapper, 10);
+	const stopProgress = installProgress.start(options);
+	try {
+		await pMap(pkgs, mapper, 10);
+	} finally {
+		stopProgress();
+	}
 	options.downloadFinished = Date.now();
+	printResumed(options);
 
 	// link every packages' latest version to <root>/node_modules/.np/node_modules, fallback for peerDeps
 	await linkAllLatestVersionToFallbackDir(rootPkgsMap, options);
@@ -261,6 +268,19 @@ async function _install(options, context) {
 	finishInstall(options);
 
 	await utils.removeInstallDone(options.root);
+}
+
+// 上次中断留下的包逐个打印会刷屏, 默认只汇总成一行; --detail 时安装过程中已逐个打印
+function printResumed(options) {
+	const count = options.progresses.resumedPackages;
+	if (count === 0) return;
+	options.console.warn(
+		chalk.yellow("[np:resume] %s %s package(s) %s%s"),
+		options.rebuild ? "rebuilt" : "continued",
+		count,
+		options.rebuild ? "from the beginning" : "left unfinished by the previous run",
+		options.detail ? "" : ", run with --detail to list them"
+	);
 }
 
 async function _installOne(parentDir, childPkg, options, context) {

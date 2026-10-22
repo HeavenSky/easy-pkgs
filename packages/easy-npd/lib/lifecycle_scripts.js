@@ -6,6 +6,7 @@ const chalk = require("chalk");
 const ms = require("ms");
 const utils = require("./utils");
 const mirror = require("./mirror");
+const scriptProgress = require("./script_progress");
 
 // @see https://docs.npmjs.com/misc/scripts
 exports.DEPENDENCY_SCRIPTS = ["preinstall", "install", "postinstall"];
@@ -20,7 +21,7 @@ exports.runPackageScripts = async (pkg, root, displayName, options, stage, optio
 	// If there is a binding.gyp file in the root of your package,
 	// npm will default the install command to compile using node-gyp.
 	if (!scripts.install && (await utils.exists(path.join(root, "binding.gyp")))) {
-		options.console.warn(
+		options.console.info(
 			'[npd:runscript] %s found binding.gyp file, auto run "node-gyp rebuild", root: %j',
 			chalk.gray(displayName),
 			root
@@ -35,7 +36,8 @@ exports.runPackageScripts = async (pkg, root, displayName, options, stage, optio
 		if (!cmd) continue;
 
 		if (stage) await utils.setInstallStage(root, script);
-		options.console.warn(
+		// 开始与完成的逐条日志只在 --detail 时显示, 默认由 spinner(lib/script_progress.js)展示运行中的脚本, 结束后汇总条数
+		options.console.info(
 			"%s %s run %j, root: %j",
 			chalk.yellow(`scripts.${script}`),
 			chalk.gray(displayName),
@@ -63,7 +65,7 @@ exports.runPackageScripts = async (pkg, root, displayName, options, stage, optio
 		} finally {
 			options.runscriptCount++;
 		}
-		options.console.warn(
+		options.console.info(
 			"%s %s finished in %s",
 			chalk.yellow(`scripts.${script}`),
 			chalk.gray(displayName),
@@ -103,7 +105,9 @@ exports.runDependencyScripts = async options => {
 	let running = 0;
 	let cursor = 0;
 
-	await new Promise((resolve, reject) => {
+	// 运行期间展示后台脚本的耗时与下载进度
+	options.scriptProgress = scriptProgress.start(options);
+	const queue = new Promise((resolve, reject) => {
 		const start = task => {
 			started.add(task);
 			running++;
@@ -128,6 +132,12 @@ exports.runDependencyScripts = async options => {
 		};
 		next();
 	});
+	try {
+		await queue;
+	} finally {
+		options.scriptProgress.stop();
+		options.scriptProgress = null;
+	}
 };
 
 // 按普通依赖需要, 或所在的可选依赖本身在别处按普通依赖需要时, 脚本失败不能当作可选依赖失败跳过

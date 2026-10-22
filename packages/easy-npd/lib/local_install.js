@@ -17,6 +17,7 @@ const dayjs = require("dayjs");
 const util = require("util");
 const utils = require("./utils");
 const { runPackageScripts, runDependencyScripts } = require("./lifecycle_scripts");
+const installProgress = require("./install_progress");
 const prepublish = require("./prepublish");
 const prepare = require("./prepare");
 const allowScripts = require("./allow_scripts");
@@ -160,9 +161,15 @@ async function _install(options, context) {
 		await installOne(options.targetDir, childPkg, options, context);
 	};
 
-	await pMap(pkgs, mapper, 10);
+	const stopProgress = installProgress.start(options);
+	try {
+		await pMap(pkgs, mapper, 10);
+	} finally {
+		stopProgress();
+	}
 	options.downloadFinished = Date.now();
 	if (options.spinner) options.spinner.succeed(`Installed ${pkgs.length} packages`);
+	printResumed(options);
 
 	// dedupe mode https://docs.npmjs.com/cli/dedupe
 	// link every packages' latest version to target directory
@@ -228,6 +235,19 @@ async function _install(options, context) {
 
 	// print install finished
 	finishInstall(options);
+}
+
+// 上次中断留下的包逐个打印会刷屏, 默认只汇总成一行; --detail 时安装过程中已逐个打印
+function printResumed(options) {
+	const count = options.progresses.resumedPackages;
+	if (count === 0) return;
+	options.console.warn(
+		chalk.yellow("[npd:resume] %s %s package(s) %s%s"),
+		options.rebuild ? "rebuilt" : "continued",
+		count,
+		options.rebuild ? "from the beginning" : "left unfinished by the previous run",
+		options.detail ? "" : ", run with --detail to list them"
+	);
 }
 
 async function installOne(parentDir, childPkg, options, context) {

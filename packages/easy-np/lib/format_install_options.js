@@ -149,6 +149,11 @@ module.exports = function formatInstallOptions(options) {
 		finishedInstallTasks: 0,
 		linkTasks: 0,
 		finishedLinkTasks: 0,
+		// 安装阶段的 spinner 文字(lib/install_progress.js): 当前包, 已解析的包版本数
+		current: "",
+		packages: 0,
+		// 从上次中断处继续的包数, 安装阶段结束后汇总打印
+		resumedPackages: 0,
 	};
 
 	return options;

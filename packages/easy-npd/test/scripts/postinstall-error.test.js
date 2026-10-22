@@ -39,7 +39,8 @@ describe("test/scripts/postinstall-error.test.js", () => {
 			.debug()
 			.expect("code", 0)
 			.expect("stderr", /httpsync@\* optional error: .*Error: Run ".*?build\.sh" error/)
-			.expect("stderr", /scripts.install httpsync@\* run "sh build.sh"/)
+			// 脚本开始行只在 --detail 时经 console.info 打印到 stdout
+			.expect("stdout", /scripts.install httpsync@\* run "sh build.sh"/)
 			.expect("stderr", /1 optional package\(s\) failed and were skipped/)
 			.expect("stderr", /rerun their scripts with: npd-x rebuild httpsync/)
 			.expect("stdout", /All packages installed/)

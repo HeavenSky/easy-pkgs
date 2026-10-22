@@ -2,6 +2,7 @@
 
 const assert = require("assert");
 const path = require("path");
+const util = require("util");
 const fs = require("fs/promises");
 const npminstall = require("../support/npminstall");
 const helper = require("../support/helper");
@@ -64,6 +65,32 @@ describe("test/scripts/resume.test.js", () => {
 			"preinstall",
 			"postinstall",
 		]);
+	});
+
+	it("should summarize resumed packages in one line unless --detail", async () => {
+		await assert.rejects(install());
+		await fs.writeFile(flagFile, "");
+		const logs = { info: [], warn: [] };
+		await install({
+			console: {
+				info: (...args) => logs.info.push(util.format(...args)),
+				log() {},
+				warn: (...args) => logs.warn.push(util.format(...args)),
+				error() {},
+			},
+		});
+		// 逐包明细走 info(只在 --detail 时可见), 汇总只有一行
+		assert(
+			logs.info.some(line =>
+				/\[npd:resume\] .*resume-scripts.* continue from postinstall/.test(line)
+			)
+		);
+		assert.deepEqual(
+			logs.warn.filter(line => line.includes("npd:resume")),
+			[
+				"[npd:resume] continued 1 package(s) left unfinished by the previous run, run with --detail to list them",
+			]
+		);
 	});
 
 	it("should rerun scripts of the listed packages with npd-x rebuild <pkg>", async () => {

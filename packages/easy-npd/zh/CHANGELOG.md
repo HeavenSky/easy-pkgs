@@ -6,6 +6,18 @@ easy-npd 起步于 [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.8.0�
 
 0.0.0 列出相对 npminstall 6.8.0 的全部改动，之后每个版本列出相对上一版的改动。
 
+## Unreleased
+
+### 新增
+
+- 依赖脚本在后台运行时，spinner 显示每个运行中脚本的耗时，以及它经 Node.js http / https 已下载的字节数（例如预编译二进制），下载耗时较长时不再像卡住。使用 `--detail` 或不在终端中运行时，每 10 秒为仍在运行的脚本各打印一行。
+- 安装依赖时，spinner 还显示已解析的包版本数、已下载的 tarball 字节数与平均速度，每秒刷新，下载大包时不再像卡住。
+
+### 变更
+
+- 中断后再次运行 `npd` 时，只打印一行继续安装的包数，不再每个包打印一行 `[npd:resume]`；`--detail` 时仍逐个列出。
+- 每个依赖脚本的开始与完成行（`scripts.<name> ... run` 与 `... finished in`）以及 `found binding.gyp` 提示只在 `--detail` 时打印，与 easy-np 一致；失败信息与最后的 `Run <n> scripts` 行照常打印。
+
 ## 0.0.7 (2026-10-22)
 
 ### 破坏性变更

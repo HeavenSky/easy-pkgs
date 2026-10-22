@@ -390,6 +390,19 @@ exports.runScript = async (pkgDir, script, globalOptions, runInForeground = fals
 		ignoreError = true;
 	}
 
+	// 后台脚本经 lib/script_progress.js 展示耗时与下载进度, 预加载钩子追加在已有 NODE_OPTIONS 之后
+	const progress =
+		!runInForeground && globalOptions.scriptProgress
+			? globalOptions.scriptProgress.begin(`${pkg.name}@${pkg.version}`)
+			: null;
+	if (progress) {
+		for (const key in progress.env) {
+			env[key] =
+				key === "NODE_OPTIONS" && env.NODE_OPTIONS
+					? `${env.NODE_OPTIONS} ${progress.env[key]}`
+					: progress.env[key];
+		}
+	}
 	try {
 		// 后台执行时收集输出, 失败时写入日志文件; stdin 保持 ignore, 等待输入的脚本不会挂起
 		const options = runInForeground
@@ -406,6 +419,8 @@ exports.runScript = async (pkgDir, script, globalOptions, runInForeground = fals
 				await exports.writeScriptLog(pkgDir, pkg, script, err, err.all, globalOptions);
 			throw err;
 		}
+	} finally {
+		if (progress) progress.end();
 	}
 };
 

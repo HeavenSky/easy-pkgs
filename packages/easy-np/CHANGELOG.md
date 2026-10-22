@@ -6,6 +6,17 @@ easy-np started from [cnpm/npminstall](https://github.com/cnpm/npminstall) 8.0.1
 
 0.0.0 lists every change relative to npminstall 8.0.1; later versions list the changes relative to the previous version.
 
+## Unreleased
+
+### Added
+
+- While dependency scripts run in the background, the spinner shows each running script with its elapsed time and the bytes its Node.js http / https requests have downloaded (for example a prebuilt binary), so a long download no longer looks like a hang. With `--detail` or without a terminal, a line is printed every 10 seconds for each script still running.
+- While packages install, the spinner also shows how many package versions have been resolved and how many tarball bytes have been downloaded, with the average speed, and refreshes every second, so a large download no longer looks like a hang.
+
+### Changed
+
+- After an interrupted install, `np` prints one line with the number of packages it continues instead of one `[np:resume]` line per package; `--detail` still lists every package.
+
 ## 0.0.7 (2026-10-22)
 
 ### Breaking changes

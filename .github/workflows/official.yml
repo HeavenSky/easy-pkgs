@@ -29,6 +29,10 @@ jobs:
             - uses: actions/setup-node@v7
               with:
                   node-version: 24.x
+                  cache: npm
+                  cache-dependency-path: |
+                      packages/_official_style_suites/package-lock.json
+                      packages/easy-comb/package-lock.json
             - uses: actions/cache@v6
               with:
                   path: .cache/official

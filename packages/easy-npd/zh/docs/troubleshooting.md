@@ -81,6 +81,15 @@ script output: <cache>/np-script-logs/<time>-<name>@<version>-<random>.log
 - 原因：依赖的安装脚本在后台执行时失败，输出没有显示出来。
 - 解决：打开日志文件查看命令与完整输出，或加 `--foreground-scripts` 重新运行。
 
+## 依赖脚本看起来卡住
+
+```text
+Running 1 script: frida@17.23.2 12s, downloading 6.03MB/36.45MB (16%)
+```
+
+- 原因：依赖的安装脚本正在下载或编译，例如下载预编译二进制。spinner 显示每个运行中脚本的耗时，以及它经 Node.js http / https 已下载的字节数；用 `fetch` 或 curl 等工具下载时只显示耗时。
+- 解决：等它完成，或加 `--foreground-scripts` 重跑以查看脚本自身的输出；使用 `--detail` 或不在终端中运行时，每 10 秒为仍在运行的脚本各打印一行 `scripts.running`。
+
 ## 安装脚本被跳过
 
 ```text

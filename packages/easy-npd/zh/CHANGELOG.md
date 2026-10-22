@@ -6,7 +6,7 @@ easy-npd 起步于 [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.8.0�
 
 0.0.0 列出相对 npminstall 6.8.0 的全部改动，之后每个版本列出相对上一版的改动。
 
-## Unreleased
+## 0.0.8 (2026-10-23)
 
 ### 新增
 
@@ -16,7 +16,7 @@ easy-npd 起步于 [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.8.0�
 ### 变更
 
 - 中断后再次运行 `npd` 时，只打印一行继续安装的包数，不再每个包打印一行 `[npd:resume]`；`--detail` 时仍逐个列出。
-- 每个依赖脚本的开始与完成行（`scripts.<name> ... run` 与 `... finished in`）以及 `found binding.gyp` 提示只在 `--detail` 时打印，与 easy-np 一致；失败信息与最后的 `Run <n> scripts` 行照常打印。
+- 每个依赖脚本的开始与完成行（`scripts.<name> ... run` 与 `... finished in`）以及 `found binding.gyp` 提示只在 `--detail` 时打印，且改为输出到 stdout 而非 stderr，与 easy-np 一致；失败信息与最后的 `Run <n> scripts` 行照常打印。
 
 ## 0.0.7 (2026-10-22)
 

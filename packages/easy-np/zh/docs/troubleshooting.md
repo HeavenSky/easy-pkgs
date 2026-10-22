@@ -77,6 +77,11 @@
 - 原因：后台执行的依赖脚本失败，命令与完整输出在该日志文件中。
 - 解决：查看日志，或加 `--foreground-scripts` 重跑以实时查看输出。
 
+### `Running 1 script: frida@17.23.2 12s, downloading 6.03MB/36.45MB (16%)` 长时间不结束
+
+- 原因：依赖的安装脚本正在下载或编译，例如下载预编译二进制。spinner 显示每个运行中脚本的耗时，以及它经 Node.js http / https 已下载的字节数；用 `fetch` 或 curl 等工具下载时只显示耗时。
+- 解决：等它完成，或加 `--foreground-scripts` 重跑以查看脚本自身的输出；使用 `--detail` 或不在终端中运行时，每 10 秒为仍在运行的脚本各打印一行 `scripts.running`。
+
 ### `was compiled against a different Node.js version using NODE_MODULE_VERSION`
 
 - 原因：原生模块是为另一个 Node.js 版本编译的。

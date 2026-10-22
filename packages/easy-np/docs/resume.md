@@ -8,7 +8,7 @@ Rerun the same command and easy-np finishes a failed or interrupted install with
 
 1. Read the summary at the end of the failed run. You should see: `✖ Install finished with <n> failed package(s)`, the list of failed packages, and exit code 1.
 2. Fix the cause, for example the network or a missing build tool.
-3. Run the same command again, for example `np`. You should see: the install continuing from where it stopped; you do not need to delete `node_modules`.
+3. Run the same command again, for example `np`. You should see: the install continuing from where it stopped, summarized in one line, `[np:resume] continued <n> package(s) left unfinished by the previous run` (add `--detail` to list each package); you do not need to delete `node_modules`.
 
 ## What happens on a failure
 

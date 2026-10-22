@@ -8,7 +8,7 @@ A failed or interrupted install does not need a clean `node_modules`: run `npd` 
 
 1. Run `npd`. Expected: when packages fail (download, sub-dependency or script), the others still install, and npd ends with `<n> package(s) failed, run npd again to continue from where they stopped:` lists the failed packages and exits with code 1.
 2. Fix the cause shown for each package, for example the network or a missing build tool.
-3. Run `npd` again. Expected: each package continues from the stage it stopped at; nothing is extracted again and scripts that succeeded do not run again.
+3. Run `npd` again. Expected: each package continues from the stage it stopped at; nothing is extracted again and scripts that succeeded do not run again. The continued packages are summarized in one line, `[npd:resume] continued <n> package(s) left unfinished by the previous run`; add `--detail` to list each of them.
 
 - When a dependency failed, the root package's own lifecycle scripts are skipped and run after the next successful install.
 - When an optional dependency or one of its sub-dependencies fails, npd skips it as npm does and does not count it as a failure (when a script of one of its sub-dependencies fails, the already linked optional dependency is removed again); npd lists them with an `npd-x rebuild <pkg>` command to rerun their scripts.

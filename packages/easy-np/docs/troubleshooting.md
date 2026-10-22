@@ -77,6 +77,11 @@ Search this page for the error text you see. Messages are quoted as printed, wit
 - Cause: a dependency script running in the background failed; its command and full output are in that log file.
 - Fix: read the log, or rerun with `--foreground-scripts` to see the output live.
 
+### `Running 1 script: frida@17.23.2 12s, downloading 6.03MB/36.45MB (16%)` for a long time
+
+- Cause: a dependency's install script is downloading or building something, for example a prebuilt binary. The spinner shows each running script with its elapsed time and the bytes it has downloaded through Node.js http / https; downloads made with `fetch` or with tools such as curl show only the elapsed time.
+- Fix: wait for it to finish, or rerun with `--foreground-scripts` to see the script's own output; with `--detail` or without a terminal, a `scripts.running` line is printed every 10 seconds for each script still running.
+
 ### `was compiled against a different Node.js version using NODE_MODULE_VERSION`
 
 - Cause: native modules were built for another Node.js version.

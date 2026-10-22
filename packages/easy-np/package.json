@@ -1,6 +1,6 @@
 {
 	"name": "easy-np",
-	"version": "0.0.7",
+	"version": "0.0.8",
 	"description": "An npm installer that resumes after failures, picks the fastest public registry, and runs install scripts only after you approve them.",
 	"keywords": [
 		"dedup",

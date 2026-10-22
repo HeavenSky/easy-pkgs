@@ -81,6 +81,15 @@ script output: <cache>/np-script-logs/<time>-<name>@<version>-<random>.log
 - Cause: a dependency's install script failed while running in the background, so its output was not shown.
 - Fix: open the log file for the command and full output, or rerun with `--foreground-scripts`.
 
+## A dependency script seems to hang
+
+```text
+Running 1 script: frida@17.23.2 12s, downloading 6.03MB/36.45MB (16%)
+```
+
+- Cause: a dependency's install script is downloading or building something, for example a prebuilt binary. The spinner shows each running script with its elapsed time and the bytes it has downloaded through Node.js http / https; downloads made with `fetch` or with tools such as curl show only the elapsed time.
+- Fix: wait for it to finish, or rerun with `--foreground-scripts` to see the script's own output; with `--detail` or without a terminal, a `scripts.running` line is printed every 10 seconds for each script still running.
+
 ## Install scripts were skipped
 
 ```text

@@ -8,7 +8,7 @@
 
 1. 读失败那次运行末尾的汇总。应看到：`✖ Install finished with <n> failed package(s)`、失败包的列表，退出码为 1。
 2. 排除原因，例如网络问题或缺少编译工具。
-3. 再次运行同一条命令，例如 `np`。应看到：easy-np 从停下的地方继续；不需要删除 `node_modules`。
+3. 再次运行同一条命令，例如 `np`。应看到：easy-np 从停下的地方继续，并汇总成一行 `[np:resume] continued <n> package(s) left unfinished by the previous run`（加 `--detail` 可逐个列出）；不需要删除 `node_modules`。
 
 ## 失败时会发生什么
 

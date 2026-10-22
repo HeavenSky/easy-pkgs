@@ -6,7 +6,7 @@ easy-np 起步于 [cnpm/npminstall](https://github.com/cnpm/npminstall) 8.0.1，
 
 0.0.0 列出相对 npminstall 8.0.1 的全部改动，之后每个版本列出相对上一版的改动。
 
-## Unreleased
+## 0.0.8 (2026-10-23)
 
 ### 新增
 

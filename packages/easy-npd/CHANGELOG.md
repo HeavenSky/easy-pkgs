@@ -6,7 +6,7 @@ easy-npd starts from [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.8.0
 
 0.0.0 lists every change relative to npminstall 6.8.0; later versions list changes relative to the previous version.
 
-## Unreleased
+## 0.0.8 (2026-10-23)
 
 ### Added
 
@@ -16,7 +16,7 @@ easy-npd starts from [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.8.0
 ### Changed
 
 - After an interrupted install, `npd` prints one line with the number of packages it continues instead of one `[npd:resume]` line per package; `--detail` still lists every package.
-- The start and finish line of each dependency script (`scripts.<name> ... run` and `... finished in`) and the `found binding.gyp` notice are printed only with `--detail`, as in easy-np; failures and the final `Run <n> scripts` line are still printed.
+- The start and finish line of each dependency script (`scripts.<name> ... run` and `... finished in`) and the `found binding.gyp` notice are printed only with `--detail`, and on stdout instead of stderr, as in easy-np; failures and the final `Run <n> scripts` line are still printed.
 
 ## 0.0.7 (2026-10-22)
 

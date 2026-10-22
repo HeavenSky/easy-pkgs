@@ -16,6 +16,6 @@
 - 有依赖失败时跳过根包自身的生命周期脚本，下次安装成功后再执行。
 - 再次运行时不重新下载解压，已成功的脚本不再执行。
 - 可选依赖本身或它的子依赖失败时与 npm 一样只跳过这个可选依赖（它的子依赖的脚本失败时，已链接的可选依赖会被撤掉）；结束时列出它们和重跑脚本的 `np-x rebuild <pkg>` 命令。
-- 每个包的进度记录在 `node_modules/.store/.np-state.json`，依次经过 `deps`、`preinstall`、`install`、`postinstall`、`finish` 阶段；本次运行没有失败时统一清除。
+- 每个包的进度记录在 `node_modules/.np/.np-state.json`，依次经过 `deps`、`preinstall`、`install`、`postinstall`、`finish` 阶段；本次运行没有失败时统一清除。
 - easy-np 不修改已安装包自己的 `package.json`。
 - 切换 Node.js 版本后用 `np-x rebuild` 重新编译原生模块；普通的失败或中断不需要 rebuild。

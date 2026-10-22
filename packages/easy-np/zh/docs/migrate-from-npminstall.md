@@ -13,14 +13,15 @@
 
 ## 改名的命令、文件与配置
 
-| 项                  | npminstall                                                                   | easy-np                                                           |
-| ------------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| 包名与命令          | 包名 `npminstall`；命令 `npminstall`、`npmlink`、`npmuninstall`、`npmupdate` | 包名 `easy-np`；命令 `np` 与 `np-x`                               |
-| 用户配置文件        | `~/.cnpmrc`                                                                  | `~/.nprc`，与 easy-npd 共用                                       |
-| 缓存目录            | `~/.npminstall_tarball`，环境变量 `npminstall_cache`                         | `~/.np_tarball`，环境变量 `np_cache`；两边都认 `npm_config_cache` |
-| `package.json` 配置 | `config.npminstall`                                                          | `config.np`                                                       |
-| 安装完成标记        | 包内 `package.json` 的 `__npminstall_done`                                   | `node_modules/.store/.np-state.json`                              |
-| User-Agent          | `npminstall/<version>`                                                       | `easy-np/<version>`                                               |
+| 项                  | npminstall                                                                   | easy-np                                                                                                                                |
+| ------------------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| 包名与命令          | 包名 `npminstall`；命令 `npminstall`、`npmlink`、`npmuninstall`、`npmupdate` | 包名 `easy-np`；命令 `np` 与 `np-x`                                                                                                    |
+| 用户配置文件        | `~/.cnpmrc`                                                                  | `~/.nprc`，与 easy-npd 共用                                                                                                            |
+| 缓存目录            | `~/.npminstall_tarball`，环境变量 `npminstall_cache`                         | `~/.np_tarball`，环境变量 `np_cache`；两边都认 `npm_config_cache`                                                                      |
+| `package.json` 配置 | `config.npminstall`                                                          | `config.np`                                                                                                                            |
+| 包版本目录          | `node_modules/.store/<name>@<version>/node_modules/<name>`                   | `node_modules/.np/<name>@<version>/node_modules/<name>`；第一次不带包名运行 `np` 时删掉已有的 `node_modules/.store` 并重新安装其中的包 |
+| 安装完成标记        | 包内 `package.json` 的 `__npminstall_done`                                   | `node_modules/.np/.np-state.json`                                                                                                      |
+| User-Agent          | `npminstall/<version>`                                                       | `easy-np/<version>`                                                                                                                    |
 
 ## 预期这些行为差异
 

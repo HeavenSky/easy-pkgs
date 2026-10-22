@@ -21,16 +21,16 @@ describe("test/deps/bundled.test.js", () => {
 
 		// only node-pre-gyp dir exists
 		const dirs = await fs.readdir(path.join(tmp, "node_modules"));
-		assert.deepEqual(dirs.sort(), [".bin", ".store", "node-pre-gyp"].sort());
+		assert.deepEqual(dirs.sort(), [".bin", ".np", "node-pre-gyp"].sort());
 	});
 
 	it("should install bundleDependencies not exist(nyc@6.4.2)", async () => {
 		await npminstall({ root: tmp, pkgs: [{ name: "nyc", version: "6.4.2" }] });
 		assertFile(path.join(tmp, "node_modules/nyc"));
-		assertFile.fail(path.join(tmp, "node_modules/.store/node_modules/nyc"));
-		assertFile(path.join(tmp, "node_modules/.store/nyc@6.4.2/node_modules/nyc"));
-		assertFile(path.join(tmp, "node_modules/.store/nyc@6.4.2/node_modules/foreground-child"));
-		assertFile(path.join(tmp, "node_modules/.store/node_modules"));
-		assertFile(path.join(tmp, "node_modules/.store/node_modules/glob"));
+		assertFile.fail(path.join(tmp, "node_modules/.np/node_modules/nyc"));
+		assertFile(path.join(tmp, "node_modules/.np/nyc@6.4.2/node_modules/nyc"));
+		assertFile(path.join(tmp, "node_modules/.np/nyc@6.4.2/node_modules/foreground-child"));
+		assertFile(path.join(tmp, "node_modules/.np/node_modules"));
+		assertFile(path.join(tmp, "node_modules/.np/node_modules/glob"));
 	});
 });

@@ -22,7 +22,7 @@ describe("test/deps/optional.test.js", () => {
 		assert(pkg.optionalDependencies.hiredis);
 
 		const dirs = await fs.readdir(
-			path.join(tmp, "node_modules/.store/koa-redis@3.1.0/node_modules")
+			path.join(tmp, "node_modules/.np/koa-redis@3.1.0/node_modules")
 		);
 		assert(dirs.includes("redis"));
 	});
@@ -37,10 +37,7 @@ describe("test/deps/optional.test.js", () => {
 		const pkg = await helper.readJSON(path.join(root, "node_modules/less/package.json"));
 		assert(pkg.optionalDependencies.mkdirp);
 		const pkg2 = await helper.readJSON(
-			path.join(
-				root,
-				`node_modules/.store/less@${pkg.version}/node_modules/mkdirp/package.json`
-			)
+			path.join(root, `node_modules/.np/less@${pkg.version}/node_modules/mkdirp/package.json`)
 		);
 		assert.equal(pkg2.name, "mkdirp");
 	});

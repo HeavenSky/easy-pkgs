@@ -8,6 +8,10 @@ easy-np 起步于 [cnpm/npminstall](https://github.com/cnpm/npminstall) 8.0.1，
 
 ## Unreleased
 
+### 破坏性变更
+
+- 包版本目录从 `node_modules/.store` 挪到 `node_modules/.np`，回退链接在 `node_modules/.np/node_modules`，安装状态在 `node_modules/.np/.np-state.json`。已有项目第一次不带包名运行 `np` 时删掉 `node_modules/.store`，并从磁盘缓存重新安装其中的包；在此之前只装单个包或部分 workspace 时继续使用旧目录。迁移方法：运行一次 `np`，并把配置里匹配 `node_modules/.store` 的路径改成 `node_modules/.np`。
+
 ### 变更
 
 - `np-x rebuild <pkg> ...` 按依赖顺序重跑列出的包，与列出的顺序无关。

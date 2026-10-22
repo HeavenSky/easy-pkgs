@@ -167,7 +167,7 @@ async function _install(options, context) {
 	await pMap(pkgs, mapper, 10);
 	options.downloadFinished = Date.now();
 
-	// link every packages' latest version to <root>/node_modules/.store/node_modules, fallback for peerDeps
+	// link every packages' latest version to <root>/node_modules/.np/node_modules, fallback for peerDeps
 	await linkAllLatestVersionToFallbackDir(rootPkgsMap, options);
 	// https://pnpm.io/zh/next/npmrc#public-hoist-pattern
 	await linkPublicHoistPackagesToRoot(rootPkgsMap, options, context);
@@ -425,12 +425,12 @@ async function linkAllLatestVersionToFallbackDir(rootPkgsMap, options) {
 		const mapper = async ([name, version]) => {
 			if (!rootPkgsMap.has(name)) {
 				options.progresses.linkTasks++;
-				// link latest package to `<root>/node_modules/.store/node_modules`
+				// link latest package to `<root>/node_modules/.np/node_modules`
 				await linkLatestVersion({ name, version }, options.storeDir, options, true);
 			}
 		};
 		await pMap(options.latestVersions, mapper, 20);
-		const fallbackStoreDir = path.join(options.storeDir, ".store/node_modules");
+		const fallbackStoreDir = path.join(options.storeDir, utils.STORE_DIR, "node_modules");
 		options.spinner?.succeed(
 			`Linked ${options.latestVersions.size} latest versions as fallback to ${fallbackStoreDir}`
 		);
@@ -468,7 +468,7 @@ async function linkPublicHoistPackagesToRoot(rootPkgsMap, options, context) {
 	}
 }
 
-// 同一次运行内同名包只链接最高版本; 完整安装时指向 .store 的已有链接视为旧的提升结果直接覆盖, 部分安装与其余已有目录仅在版本更低时覆盖, workspace 包永不覆盖
+// 同一次运行内同名包只链接最高版本; 完整安装时指向 .np 的已有链接视为旧的提升结果直接覆盖, 部分安装与其余已有目录仅在版本更低时覆盖, workspace 包永不覆盖
 async function linkHoistedPackage(pkg, nodeModulesDir, options, context) {
 	const linkDir = path.join(nodeModulesDir, pkg.name);
 	options.progresses.linkTasks++;
@@ -562,7 +562,7 @@ async function shouldOverrideLink(pkg, linkDir, options) {
 async function linkLatestVersion(pkg, storeDir, options, isFallback = false) {
 	// storeDir: <root>/node_modules
 	const linkDir = isFallback
-		? path.join(storeDir, ".store/node_modules", pkg.name)
+		? path.join(storeDir, utils.STORE_DIR, "node_modules", pkg.name)
 		: path.join(storeDir, pkg.name);
 	if ((await utils.exists(linkDir)) && !(await shouldOverrideLink(pkg, linkDir, options))) {
 		options.progresses.finishedLinkTasks++;

@@ -54,7 +54,7 @@ Only scripts of dependencies need approval, as in npm 12; the scripts of the roo
 - When a git dependency declares `prepare`, `build`, `install` or similar scripts, or workspaces, easy-np must build it, so it reviews the repository address first.
 - The sub-install of that build runs no dependency scripts, does not build nested git dependencies, does not read the cloned repository's own `allowScripts` and `~/.nprc`, and does not read or write `np-lock.json`.
 - `np-x approve-scripts <pkg>` writes `<pkg>@<installed version>`; for a git dependency it writes the address and commit, for a tarball URL dependency the URL, both without credentials.
-- A git dependency is built when it is fetched: after approving it, delete its `.store` directory as the message tells you and run `np` again.
+- A git dependency is built when it is fetched: after approving it, delete its `.np` directory as the message tells you and run `np` again.
 - `np-x deny-scripts` writes a `false` entry without a version, as npm does.
 
 ## Approve scripts for a global install

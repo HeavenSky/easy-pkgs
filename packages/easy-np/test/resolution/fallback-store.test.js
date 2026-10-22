@@ -12,8 +12,8 @@ describe("test/resolution/fallback-store.test.js", () => {
 	it("should always link fallback store", async () => {
 		await coffee.fork(helper.npminstall, [], { cwd }).debug().expect("code", 0).end();
 		assertFile(path.join(cwd, "node_modules/urllib/package.json"));
-		assertFile(path.join(cwd, "node_modules/.store/node_modules"));
-		assertFile(path.join(cwd, "node_modules/.store/node_modules/undici"));
-		assertFile.fail(path.join(cwd, "node_modules/.store/node_modules/urllib"));
+		assertFile(path.join(cwd, "node_modules/.np/node_modules"));
+		assertFile(path.join(cwd, "node_modules/.np/node_modules/undici"));
+		assertFile.fail(path.join(cwd, "node_modules/.np/node_modules/urllib"));
 	});
 });

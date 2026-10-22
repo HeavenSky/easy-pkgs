@@ -16,7 +16,7 @@ describe("test/scripts/ignore-scripts.test.js", () => {
 		await npminstall({ root, ignoreScripts: true });
 
 		const dirs = await fs.readdir(path.join(root, "node_modules"));
-		assert.deepEqual(dirs.sort(), [".store", ".package_versions.json", ".tmp", "pkg"].sort());
+		assert.deepEqual(dirs.sort(), [".np", ".package_versions.json", ".tmp", "pkg"].sort());
 		const files = await fs.readdir(path.join(root, "node_modules/pkg"));
 		assert.deepEqual(files, ["index.js", "package.json"]);
 	});

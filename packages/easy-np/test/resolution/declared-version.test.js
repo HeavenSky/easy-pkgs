@@ -22,7 +22,7 @@ describe("test/resolution/declared-version.test.js", () => {
 				await fs.readFile(
 					path.join(
 						root,
-						"node_modules/.store/pedding@0.0.1/node_modules/pedding/package.json"
+						"node_modules/.np/pedding@0.0.1/node_modules/pedding/package.json"
 					)
 				)
 			).version === "0.0.1"

@@ -13,7 +13,7 @@ Find the page for what you want to do; each page covers one task and starts with
 | Review and approve dependency install scripts                                    | [Approve dependency install scripts](allow-scripts.md)            |
 | Use a private registry, a proxy, a CA certificate or the offline cache           | [Choose registries, proxies and the cache](registry.md)           |
 | Set options through environment variables, `.nprc`, `.npmrc` or pnpm config      | [Configure easy-np](configuration.md)                             |
-| Install npm workspaces, hoist packages, understand `node_modules/.store`         | [Install workspaces and control the layout](workspaces.md)        |
+| Install npm workspaces, hoist packages, understand `node_modules/.np`            | [Install workspaces and control the layout](workspaces.md)        |
 | Continue after a failed or interrupted install                                   | [Resume a failed install](resume.md)                              |
 | Run on Node.js 14 to 22 and build native modules with node-gyp                   | [Run on older Node.js and build native modules](node-versions.md) |
 | Switch from cnpm/npminstall                                                      | [Migrate from npminstall](migrate-from-npminstall.md)             |

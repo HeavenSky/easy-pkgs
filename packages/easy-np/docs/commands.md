@@ -16,7 +16,7 @@ Every task besides installing has its own `np-x` command, listed below with its 
 | `np-x rebuild`         | none            | Reruns `preinstall`, `install` and `postinstall` of installed dependencies, dependencies first              |
 | `np-x approve-scripts` | `approve`       | Adds dependencies to `allowScripts` in `package.json` so their install scripts run                          |
 | `np-x deny-scripts`    | `deny`          | Adds deny entries to `allowScripts` and removes allow entries of the same package                           |
-| `np-x prune`           | none            | Deletes package versions in `node_modules/.store` that no link references                                   |
+| `np-x prune`           | none            | Deletes package versions in `node_modules/.np` that no link references                                      |
 | `np-x help <command>`  | none            | Shows the help of a command, same as `np-x <command> -h`                                                    |
 
 - Every command accepts `-v, --version` and `-h, --help`; `np -v` prints `np v<version>`, `np-x -v` and `np-x <command> -v` print `np-x v<version>`, and `np-x -h` lists all commands.
@@ -34,4 +34,4 @@ Every task besides installing has its own `np-x` command, listed below with its 
 | `np-x rebuild [<pkg>[@<range>] ...]`   | install options such as `--registry`, `--offline` and `--ignore-scripts` apply as well                                                                                                  |
 | `np-x approve-scripts <pkg> ...`       | `--all`: approve every unreviewed package; `--pending`: only list them; `--no-pin`: write only the name or the address without a commit                                                 |
 | `np-x deny-scripts <pkg> ...`          | `--all`: deny every unreviewed package                                                                                                                                                  |
-| `np-x prune`                           | `--dry-run`: only list, do not delete; `-g` is not supported because global packages have no shared `.store`                                                                            |
+| `np-x prune`                           | `--dry-run`: only list, do not delete; `-g` is not supported because global packages have no shared `.np`                                                                               |

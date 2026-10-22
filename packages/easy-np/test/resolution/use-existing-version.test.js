@@ -21,7 +21,7 @@ describe("test/resolution/use-existing-version.test.js", () => {
 		pkg = require(
 			path.join(
 				cwd,
-				`node_modules/.store/@types+react-dom@${pkg.version}/node_modules/@types/react/package.json`
+				`node_modules/.np/@types+react-dom@${pkg.version}/node_modules/@types/react/package.json`
 			)
 		);
 		assert(pkg.version === "15.0.4");

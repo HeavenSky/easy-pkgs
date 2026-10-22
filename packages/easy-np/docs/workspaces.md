@@ -33,10 +33,10 @@ Indirect dependencies are not hoisted by default.
 - A hoisted link always points to the highest version in this install's dependency tree, whatever the workspace order; dependencies declared in the root `package.json` keep their declared version.
 - A full install replaces the previous hoisted links with this result, which may downgrade them; a partial install only upgrades.
 
-## Understand node_modules/.store
+## Understand node_modules/.np
 
-- Each package lives once in `node_modules/.store/<name>@<version>/node_modules/<name>` and is linked from there.
-- The highest version of each package is also linked into `node_modules/.store/node_modules`, so peers can fall back to it.
+- Each package lives once in `node_modules/.np/<name>@<version>/node_modules/<name>` and is linked from there.
+- The highest version of each package is also linked into `node_modules/.np/node_modules`, so peers can fall back to it.
 - The root `node_modules` holds only direct dependencies and hoisted packages.
 - Git, tarball URL and local packages get a source tag after the version (`+git.<commit>`, `+url.<hash>`, `+file.<hash>`), so they never take the directory of a registry package with the same name and version.
 
@@ -45,5 +45,5 @@ Indirect dependencies are not hoisted by default.
 1. See what can be removed: `np-x prune --dry-run`. You should see: lines starting with `would remove`.
 2. Remove them: `np-x prune`.
 
-- After an upgrade, old versions stay in `.store` until `np-x prune` removes them; an install never deletes them.
+- After an upgrade, old versions stay in `.np` until `np-x prune` removes them; an install never deletes them.
 - `np-x uninstall` removes versions that no link references any more when it finishes.

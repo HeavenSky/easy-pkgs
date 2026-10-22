@@ -19,11 +19,11 @@ module.exports = async options => {
 	return uninstalled;
 };
 
-// 卸载后移除 root/node_modules 与 .store/node_modules 下已无人使用的提升链接;
-// 仍被任一 package.json 声明, 本身是 workspace, 或被 .store 中其他包依赖时保留
+// 卸载后移除 root/node_modules 与 .np/node_modules 下已无人使用的提升链接;
+// 仍被任一 package.json 声明, 本身是 workspace, 或被 .np 中其他包依赖时保留
 module.exports.cleanupHoistedLinks = async (root, names, logger = console) => {
 	const nodeModules = path.join(root, "node_modules");
-	const storeDir = path.join(nodeModules, ".store");
+	const storeDir = path.join(nodeModules, utils.STORE_DIR);
 	const { workspacesMap } = await utils.readWorkspaces(root);
 	const pkgs = [
 		await utils.readJSON(path.join(root, "package.json")),

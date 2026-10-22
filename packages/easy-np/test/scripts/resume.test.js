@@ -13,7 +13,7 @@ describe("test/scripts/resume.test.js", () => {
 	const flagFile = path.join(root, "postinstall.ok");
 	const pkgDir = path.join(
 		root,
-		`node_modules/.store/resume-scripts@1.0.0+${sourceSuffix("file", realpathSync.native(helper.fixtures("resume-scripts")))}`,
+		`node_modules/.np/resume-scripts@1.0.0+${sourceSuffix("file", realpathSync.native(helper.fixtures("resume-scripts")))}`,
 		"node_modules/resume-scripts"
 	);
 	const install = (extra = {}) =>
@@ -234,10 +234,10 @@ describe("test/scripts/resume.test.js", () => {
 				dependencies: { "opt-holder": "file:../opt-holder" },
 			})
 		);
-		// resume-parent 是 opt-holder 的可选依赖, 不在根依赖中, 会被链接到回退目录 .store/node_modules
+		// resume-parent 是 opt-holder 的可选依赖, 不在根依赖中, 会被链接到回退目录 .np/node_modules
 		await npminstall({ root, env: { RESUME_LOG: logFile, RESUME_FLAG: flagFile } });
 		await assert.rejects(
-			fs.lstat(path.join(root, "node_modules/.store/node_modules/resume-parent")),
+			fs.lstat(path.join(root, "node_modules/.np/node_modules/resume-parent")),
 			/ENOENT/
 		);
 		await assert.rejects(

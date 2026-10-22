@@ -12,8 +12,8 @@ describe("test/resolution/flatten.test.js", () => {
 	// 本地包的 store 目录名带来源标识, 按 <name>@<version> 前缀查找
 	async function getPkgVersion(subPath) {
 		const parts = subPath.split("/");
-		if (parts[1] === ".store") {
-			const entries = await fs.readdir(path.join(tmp, "node_modules/.store"));
+		if (parts[1] === ".np") {
+			const entries = await fs.readdir(path.join(tmp, "node_modules/.np"));
 			parts[2] =
 				entries.find(entry => entry === parts[2] || entry.startsWith(`${parts[2]}+`)) ||
 				parts[2];
@@ -32,19 +32,16 @@ describe("test/resolution/flatten.test.js", () => {
 			.expect("stdout", /All packages installed/)
 			.end();
 		assert(
-			(await getPkgVersion(
-				"node_modules/.store/mod7@1.0.0/node_modules/debug/package.json"
-			)) !== "2.2.0"
+			(await getPkgVersion("node_modules/.np/mod7@1.0.0/node_modules/debug/package.json")) !==
+				"2.2.0"
 		);
 		assert(
-			(await getPkgVersion(
-				"node_modules/.store/mod6@1.0.0/node_modules/debug/package.json"
-			)) === "0.7.4"
+			(await getPkgVersion("node_modules/.np/mod6@1.0.0/node_modules/debug/package.json")) ===
+				"0.7.4"
 		);
 		assert(
-			(await getPkgVersion(
-				"node_modules/.store/mod5@1.0.0/node_modules/debug/package.json"
-			)) === "2.2.0"
+			(await getPkgVersion("node_modules/.np/mod5@1.0.0/node_modules/debug/package.json")) ===
+				"2.2.0"
 		);
 	});
 
@@ -56,19 +53,17 @@ describe("test/resolution/flatten.test.js", () => {
 			.expect("stdout", /All packages installed/)
 			.end();
 		assert(
-			(await getPkgVersion(
-				"node_modules/.store/mod9@1.0.0/node_modules/debug/package.json"
-			)) === "1.0.1"
+			(await getPkgVersion("node_modules/.np/mod9@1.0.0/node_modules/debug/package.json")) ===
+				"1.0.1"
 		);
 		assert(
 			(await getPkgVersion(
-				"node_modules/.store/mod10@1.0.0/node_modules/debug/package.json"
+				"node_modules/.np/mod10@1.0.0/node_modules/debug/package.json"
 			)) === "1.0.1"
 		);
 		assert(
-			(await getPkgVersion(
-				"node_modules/.store/mod8@1.0.0/node_modules/debug/package.json"
-			)) === "1.0.1"
+			(await getPkgVersion("node_modules/.np/mod8@1.0.0/node_modules/debug/package.json")) ===
+				"1.0.1"
 		);
 	});
 });

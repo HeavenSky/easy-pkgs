@@ -54,7 +54,7 @@
 - git 依赖声明了 `prepare`、`build`、`install` 等脚本或 workspaces 时，easy-np 必须构建它，因此先按仓库地址审核。
 - 这次构建的子安装不执行任何依赖脚本，不构建嵌套的 git 依赖，不读取克隆仓库自带的 `allowScripts` 与 `~/.nprc`，不读写 `np-lock.json`。
 - `np-x approve-scripts <pkg>` 写入 `<pkg>@<已安装版本>`；git 依赖写地址与 commit，tarball URL 依赖写 URL，都去掉凭据。
-- git 依赖在获取时构建：放行后按提示删除它的 `.store` 目录，再运行 `np`。
+- git 依赖在获取时构建：放行后按提示删除它的 `.np` 目录，再运行 `np`。
 - `np-x deny-scripts` 与 npm 一致，写入不带版本的 `false` 条目。
 
 ## 为全局安装放行脚本

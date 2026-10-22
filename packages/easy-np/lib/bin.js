@@ -44,7 +44,7 @@ async function bin(parentDir, pkg, pkgDir, options, displayName = "") {
 			continue;
 		}
 		// add NODE_PATH on shim bin
-		// pkgDir: node_modules/.store/<name>@<version>/node_modules/<name>
+		// pkgDir: node_modules/.np/<name>@<version>/node_modules/<name>
 		const nodePath = utils.relative(path.join(pkgDir, ".."), destBin);
 		await linkBin(srcBin, destBin, `$basedir/${nodePath}`);
 		// hotfix $basedir to %~dp0 on cmd

@@ -202,7 +202,10 @@ function requiredDir(options, dir, seen = new Set()) {
 
 // 回退目录, public-hoist-pattern 提升到根目录与 workspace 根目录的链接按包名统一创建, 只撤掉指向被跳过目录的那些
 async function removeHoistedLinks(name, dir, options) {
-	const nodeModulesDirs = [path.join(options.storeDir, ".store/node_modules"), options.storeDir];
+	const nodeModulesDirs = [
+		path.join(options.storeDir, utils.STORE_DIR, "node_modules"),
+		options.storeDir,
+	];
 	if (options.enableWorkspace && options.isWorkspacePackage) {
 		nodeModulesDirs.push(path.join(options.workspaceRoot, "node_modules"));
 	}

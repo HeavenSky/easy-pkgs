@@ -34,7 +34,7 @@ describe("test/sources/store-isolation.test.js", () => {
 	const [tmp, cleanup] = helper.tmp();
 	const repo = path.join(tmp, "repo");
 	const root = path.join(tmp, "app");
-	const store = path.join(root, "node_modules/.store");
+	const store = path.join(root, "node_modules/.np");
 
 	beforeEach(async () => {
 		await cleanup();

@@ -13,14 +13,15 @@ Four steps move a project from [cnpm/npminstall](https://github.com/cnpm/npminst
 
 ## Rename commands, files and settings
 
-| Item                  | npminstall                                                                          | easy-np                                                                        |
-| --------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Package and commands  | package `npminstall`; commands `npminstall`, `npmlink`, `npmuninstall`, `npmupdate` | package `easy-np`; commands `np` and `np-x`                                    |
-| User config file      | `~/.cnpmrc`                                                                         | `~/.nprc`, shared with easy-npd                                                |
-| Cache directory       | `~/.npminstall_tarball`, environment variable `npminstall_cache`                    | `~/.np_tarball`, environment variable `np_cache`; both read `npm_config_cache` |
-| `package.json` config | `config.npminstall`                                                                 | `config.np`                                                                    |
-| Install-done marker   | `__npminstall_done` in each package's `package.json`                                | `node_modules/.store/.np-state.json`                                           |
-| User-Agent            | `npminstall/<version>`                                                              | `easy-np/<version>`                                                            |
+| Item                  | npminstall                                                                          | easy-np                                                                                                                                                                 |
+| --------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Package and commands  | package `npminstall`; commands `npminstall`, `npmlink`, `npmuninstall`, `npmupdate` | package `easy-np`; commands `np` and `np-x`                                                                                                                             |
+| User config file      | `~/.cnpmrc`                                                                         | `~/.nprc`, shared with easy-npd                                                                                                                                         |
+| Cache directory       | `~/.npminstall_tarball`, environment variable `npminstall_cache`                    | `~/.np_tarball`, environment variable `np_cache`; both read `npm_config_cache`                                                                                          |
+| `package.json` config | `config.npminstall`                                                                 | `config.np`                                                                                                                                                             |
+| Package folders       | `node_modules/.store/<name>@<version>/node_modules/<name>`                          | `node_modules/.np/<name>@<version>/node_modules/<name>`; the first `np` without package names removes an existing `node_modules/.store` and installs its packages again |
+| Install-done marker   | `__npminstall_done` in each package's `package.json`                                | `node_modules/.np/.np-state.json`                                                                                                                                       |
+| User-Agent            | `npminstall/<version>`                                                              | `easy-np/<version>`                                                                                                                                                     |
 
 ## Expect these behavior differences
 

@@ -33,11 +33,11 @@ describe("test/lockfile/package-lock.test.js", () => {
 				.end();
 			assert.strictEqual(
 				await fs.readlink(path.join(cwd, "node_modules", "lodash.has3"), "utf8"),
-				".store/lodash.has@3.2.1/node_modules/lodash.has"
+				".np/lodash.has@3.2.1/node_modules/lodash.has"
 			);
 			assert.strictEqual(
 				await fs.readlink(path.join(cwd, "node_modules", "lodash.has"), "utf8"),
-				".store/lodash.has@4.0.0/node_modules/lodash.has"
+				".np/lodash.has@4.0.0/node_modules/lodash.has"
 			);
 		});
 
@@ -65,7 +65,7 @@ describe("test/lockfile/package-lock.test.js", () => {
 					.end();
 				assert.strictEqual(
 					await fs.readlink(path.join(cwd, "node_modules", "lodash.has"), "utf8"),
-					".store/lodash.has@4.0.0/node_modules/lodash.has"
+					".np/lodash.has@4.0.0/node_modules/lodash.has"
 				);
 			} finally {
 				await fs.rm(shrinkwrap, { force: true });

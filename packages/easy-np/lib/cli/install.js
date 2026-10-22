@@ -71,8 +71,7 @@ const REMOVED_ARGS = {
 	"custom-china-mirror-url": "binary mirrors switch automatically by speed",
 	prune: "it silently broke packages such as @tsconfig/*",
 	"force-link-latest": "the latest version is always linked",
-	"disable-fallback-store":
-		"fallback links in node_modules/.store/node_modules are always created",
+	"disable-fallback-store": "fallback links in node_modules/.np/node_modules are always created",
 };
 const REMOVED_SHORT_ARGS = {
 	S: "packages are saved to dependencies by default",
@@ -248,6 +247,45 @@ function editDistance(a, b) {
 }
 
 // mode: install, 或由 np-x fetch / np-x rebuild 转入的 fetch, rebuild
+
+// 0.0.6 及更早版本把包版本目录放在 node_modules/.store 下(npminstall 7+ 的布局): 先删掉旧目录与指向它的链接(含 scope 目录与 .bin),
+// 随后装进 node_modules/.np(tarball 仍在磁盘缓存中, 不重新下载); 只装部分包或部分 workspace 时不迁移, 旧目录照常可用
+async function removeLegacyStore(root, workspaceRoots) {
+	const legacyPath = path.join(root, "node_modules", ".store");
+	const legacy = await fs.realpath(legacyPath).catch(() => null);
+	if (!legacy) return;
+	console.warn(
+		chalk.yellow(
+			"[np:migrate] move node_modules/.store to node_modules/%s, installing its packages again"
+		),
+		utils.STORE_DIR
+	);
+	const pointsToLegacy = async file => {
+		const stat = await fs.lstat(file).catch(() => null);
+		if (!stat || !stat.isSymbolicLink()) return false;
+		const target = await fs.realpath(file).catch(() => null);
+		if (!target) return false;
+		const relative = path.relative(legacy, target);
+		return !relative.startsWith("..") && !path.isAbsolute(relative);
+	};
+	for (const dir of new Set([root, ...workspaceRoots])) {
+		const nodeModules = path.join(dir, "node_modules");
+		for (const name of await fs.readdir(nodeModules).catch(() => [])) {
+			if (name === ".store") continue;
+			const full = path.join(nodeModules, name);
+			const entries =
+				name === ".bin" || name.startsWith("@")
+					? (await fs.readdir(full).catch(() => [])).map(sub => path.join(full, sub))
+					: [full];
+			for (const entry of entries) {
+				if (await pointsToLegacy(entry)) await utils.rimraf(entry);
+			}
+		}
+	}
+	await utils.rimraf(legacy);
+	await utils.rimraf(legacyPath);
+}
+
 module.exports = async function install(
 	args,
 	{ ignorePkgNames = false, ignoreLockfile = false, mode = "install" } = {}
@@ -851,6 +889,16 @@ async function main(
 		// normal: npm i
 		// normal: npm i <name>
 		installRootConfigs.push({ ...config, root, isWorkspacePackage: false });
+	}
+
+	// 只有不带包名, 也不限定 workspace 的完整安装会重装根目录与全部 workspace, 此时才迁移旧的 node_modules/.store
+	if (
+		!argv.global &&
+		pkgs.length === 0 &&
+		!installOnAllWorkspaces &&
+		installWorkspaceNames.length === 0
+	) {
+		await removeLegacyStore(root, config.enableWorkspace ? workspaceRoots : []);
 	}
 
 	// main installation logic

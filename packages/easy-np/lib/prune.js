@@ -1,4 +1,4 @@
-// np-x prune: 从根目录与各 workspace 的 node_modules 出发沿链接遍历, 删除 .store 中不再被引用的 <name>@<version> 目录
+// np-x prune: 从根目录与各 workspace 的 node_modules 出发沿链接遍历, 删除 .np 中不再被引用的 <name>@<version> 目录
 const path = require("node:path");
 const fs = require("node:fs/promises");
 const utils = require("./utils");
@@ -10,7 +10,7 @@ const RESERVED_ENTRIES = new Set(["node_modules", ".np-state.json", ".tmp"]);
 module.exports = async ({ root, dryRun = false }) => {
 	const { workspaceRoots } = await utils.readWorkspaces(root);
 	// 链接的 realpath 都是真实路径, root 或 node_modules 经符号链接访问时 storeRoot 不取真实路径会把全部条目判为不可达
-	const storePath = path.join(root, "node_modules/.store");
+	const storePath = path.join(root, "node_modules", utils.STORE_DIR);
 	const storeRoot = await fs.realpath(storePath).catch(() => storePath);
 	let entries;
 	try {
@@ -22,7 +22,7 @@ module.exports = async ({ root, dryRun = false }) => {
 	const reachable = new Set();
 	const queue = [];
 	const visitedDirs = new Set();
-	// 扫描一个 node_modules 目录: 链接进 .store 的条目记为可达, 实体目录继续扫描其内部的 node_modules
+	// 扫描一个 node_modules 目录: 链接进 .np 的条目记为可达, 实体目录继续扫描其内部的 node_modules
 	const scan = async dir => {
 		if (visitedDirs.has(dir)) return;
 		visitedDirs.add(dir);
@@ -33,7 +33,7 @@ module.exports = async ({ root, dryRun = false }) => {
 			return;
 		}
 		for (const name of names) {
-			if (name === ".store" || name === ".bin") continue;
+			if (name === utils.STORE_DIR || name === ".bin") continue;
 			const full = path.join(dir, name);
 			if (name.startsWith("@")) {
 				await scan(full);
@@ -56,7 +56,7 @@ module.exports = async ({ root, dryRun = false }) => {
 						queue.push(path.join(storeRoot, entry, "node_modules"));
 					}
 				} else {
-					// 本地目录依赖链接到项目外, 它自己的 node_modules 里同样可能链接进 .store
+					// 本地目录依赖链接到项目外, 它自己的 node_modules 里同样可能链接进 .np
 					await scan(path.join(target, "node_modules"));
 				}
 			} else if (stat.isDirectory()) {

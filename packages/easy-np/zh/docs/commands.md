@@ -16,7 +16,7 @@
 | `np-x rebuild`         | 无              | 按依赖顺序重跑已安装依赖的 `preinstall`、`install` 与 `postinstall` |
 | `np-x approve-scripts` | `approve`       | 把依赖写入 `package.json` 的 `allowScripts`，放行其安装脚本         |
 | `np-x deny-scripts`    | `deny`          | 在 `allowScripts` 中写入拒绝条目，并删除同一包已有的放行条目        |
-| `np-x prune`           | 无              | 删除 `node_modules/.store` 中不再被任何链接引用的包版本             |
+| `np-x prune`           | 无              | 删除 `node_modules/.np` 中不再被任何链接引用的包版本                |
 | `np-x help <command>`  | 无              | 显示子命令的帮助，同 `np-x <command> -h`                            |
 
 - 全部命令都支持 `-v, --version` 与 `-h, --help`；`np -v` 打印 `np v<version>`，`np-x -v` 与 `np-x <command> -v` 打印 `np-x v<version>`；`np-x -h` 列出全部子命令。
@@ -34,4 +34,4 @@
 | `np-x rebuild [<pkg>[@<range>] ...]`   | install 参数（如 `--registry`、`--offline`、`--ignore-scripts`）同样生效                                                                     |
 | `np-x approve-scripts <pkg> ...`       | `--all`：放行全部未审核的包；`--pending`：只列出；`--no-pin`：只写包名或不带 commit 的地址                                                   |
 | `np-x deny-scripts <pkg> ...`          | `--all`：拒绝全部未审核的包                                                                                                                  |
-| `np-x prune`                           | `--dry-run`：只列出不删除；不支持 `-g`，全局包没有共享的 `.store`                                                                            |
+| `np-x prune`                           | `--dry-run`：只列出不删除；不支持 `-g`，全局包没有共享的 `.np`                                                                               |

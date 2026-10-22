@@ -150,7 +150,7 @@ async function main(args) {
 		root,
 		pkgs.map(pkg => pkg.name)
 	);
-	// 与 npm 一致, 卸载后回收 .store 中不再被任何链接引用的版本目录
+	// 与 npm 一致, 卸载后回收 .np 中不再被任何链接引用的版本目录
 	const { removed } = await prune({ root });
 	for (const entry of removed) console.log("- %s", entry);
 	console.log("");

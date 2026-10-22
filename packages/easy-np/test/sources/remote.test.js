@@ -33,7 +33,7 @@ describe("test/sources/remote.test.js", () => {
 		const dirs = await fs.readdir(path.join(root, "node_modules"));
 		assert.deepEqual(
 			dirs.sort(),
-			[".tmp", "pedding", "taffydb", ".store", ".package_versions.json"].sort()
+			[".tmp", "pedding", "taffydb", ".np", ".package_versions.json"].sort()
 		);
 	});
 

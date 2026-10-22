@@ -68,10 +68,10 @@ describe("test/resolution/resolutions.test.js", () => {
 				.end();
 
 			await checkPkg("debug", "2.0.0");
-			await checkPkg(".store/koa@2.14.1/node_modules/debug", "1.0.0");
-			await checkPkg(".store/koa@2.14.1/node_modules/cookies", "0.7.0");
+			await checkPkg(".np/koa@2.14.1/node_modules/debug", "1.0.0");
+			await checkPkg(".np/koa@2.14.1/node_modules/cookies", "0.7.0");
 			await checkPkg("cookies", "0.7.1");
-			await checkPkg(".store/@koa+cors@2.2.3/node_modules/vary", "1.0.0");
+			await checkPkg(".np/@koa+cors@2.2.3/node_modules/vary", "1.0.0");
 		});
 	});
 
@@ -93,7 +93,7 @@ describe("test/resolution/resolutions.test.js", () => {
 				path.join(
 					root,
 					"node_modules",
-					`.store/object-pipeline@${pkgJSON1.version}/node_modules/lodash.has/package.json`
+					`.np/object-pipeline@${pkgJSON1.version}/node_modules/lodash.has/package.json`
 				)
 			);
 			assert.strictEqual(pkgJSON.name, "lodash.get");

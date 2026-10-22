@@ -41,7 +41,7 @@ describe("test/install/bin.test.js", () => {
 			path.join(
 				root,
 				"node_modules",
-				`.store/@bigfunger+decompress-zip@${pkg.version}`,
+				`.np/@bigfunger+decompress-zip@${pkg.version}`,
 				"node_modules/@bigfunger/decompress-zip/package.json"
 			)
 		);

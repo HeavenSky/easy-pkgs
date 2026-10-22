@@ -17,7 +17,7 @@ Use easy-np in place of `npm install` or cnpm's npminstall in an existing projec
 ```console
 $ np-x install esbuild
 np registry: npm > huawei > yarn, binary: official > mirror (cached)
-✔ Linked 2 latest versions as fallback to ~/demo/node_modules/.store/node_modules
+✔ Linked 2 latest versions as fallback to ~/demo/node_modules/.np/node_modules
 1 package(s) have install scripts that are not in allowScripts and were skipped:
   - esbuild@* (postinstall)
 review them, then run: np-x approve-scripts esbuild && np-x rebuild esbuild
@@ -32,7 +32,7 @@ $ np-x approve-scripts esbuild && np-x rebuild esbuild
 approved esbuild@0.28.2
 run np-x rebuild esbuild to run their install scripts now
 np registry: npm > yarn > alibaba, binary: official > mirror
-> esbuild@0.28.2 postinstall ~/demo/node_modules/.store/esbuild@0.28.2/node_modules/esbuild
+> esbuild@0.28.2 postinstall ~/demo/node_modules/.np/esbuild@0.28.2/node_modules/esbuild
 > node install.js
 > esbuild@0.28.2 postinstall, finished in 563ms
 $ npx esbuild --version
@@ -58,7 +58,7 @@ Prefer npminstall's defaults? `np` is `np-x install --no-lockfile --dangerously-
 - A failed package does not waste the whole install: the other packages finish, the failures are listed at the end, and running `np` again resumes without downloading again or deleting `node_modules` ([details](docs/resume.md)).
 - **Dependency install scripts run only after you approve them**: `np-x install` runs `preinstall`, `install` and `postinstall` only for entries in `allowScripts`, and each entry can be pinned to a version, a git commit, or a tarball URL; a tarball that claims another package name gets a `manifest mismatch` warning and cannot reuse that package's approval ([details](docs/allow-scripts.md)).
 - A fast public registry without configuration: easy-np probes npm, yarn, alibaba (npmmirror), tencent and huawei, uses the fastest three, retries a failed download on the next one, and fetches from npm when a mirror lacks a new version; with a private registry configured it uses only that registry ([details](docs/registry.md)).
-- Your npm and pnpm setup keeps working: npm workspaces with the `workspace:` protocol, `.npmrc`, `pnpm-workspace.yaml` and `onlyBuiltDependencies` apply without changes, and the `.store` layout limits the root `node_modules` to your direct dependencies and the packages you hoist ([details](docs/workspaces.md)).
+- Your npm and pnpm setup keeps working: npm workspaces with the `workspace:` protocol, `.npmrc`, `pnpm-workspace.yaml` and `onlyBuiltDependencies` apply without changes, and the `.np` layout limits the root `node_modules` to your direct dependencies and the packages you hoist ([details](docs/workspaces.md)).
 - Reproducible installs, even on old Node.js: `np-lock.json` locks git commits and tarball sha512 integrity, `--frozen-lockfile` fails CI on a missing entry, and CI runs the full test suite on Node.js 14.19.3, 16, 18 and 22 ([ci.yml](../../.github/workflows/ci.yml)).
 
 ## When to use something else

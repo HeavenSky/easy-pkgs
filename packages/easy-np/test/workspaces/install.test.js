@@ -39,7 +39,7 @@ describe("test/install-workpsaces.test.js", () => {
 		assertFile(
 			path.join(
 				root,
-				`node_modules/.store/react-dom@${pkg.version}/node_modules/react/package.json`
+				`node_modules/.np/react-dom@${pkg.version}/node_modules/react/package.json`
 			)
 		);
 		// should link workspace package deps to workspace root node_modules

@@ -6,7 +6,7 @@ const helper = require("../support/helper");
 
 describe("test/cli/prune.test.js", () => {
 	const [tmp, cleanup] = helper.tmp();
-	const store = path.join(tmp, "node_modules/.store");
+	const store = path.join(tmp, "node_modules/.np");
 	const x = path.join(__dirname, "../..", "bin", "x.js");
 	const writePkg = dependencies =>
 		fs.writeFile(

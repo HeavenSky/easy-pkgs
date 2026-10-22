@@ -13,7 +13,7 @@
 | 审核并放行依赖的安装脚本                                        | [放行依赖的安装脚本](allow-scripts.md)                    |
 | 使用私有源、代理、CA 证书或离线缓存                             | [选择源、代理与缓存](registry.md)                         |
 | 用环境变量、`.nprc`、`.npmrc` 或 pnpm 配置设置参数              | [配置 easy-np](configuration.md)                          |
-| 安装 npm workspaces，提升包，理解 `node_modules/.store`         | [安装 workspaces 并控制布局](workspaces.md)               |
+| 安装 npm workspaces，提升包，理解 `node_modules/.np`            | [安装 workspaces 并控制布局](workspaces.md)               |
 | 安装失败或中断后继续                                            | [从失败的安装继续](resume.md)                             |
 | 在 Node.js 14 ~ 22 上运行，用 node-gyp 编译原生模块             | [在老版本 Node.js 上运行与编译原生模块](node-versions.md) |
 | 从 cnpm/npminstall 切换过来                                     | [从 npminstall 迁移](migrate-from-npminstall.md)          |

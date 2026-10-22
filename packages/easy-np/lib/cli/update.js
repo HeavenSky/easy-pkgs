@@ -48,7 +48,7 @@ async function main(args) {
 		if (installWorkspaceInfos.length === 0) {
 			throw utils.userError(`No workspaces found: ${installWorkspaceNames.join(",")}`);
 		}
-		// 不清理 root/node_modules: 其中的 .store 被所有 workspace 共享, 只重装指定 workspace 无法恢复其他 workspace 的依赖
+		// 不清理 root/node_modules: 其中的 .np 被所有 workspace 共享, 只重装指定 workspace 无法恢复其他 workspace 的依赖
 		cleanRoots = installWorkspaceInfos.map(info => info.root);
 	} else {
 		cleanRoots = [root, ...workspaceRoots];

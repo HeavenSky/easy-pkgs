@@ -8,6 +8,10 @@ easy-np started from [cnpm/npminstall](https://github.com/cnpm/npminstall) 8.0.1
 
 ## Unreleased
 
+### Breaking changes
+
+- Package versions move from `node_modules/.store` to `node_modules/.np`, with the fallback links in `node_modules/.np/node_modules` and the install state in `node_modules/.np/.np-state.json`. The first `np` without package names in an existing project removes `node_modules/.store` and installs its packages again from the disk cache; installing single packages or workspaces keeps using the old folder until then. To migrate, run `np` once and change configs that match `node_modules/.store` paths to `node_modules/.np`.
+
 ### Changed
 
 - `np-x rebuild <pkg> ...` reruns the listed packages in dependency order, whatever order you list them in.

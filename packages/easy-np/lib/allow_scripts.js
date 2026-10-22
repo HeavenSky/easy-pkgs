@@ -310,7 +310,7 @@ exports.pendingScripts = async (realPkg, dir) => {
 	return pending;
 };
 
-// 已安装的包按安装时写入的 _from / _resolved / _scriptsOwner 还原来源; registry 包必须以 .store 目录名为准,
+// 已安装的包按安装时写入的 _from / _resolved / _scriptsOwner 还原来源; registry 包必须以 .np 目录名为准,
 // 包内 package.json 的 name/version 可以冒充其他包; 没有 _scriptsOwner 的本地包由根项目声明, 返回 null 不受策略限制
 exports.identityOfInstalled = (pkg, dir) => {
 	let type = specType(pkg._from);
@@ -347,12 +347,12 @@ function identityOfKey(key) {
 	return null;
 }
 
-// 必须与 utils.getPackageStorePath 的目录规则一致: <.store>/<name 中 / 换成 +>@<version>/node_modules/<name>;
+// 必须与 utils.getPackageStorePath 的目录规则一致: <.np>/<name 中 / 换成 +>@<version>/node_modules/<name>;
 // 带来源标识的目录装的是 git / url / 本地包, 不能当作 registry 身份
 function storeIdentity(dir) {
 	if (!dir) return null;
 	const parts = path.resolve(dir).split(path.sep);
-	const index = parts.lastIndexOf(".store");
+	const index = parts.lastIndexOf(utils.STORE_DIR);
 	const entry = index >= 0 ? parts[index + 1] : "";
 	const at = entry.lastIndexOf("@");
 	if (at <= 0) return null;

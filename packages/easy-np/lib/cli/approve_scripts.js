@@ -186,9 +186,9 @@ function sameName(key, identity) {
 	}
 }
 
-// 扫描 .store 中带安装脚本(含 binding.gyp 隐式构建)的包与需要构建的 git 依赖; workspace 项目的 .store 位于根目录
+// 扫描 .np 中带安装脚本(含 binding.gyp 隐式构建)的包与需要构建的 git 依赖; workspace 项目的 .np 位于根目录
 async function listInstalledWithScripts(root) {
-	const storeRoot = path.join(root, "node_modules/.store");
+	const storeRoot = path.join(root, "node_modules", utils.STORE_DIR);
 	let entries;
 	try {
 		entries = await fs.readdir(storeRoot);

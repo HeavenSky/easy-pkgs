@@ -2,13 +2,13 @@
 
 本仓库接手并持续维护停更或偏离方向的开源 npm 包: 每个包放在 `packages/<名称>/`, 各自安装依赖, 测试, 版本与发布, 不共享代码. 新接手一个项目, 或要在本仓库开发时读本页; 各包的用法见其 README, 上游来源以 [`upstreams.json`](./upstreams.json) 为准.
 
-| 包                                            | 用途                                                             |
-| --------------------------------------------- | ---------------------------------------------------------------- |
-| [`easy-np`](./packages/easy-np/README.md)     | npm 包安装工具(`np`, `np-x`), `.store` 布局, 支持 npm workspaces |
-| [`easy-npd`](./packages/easy-npd/README.md)   | npm 包安装工具(`npd`, `npd-x`), `_name@version@name` 扁平布局    |
-| [`easy-comb`](./packages/easy-comb/README.md) | CSS / Less / Sass / SCSS 代码风格格式化与属性排序(csscomb)       |
-| [`easy-gonz`](./packages/easy-gonz/README.md) | CSS / Less / Sass / SCSS 解析器(gonzales-pe), easy-comb 依赖它   |
-| [`easy-mok`](./packages/easy-mok/README.md)   | 开发期 mock 中间件与图形化管理页(自研, 非接手项目)               |
+| 包                                            | 用途                                                               |
+| --------------------------------------------- | ------------------------------------------------------------------ |
+| [`easy-np`](./packages/easy-np/README.md)     | npm 包安装工具(`np`, `np-x`), `.np` 布局, 支持 npm workspaces      |
+| [`easy-npd`](./packages/easy-npd/README.md)   | npm 包安装工具(`npd`, `npd-x`), `.npd/_name@version@name` 扁平布局 |
+| [`easy-comb`](./packages/easy-comb/README.md) | CSS / Less / Sass / SCSS 代码风格格式化与属性排序(csscomb)         |
+| [`easy-gonz`](./packages/easy-gonz/README.md) | CSS / Less / Sass / SCSS 解析器(gonzales-pe), easy-comb 依赖它     |
+| [`easy-mok`](./packages/easy-mok/README.md)   | 开发期 mock 中间件与图形化管理页(自研, 非接手项目)                 |
 
 ## 接手流程
 

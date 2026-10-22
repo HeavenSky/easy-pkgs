@@ -4,19 +4,22 @@ const fs = require("node:fs/promises");
 const { randomUUID } = require("node:crypto");
 
 const STATE_FILE = ".np-state.json";
+// 包版本目录集中放在 node_modules/.np 下
+const STORE_DIR = ".np";
+exports.STORE_DIR = STORE_DIR;
 // 0.0.2 及更早版本把标记写在包的 package.json 里; 状态文件中没有该包时按旧标记判断, 升级后不必重装整个 node_modules
 const LEGACY_DONE_KEY = "__np_done";
 const LEGACY_STAGE_KEY = "__np_stage";
 
-// 包实体位于 <storeDir>/.store/<name>@<version>/node_modules/<name>, 状态文件放在 .store 下
+// 包实体位于 <storeDir>/.np/<name>@<version>/node_modules/<name>, 状态文件放在 .np 下
 function locate(realRoot) {
 	let dir = realRoot;
 	for (;;) {
 		const parent = path.dirname(dir);
 		if (parent === dir) return null;
-		if (path.basename(parent) === ".store") {
+		if (path.basename(parent) === STORE_DIR) {
 			const key = path.relative(parent, realRoot).split(path.sep).join("/");
-			// 只认 <name>@<version>/node_modules/<name> 结构, 项目路径里碰巧有 .store 目录时不误判
+			// 只认 <name>@<version>/node_modules/<name> 结构, 项目路径里碰巧有 .np 目录时不误判
 			return key.split("/")[1] === "node_modules"
 				? { file: path.join(parent, STATE_FILE), key }
 				: null;

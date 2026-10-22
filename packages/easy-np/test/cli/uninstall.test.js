@@ -26,7 +26,7 @@ describe("test/cli/uninstall.test.js", () => {
 
 	// 本地包的 store 目录名带来源标识: pkg@1.0.0+file.<hash>; 卸载后不再被引用的版本目录被回收
 	async function assertStoreDirRemoved() {
-		const entries = await fs.readdir(path.join(root, "node_modules/.store"));
+		const entries = await fs.readdir(path.join(root, "node_modules/.np"));
 		assert(
 			!entries.some(name => /^pkg@1\.0\.0\+file\.[a-f0-9]{8}$/.test(name)),
 			entries.join(", ")

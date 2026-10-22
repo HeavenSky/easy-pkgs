@@ -33,10 +33,10 @@
 - 提升链接始终指向本次依赖树中的最高版本，与 workspace 的安装顺序无关；根 `package.json` 声明的依赖保持声明版本。
 - 完整安装用本次结果替换上次的提升链接，可能降级；部分安装只升级不降级。
 
-## 理解 node_modules/.store
+## 理解 node_modules/.np
 
-- 每个包只在 `node_modules/.store/<name>@<version>/node_modules/<name>` 存一份，再从这里链接出去。
-- 每个包的最高版本另链接到 `node_modules/.store/node_modules`，供 peer 回退解析。
+- 每个包只在 `node_modules/.np/<name>@<version>/node_modules/<name>` 存一份，再从这里链接出去。
+- 每个包的最高版本另链接到 `node_modules/.np/node_modules`，供 peer 回退解析。
 - 根 `node_modules` 只放直接依赖与被提升的包。
 - git、tarball URL 与本地包在版本号后附加来源标识（`+git.<commit>`、`+url.<hash>`、`+file.<hash>`），不占用源上同名同版本包的目录。
 
@@ -45,5 +45,5 @@
 1. 查看可以删除的版本：`np-x prune --dry-run`。应看到：以 `would remove` 开头的行。
 2. 删除它们：`np-x prune`。
 
-- 升级后旧版本留在 `.store`，直到 `np-x prune` 回收；安装不会删除它们。
+- 升级后旧版本留在 `.np`，直到 `np-x prune` 回收；安装不会删除它们。
 - `np-x uninstall` 结束时回收不再被任何链接引用的版本。

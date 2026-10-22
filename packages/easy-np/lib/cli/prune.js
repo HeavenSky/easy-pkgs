@@ -1,4 +1,4 @@
-// np-x prune: 删除 .store 中不再被任何链接引用的包版本目录
+// np-x prune: 删除 .np 中不再被任何链接引用的包版本目录
 const path = require("node:path");
 const chalk = require("chalk");
 const parseArgs = require("minimist");
@@ -29,9 +29,9 @@ async function main(args) {
 		return;
 	}
 	if (argv.global) {
-		throw utils.userError("-g is not supported, global packages have no shared .store");
+		throw utils.userError("-g is not supported, global packages have no shared .np");
 	}
-	// 在 workspace 目录中运行时回收整个项目的 .store
+	// 在 workspace 目录中运行时回收整个项目的 .np
 	const { root } = await utils.resolveProjectRoot();
 	const dryRun = argv["dry-run"];
 	const { removed, kept } = await prune({ root, dryRun });
@@ -42,7 +42,7 @@ async function main(args) {
 		"%s %s unreferenced package version(s) in %s, kept %s",
 		dryRun ? "Found" : "Removed",
 		removed.length,
-		path.join(root, "node_modules/.store"),
+		path.join(root, "node_modules", utils.STORE_DIR),
 		kept
 	);
 }

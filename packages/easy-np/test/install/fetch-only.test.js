@@ -41,7 +41,7 @@ describe("test/install/fetch-only.test.js", () => {
 		);
 		assert.equal(pkg.version, "4.4.3");
 		assert(!(await exists(path.join(tmp, "node_modules/ms"))));
-		assert(!(await exists(path.join(tmp, "node_modules/.store/debug@4.4.3/node_modules/ms"))));
+		assert(!(await exists(path.join(tmp, "node_modules/.np/debug@4.4.3/node_modules/ms"))));
 		const rootPkg = JSON.parse(await fs.readFile(path.join(tmp, "package.json")));
 		assert.equal(rootPkg.dependencies, undefined);
 	});
@@ -81,7 +81,7 @@ describe("test/install/fetch-only.test.js", () => {
 			JSON.stringify({ name: "root", version: "1.0.0", dependencies: { debug: "4.4.3" } })
 		);
 		await coffee.fork(helper.npminstall, [], { cwd: tmp }).debug().expect("code", 0).end();
-		assert(await exists(path.join(tmp, "node_modules/.store/debug@4.4.3/node_modules/ms")));
+		assert(await exists(path.join(tmp, "node_modules/.np/debug@4.4.3/node_modules/ms")));
 	});
 
 	it("should reject git packages", async () => {

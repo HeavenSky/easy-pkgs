@@ -28,31 +28,31 @@ describe("test/deps/peer.test.js", () => {
 				assert(pkg);
 				pkg = await getPkg(
 					tmp,
-					`node_modules/.store/antd-tools@${pkg.version}/node_modules/tslint/package.json`
+					`node_modules/.np/antd-tools@${pkg.version}/node_modules/tslint/package.json`
 				);
 				assert(pkg);
 				pkg = await getPkg(
 					tmp,
-					`node_modules/.store/tslint@${pkg.version}/node_modules/typescript/package.json`
+					`node_modules/.np/tslint@${pkg.version}/node_modules/typescript/package.json`
 				);
 				assert(pkg.version === "2.1.6");
 
 				pkg = await getPkg(tmp, "node_modules/antd-tools/package.json");
 				pkg = await getPkg(
 					tmp,
-					`node_modules/.store/antd-tools@${pkg.version}/node_modules/gulp-typescript/package.json`
+					`node_modules/.np/antd-tools@${pkg.version}/node_modules/gulp-typescript/package.json`
 				);
 				assert(pkg);
 				pkg = await getPkg(
 					tmp,
-					`node_modules/.store/gulp-typescript@${pkg.version}/node_modules/typescript/package.json`
+					`node_modules/.np/gulp-typescript@${pkg.version}/node_modules/typescript/package.json`
 				);
 				assert(pkg.version === "2.1.6");
 
 				pkg = await getPkg(tmp, "node_modules/antd-tools/package.json");
 				pkg = await getPkg(
 					tmp,
-					`node_modules/.store/antd-tools@${pkg.version}/node_modules/typescript/package.json`
+					`node_modules/.np/antd-tools@${pkg.version}/node_modules/typescript/package.json`
 				);
 				assert(pkg.version === "2.1.6");
 			});
@@ -69,7 +69,7 @@ describe("test/deps/peer.test.js", () => {
 			assert(pkg.peerDependencies.react === ">=0.14.0");
 			pkg = await getPkg(
 				tmp,
-				`node_modules/.store/react-countup@${pkg.version}/node_modules/react/package.json`
+				`node_modules/.np/react-countup@${pkg.version}/node_modules/react/package.json`
 			);
 			assert(pkg.version.startsWith("15."));
 		});
@@ -84,7 +84,7 @@ describe("test/deps/peer.test.js", () => {
 			await coffee.fork(helper.npminstall, [], { cwd: tmp }).debug().expect("code", 0).end();
 			const pkg = await getPkg(tmp, "node_modules/react-dom/package.json");
 			assertFile(
-				path.join(tmp, `node_modules/.store/react-dom@${pkg.version}/node_modules/react`)
+				path.join(tmp, `node_modules/.np/react-dom@${pkg.version}/node_modules/react`)
 			);
 			assertFile(path.join(tmp, "node_modules/react-dom"));
 			assertFile(path.join(tmp, "node_modules/react"));

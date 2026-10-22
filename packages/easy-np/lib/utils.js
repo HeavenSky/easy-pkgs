@@ -259,11 +259,11 @@ exports.relative = (src, dest) => {
 	return path.relative(path.dirname(dest), src);
 };
 
-// 只有指向 node_modules/.store 的链接是 np 自己创建的安装结果, 其余目录或链接可能来自 workspace 或用户
+// 只有指向 node_modules/.np 的链接是 np 自己创建的安装结果, 其余目录或链接可能来自 workspace 或用户
 exports.isStoreLink = async linkDir => {
 	try {
 		const target = path.resolve(path.dirname(linkDir), await fs.readlink(linkDir));
-		return target.split(path.sep).includes(".store");
+		return target.split(path.sep).includes(exports.STORE_DIR);
 	} catch {
 		return false;
 	}
@@ -762,6 +762,8 @@ exports.parseStoreVersion = storeVersion => {
 	return { version: storeVersion.slice(0, match.index), suffix: match[0].slice(1) };
 };
 
+exports.STORE_DIR = installState.STORE_DIR;
+
 exports.getPackageStorePath = (storeDir, pkg, globalOptions, suffix) => {
 	// if workspace enable, install packages to `<workspaceRoot>/node_modules`
 	if (globalOptions.enableWorkspace) {
@@ -772,7 +774,10 @@ exports.getPackageStorePath = (storeDir, pkg, globalOptions, suffix) => {
 	// https://github.com/npm/cli/pull/5492
 	return path.join(
 		storeDir,
-		`.store/${pkg.name.replace("/", "+")}@${version}/node_modules/${pkg.name}`
+		exports.STORE_DIR,
+		`${pkg.name.replace("/", "+")}@${version}`,
+		"node_modules",
+		pkg.name
 	);
 };
 

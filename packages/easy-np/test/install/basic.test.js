@@ -21,7 +21,7 @@ describe("test/install/basic.test.js", () => {
 			await exists(
 				path.join(
 					root,
-					"node_modules/.store/@babel+preset-react@7.18.6/node_modules/@babel/preset-react"
+					"node_modules/.np/@babel+preset-react@7.18.6/node_modules/@babel/preset-react"
 				)
 			)
 		);
@@ -29,7 +29,7 @@ describe("test/install/basic.test.js", () => {
 			await exists(
 				path.join(
 					root,
-					"node_modules/.store/@babel+preset-react@7.18.6/node_modules/@babel/plugin-transform-react-jsx"
+					"node_modules/.np/@babel+preset-react@7.18.6/node_modules/@babel/plugin-transform-react-jsx"
 				)
 			)
 		);
@@ -130,7 +130,7 @@ describe("test/install/basic.test.js", () => {
 		it("should add _from, _resolved to package.json", async () => {
 			await npminstall({ root });
 			// node_modules/.debug@2.2.0 should exists
-			assert(await exists(path.join(root, "node_modules", ".store/debug@2.2.0")));
+			assert(await exists(path.join(root, "node_modules", ".np/debug@2.2.0")));
 
 			const debugPkg = await readJSON(
 				path.join(root, "node_modules", "debug", "package.json")

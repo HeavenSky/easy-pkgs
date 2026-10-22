@@ -458,7 +458,7 @@ setInterval(() => {}, 1000);`
 		const mm = require("mm");
 		const installState = require("../../lib/install_state");
 		const [tmp, cleanup] = helper.tmp();
-		const store = path.join(tmp, "node_modules/.store");
+		const store = path.join(tmp, "node_modules/.np");
 		const createPackage = async name => {
 			const dir = path.join(store, `${name}@1.0.0/node_modules/${name}`);
 			await fs.mkdir(dir, { recursive: true });
@@ -636,7 +636,7 @@ setInterval(() => {}, 1000);`
 					"file.1a2b3c4d"
 				),
 				require("node:path").join(
-					"/r/node_modules/.store/@a+b@1.0.0+file.1a2b3c4d/node_modules/@a/b"
+					"/r/node_modules/.np/@a+b@1.0.0+file.1a2b3c4d/node_modules/@a/b"
 				)
 			);
 		});

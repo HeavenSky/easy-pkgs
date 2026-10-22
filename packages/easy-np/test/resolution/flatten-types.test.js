@@ -21,7 +21,7 @@ describe("test/resolution/flatten-types.test.js", () => {
 		pkg = await getPkg("node_modules/@types/react-dom/package.json");
 		assert(pkg.version === "0.14.23");
 		pkg = await getPkg(
-			"node_modules/.store/@types+react-dom@0.14.23/node_modules/@types/react/package.json"
+			"node_modules/.np/@types+react-dom@0.14.23/node_modules/@types/react/package.json"
 		);
 		assert(pkg.version === "0.14.57");
 	});

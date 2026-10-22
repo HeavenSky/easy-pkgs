@@ -417,7 +417,7 @@ async function _install(parentDir, pkg, ancestors, options, context, state) {
 	}
 
 	// from here, a package is already downloaded and unpacked into
-	// <root>/.store/<name>/node_modules/<name>. but there is no sub-dependencies
+	// <root>/.np/<name>/node_modules/<name>. but there is no sub-dependencies
 	// in the same node_modules, following logic will link the package itself into
 	// parent's node_modules folder.
 	await linkModule(pkg, parentDir, realPkg, realPkgDir, options, displayName, ancestors);

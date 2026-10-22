@@ -4,14 +4,14 @@ const utils = require("./utils");
 const { getAliasPackageName } = require("./alias");
 
 module.exports = async (parentDir, pkg, realDir, alias, options) => {
-	// parentDir: node_modules/.store/utility@1.17.0/node_modules/utility
-	//   => node_modules/.store/utility@1.17.0/node_modules/{name}
+	// parentDir: node_modules/.np/utility@1.17.0/node_modules/utility
+	//   => node_modules/.np/utility@1.17.0/node_modules/{name}
 	let targetDir = path.dirname(parentDir);
 	let dirname = path.basename(targetDir);
 	if (dirname[0] === "@") {
 		// scoped package
-		// parentDir: node_modules/.store/@babel/preset-react@7.18.6/node_modules/@babel/preset-react
-		//   => node_modules/.store/@babel/preset-react@7.18.6/node_modules/{name}
+		// parentDir: node_modules/.np/@babel/preset-react@7.18.6/node_modules/@babel/preset-react
+		//   => node_modules/.np/@babel/preset-react@7.18.6/node_modules/{name}
 		targetDir = path.dirname(targetDir);
 		dirname = path.basename(targetDir);
 	}

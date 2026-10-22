@@ -1,4 +1,4 @@
-// np-x rebuild <pkg>: 不下载包, 不改依赖与 package.json, 只重跑 .store 中指定包已安装版本的生命周期脚本
+// np-x rebuild <pkg>: 不下载包, 不改依赖与 package.json, 只重跑 .np 中指定包已安装版本的生命周期脚本
 
 const path = require("node:path");
 const fs = require("node:fs/promises");
@@ -130,12 +130,13 @@ async function sortByDependencies(targets) {
 	return order;
 }
 
-// 按名称在 .store 中查找全部已安装版本, spec 带版本时按 semver 范围过滤
+// 按名称在 .np 中查找全部已安装版本, spec 带版本时按 semver 范围过滤
 async function findInstalled(spec, options) {
 	// 必须与 utils.getPackageStorePath 的目录规则一致
 	const storeRoot = path.join(
 		options.enableWorkspace ? options.workspaceRoot : options.root,
-		"node_modules/.store"
+		"node_modules",
+		utils.STORE_DIR
 	);
 	const prefix = `${spec.name.replace("/", "+")}@`;
 	let entries;

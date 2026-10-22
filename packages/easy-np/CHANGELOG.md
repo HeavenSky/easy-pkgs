@@ -8,6 +8,10 @@ easy-np started from [cnpm/npminstall](https://github.com/cnpm/npminstall) 8.0.1
 
 ## Unreleased
 
+### Changed
+
+- `np-x rebuild <pkg> ...` reruns the listed packages in dependency order, whatever order you list them in.
+
 ### Fixed
 
 - When an install resumes, a package's scripts again wait for the scripts of dependencies it reaches through a package that finished in an earlier run.

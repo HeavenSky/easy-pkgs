@@ -59,7 +59,7 @@ Run `npd-x fetch <pkg> ...` to download and extract packages only: no dependenci
 
 Run `npd-x rebuild` to rerun preinstall / install / postinstall of all installed dependencies in dependency order.
 
-- `npd-x rebuild <pkg>[@<range>] ...` reruns only the listed packages.
+- `npd-x rebuild <pkg>[@<range>] ...` reruns only the listed packages, a package after the listed packages it depends on.
 - It uses the disk cache first and downloads only missing packages.
 - Install flags such as `--registry`, `--offline` and `--ignore-scripts` apply.
 - After switching Node.js versions, run it to recompile native modules; after an ordinary failure or interruption, run `npd` instead, see [Resume a failed install](resume.md).

@@ -108,6 +108,32 @@ describe("test/scripts/resume.test.js", () => {
 		);
 	});
 
+	it("should rerun the listed packages in dependency order with npd-x rebuild <pkg>", async () => {
+		await fs.writeFile(
+			path.join(root, "package.json"),
+			JSON.stringify({
+				name: "rebuild-order-root",
+				version: "1.0.0",
+				dependencies: { "rebuild-order-parent": "file:../rebuild-order-parent" },
+				allowScripts: { "rebuild-order-parent": true, "resume-scripts": true },
+			})
+		);
+		await fs.writeFile(flagFile, "");
+		const env = { RESUME_LOG: logFile, RESUME_FLAG: flagFile };
+		await npminstall({ root, env });
+		await fs.rm(logFile);
+		// 先列出依赖它的 rebuild-order-parent, 仍先重跑被依赖的 resume-scripts
+		await rebuildPackages({
+			root,
+			rebuildSpecs: [
+				{ raw: "rebuild-order-parent", name: "rebuild-order-parent", range: null },
+				{ raw: "resume-scripts", name: "resume-scripts", range: null },
+			],
+			env,
+		});
+		assert.deepEqual(await readLog(), ["preinstall", "postinstall", "parent"]);
+	});
+
 	it("should keep installing other packages when one fails and resume only the failed one", async () => {
 		await fs.writeFile(
 			path.join(root, "package.json"),

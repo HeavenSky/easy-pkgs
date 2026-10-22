@@ -14,6 +14,7 @@ easy-npd 起步于 [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.8.0�
 
 ### 变更
 
+- `npd-x rebuild <pkg> ...` 按依赖顺序重跑列出的包，与列出的顺序无关。
 - 放行的依赖脚本（含 `preinstall` 与隐式的 `node-gyp rebuild`）改为在整棵依赖树链接完成后运行，与 npm 及 easy-np 一致，脚本里可以加载兄弟依赖与 peer 依赖。一个包的脚本在它自己依赖的包的脚本之后运行，互不依赖的包并行运行（最多 10 个），不再逐个执行。
 - 可选依赖里某个包的脚本失败时，与 npm 一样撤掉已链接的这个可选依赖；下次运行 `npd` 会重试。
 - 续装记录的阶段改为 `deps`、`preinstall`、`install`、`postinstall` 与 `finish`，与 easy-np 一致；旧版本停在 `preinstall` 与 `install` 之间的包会重跑一次 `preinstall`。

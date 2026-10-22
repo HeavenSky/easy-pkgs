@@ -59,7 +59,7 @@
 
 运行 `npd-x rebuild`，按依赖顺序重跑全部已安装依赖的 preinstall / install / postinstall。
 
-- `npd-x rebuild <pkg>[@<range>] ...` 只重跑列出的包。
+- `npd-x rebuild <pkg>[@<range>] ...` 只重跑列出的包；列出的包之间有依赖时，被依赖的先跑。
 - 优先使用磁盘缓存，缺少的包才联网下载。
 - `--registry`、`--offline`、`--ignore-scripts` 等安装参数同样生效。
 - 切换 Node.js 版本后运行它重新编译原生模块；普通的失败或中断改为运行 `npd`，见[从失败的安装中恢复](resume.md)。

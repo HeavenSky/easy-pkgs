@@ -13,7 +13,7 @@ Every task besides installing has its own `np-x` command, listed below with its 
 | `np-x update`          | `up`, `upgrade` | Deletes `node_modules` and reinstalls, ignoring the versions locked in `np-lock.json`                       |
 | `np-x link`            | `ln`            | Links local folders; without arguments installs the current package and links it globally                   |
 | `np-x fetch`           | none            | Only downloads and extracts the given packages: no dependencies, no scripts; git packages are not supported |
-| `np-x rebuild`         | none            | Reruns `preinstall`, `install` and `postinstall` of installed dependencies                                  |
+| `np-x rebuild`         | none            | Reruns `preinstall`, `install` and `postinstall` of installed dependencies, dependencies first              |
 | `np-x approve-scripts` | `approve`       | Adds dependencies to `allowScripts` in `package.json` so their install scripts run                          |
 | `np-x deny-scripts`    | `deny`          | Adds deny entries to `allowScripts` and removes allow entries of the same package                           |
 | `np-x prune`           | none            | Deletes package versions in `node_modules/.store` that no link references                                   |

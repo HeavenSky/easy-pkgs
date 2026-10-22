@@ -8,6 +8,10 @@ easy-np 起步于 [cnpm/npminstall](https://github.com/cnpm/npminstall) 8.0.1，
 
 ## Unreleased
 
+### 变更
+
+- `np-x rebuild <pkg> ...` 按依赖顺序重跑列出的包，与列出的顺序无关。
+
 ### 修复
 
 - 续装时，一个包的脚本会等待经由「上次已完成的包」间接依赖的包的脚本跑完再运行。

@@ -3,6 +3,7 @@
 
 const path = require("path");
 const fs = require("fs/promises");
+const Module = require("module");
 const chalk = require("chalk");
 const semver = require("semver");
 const utils = require("./utils");
@@ -27,7 +28,7 @@ module.exports = async options => {
 	}
 
 	// 一个包失败不影响其余包, 结束时汇总; 失败的包阶段停在失败的脚本
-	for (const { pkg, dir, name, version } of targets) {
+	for (const { pkg, dir, name, version } of await sortByDependencies(targets)) {
 		const displayName = `${name}@${version}`;
 		try {
 			// 与安装时一致要在 allowScripts 中放行, 按 package.json 记录的来源比对
@@ -58,6 +59,69 @@ async function rebuildOne(pkg, dir, displayName, options) {
 	await runPackageScripts(pkg, dir, displayName, options, utils.FIRST_INSTALL_STAGE);
 	await utils.setInstallStage(dir);
 	options.console.info(chalk.green("rebuilt %s"), displayName);
+}
+
+// 列出的包按依赖顺序重跑: 依赖(含经由未列出的包间接依赖)先于依赖它的包; 互相依赖成环时按列出的顺序; 同一目录只跑一次
+async function sortByDependencies(targets) {
+	const index = new Map();
+	const unique = [];
+	for (const target of targets) {
+		const dir = await fs.realpath(target.dir);
+		if (index.has(dir)) continue;
+		index.set(dir, unique.length);
+		unique.push(target);
+	}
+	const depsCache = new Map();
+	const depsOf = async dir => {
+		if (depsCache.has(dir)) return depsCache.get(dir);
+		const pkg = await utils.readJSON(path.join(dir, "package.json"));
+		const names = Object.keys({
+			...pkg.dependencies,
+			...pkg.optionalDependencies,
+			...pkg.peerDependencies,
+		});
+		// 与 Node 解析依赖的查找路径一致, 取第一个存在的
+		const lookups = Module._nodeModulePaths(dir);
+		const dirs = [];
+		for (const name of names) {
+			for (const lookup of lookups) {
+				const real = await fs.realpath(path.join(lookup, name)).catch(() => null);
+				if (real) {
+					dirs.push(real);
+					break;
+				}
+			}
+		}
+		depsCache.set(dir, dirs);
+		return dirs;
+	};
+	// before[i]: 第 i 个包经由依赖链能到达的其他列出的包
+	const before = [];
+	for (const [dir, i] of index) {
+		const reached = new Set();
+		const seen = new Set([dir]);
+		const stack = [dir];
+		while (stack.length > 0) {
+			for (const dep of await depsOf(stack.pop())) {
+				if (seen.has(dep)) continue;
+				seen.add(dep);
+				if (index.has(dep)) reached.add(index.get(dep));
+				stack.push(dep);
+			}
+		}
+		before[i] = reached;
+	}
+	const done = new Set();
+	const order = [];
+	while (order.length < unique.length) {
+		// 剩余的包中总有一个只依赖已跑过的包或与它成环的包
+		const next = unique.findIndex(
+			(_, i) => !done.has(i) && [...before[i]].every(j => done.has(j) || before[j].has(i))
+		);
+		done.add(next);
+		order.push(unique[next]);
+	}
+	return order;
 }
 
 // 按名称在 node_modules 中查找全部已安装版本, spec 带版本时按 semver 范围过滤

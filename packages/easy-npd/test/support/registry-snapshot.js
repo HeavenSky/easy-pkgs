@@ -17,13 +17,48 @@ const BIN_DIR = path.join(__dirname, "../../bin");
 
 const mode = () => process.env.NP_TEST_REGISTRY || "replay";
 
+// 快照里的版本列表按 major.minor 分组压成一个字符串, 例: ["0.0.1", "0.0.2", "0.1.0"] 存为 "0.0:1,2|0.1:0";
+// 不是 x.y.z 形式的版本归入空前缀组; 编码后解码不能还原(版本号含分隔符)时保留数组, 读取时两种形式都接受
+function decodeVersions(versions) {
+	if (Array.isArray(versions)) return versions;
+	if (!versions) return [];
+	return versions.split("|").flatMap(group => {
+		const colon = group.indexOf(":");
+		const prefix = group.slice(0, colon);
+		return group
+			.slice(colon + 1)
+			.split(",")
+			.map(rest => (prefix ? `${prefix}.${rest}` : rest));
+	});
+}
+
+function encodeVersions(versions) {
+	if (versions.length === 0) return versions;
+	const groups = new Map();
+	for (const version of versions) {
+		const match = /^(\d+\.\d+)\.(.*)$/.exec(version);
+		const prefix = match ? match[1] : "";
+		if (!groups.has(prefix)) groups.set(prefix, []);
+		groups.get(prefix).push(match ? match[2] : version);
+	}
+	const encoded = [...groups].map(([prefix, rests]) => `${prefix}:${rests.join(",")}`).join("|");
+	const decoded = decodeVersions(encoded);
+	const original = new Set(versions);
+	const lossless =
+		decoded.length === versions.length && decoded.every(version => original.has(version));
+	return lossless ? encoded : versions;
+}
+
 function loadSnapshot() {
 	if (mode() === "refresh") return {};
+	let snapshot;
 	try {
-		return JSON.parse(fs.readFileSync(SNAPSHOT_FILE, "utf8"));
+		snapshot = JSON.parse(fs.readFileSync(SNAPSHOT_FILE, "utf8"));
 	} catch {
 		return {};
 	}
+	for (const entry of Object.values(snapshot)) entry.versions = decodeVersions(entry.versions);
+	return snapshot;
 }
 
 function isPublic(url) {
@@ -107,7 +142,10 @@ exports.mergeRecords = () => {
 	// 每个包一行; 改回 JSON.stringify 的缩进输出会让每次刷新变成每个版本号一行的巨量 diff
 	const lines = Object.keys(snapshot)
 		.sort()
-		.map(key => `${JSON.stringify(key)}:${JSON.stringify(snapshot[key])}`);
+		.map(key => {
+			const entry = { ...snapshot[key], versions: encodeVersions(snapshot[key].versions) };
+			return `${JSON.stringify(key)}:${JSON.stringify(entry)}`;
+		});
 	fs.writeFileSync(SNAPSHOT_FILE, `{\n${lines.join(",\n")}\n}\n`);
 	fs.rmSync(RECORD_DIR, { recursive: true, force: true });
 	return names.length;

@@ -182,9 +182,9 @@ function sameName(key, identity) {
 	}
 }
 
-// 扫描 node_modules 下 _<name>@<version>@<name> 目录中带安装脚本(含 binding.gyp 隐式构建)与 git 构建脚本的包; scope 包多一层目录
+// 扫描 node_modules/.npd 下 _<name>@<version>@<name> 目录中带安装脚本(含 binding.gyp 隐式构建)与 git 构建脚本的包; scope 包多一层目录
 async function listInstalledWithScripts(root) {
-	const storeDir = path.join(root, "node_modules");
+	const storeDir = utils.getPackagesDir(path.join(root, "node_modules"));
 	let entries;
 	try {
 		entries = await fs.readdir(storeDir);

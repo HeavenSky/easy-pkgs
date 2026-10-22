@@ -8,7 +8,7 @@ Install npm dependencies that resume where a failed install stopped, retry acros
 [![npm downloads](https://img.shields.io/npm/dm/easy-npd.svg)](https://www.npmjs.com/package/easy-npd)
 [![license](https://img.shields.io/npm/l/easy-npd.svg)](LICENSE.txt)
 
-easy-npd continues [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.8.0 and keeps its flat `node_modules/_<name>@<version>@<name>` layout.
+easy-npd continues [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.8.0 and keeps its flat layout: every version in a `_<name>@<version>@<name>` folder, gathered in `node_modules/.npd`.
 With npminstall, one network hiccup aborts the whole install and a stale mirror means editing the registry by hand; easy-npd keeps installing the other packages and switches registries for you.
 With npm, versions are nested wherever the tree puts them; easy-npd keeps every version in one folder named after it and links the highest version to the root.
 
@@ -23,14 +23,17 @@ npd registry: npm > huawei > yarn, binary: official > mirror
 ✔ Linked 2 latest versions
 ✔ Run 0 scripts
 ✔ All packages installed (2 packages installed from npm registry, used 688ms(network 686ms), speed 23.16KB/s, json 2(0B), tarball 15.89KB, manifests cache hit 0, etag hit 0 / miss 0)
-$ ls node_modules
-_debug@4.3.4@debug
-_ms@2.1.2@ms
+$ ls node_modules node_modules/.npd
+node_modules:
 debug
 ms
+
+node_modules/.npd:
+_debug@4.3.4@debug
+_ms@2.1.2@ms
 ```
 
-`debug` and `ms` are links to the versioned folders next to them.
+`debug` and `ms` are links to the versioned folders in `node_modules/.npd`.
 
 ## Get started
 

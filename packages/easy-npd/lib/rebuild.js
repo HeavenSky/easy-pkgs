@@ -124,14 +124,14 @@ async function sortByDependencies(targets) {
 	return order;
 }
 
-// 按名称在 node_modules 中查找全部已安装版本, spec 带版本时按 semver 范围过滤
+// 按名称在 node_modules/.npd 中查找全部已安装版本, spec 带版本时按 semver 范围过滤
 async function findInstalled(spec, options) {
 	const storeDir = path.join(options.root, "node_modules");
-	// 必须与 utils.getPackageStorePath 的目录规则一致: _<name>@<version>@<name>
+	// 必须与 utils.getPackageStorePath 的目录规则一致: .npd/_<name>@<version>@<name>
 	const prefix = `_${spec.name.replace(/\//g, "_")}@`;
 	let entries;
 	try {
-		entries = await fs.readdir(storeDir);
+		entries = await fs.readdir(utils.getPackagesDir(storeDir));
 	} catch {
 		return [];
 	}

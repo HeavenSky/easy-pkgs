@@ -214,7 +214,7 @@ describe("test/sources/git-prepare.test.js", () => {
 				.expect("code", 0)
 				.expect(
 					"stdout",
-					/remove node_modules[/\\]_build-demo@1\.0\.0\+git\.[0-9a-f]{8}@build-demo and run npd again/
+					/remove node_modules[/\\]\.npd[/\\]_build-demo@1\.0\.0\+git\.[0-9a-f]{8}@build-demo and run npd again/
 				)
 				.notExpect("stdout", /npd-x rebuild/)
 				.end();

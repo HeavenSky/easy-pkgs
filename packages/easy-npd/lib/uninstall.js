@@ -35,7 +35,7 @@ function getDepNames(pkg) {
 	return Object.keys(Object.assign({}, pkg.dependencies, pkg.optionalDependencies));
 }
 
-// 移除根 node_modules 下指向 _name@ver@name 且未被根 package.json 声明, 也未被其他 _name@ver@name/node_modules 引用的提升链接
+// 移除根 node_modules 下指向 .npd/_name@ver@name 且未被根 package.json 声明, 也未被其他 .npd/_name@ver@name/node_modules 引用的提升链接
 async function cleanupHoistedLinks(root, names, options) {
 	const nodeModules = path.join(root, "node_modules");
 	const rootPkg = await utils.readJSON(path.join(root, "package.json"));
@@ -52,14 +52,15 @@ async function cleanupHoistedLinks(root, names, options) {
 			for (const name in rootPkg[field]) declared.add(name);
 		}
 	}
-	const stores = await listStorePackages(nodeModules);
+	const packagesDir = utils.getPackagesDir(nodeModules);
+	const stores = await listStorePackages(packagesDir);
 	const removed = new Set();
 	const queue = [...names];
 	while (queue.length) {
 		const name = queue.shift();
 		if (removed.has(name) || declared.has(name)) continue;
 		const linkDir = path.join(nodeModules, name);
-		const target = await readStoreLink(linkDir, nodeModules);
+		const target = await readStoreLink(linkDir, packagesDir);
 		if (!target) continue;
 		let required = false;
 		for (const store of stores) {
@@ -83,17 +84,17 @@ async function cleanupHoistedLinks(root, names, options) {
 }
 
 // name => _name@1.0.0@name, @scope/name => _@scope_name@1.0.0@@scope/name
-async function listStorePackages(nodeModules) {
+async function listStorePackages(packagesDir) {
 	const stores = [];
 	let entries = [];
 	try {
-		entries = await fs.readdir(nodeModules);
+		entries = await fs.readdir(packagesDir);
 	} catch {
 		return stores;
 	}
 	for (const entry of entries) {
 		if (!entry.startsWith("_")) continue;
-		const dir = path.join(nodeModules, entry);
+		const dir = path.join(packagesDir, entry);
 		const dirs = entry.includes("@@")
 			? (await fs.readdir(dir)).map(sub => path.join(dir, sub))
 			: [dir];
@@ -105,11 +106,11 @@ async function listStorePackages(nodeModules) {
 	return stores;
 }
 
-// 只有指向本 node_modules 下 _name@ver@name 的链接是 npd 创建的安装结果, 其余链接或目录可能来自 npd-link 或用户
-async function readStoreLink(linkDir, nodeModules) {
+// 只有指向本 node_modules/.npd 下 _name@ver@name 的链接是 npd 创建的安装结果, 其余链接或目录可能来自 npd-link 或用户
+async function readStoreLink(linkDir, packagesDir) {
 	try {
 		const target = path.resolve(path.dirname(linkDir), await fs.readlink(linkDir));
-		const relative = path.relative(nodeModules, target);
+		const relative = path.relative(packagesDir, target);
 		return relative.startsWith("_") && !path.isAbsolute(relative) ? target : null;
 	} catch {
 		return null;
@@ -119,7 +120,8 @@ async function readStoreLink(linkDir, nodeModules) {
 // git / url / 本地包的目录名带来源后缀, 只能从链接目标取; 链接不指向 storeDir 下的包目录时退回按名称与版本拼出
 async function installedStorePath(pkgRoot, storeDir, pkgInfo) {
 	const target = await fs.realpath(pkgRoot).catch(() => null);
-	const realStore = await fs.realpath(storeDir).catch(() => storeDir);
+	const packagesDir = utils.getPackagesDir(storeDir);
+	const realStore = await fs.realpath(packagesDir).catch(() => packagesDir);
 	const relative = target && path.relative(realStore, target);
 	if (
 		relative &&
@@ -127,7 +129,7 @@ async function installedStorePath(pkgRoot, storeDir, pkgInfo) {
 		!path.isAbsolute(relative) &&
 		utils.parsePackageStorePath(target)
 	) {
-		return path.join(storeDir, relative);
+		return path.join(packagesDir, relative);
 	}
 	return utils.getPackageStorePath(storeDir, pkgInfo);
 }

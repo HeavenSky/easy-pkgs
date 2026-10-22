@@ -16,19 +16,12 @@ describe("test/scripts/ignore-scripts.test.js", () => {
 	it("should ignore scripts", async () => {
 		await npminstall({ root, ignoreScripts: true });
 
-		const dirs = (await fs.readdir(path.join(root, "node_modules"))).map(dir =>
+		const dirs = await fs.readdir(path.join(root, "node_modules"));
+		assert.deepEqual(dirs.sort(), [".npd", ".package_versions.json", ".tmp", "pkg"].sort());
+		const versions = (await fs.readdir(path.join(root, "node_modules/.npd"))).map(dir =>
 			dir.replace(/\+file\.[0-9a-f]{8}@/, "+file.*@")
 		);
-		assert.deepEqual(
-			dirs.sort(),
-			[
-				"_pkg@1.0.0+file.*@pkg",
-				".npd-state.json",
-				".package_versions.json",
-				".tmp",
-				"pkg",
-			].sort()
-		);
+		assert.deepEqual(versions.sort(), ["_pkg@1.0.0+file.*@pkg", ".npd-state.json"].sort());
 		const files = await fs.readdir(path.join(root, "node_modules/pkg"));
 		assert.deepEqual(files, ["index.js", "package.json"]);
 	});

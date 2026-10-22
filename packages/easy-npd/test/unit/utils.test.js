@@ -389,7 +389,7 @@ describe("test/unit/utils.test.js", () => {
 
 	describe("install state", () => {
 		const [tmp, cleanup] = helper.tmp();
-		const store = path.join(tmp, "node_modules");
+		const store = path.join(tmp, "node_modules/.npd");
 		const installState = require("../../lib/install_state");
 		const createPackage = async entry => {
 			const dir = path.join(store, entry);

@@ -42,7 +42,7 @@ Compiling native modules also needs Python 3 and a C/C++ toolchain; npd does not
 | `npd-x rebuild`         | none            | Rerun preinstall / install / postinstall of installed dependencies                                  |
 | `npd-x approve-scripts` | `approve`       | Add dependencies to `allowScripts` in `package.json` so their install scripts run                   |
 | `npd-x deny-scripts`    | `deny`          | Add deny entries to `allowScripts` and remove existing allow entries of the same package            |
-| `npd-x prune`           | none            | Remove `_<name>@<version>@<name>` folders in `node_modules` that nothing links to                   |
+| `npd-x prune`           | none            | Remove folders in `node_modules/.npd` that nothing links to                                         |
 | `npd-x help <command>`  | none            | Show the help of a subcommand, same as `npd-x <command> -h`                                         |
 
 - Every command accepts `-v, --version` and `-h, --help`; `npd-x -h` lists all subcommands.

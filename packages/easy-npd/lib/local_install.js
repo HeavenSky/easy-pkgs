@@ -144,6 +144,8 @@ async function _install(options, context) {
 		}
 	}
 
+	if (options.installRoot) await removeLegacyLayout(options);
+
 	context.nested.update(
 		pkgs.map(pkg => `${pkg.name}@${pkg.version}`),
 		rootPkg.name && rootPkg.version ? displayName : "root"
@@ -389,23 +391,26 @@ async function linkAllLatestVersion(rootPkgsMap, options) {
 		options.spinner.succeed(`Linked ${options.latestVersions.size} latest versions`);
 }
 
-// 根目录直接依赖与提升链接都指向 _name@ver@name, 只能按 package.json 声明名单区分, 声明过的包永不覆盖
+// 根目录直接依赖与提升链接都指向 .npd/_name@ver@name, 只能按 package.json 声明名单区分, 声明过的包永不覆盖
 function isDeclaredRootPkg(name, options) {
 	const { rootPkgDependencies } = options;
 	return name in rootPkgDependencies.allMap;
 }
 
-// 完整安装时指向本 storeDir 下 _name@ver@name 的链接视为上次的提升结果, 直接更新为本次依赖树中的最高版本
+// 完整安装时指向本 storeDir 下 .npd/_name@ver@name 的链接视为上次的提升结果, 直接更新为本次依赖树中的最高版本
 async function isHoistedLink(pkg, linkDir, storeDir, options) {
 	if (options.pkgs.length > 0) return false;
 	try {
 		const target = path.resolve(path.dirname(linkDir), await fs.readlink(linkDir));
-		const prefix = `_${pkg.name.replace(/\//g, "_")}@`;
-		const basename = path.basename(target);
+		const parsed = utils.parsePackageStorePath(target);
+		// scope 包的版本目录多一层: .npd/_@scope_name@ver@@scope/name
+		const entryDir = pkg.name.startsWith("@")
+			? path.dirname(path.dirname(target))
+			: path.dirname(target);
 		return (
-			path.dirname(target) === path.resolve(storeDir) &&
-			basename.startsWith(prefix) &&
-			basename.endsWith(`@${path.basename(pkg.name)}`)
+			!!parsed &&
+			parsed.name === pkg.name &&
+			entryDir === path.resolve(utils.getPackagesDir(storeDir))
 		);
 	} catch {
 		return false;
@@ -458,6 +463,49 @@ async function linkLatestVersion(pkg, storeDir, options) {
 		linkDir,
 		relative
 	);
+}
+
+// 0.0.6 及更早版本把包版本目录直接放在 node_modules 下: 完整安装前删掉旧目录, 指向它们的顶层链接与 .bin 入口, 以及旧的状态文件,
+// 随后按 node_modules/.npd 下的新位置重新安装(tarball 仍在磁盘缓存中, 不重新下载); 只装指定包时不迁移, 旧目录照常可用
+async function removeLegacyLayout(options) {
+	const realDir = await fs.realpath(options.storeDir).catch(() => null);
+	if (!realDir) return;
+	const names = await fs.readdir(realDir);
+	const legacy = new Set(names.filter(name => name.startsWith("_") && name.includes("@")));
+	if (legacy.size === 0) return;
+	options.console.warn(
+		chalk.yellow(
+			"[npd:migrate] move %s package folder(s) from node_modules/_<name>@<version>@<name> to node_modules/.npd, installing them again"
+		),
+		legacy.size
+	);
+	const pointsToLegacy = async file => {
+		const stat = await fs.lstat(file).catch(() => null);
+		if (!stat || !stat.isSymbolicLink()) return false;
+		const target = await fs.realpath(file).catch(() => null);
+		if (!target) return false;
+		const relative = path.relative(realDir, target);
+		return (
+			!relative.startsWith("..") &&
+			!path.isAbsolute(relative) &&
+			legacy.has(relative.split(path.sep)[0])
+		);
+	};
+	const stale = [];
+	for (const name of names) {
+		if (legacy.has(name)) continue;
+		const dir = path.join(realDir, name);
+		let entries = [dir];
+		if (name === ".bin" || name.startsWith("@")) {
+			entries = (await fs.readdir(dir).catch(() => [])).map(sub => path.join(dir, sub));
+		}
+		for (const entry of entries) {
+			if (await pointsToLegacy(entry)) stale.push(entry);
+		}
+	}
+	for (const entry of stale) await utils.rimraf(entry);
+	for (const name of legacy) await utils.rimraf(path.join(realDir, name));
+	await utils.rimraf(path.join(realDir, ".npd-state.json"));
 }
 
 async function clearInstallStages(options) {

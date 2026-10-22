@@ -10,7 +10,7 @@ const SUMMARIES = {
 	rebuild: "rerun lifecycle scripts of installed dependencies",
 	"approve-scripts": "allow install scripts of dependencies in package.json allowScripts",
 	"deny-scripts": "deny install scripts of dependencies in package.json allowScripts",
-	prune: "remove _<name>@<version>@<name> folders in node_modules that nothing links to",
+	prune: "remove _<name>@<version>@<name> folders in node_modules/.npd that nothing links to",
 };
 
 // commands: [{ name, aliases }], 顺序即展示顺序
@@ -243,7 +243,7 @@ Usage:
   npd-x prune
   npd-x prune --dry-run
 
-Upgrading packages leaves their old versions as _<name>@<version>@<name> folders in node_modules; npd-x uninstall removes unreferenced versions by itself.
+Upgrading packages leaves their old versions as _<name>@<version>@<name> folders in node_modules/.npd; npd-x uninstall removes unreferenced versions by itself.
 This command walks the links from the top level of node_modules, removes the version folders that are not reachable.
 Installs never remove these folders by themselves.
 

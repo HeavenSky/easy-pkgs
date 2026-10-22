@@ -10,7 +10,7 @@ const helper = require("../support/helper");
 describe("test/sources/store-isolation.test.js", () => {
 	const [tmp, cleanup] = helper.tmp();
 	const root = path.join(tmp, "app");
-	const store = path.join(root, "node_modules");
+	const store = path.join(root, "node_modules/.npd");
 
 	beforeEach(async () => {
 		await cleanup();

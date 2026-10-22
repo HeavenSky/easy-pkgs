@@ -32,20 +32,17 @@ describe("test/sources/remote.test.js", () => {
 		pkg = await helper.readJSON(path.join(root, "node_modules", "taffydb", "package.json"));
 		assert.equal(pkg.name, "taffydb");
 
-		const dirs = (await fs.readdir(path.join(root, "node_modules"))).map(dir =>
+		const dirs = await fs.readdir(path.join(root, "node_modules"));
+		assert.deepEqual(
+			dirs.sort(),
+			[".npd", ".tmp", "pedding", "taffydb", ".package_versions.json"].sort()
+		);
+		const versions = (await fs.readdir(path.join(root, "node_modules/.npd"))).map(dir =>
 			dir.replace(/\+url\.[0-9a-f]{8}@/, "+url.*@")
 		);
 		assert.deepEqual(
-			dirs.sort(),
-			[
-				".tmp",
-				"pedding",
-				"taffydb",
-				"_pedding@1.0.0@pedding",
-				"_taffydb@2.7.2+url.*@taffydb",
-				".npd-state.json",
-				".package_versions.json",
-			].sort()
+			versions.sort(),
+			["_pedding@1.0.0@pedding", "_taffydb@2.7.2+url.*@taffydb", ".npd-state.json"].sort()
 		);
 	});
 

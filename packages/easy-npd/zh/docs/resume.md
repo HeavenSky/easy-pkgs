@@ -16,7 +16,7 @@
 
 ## 了解进度如何记录
 
-每个包所处的阶段记录在 `node_modules/.npd-state.json`（全局安装为 `.<name>_npd/.npd-state.json`）；不修改依赖包自己的 `package.json`。
+每个包所处的阶段记录在 `node_modules/.npd/.npd-state.json`；不修改依赖包自己的 `package.json`。
 
 - 阶段依次为 `deps`、`preinstall`、`install`、`postinstall` 与 `finish`。
 - 依赖的脚本（含 preinstall）在整棵依赖树链接完成后才统一执行。

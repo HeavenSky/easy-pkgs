@@ -10,6 +10,7 @@ easy-npd 起步于 [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.8.0�
 
 ### 破坏性变更
 
+- 包版本目录从 `node_modules/_<name>@<version>@<name>` 挪到 `node_modules/.npd/` 下，`node_modules` 根目录只留包名链接；安装状态也挪到 `node_modules/.npd/.npd-state.json`。已有项目第一次完整运行 `npd` 时删掉旧目录，并从磁盘缓存重新安装。迁移方法：把配置里匹配 `node_modules/_<name>` 的路径（例如 jest 的 `transformIgnorePatterns`）改成 `node_modules/.npd/_<name>`；靠自身目录（`__dirname` 加 `../..`）推算项目根的脚本改为读取 `INIT_CWD`。
 - 根项目的 `preinstall` 改为在依赖安装完成后运行，与它的 `install`、`postinstall` 一起执行，与 npm 7+ 及 easy-np 一致。迁移方法：必须在安装依赖之前执行的步骤（例如生成某个 `file:` 依赖）改成在运行 `npd` 之前单独执行的命令。
 
 ### 变更

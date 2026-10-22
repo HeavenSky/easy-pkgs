@@ -6,18 +6,21 @@ const fs = require("fs/promises");
 const { randomUUID } = require("crypto");
 
 const STATE_FILE = ".npd-state.json";
+// 包版本目录集中放在 node_modules/.npd 下, node_modules 顶层只留包名链接
+const PACKAGES_DIR = ".npd";
+exports.PACKAGES_DIR = PACKAGES_DIR;
 // 0.0.2 及更早版本把标记写在包的 package.json 里; 状态文件中没有该包时按旧标记判断, 升级后不必重装整个 node_modules
 const LEGACY_DONE_KEY = "__npd_done";
 const LEGACY_STAGE_KEY = "__npd_stage";
 
-// 包实体位于 node_modules/_<name>@<version>@<name>(全局安装为 .<name>_npd/_<name>@<version>@<name>), 状态文件放在该目录下
+// 包实体位于 node_modules/.npd/_<name>@<version>@<name>(旧版全局安装为 .<name>_npd/_<name>@<version>@<name>), 状态文件放在该目录下
 function locate(realRoot) {
 	let dir = realRoot;
 	for (;;) {
 		const parent = path.dirname(dir);
 		if (parent === dir) return null;
 		const base = path.basename(parent);
-		if (base === "node_modules" || /^\..+_npd$/.test(base)) {
+		if (base === PACKAGES_DIR || /^\..+_npd$/.test(base)) {
 			// 项目根或其他工具装出的目录不在 _<name>@<version>@<name> 下, 退回写 package.json
 			if (!path.basename(dir).startsWith("_")) return null;
 			return {

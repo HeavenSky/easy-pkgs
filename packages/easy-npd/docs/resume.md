@@ -16,7 +16,7 @@ A failed or interrupted install does not need a clean `node_modules`: run `npd` 
 
 ## Know how progress is recorded
 
-Each package's stage is stored in `node_modules/.npd-state.json` (for global installs, `.<name>_npd/.npd-state.json`); the packages' own `package.json` files are not modified.
+Each package's stage is stored in `node_modules/.npd/.npd-state.json`; the packages' own `package.json` files are not modified.
 
 - The stages are `deps`, `preinstall`, `install`, `postinstall` and `finish`.
 - Dependency scripts, preinstall included, run only after the whole dependency tree is linked.

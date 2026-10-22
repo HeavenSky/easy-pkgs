@@ -10,6 +10,7 @@ easy-npd starts from [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.8.0
 
 ### Breaking changes
 
+- Package folders move from `node_modules/_<name>@<version>@<name>` into `node_modules/.npd/`, so the root of `node_modules` keeps only the package links, and the install state moves to `node_modules/.npd/.npd-state.json`. The first full `npd` in an existing project removes the old folders and installs them again from the disk cache. To migrate, change configs that match `node_modules/_<name>` paths (for example jest `transformIgnorePatterns`) to `node_modules/.npd/_<name>`, and have scripts that find the project from their own folder (`__dirname` plus `../..`) read `INIT_CWD` instead.
 - The root project's `preinstall` now runs after its dependencies are installed, together with its `install` and `postinstall`, as in npm 7+ and easy-np. To migrate, move a step that must run before dependencies are installed (for example one that generates a `file:` dependency) into a command you run before `npd`.
 
 ### Changed

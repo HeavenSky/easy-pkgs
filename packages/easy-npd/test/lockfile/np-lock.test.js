@@ -471,7 +471,7 @@ describe("test/lockfile/np-lock.test.js", () => {
 			await fs.rm(lockFile);
 			await run(helper.npminstall, []).expect("code", 0).end();
 			assert.equal(await installed(), "second");
-			const dirs = (await fs.readdir(path.join(tmp, "node_modules"))).filter(dir =>
+			const dirs = (await fs.readdir(path.join(tmp, "node_modules/.npd"))).filter(dir =>
 				dir.startsWith("_git-same-version@")
 			);
 			assert.equal(dirs.length, 2, dirs.join(", "));
@@ -511,7 +511,7 @@ describe("test/lockfile/np-lock.test.js", () => {
 				.expect("code", 0)
 				.end();
 			await run(helper.npminstall, ["ms@2.1.3"]).expect("code", 0).end();
-			const registryDir = path.join(tmp, "node_modules/_ms@2.1.3@ms");
+			const registryDir = path.join(tmp, "node_modules/.npd/_ms@2.1.3@ms");
 			assert.equal(
 				await fs.realpath(path.join(tmp, "node_modules/ms")),
 				await fs.realpath(registryDir)

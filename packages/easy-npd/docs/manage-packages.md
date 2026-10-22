@@ -8,12 +8,12 @@ The `npd-x` subcommands below uninstall, update, link, fetch, rebuild and prune 
 
 Every package version lives in its own folder, and the root links to the highest version of each package.
 
-- Package contents are in `node_modules/_<name>@<version>@<name>`; each package's dependencies are links in its own `node_modules`.
+- Package contents are in `node_modules/.npd/_<name>@<version>@<name>`; each package's dependencies are links in its own `node_modules`.
 - The highest version of every package is also linked to the root `node_modules/<name>`; packages declared in the root `package.json` keep the version they declare.
 - A full install replaces the previous root links with the highest versions in the current tree, which can mean a downgrade.
 - Git, tarball url and local packages get a source suffix after the version, such as `_foo@1.0.0+git.1a2b3c4d@foo`, `+url.<integrity digest>` or `+file.<source path digest>`, so they never share a folder with the registry package of the same name and version.
 - A git dependency on a new commit, or a tarball whose content changed under the same version, is installed into a new folder.
-- Install progress is recorded in `node_modules/.npd-state.json`; the packages' own `package.json` files are not modified.
+- Install progress is recorded in `node_modules/.npd/.npd-state.json`; the packages' own `package.json` files are not modified.
 
 ## Uninstall packages
 
@@ -67,7 +67,7 @@ Run `npd-x rebuild` to rerun preinstall / install / postinstall of all installed
 
 ## Reclaim old version folders
 
-Run `npd-x prune` to delete the `_<name>@<version>@<name>` folders that no link refers to; installs never delete them on their own.
+Run `npd-x prune` to delete the folders in `node_modules/.npd` that no link refers to; installs never delete them on their own.
 
 1. Run `npd-x prune --dry-run`. Expected: the folders that would be deleted are listed, nothing is removed.
 2. Run `npd-x prune`. Expected: those folders and their records in `.npd-state.json` are gone.

@@ -10,7 +10,7 @@ npm 包页只显示英文版 README。
 [![npm downloads](https://img.shields.io/npm/dm/easy-npd.svg)](https://www.npmjs.com/package/easy-npd)
 [![license](https://img.shields.io/npm/l/easy-npd.svg)](../LICENSE.txt)
 
-easy-npd 延续自 [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.8.0，适合沿用其扁平 `node_modules/_<name>@<version>@<name>` 布局的项目。
+easy-npd 延续自 [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.8.0，适合沿用其扁平布局的项目：每个版本一个 `_<name>@<version>@<name>` 目录，集中放在 `node_modules/.npd`。
 用 npminstall 时，网络抖一下整次安装就作废，镜像没同步新版本只能手动换源；easy-npd 照常装完其余的包，并替你换源。
 用 npm 时，各版本按依赖树嵌套在不同位置；easy-npd 把每个版本放进以它命名的目录，再把最高版本链接到根目录。
 
@@ -25,14 +25,17 @@ npd registry: npm > huawei > yarn, binary: official > mirror
 ✔ Linked 2 latest versions
 ✔ Run 0 scripts
 ✔ All packages installed (2 packages installed from npm registry, used 688ms(network 686ms), speed 23.16KB/s, json 2(0B), tarball 15.89KB, manifests cache hit 0, etag hit 0 / miss 0)
-$ ls node_modules
-_debug@4.3.4@debug
-_ms@2.1.2@ms
+$ ls node_modules node_modules/.npd
+node_modules:
 debug
 ms
+
+node_modules/.npd:
+_debug@4.3.4@debug
+_ms@2.1.2@ms
 ```
 
-`debug` 和 `ms` 是指向旁边带版本号目录的链接。
+`debug` 和 `ms` 是指向 `node_modules/.npd` 中带版本号目录的链接。
 
 ## 快速开始
 

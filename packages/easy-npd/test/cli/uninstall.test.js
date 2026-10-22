@@ -34,14 +34,14 @@ describe("test/cli/uninstall.test.js", () => {
 			.end();
 		assert(!existsSync(path.join(root, "node_modules/koa")));
 		assert(!existsSync(path.join(root, "node_modules/pkg")));
-		assert(!existsSync(path.join(root, `node_modules/${storeName}`)));
+		assert(!existsSync(path.join(root, `node_modules/.npd/${storeName}`)));
 	});
 
 	it("should drop the install state of the removed package", async () => {
 		const stateKeys = async () =>
 			Object.keys(
 				JSON.parse(
-					await fs.readFile(path.join(root, "node_modules/.npd-state.json"), "utf8")
+					await fs.readFile(path.join(root, "node_modules/.npd/.npd-state.json"), "utf8")
 				).packages
 			);
 		assert((await stateKeys()).includes(storeName));
@@ -60,7 +60,7 @@ describe("test/cli/uninstall.test.js", () => {
 			})
 			.end();
 
-		assert(!existsSync(path.join(root, `node_modules/${storeName}`)));
+		assert(!existsSync(path.join(root, `node_modules/.npd/${storeName}`)));
 		const pkg = JSON.parse(await fs.readFile(path.join(root, "package.json")));
 		assert(!pkg.dependencies.pkg);
 	});
@@ -74,7 +74,7 @@ describe("test/cli/uninstall.test.js", () => {
 			.end();
 
 		assert(!existsSync(path.join(path.join(root, "node_modules/pkg"))));
-		assert(!existsSync(path.join(path.join(root, `node_modules/${storeName}`))));
+		assert(!existsSync(path.join(path.join(root, `node_modules/.npd/${storeName}`))));
 		const pkg = JSON.parse(await fs.readFile(path.join(root, "package.json")));
 		assert(!pkg.devDependencies.pkg);
 	});
@@ -88,7 +88,7 @@ describe("test/cli/uninstall.test.js", () => {
 			.end();
 
 		assert(!existsSync(path.join(path.join(root, "node_modules/pkg"))));
-		assert(!existsSync(path.join(path.join(root, `node_modules/${storeName}`))));
+		assert(!existsSync(path.join(path.join(root, `node_modules/.npd/${storeName}`))));
 		const pkg = JSON.parse(await fs.readFile(path.join(root, "package.json")));
 		assert(!pkg.optionalDependencies.pkg);
 	});
@@ -116,7 +116,7 @@ describe("test/cli/uninstall.test.js", () => {
 			.end();
 
 		assert(existsSync(path.join(root, "node_modules/pkg")));
-		assert(existsSync(path.join(root, `node_modules/${storeName}`)));
+		assert(existsSync(path.join(root, `node_modules/.npd/${storeName}`)));
 	});
 
 	it("should not uninstall when name not match", async () => {
@@ -127,6 +127,6 @@ describe("test/cli/uninstall.test.js", () => {
 			})
 			.end();
 
-		assert(existsSync(path.join(root, `node_modules/${storeName}`)));
+		assert(existsSync(path.join(root, `node_modules/.npd/${storeName}`)));
 	});
 });

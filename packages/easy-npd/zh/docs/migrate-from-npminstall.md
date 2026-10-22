@@ -9,7 +9,7 @@
 1. 安装 easy-npd：`npm i -g easy-npd`。
 2. 删除 npminstall 装出的 `node_modules`：npd 会把它视为未完成。
 3. 有 `~/.cnpmrc` 时把它改名为 `~/.nprc`。
-4. 原来运行 `npminstall` 的地方改为 `npd`，原来运行 `npmuninstall`、`npmupdate`、`npmlink` 的地方改为 `npd-x <command>`。预期：得到同样的扁平 `_<name>@<version>@<name>` 布局。
+4. 原来运行 `npminstall` 的地方改为 `npd`，原来运行 `npmuninstall`、`npmupdate`、`npmlink` 的地方改为 `npd-x <command>`。预期：得到同样的扁平 `_<name>@<version>@<name>` 目录，集中放在 `node_modules/.npd`。
 5. 替换脚本与 CI 中已移除的参数和未知参数；未知参数会报 `unknown option <flag>`，见[只传 npd 认识的参数](install-packages.md#只传-npd-认识的参数)；传入已移除的参数时安装停止并报 `--<flag> has been removed, <hint>`，替代写法见[替换已移除的命令、参数与特性](#替换已移除的命令参数与特性)。
 
 ## 查找改了名的包、命令与文件
@@ -19,7 +19,8 @@
 | 包名与命令                           | 包名 `npminstall`；命令 `npminstall`、`npmlink`、`npmuninstall`、`npmupdate` | 包名 `easy-npd`；命令 `npd` 与 `npd-x`                                                  |
 | 用户配置文件                         | `~/.cnpmrc`                                                                  | `~/.nprc`，与 easy-np 共用                                                              |
 | 缓存目录                             | `~/.npminstall_tarball`，环境变量 `npminstall_cache`                         | `~/.np_tarball`，环境变量 `np_cache`；两边都认 `npm_config_cache`；旧布局的缓存不再读取 |
-| 安装完成标记                         | 每个包 `package.json` 中的 `__npminstall_done`                               | `node_modules/.npd-state.json`；切换前先删除 npminstall 装出的 `node_modules`           |
+| 包版本目录                           | `node_modules/_<name>@<version>@<name>`                                      | `node_modules/.npd/_<name>@<version>@<name>`；`node_modules` 根目录只留包名链接         |
+| 安装完成标记                         | 每个包 `package.json` 中的 `__npminstall_done`                               | `node_modules/.npd/.npd-state.json`；切换前先删除 npminstall 装出的 `node_modules`      |
 | User-Agent、日志前缀、debug 命名空间 | `npminstall`                                                                 | User-Agent 为 `easy-npd/<version>`，日志前缀与 debug 命名空间为 `npd`                   |
 
 ## 了解行为差异

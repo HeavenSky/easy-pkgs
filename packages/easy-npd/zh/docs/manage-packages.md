@@ -8,12 +8,12 @@
 
 每个包版本各占一个目录，根目录链接每个包的最高版本。
 
-- 包内容位于 `node_modules/_<name>@<version>@<name>`；每个包的依赖以链接形式放在它自己的 `node_modules` 下。
+- 包内容位于 `node_modules/.npd/_<name>@<version>@<name>`；每个包的依赖以链接形式放在它自己的 `node_modules` 下。
 - 每个包的最高版本另外链接到根 `node_modules/<name>`；根 `package.json` 声明的包保持它声明的版本。
 - 完整安装会把上次的根目录链接换成本次依赖树中的最高版本，可能因此降级。
 - git、tarball url 与本地包在版本号后带来源后缀，如 `_foo@1.0.0+git.1a2b3c4d@foo`、`+url.<integrity digest>`、`+file.<source path digest>`，不会与同名同版本的源上的包共用目录。
 - git 依赖换了 commit，或 tarball 内容变了而版本号不变时，装进新的目录。
-- 安装进度记录在 `node_modules/.npd-state.json`，不修改依赖包自己的 `package.json`。
+- 安装进度记录在 `node_modules/.npd/.npd-state.json`，不修改依赖包自己的 `package.json`。
 
 ## 卸载包
 
@@ -67,7 +67,7 @@
 
 ## 回收旧版本目录
 
-运行 `npd-x prune`，删除没有任何链接指向的 `_<name>@<version>@<name>` 目录；安装本身从不自动删除它们。
+运行 `npd-x prune`，删除 `node_modules/.npd` 中没有任何链接指向的目录；安装本身从不自动删除它们。
 
 1. 运行 `npd-x prune --dry-run`。预期：列出将被删除的目录，不删除任何东西。
 2. 运行 `npd-x prune`。预期：这些目录及其在 `.npd-state.json` 中的记录被删除。

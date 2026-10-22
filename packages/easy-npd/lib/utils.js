@@ -824,15 +824,21 @@ exports.gitSource = sha => `git.${sha.slice(0, 8)}`;
 exports.urlSource = integrity => `url.${utility.sha1(integrity).slice(0, 8)}`;
 exports.fileSource = filepath => `file.${utility.sha1(filepath).slice(0, 8)}`;
 
+exports.PACKAGES_DIR = installState.PACKAGES_DIR;
+exports.getPackagesDir = storeDir => path.join(storeDir, exports.PACKAGES_DIR);
+
 exports.getPackageStorePath = (storeDir, pkg, source) => {
-	// name => _name@1.0.0@name
-	// @scope/name => _@scope_name@1.0.0@scope/name
+	// name => .npd/_name@1.0.0@name
+	// @scope/name => .npd/_@scope_name@1.0.0@scope/name
 	// 带来源时: _name@1.0.0+git.1a2b3c4d@name, 版本号已有 build metadata 时用 . 连接
 	// some packages need name: https://github.com/BenoitZugmeyer/eslint-plugin-html/blob/master/src/index.js#L24
 	const version = source
 		? `${pkg.version}${String(pkg.version).includes("+") ? "." : "+"}${source}`
 		: pkg.version;
-	return path.join(storeDir, `_${pkg.name.replace(/\//g, "_")}@${version}@${pkg.name}`);
+	return path.join(
+		exports.getPackagesDir(storeDir),
+		`_${pkg.name.replace(/\//g, "_")}@${version}@${pkg.name}`
+	);
 };
 
 // getPackageStorePath 的逆运算, 不是 store 目录时返回 null; 只有不带 source 的结果才是 registry 包的身份

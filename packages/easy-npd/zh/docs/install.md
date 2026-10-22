@@ -32,18 +32,18 @@
 
 ## 按任务找命令
 
-| 命令                    | 别名            | 作用                                                                     |
-| ----------------------- | --------------- | ------------------------------------------------------------------------ |
-| `npd` / `npd-x install` | `i`、`add`      | 安装依赖，见[安装包](install-packages.md)                                |
-| `npd-x uninstall`       | `remove`、`rm`  | 卸载包，并清掉没人用的提升链接和没有链接指向的版本目录                   |
-| `npd-x update`          | `up`、`upgrade` | 删除 `node_modules` 后重装，忽略 `np-lock.json` 锁定的版本               |
-| `npd-x link`            | `ln`            | 链接本地目录；不带参数时把当前包安装并链接到全局                         |
-| `npd-x fetch`           | 无              | 只下载并解压包，不装依赖，不执行脚本；不支持 git 包                      |
-| `npd-x rebuild`         | 无              | 重跑已安装依赖的 preinstall / install / postinstall                      |
-| `npd-x approve-scripts` | `approve`       | 把依赖写进 `package.json` 的 `allowScripts`，放行其安装脚本              |
-| `npd-x deny-scripts`    | `deny`          | 在 `allowScripts` 中写入拒绝条目，并删除同一包已有的放行条目             |
-| `npd-x prune`           | 无              | 删除 `node_modules` 中没有任何链接指向的 `_<name>@<version>@<name>` 目录 |
-| `npd-x help <command>`  | 无              | 显示子命令的帮助，同 `npd-x <command> -h`                                |
+| 命令                    | 别名            | 作用                                                         |
+| ----------------------- | --------------- | ------------------------------------------------------------ |
+| `npd` / `npd-x install` | `i`、`add`      | 安装依赖，见[安装包](install-packages.md)                    |
+| `npd-x uninstall`       | `remove`、`rm`  | 卸载包，并清掉没人用的提升链接和没有链接指向的版本目录       |
+| `npd-x update`          | `up`、`upgrade` | 删除 `node_modules` 后重装，忽略 `np-lock.json` 锁定的版本   |
+| `npd-x link`            | `ln`            | 链接本地目录；不带参数时把当前包安装并链接到全局             |
+| `npd-x fetch`           | 无              | 只下载并解压包，不装依赖，不执行脚本；不支持 git 包          |
+| `npd-x rebuild`         | 无              | 重跑已安装依赖的 preinstall / install / postinstall          |
+| `npd-x approve-scripts` | `approve`       | 把依赖写进 `package.json` 的 `allowScripts`，放行其安装脚本  |
+| `npd-x deny-scripts`    | `deny`          | 在 `allowScripts` 中写入拒绝条目，并删除同一包已有的放行条目 |
+| `npd-x prune`           | 无              | 删除 `node_modules/.npd` 中没有任何链接指向的目录            |
+| `npd-x help <command>`  | 无              | 显示子命令的帮助，同 `npd-x <command> -h`                    |
 
 - 全部命令都支持 `-v, --version` 与 `-h, --help`；`npd-x -h` 列出全部子命令。
 - 安装以外各命令的参数见[管理已安装的包](manage-packages.md)。

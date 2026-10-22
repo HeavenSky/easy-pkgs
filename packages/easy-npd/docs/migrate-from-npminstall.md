@@ -9,7 +9,7 @@ Moving a project from [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.x 
 1. Install easy-npd: `npm i -g easy-npd`.
 2. Delete the `node_modules` installed by npminstall: npd treats it as unfinished.
 3. Move `~/.cnpmrc` to `~/.nprc` if you have one.
-4. Run `npd` where you ran `npminstall`, and `npd-x <command>` where you ran `npmuninstall`, `npmupdate` or `npmlink`. Expected: the same flat `_<name>@<version>@<name>` layout.
+4. Run `npd` where you ran `npminstall`, and `npd-x <command>` where you ran `npmuninstall`, `npmupdate` or `npmlink`. Expected: the same flat `_<name>@<version>@<name>` folders, gathered in `node_modules/.npd`.
 5. Replace removed and unknown flags in scripts and CI; an unknown flag fails with `unknown option <flag>`, see [Pass only options npd knows](install-packages.md#pass-only-options-npd-knows); a removed flag stops the install with `--<flag> has been removed, <hint>`, and the table in [Replace removed commands, flags and features](#replace-removed-commands-flags-and-features) gives the replacement.
 
 ## Find what was renamed
@@ -19,7 +19,8 @@ Moving a project from [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.x 
 | Package and commands                    | package `npminstall`; commands `npminstall`, `npmlink`, `npmuninstall`, `npmupdate` | package `easy-npd`; commands `npd` and `npd-x`                                                                     |
 | User configuration file                 | `~/.cnpmrc`                                                                         | `~/.nprc`, shared with easy-np                                                                                     |
 | Cache folder                            | `~/.npminstall_tarball`, environment variable `npminstall_cache`                    | `~/.np_tarball`, environment variable `np_cache`; both accept `npm_config_cache`; the old cache layout is not read |
-| Install-complete marker                 | `__npminstall_done` in each package's `package.json`                                | `node_modules/.npd-state.json`; delete an npminstall `node_modules` before switching                               |
+| Package folders                         | `node_modules/_<name>@<version>@<name>`                                             | `node_modules/.npd/_<name>@<version>@<name>`; the root of `node_modules` keeps only the package links              |
+| Install-complete marker                 | `__npminstall_done` in each package's `package.json`                                | `node_modules/.npd/.npd-state.json`; delete an npminstall `node_modules` before switching                          |
 | User-Agent, log prefix, debug namespace | `npminstall`                                                                        | User-Agent `easy-npd/<version>`, log prefix and debug namespace `npd`                                              |
 
 ## Know the behavior differences

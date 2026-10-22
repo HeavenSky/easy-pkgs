@@ -24,9 +24,11 @@ describe("test/deps/bundled.test.js", () => {
 
 		// only node-pre-gyp dir exists
 		const dirs = await fs.readdir(path.join(tmp, "node_modules/"));
+		assert.deepEqual(dirs.sort(), [".bin", ".npd", "node-pre-gyp"].sort());
+		const versions = await fs.readdir(path.join(tmp, "node_modules/.npd"));
 		assert.deepEqual(
-			dirs.sort(),
-			[".bin", ".npd-state.json", "_node-pre-gyp@0.6.19@node-pre-gyp", "node-pre-gyp"].sort()
+			versions.sort(),
+			[".npd-state.json", "_node-pre-gyp@0.6.19@node-pre-gyp"].sort()
 		);
 	});
 

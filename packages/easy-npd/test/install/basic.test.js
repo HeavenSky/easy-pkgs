@@ -98,7 +98,7 @@ describe("test/install/basic.test.js", () => {
 		it("should add _from, _resolved to package.json", async () => {
 			await npminstall({ root });
 			// node_modules/.debug@2.2.0 should exists
-			assert(await exists(path.join(root, "node_modules", "_debug@2.2.0@debug")));
+			assert(await exists(path.join(root, "node_modules", ".npd", "_debug@2.2.0@debug")));
 
 			const debugPkg = await readJSON(
 				path.join(root, "node_modules", "debug", "package.json")

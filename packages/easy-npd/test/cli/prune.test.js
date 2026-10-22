@@ -16,10 +16,10 @@ describe("test/cli/prune.test.js", () => {
 	const run = (bin, args) =>
 		coffee.fork(bin, args, { cwd: tmp, env: { ...process.env, np_lockfile: "false" } });
 	const storeEntries = async () =>
-		(await fs.readdir(store)).filter(name => name.startsWith("_")).sort();
+		(await fs.readdir(path.join(store, ".npd"))).filter(name => name.startsWith("_")).sort();
 	const stateKeys = async () =>
 		Object.keys(
-			JSON.parse(await fs.readFile(path.join(store, ".npd-state.json"), "utf8")).packages
+			JSON.parse(await fs.readFile(path.join(store, ".npd/.npd-state.json"), "utf8")).packages
 		);
 	const link = `${tmp}-link`;
 	const moved = `${tmp}-moved`;

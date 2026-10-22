@@ -7,8 +7,7 @@ const semver = require("semver");
 const pMap = require("p-map");
 const download = require("./download");
 const utils = require("./utils");
-const postinstall = require("./postinstall");
-const preinstall = require("./preinstall");
+const { queueDependencyScripts } = require("./lifecycle_scripts");
 const allowScripts = require("./allow_scripts");
 const npa = require("./npa");
 const bin = require("./bin");
@@ -20,10 +19,13 @@ const { REGISTRY_TYPES, LOCAL_TYPES } = require("./npa_types");
 module.exports = install;
 
 async function install(parentDir, pkg, ancestors, options, context) {
+	const state = {};
 	try {
-		return await _install(parentDir, pkg, ancestors, options, context);
+		return await _install(parentDir, pkg, ancestors, options, context, state);
 	} catch (err) {
 		if (pkg.optional) {
+			// 子树中已排队的脚本不再运行, 见 lib/lifecycle_scripts.js runDependencyScripts
+			if (state.dir) options.skippedOptionalDirs.add(state.dir);
 			if (err.name === "UnSupportedPlatformError") {
 				// ignore log error
 				debug("%s", err.message);
@@ -52,7 +54,7 @@ async function install(parentDir, pkg, ancestors, options, context) {
 	}
 }
 
-async function _install(parentDir, pkg, ancestors, options, context) {
+async function _install(parentDir, pkg, ancestors, options, context, state) {
 	const rootPkgDependencies = options.production
 		? options.rootPkgDependencies.prodMap
 		: options.rootPkgDependencies.allMap;
@@ -131,7 +133,7 @@ async function _install(parentDir, pkg, ancestors, options, context) {
 	if (c) {
 		const realPkg = c.package;
 		const realPkgDir = c.dir;
-		await linkModule(pkg, parentDir, realPkg, realPkgDir, options);
+		await linkModule(pkg, parentDir, realPkg, realPkgDir, options, displayName, ancestors);
 		return { exists: true, dir: realPkgDir };
 	}
 
@@ -149,7 +151,15 @@ async function _install(parentDir, pkg, ancestors, options, context) {
 					options.cache.dependenciesTree[p.raw] = realPkg;
 					if (options.lockPackages) options.lockPackages[p.raw] = realPkg;
 					const realPkgDir = c.dir;
-					await linkModule(pkg, parentDir, realPkg, realPkgDir, options);
+					await linkModule(
+						pkg,
+						parentDir,
+						realPkg,
+						realPkgDir,
+						options,
+						displayName,
+						ancestors
+					);
 					return { exists: true, dir: realPkgDir };
 				}
 			}
@@ -164,6 +174,7 @@ async function _install(parentDir, pkg, ancestors, options, context) {
 	if (!realPkgDir) {
 		return;
 	}
+	state.dir = realPkgDir;
 
 	// record version
 	options.packageVersions[realPkg.name] = options.packageVersions[realPkg.name] || new Set();
@@ -190,11 +201,11 @@ async function _install(parentDir, pkg, ancestors, options, context) {
 	const revisit = info.exists && !info.stage;
 	if (revisit && (!options.lockPackages || options.visitedStoreDirs.has(realPkgDir))) {
 		// make sure bins will be links to ${parentDir}/node_modules/.bin
-		await linkModule(pkg, parentDir, realPkg, realPkgDir, options);
+		await linkModule(pkg, parentDir, realPkg, realPkgDir, options, displayName, ancestors);
 		return { exists: true, dir: realPkgDir };
 	}
 	options.visitedStoreDirs.add(realPkgDir);
-	const stage = revisit ? "finish" : info.stage || utils.FIRST_INSTALL_STAGE;
+	const stage = revisit ? utils.FINISH_INSTALL_STAGE : info.stage || utils.FIRST_INSTALL_STAGE;
 	if (info.stage) {
 		options.console.warn(
 			chalk.yellow("[npd:resume] %s continue from %s, root: %j"),
@@ -205,11 +216,10 @@ async function _install(parentDir, pkg, ancestors, options, context) {
 	}
 
 	// install steps:
-	// 1. pre install script
-	// 2. install dependencies (don't install bundledDependencies, but need link)
-	// 3. post install script
-	// 4. link bin files
-	// 5. link package to node_modules dir
+	// 1. install dependencies (don't install bundledDependencies, but need link)
+	// 2. link bin files
+	// 3. link package to node_modules dir
+	// 4. queue lifecycle scripts, they run after the whole tree is linked (lib/lifecycle_scripts.js runDependencyScripts)
 
 	if (!revisit) checkPackage(realPkg, displayName, options);
 
@@ -227,11 +237,8 @@ async function _install(parentDir, pkg, ancestors, options, context) {
 				p.untrustedLocal ? `${displayName} (declared by ${p.scriptsOwner})` : displayName,
 				options
 			)));
-	if (scriptsAllowed && utils.shouldRunStage(stage, "preinstall")) {
-		await preinstall(realPkg, realPkgDir, displayName, options);
-		if (realPkg.scripts?.preinstall && !options.ignoreScripts)
-			await utils.setInstallStage(realPkgDir, "deps");
-	}
+	// 未完成的包总是重新遍历子依赖, 已完成的子依赖只做链接; 停在某个脚本时子依赖的延后脚本也可能未运行
+	const childDirs = [];
 	// link bundleDependencies' bin
 	// npd fsevents
 	const bundledDependencies = await getBundleDependencies(realPkg, realPkgDir);
@@ -301,7 +308,7 @@ async function _install(parentDir, pkg, ancestors, options, context) {
 		);
 
 		const mapper = async childPkg => {
-			await install(
+			const res = await install(
 				realPkgDir,
 				childPkg,
 				ancestors.concat({
@@ -313,21 +320,32 @@ async function _install(parentDir, pkg, ancestors, options, context) {
 					where: packageWhere(p, realPkgDir),
 					trustedLocal: isLocal && trusted,
 					scriptIdentity,
+					storeDir: realPkgDir,
 				}),
 				options,
 				context
 			);
+			if (res && res.dir) childDirs.push(res.dir);
 		};
 		await pMap(needPkgs, mapper, 10);
 	}
-	// 延后执行的脚本无法再抛给可选祖先, 位于可选依赖子树中时同样按可选处理
-	const optional = pkg.optional || ancestors.some(ancestor => ancestor.optional);
-	if (scriptsAllowed)
-		await postinstall(realPkg, realPkgDir, optional, displayName, options, stage);
 
-	await linkModule(pkg, parentDir, realPkg, realPkgDir, options);
-	// 本次运行的脚本全部成功后才清除阶段标记, 否则延后执行的子依赖脚本失败时, 上层包已被标为完成而不再遍历到它; 失败被忽略的可选依赖不加入, 下次运行重试
-	if (!revisit) options.stagedDirs.add(realPkgDir);
+	await linkModule(pkg, parentDir, realPkg, realPkgDir, options, displayName, ancestors);
+	// 阶段标记保持不变直到脚本运行完: 中断后下次运行仍经由本包遍历子依赖并重新排队;
+	// 不执行脚本的包也排队, 依赖它的包仍要等它的子依赖的脚本跑完
+	if (!revisit) {
+		queueDependencyScripts(options, {
+			pkg: realPkg,
+			dir: realPkgDir,
+			displayName: p.untrustedLocal
+				? `${displayName} (declared by ${p.scriptsOwner})`
+				: displayName,
+			failureName: displayName,
+			stage,
+			skip: !scriptsAllowed || options.ignoreScripts || stage === utils.FINISH_INSTALL_STAGE,
+			deps: childDirs,
+		});
+	}
 
 	debug(
 		"[%s/%s] installed %s@%s at %s",
@@ -476,10 +494,23 @@ function forceFlatten(pkg) {
 }
 
 // link module and bin files
-async function linkModule(pkg, parentDir, realPkg, realPkgDir, options) {
+async function linkModule(pkg, parentDir, realPkg, realPkgDir, options, displayName, ancestors) {
+	noteScriptNeed(
+		options,
+		realPkgDir,
+		pkg.optional
+			? { dir: realPkgDir, name: realPkg.name, displayName }
+			: nearestOptional(ancestors)
+	);
 	if (!pkg.peer) {
 		const linkDir = path.join(parentDir, "node_modules", pkg.alias || realPkg.name);
-		await utils.removeStaleBins(linkDir, realPkg, bin.getBinDir(parentDir, options));
+		const binDir = bin.getBinDir(parentDir, options);
+		await utils.removeStaleBins(linkDir, realPkg, binDir);
+		// 脚本失败被跳过时据此撤掉
+		if (pkg.optional) {
+			if (!options.optionalLinks.has(realPkgDir)) options.optionalLinks.set(realPkgDir, []);
+			options.optionalLinks.get(realPkgDir).push({ linkDir, binDir });
+		}
 		// fix concurrent install same bin name error
 		try {
 			await bin(parentDir, realPkg, realPkgDir, options);
@@ -495,4 +526,21 @@ async function linkModule(pkg, parentDir, realPkg, realPkgDir, options) {
 		// peer dependencies will link after check root
 		options.linkPeerDependencies.push({ parentDir, realPkg, realPkgDir });
 	}
+}
+
+// 每次链接都记下这个包被谁需要: 任一处按普通依赖需要即为必需; 否则记下所在的可选依赖(最近的可选祖先或它自己),
+// 延后运行的脚本失败时据此决定整体跳过哪些可选依赖, 见 lib/lifecycle_scripts.js runDependencyScripts
+function noteScriptNeed(options, dir, optionalRoot) {
+	let need = options.scriptNeeds.get(dir);
+	if (!need) options.scriptNeeds.set(dir, (need = { required: false, roots: new Map() }));
+	if (optionalRoot) need.roots.set(optionalRoot.dir, optionalRoot);
+	else need.required = true;
+}
+
+function nearestOptional(ancestors) {
+	for (let i = ancestors.length - 1; i >= 0; i--) {
+		const { optional, storeDir, name, displayName } = ancestors[i];
+		if (optional) return { dir: storeDir, name, displayName };
+	}
+	return null;
 }

@@ -18,6 +18,7 @@ To approve every pending package at once, run `npd-x approve-scripts --all`.
 
 - Gated: preinstall / install / postinstall of dependencies, the implicit `node-gyp rebuild` of a dependency that has `binding.gyp`, and the build of git dependencies.
 - Not gated: the scripts of the root project and of the local folder dependencies it declares.
+- Approved dependency scripts run after the whole dependency tree is linked, as in npm, so a script can load its siblings and peer dependencies; a package's scripts run after those of its own dependencies, and packages that do not depend on each other run in parallel. The root project's scripts run last.
 - A `file:` dependency declared by a registry, git or tarball url package follows the approval of its declarer and runs only preinstall / install / postinstall; the skipped list shows it as `<name>@<spec> (declared by <declarer>)`.
 - A git dependency needs a build when it declares prepare, build, install or similar scripts, or workspaces; npd reviews it by repository address before the build.
 - The build installs the git dependency's own dependencies (including devDependencies) with npd itself, runs no dependency scripts, does not build nested git dependencies, ignores the cloned repository's `allowScripts` and `~/.nprc`, and does not read or write `np-lock.json`.

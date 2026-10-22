@@ -18,6 +18,7 @@
 
 - 受管控：依赖的 preinstall / install / postinstall，带 `binding.gyp` 的依赖隐式执行的 `node-gyp rebuild`，以及 git 依赖的构建。
 - 不受管控：根项目及其声明的本地目录依赖的脚本。
+- 与 npm 一样，放行的依赖脚本在整棵依赖树链接完成后才运行，脚本里可以加载兄弟依赖与 peer 依赖；一个包的脚本在它自己依赖的包的脚本之后运行，互不依赖的包并行运行。根项目的脚本最后运行。
 - 来自源、git 或 tarball url 的包可以声明 `file:` 依赖；这类依赖随声明者一起放行，只执行 preinstall / install / postinstall，在跳过列表中显示为 `<name>@<spec> (declared by <declarer>)`。
 - git 依赖声明了 prepare、build、install 等脚本或 workspaces 时需要构建，构建前按仓库地址审核。
 - 构建时用 npd 自身安装这个 git 依赖的依赖（含 devDependencies），不执行任何依赖脚本，不构建嵌套的 git 依赖，不读取克隆仓库自带的 `allowScripts` 与 `~/.nprc`，也不读写 `np-lock.json`。

@@ -162,7 +162,7 @@ describe("test/scripts/resume.test.js", () => {
 	});
 
 	it("should run dependency scripts after the whole tree is linked", async () => {
-		// script-order-peer 要等子依赖较慢的 preinstall 跑完才会链接; 依赖脚本若逐包立即运行, needs-peer 的 postinstall 找不到它
+		// script-order-peer 要等子依赖较慢的 preinstall 跑完才会链接; 依赖脚本若逐包立即运行, needs-peer 的脚本找不到它
 		await fs.writeFile(
 			path.join(root, "package.json"),
 			JSON.stringify({
@@ -170,6 +170,7 @@ describe("test/scripts/resume.test.js", () => {
 				version: "1.0.0",
 				dependencies: {
 					"script-order-needs-peer": "file:../script-order-needs-peer",
+					"script-order-pre-needs-peer": "file:../script-order-pre-needs-peer",
 					"script-order-peer": "file:../script-order-peer",
 				},
 			})
@@ -255,5 +256,19 @@ describe("test/scripts/resume.test.js", () => {
 			npminstall({ root, env: { RESUME_LOG: logFile, RESUME_FLAG: flagFile } }),
 			/resume-scripts.*: run postinstall error/
 		);
+	});
+
+	it("should run root preinstall after the dependencies are installed", async () => {
+		// 与 npm 7+ 一致: 根包的 preinstall 在依赖全部安装之后运行, 可以加载依赖
+		await fs.writeFile(
+			path.join(root, "package.json"),
+			JSON.stringify({
+				name: "root-preinstall",
+				version: "1.0.0",
+				scripts: { preinstall: "node -e \"require('script-order-peer')\"" },
+				dependencies: { "script-order-peer": "file:../script-order-peer" },
+			})
+		);
+		await npminstall({ root });
 	});
 });

@@ -1,0 +1,8 @@
+{
+  "name": "optional-partial",
+  "version": "1.0.0",
+  "dependencies": {
+    "resume-scripts": "file:../resume-scripts",
+    "optional-partial-missing": "file:../optional-partial-missing"
+  }
+}

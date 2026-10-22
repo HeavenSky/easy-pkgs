@@ -25,9 +25,17 @@ module.exports = function formatInstallOptions(options) {
 	options.events.setMaxListeners(0);
 	options.events.await = awaitEvent;
 
-	options.postInstallTasks = [];
-	// 本次运行写过阶段标记的包目录, 脚本全部成功后统一清除
+	// 本次运行完成了自身步骤的包目录, 运行没有失败时统一清除阶段标记
 	options.stagedDirs = new Set();
+	// 延后到整棵树链接完成后运行的依赖脚本, 按包目录去重: Map<dir, task>
+	options.scriptTasks = new Map();
+	// 可选依赖被链接到的位置, 其中的包脚本失败时据此撤掉: Map<包目录, [{ linkDir, binDir }]>
+	options.optionalLinks = new Map();
+	// 每个包目录被谁需要: Map<包目录, { required, roots: Map<可选依赖的包目录, { dir, name, displayName }> }>
+	options.scriptNeeds = new Map();
+	// 安装阶段就因子树失败被跳过的可选依赖的包目录
+	options.skippedOptionalDirs = new Set();
+	options.runscriptCount = 0;
 	// 启用锁文件时已装好的包也要遍历一次子依赖, 才能把整棵子树记进 np-lock.json; 每个包目录只遍历一次
 	options.visitedStoreDirs = new Set();
 	// 失败的包不中止安装: { displayName, error }, 安装结束时汇总

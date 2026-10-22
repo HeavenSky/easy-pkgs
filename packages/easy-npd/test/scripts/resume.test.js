@@ -163,6 +163,23 @@ describe("test/scripts/resume.test.js", () => {
 		assert.deepEqual(await readLog(), ["preinstall", "postinstall", "postinstall"]);
 	});
 
+	it("should run dependency scripts after the whole tree is linked", async () => {
+		// script-order-peer 要等子依赖较慢的 preinstall 跑完才会链接; 依赖脚本若逐包立即运行, needs-peer 的脚本找不到它
+		await fs.writeFile(
+			path.join(root, "package.json"),
+			JSON.stringify({
+				name: "script-order-root",
+				version: "1.0.0",
+				dependencies: {
+					"script-order-needs-peer": "file:../script-order-needs-peer",
+					"script-order-pre-needs-peer": "file:../script-order-pre-needs-peer",
+					"script-order-peer": "file:../script-order-peer",
+				},
+			})
+		);
+		await npminstall({ root });
+	});
+
 	it("should skip the optional dependency when a dependency inside it fails", async () => {
 		await fs.writeFile(
 			path.join(root, "package.json"),
@@ -175,5 +192,82 @@ describe("test/scripts/resume.test.js", () => {
 		// 失败的是可选依赖下的普通子依赖: 与 npm 一样只跳过该可选依赖, 整次安装成功
 		await npminstall({ root, env: { RESUME_LOG: logFile, RESUME_FLAG: flagFile } });
 		assert.deepEqual(await readLog(), ["preinstall", "postinstall"]);
+		await assert.rejects(fs.lstat(path.join(root, "node_modules/resume-parent")), /ENOENT/);
+
+		// 下次运行重试该可选依赖, 子依赖从失败的脚本继续
+		await fs.writeFile(flagFile, "");
+		await npminstall({ root, env: { RESUME_LOG: logFile, RESUME_FLAG: flagFile } });
+		assert.deepEqual(await readLog(), ["preinstall", "postinstall", "postinstall"]);
+		assert.ok(await fs.lstat(path.join(root, "node_modules/resume-parent")));
+	});
+
+	it("should also remove the hoisted link of a skipped nested optional dependency", async () => {
+		await fs.writeFile(
+			path.join(root, "package.json"),
+			JSON.stringify({
+				name: "nested-optional-root",
+				version: "1.0.0",
+				dependencies: { "opt-holder": "file:../opt-holder" },
+			})
+		);
+		// resume-parent 是 opt-holder 的可选依赖, 不在根依赖中, 其最高版本会被链接到根目录 node_modules
+		await npminstall({ root, env: { RESUME_LOG: logFile, RESUME_FLAG: flagFile } });
+		await assert.rejects(fs.lstat(path.join(root, "node_modules/resume-parent")), /ENOENT/);
+		await assert.rejects(
+			fs.lstat(
+				path.join(
+					await fs.realpath(path.join(root, "node_modules/opt-holder")),
+					"node_modules/resume-parent"
+				)
+			),
+			/ENOENT/
+		);
+	});
+
+	it("should not run queued scripts inside an optional dependency skipped by a failed download", async () => {
+		await fs.writeFile(
+			path.join(root, "package.json"),
+			JSON.stringify({
+				name: "optional-partial-root",
+				version: "1.0.0",
+				optionalDependencies: { "optional-partial": "file:../optional-partial" },
+			})
+		);
+		await fs.writeFile(flagFile, "");
+		await npminstall({ root, env: { RESUME_LOG: logFile, RESUME_FLAG: flagFile } });
+		await assert.rejects(fs.lstat(path.join(root, "node_modules/optional-partial")), /ENOENT/);
+		// 同一可选依赖下的 resume-scripts 已排队, 但所在可选依赖因兄弟依赖下载失败被跳过, 它的脚本不再运行
+		await assert.rejects(fs.stat(logFile), /ENOENT/);
+	});
+
+	it("should fail when the failed package is also a required dependency", async () => {
+		await fs.writeFile(
+			path.join(root, "package.json"),
+			JSON.stringify({
+				name: "optional-and-required-root",
+				version: "1.0.0",
+				dependencies: { "resume-scripts": "file:../resume-scripts" },
+				optionalDependencies: { "resume-parent": "file:../resume-parent" },
+			})
+		);
+		// resume-scripts 在可选依赖里, 但根包也直接依赖它: 脚本失败不能当作可选依赖失败跳过
+		await assert.rejects(
+			npminstall({ root, env: { RESUME_LOG: logFile, RESUME_FLAG: flagFile } }),
+			/resume-scripts.*: run postinstall error/
+		);
+	});
+
+	it("should run root preinstall after the dependencies are installed", async () => {
+		// 与 npm 7+ 一致: 根包的 preinstall 在依赖全部安装之后运行, 可以加载依赖
+		await fs.writeFile(
+			path.join(root, "package.json"),
+			JSON.stringify({
+				name: "root-preinstall",
+				version: "1.0.0",
+				scripts: { preinstall: "node -e \"require('script-order-peer')\"" },
+				dependencies: { "script-order-peer": "file:../script-order-peer" },
+			})
+		);
+		await npminstall({ root });
 	});
 });

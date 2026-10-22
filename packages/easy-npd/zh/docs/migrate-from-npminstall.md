@@ -26,23 +26,24 @@
 
 下表这些功能仍在，但行为变了，迁移时要留意。
 
-| 项                             | npminstall                                                         | easy-npd                                                                                             |
-| ------------------------------ | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
-| 安装失败                       | 停在第一个错误                                                     | 继续安装其余包；再次运行从各包停下的地方继续                                                         |
-| 根目录提升链接                 | 已存在即跳过，依赖变化后也不更新                                   | 始终链接最高版本；根 `package.json` 声明的包不被覆盖                                                 |
-| 缺失的 peerDependencies        | 只告警                                                             | 与 npm 7+ 一致自动安装，失败时按可选依赖跳过                                                         |
-| 版本选择                       | 不看 `engines`                                                     | 与 npm 一致，优先选 `engines.node` 兼容的版本                                                        |
-| tarball 完整性校验             | 只校验 sha1                                                        | 按 `dist.integrity` 中最强的算法校验                                                                 |
-| 源的凭据                       | `.nprc` 的用户名密码按子串匹配附加；`always-auth` 时附加到所有请求 | `.npmrc` 的 `_authToken` 与 `.nprc` 的用户名密码只发给该源自己的 host；`always-auth` 不起作用        |
-| 依赖的安装脚本                 | 全部执行                                                           | `npd` 全部执行；`npd-x install` 只执行 `allowScripts` 中放行的                                       |
-| `npd-x uninstall`              | 保留提升链接；可能在写回 `package.json` 前返回                     | 移除不再被使用的提升链接；写回 `package.json` 后才返回                                               |
-| git 依赖                       | 经 pacote 获取，构建时调用 `npm install`                           | 直接调用 git CLI（本机需要 git），用 npd 自身安装构建依赖                                            |
-| 缓存中损坏的 tarball           | 每次重试都读到同一个坏文件                                         | 删除后重新下载                                                                                       |
-| 重复传入的单值参数             | 部分取第一个，部分变成数组后报错                                   | 与 npm 一致取最后一个；`--allow-scripts`、`--only`、`--include`、`--omit` 合并全部取值               |
-| `--from-package-lock` 加载失败 | 告警后改为联网解析，退出码 0                                       | 报错退出                                                                                             |
-| `--proxy`、`--strict-ssl`      | 接受但不生效                                                       | 生效，见[选择源与网络设置](registry.md#使用代理或自定义-ca)                                          |
-| `--production`                 | 关闭磁盘缓存并强制输出详细日志                                     | 等同 `NODE_ENV=production`；缓存与日志级别不变                                                       |
-| 锁定版本                       | 经 `--dependencies-tree` 使用依赖树文件                            | `np-lock.json`，同时锁定 git commit 与 tarball 完整性摘要，见[用 np-lock.json 锁定版本](lockfile.md) |
+| 项                             | npminstall                                                             | easy-npd                                                                                                       |
+| ------------------------------ | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| 安装失败                       | 停在第一个错误                                                         | 继续安装其余包；再次运行从各包停下的地方继续                                                                   |
+| 根目录提升链接                 | 已存在即跳过，依赖变化后也不更新                                       | 始终链接最高版本；根 `package.json` 声明的包不被覆盖                                                           |
+| 缺失的 peerDependencies        | 只告警                                                                 | 与 npm 7+ 一致自动安装，失败时按可选依赖跳过                                                                   |
+| 版本选择                       | 不看 `engines`                                                         | 与 npm 一致，优先选 `engines.node` 兼容的版本                                                                  |
+| tarball 完整性校验             | 只校验 sha1                                                            | 按 `dist.integrity` 中最强的算法校验                                                                           |
+| 源的凭据                       | `.nprc` 的用户名密码按子串匹配附加；`always-auth` 时附加到所有请求     | `.npmrc` 的 `_authToken` 与 `.nprc` 的用户名密码只发给该源自己的 host；`always-auth` 不起作用                  |
+| 依赖的安装脚本                 | 全部执行                                                               | `npd` 全部执行；`npd-x install` 只执行 `allowScripts` 中放行的                                                 |
+| 安装脚本的执行时机             | 依赖的 preinstall 遍历到就执行；根项目的 preinstall 在安装依赖之前执行 | 依赖的脚本在整棵依赖树链接完成后执行；根项目的 preinstall / install / postinstall 与 npm 7+ 一致在依赖之后执行 |
+| `npd-x uninstall`              | 保留提升链接；可能在写回 `package.json` 前返回                         | 移除不再被使用的提升链接；写回 `package.json` 后才返回                                                         |
+| git 依赖                       | 经 pacote 获取，构建时调用 `npm install`                               | 直接调用 git CLI（本机需要 git），用 npd 自身安装构建依赖                                                      |
+| 缓存中损坏的 tarball           | 每次重试都读到同一个坏文件                                             | 删除后重新下载                                                                                                 |
+| 重复传入的单值参数             | 部分取第一个，部分变成数组后报错                                       | 与 npm 一致取最后一个；`--allow-scripts`、`--only`、`--include`、`--omit` 合并全部取值                         |
+| `--from-package-lock` 加载失败 | 告警后改为联网解析，退出码 0                                           | 报错退出                                                                                                       |
+| `--proxy`、`--strict-ssl`      | 接受但不生效                                                           | 生效，见[选择源与网络设置](registry.md#使用代理或自定义-ca)                                                    |
+| `--production`                 | 关闭磁盘缓存并强制输出详细日志                                         | 等同 `NODE_ENV=production`；缓存与日志级别不变                                                                 |
+| 锁定版本                       | 经 `--dependencies-tree` 使用依赖树文件                                | `np-lock.json`，同时锁定 git commit 与 tarball 完整性摘要，见[用 np-lock.json 锁定版本](lockfile.md)           |
 
 ## 替换已移除的命令、参数与特性
 

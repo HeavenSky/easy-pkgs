@@ -1,0 +1,7 @@
+{
+  "name": "opt-holder",
+  "version": "1.0.0",
+  "optionalDependencies": {
+    "resume-parent": "file:../resume-parent"
+  }
+}

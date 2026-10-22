@@ -132,7 +132,7 @@ exports.runLifecycleScripts = async function runLifecycleScripts(
 };
 
 // 依赖的生命周期脚本延后到整棵树链接完成后统一运行, 与 npm(arborist reify 的 _build)一致: 运行时兄弟依赖与 peer 依赖都已就位.
-// 同一个 store 目录只运行一次; task: { pkg, dir, origin, displayName, failureName, stage, source, deps }
+// 同一个 store 目录只运行一次; task: { pkg, dir, origin, displayName, failureName, stage, skip, source, deps }
 exports.queueDependencyScripts = (options, task) => {
 	if (!options.scriptTasks.has(task.dir)) options.scriptTasks.set(task.dir, task);
 };
@@ -215,6 +215,12 @@ async function removeHoistedLinks(name, dir, options) {
 }
 
 async function runDependencyScript(task, options, skippedOptionals) {
+	// 不执行脚本(--ignore-scripts, 上次已完成自身步骤)的包只为保持依赖顺序而排队
+	if (task.skip) {
+		await utils.setInstallStage(task.dir, utils.FINISH_INSTALL_STAGE);
+		options.stagedDirs.add(task.dir);
+		return;
+	}
 	const required = requiredDir(options, task.dir);
 	const roots = required ? [] : [...options.scriptNeeds.get(task.dir).roots];
 	// 需要它的可选依赖都已因其中某个包的脚本失败被跳过

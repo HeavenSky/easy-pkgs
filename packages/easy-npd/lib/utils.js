@@ -177,10 +177,10 @@ exports.readPackageJSON = async root => {
 	return pkg;
 };
 
-// 包安装中断或失败时停在的阶段, 按 INSTALL_STAGES 的顺序推进; 本次运行的脚本全部成功后清除
-// finish: 包自身的步骤已完成, 但子依赖延后执行的脚本可能还没跑完, 下次运行仍要遍历它的子依赖
-exports.INSTALL_STAGES = ["preinstall", "deps", "install", "postinstall", "finish"];
-exports.FIRST_INSTALL_STAGE = exports.INSTALL_STAGES[0];
+// 包安装中断或失败时停在的阶段: deps, 下一个要执行的生命周期脚本名, 或 finish; 本次运行没有失败时统一清除
+exports.FIRST_INSTALL_STAGE = "deps";
+// finish: 包自身的步骤已完成, 但同一次运行中有包失败, 下次运行仍要遍历它的子依赖才能找到失败的包
+exports.FINISH_INSTALL_STAGE = "finish";
 
 // 状态写入 store 的 .npd-state.json; 不在 store 中的目录退回写 package.json
 async function updateInstallState(pkgRoot, patch) {
@@ -205,11 +205,6 @@ exports.getResumeStage = async (pkgRoot, options) => {
 		return exports.FIRST_INSTALL_STAGE;
 	}
 	return (await installState.get(pkgRoot))?.stage;
-};
-
-// 从 stage 继续时是否还要执行 step; 没有阶段(根包)或无法识别的阶段执行全部步骤
-exports.shouldRunStage = (stage, step) => {
-	return exports.INSTALL_STAGES.indexOf(stage) <= exports.INSTALL_STAGES.indexOf(step);
 };
 
 exports.unsetInstallDone = async pkgRoot => {

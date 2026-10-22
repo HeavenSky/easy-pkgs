@@ -11,15 +11,15 @@
 3. 再次运行 `npd`。预期：各包从停下的阶段继续；不重新解压，已成功的脚本不再执行。
 
 - 有依赖失败时跳过根包自身的生命周期脚本，等下次安装成功后再执行。
-- 可选依赖或它的子依赖失败时，与 npm 一样只跳过它，不计入失败；npd 会列出它们，并给出重跑脚本的 `npd-x rebuild <pkg>` 命令。
+- 可选依赖或它的子依赖失败时，与 npm 一样只跳过它，不计入失败（它的子依赖的脚本失败时，已链接的可选依赖会被撤掉）；npd 会列出它们，并给出重跑脚本的 `npd-x rebuild <pkg>` 命令。
 - 按 Ctrl-C（SIGINT）或收到 SIGTERM 时，结束正在运行的 git 进程（先 SIGTERM，1 秒后强制结束），以 130 / 143 退出；下次运行同样接着装。
 
 ## 了解进度如何记录
 
 每个包所处的阶段记录在 `node_modules/.npd-state.json`（全局安装为 `.<name>_npd/.npd-state.json`）；不修改依赖包自己的 `package.json`。
 
-- 阶段依次为 `preinstall`、`deps`、`install`、`postinstall` 与 `finish`。
-- install / postinstall 在全部依赖安装完后才统一执行。
+- 阶段依次为 `deps`、`preinstall`、`install`、`postinstall` 与 `finish`。
+- 依赖的脚本（含 preinstall）在整棵依赖树链接完成后才统一执行。
 - 本次运行装过的包，要等全部脚本成功后才统一清除阶段记录。
 - 重新解压或复制一个包之前先把它标为未完成，只解压了一半的目录不会被当作已安装。
 - npminstall 装出的 `node_modules` 被视为未完成；第一次用 npd 安装前先删除它，见[从 npminstall 迁移](migrate-from-npminstall.md)。

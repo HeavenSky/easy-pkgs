@@ -434,24 +434,19 @@ async function _install(parentDir, pkg, ancestors, options, context, state) {
 		return { exists: true, dir: realPkgDir };
 	}
 
-	if (options.ignoreScripts || stage === utils.FINISH_INSTALL_STAGE) {
-		await utils.setInstallStage(realPkgDir, utils.FINISH_INSTALL_STAGE);
-		options.stagedDirs.add(realPkgDir);
-	} else {
-		// 阶段标记保持不变直到脚本运行完: 中断后下次运行仍经由本包遍历子依赖并重新排队
-		queueDependencyScripts(options, {
-			pkg: realPkg,
-			dir: realPkgDir,
-			origin: pkg,
-			displayName: scriptOwner
-				? `${displayName} (declared by ${p.scriptsOwner})`
-				: displayName,
-			failureName: displayName,
-			stage,
-			source: scriptOwner ? { identity: scriptOwner } : undefined,
-			deps: childDirs,
-		});
-	}
+	// 阶段标记保持不变直到脚本运行完: 中断后下次运行仍经由本包遍历子依赖并重新排队;
+	// 不执行脚本的包也排队, 依赖它的包仍要等它的子依赖的脚本跑完
+	queueDependencyScripts(options, {
+		pkg: realPkg,
+		dir: realPkgDir,
+		origin: pkg,
+		displayName: scriptOwner ? `${displayName} (declared by ${p.scriptsOwner})` : displayName,
+		failureName: displayName,
+		stage,
+		skip: options.ignoreScripts || stage === utils.FINISH_INSTALL_STAGE,
+		source: scriptOwner ? { identity: scriptOwner } : undefined,
+		deps: childDirs,
+	});
 
 	return { exists: !!info.exists, dir: realPkgDir };
 }

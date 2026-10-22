@@ -16,9 +16,7 @@ const fs = require("fs/promises");
 const dayjs = require("dayjs");
 const util = require("util");
 const utils = require("./utils");
-const mirror = require("./mirror");
-const postinstall = require("./postinstall");
-const preinstall = require("./preinstall");
+const { runPackageScripts, runDependencyScripts } = require("./lifecycle_scripts");
 const prepublish = require("./prepublish");
 const prepare = require("./prepare");
 const allowScripts = require("./allow_scripts");
@@ -118,8 +116,6 @@ module.exports = async (options, context = new Context()) => {
 	}
 };
 
-exports.runPostInstallTasks = runPostInstallTasks;
-
 async function _install(options, context) {
 	const rootPkgFile = path.join(options.root, "package.json");
 	const rootPkg = await utils.readJSON(rootPkgFile);
@@ -148,8 +144,6 @@ async function _install(options, context) {
 		}
 	}
 
-	if (options.installRoot) await preinstall(rootPkg, options.root, displayName, options);
-
 	context.nested.update(
 		pkgs.map(pkg => `${pkg.name}@${pkg.version}`),
 		rootPkg.name && rootPkg.version ? displayName : "root"
@@ -173,28 +167,44 @@ async function _install(options, context) {
 	// won't override exists target directory
 	await linkAllLatestVersion(rootPkgsMap, options);
 
-	// run postinstall script if exist
-	if (options.installRoot) await postinstall(rootPkg, options.root, false, displayName, options);
-	// run dependencies' postinstall scripts
-	await runPostInstallTasks(options);
+	// link peerDependencies if not match the version in target directory
+	await linkPeer(options);
 
-	// local install trigger prepublish / prepare when no packages and non-production mode
-	// prepare is run after prepublish
+	// 依赖脚本在整棵树(含根目录的最高版本链接与 peer 链接)就位后运行
+	await runDependencyScripts(options);
+	if (options.spinner) options.spinner.succeed(`Run ${options.runscriptCount} scripts`);
+	// 有失败时保留本次运行全部阶段标记, 下次运行经由上层包找到失败的包
+	if (options.failures.length === 0) await clearInstallStages(options);
+
+	// 根包的 preinstall / install / postinstall 与 npm 7+ 一致在依赖全部安装后运行, 之后是 prepublish / prepare(非 production)
 	// see:
 	// - https://docs.npmjs.com/misc/scripts
 	// - https://github.com/npm/npm/issues/3059#issuecomment-32057292
 	// 根包脚本通常依赖已安装的依赖, 有依赖失败时跳过, 下次运行成功后再执行
-	if (options.installRoot && !options.production && options.failures.length === 0) {
-		try {
-			await prepublish(rootPkg, options.root, options);
-			await prepare(rootPkg, options.root, options);
-		} catch (err) {
-			options.failures.push({ displayName, error: err });
+	if (options.installRoot) {
+		if (options.failures.length > 0) {
+			options.console.warn(
+				chalk.yellow(
+					"[npd:runscript] skip %s lifecycle scripts because %s package(s) failed"
+				),
+				displayName,
+				options.failures.length
+			);
+		} else {
+			try {
+				if (!options.ignoreScripts)
+					await runPackageScripts(rootPkg, options.root, displayName, options);
+				if (!options.production) {
+					await prepublish(rootPkg, options.root, options);
+					await prepare(rootPkg, options.root, options);
+				}
+			} catch (err) {
+				options.failures.push({ displayName, error: err });
+			}
 		}
 	}
 
-	// link peerDependencies if not match the version in target directory
-	await linkPeer(options);
+	await validatePeer(options);
 
 	// print all pending messages
 	printPendingMessages(options);
@@ -450,114 +460,6 @@ async function linkLatestVersion(pkg, storeDir, options) {
 	);
 }
 
-async function runPostInstallTasks(options) {
-	let count = 0;
-	const total = options.postInstallTasks.length;
-	if (total && options.ignoreScripts) {
-		options.console.warn(chalk.yellow("ignore all post install scripts"));
-		if (options.failures.length === 0) await clearInstallStages(options);
-		return;
-	}
-
-	if (total) {
-		options.console.log(chalk.yellow(`execute ${total} postinstall scripts...`));
-	}
-
-	for (const task of options.postInstallTasks) {
-		count++;
-		if (task.root === options.root && options.failures.length > 0) {
-			options.console.warn(
-				chalk.yellow(
-					"[npd:runscript] skip %s lifecycle scripts because %s package(s) failed"
-				),
-				task.displayName,
-				options.failures.length
-			);
-			continue;
-		}
-		const pkg = task.pkg;
-		const root = task.root;
-		const displayName = task.displayName;
-		const stage = task.stage;
-		const installScript = utils.shouldRunStage(stage, "install") && pkg.scripts.install;
-		const postinstallScript = pkg.scripts.postinstall;
-		try {
-			if (installScript) {
-				if (stage) await utils.setInstallStage(root, "install");
-				options.console.warn(
-					"%s %s run %j, root: %j",
-					chalk.yellow(`[${count}/${total}] scripts.install`),
-					chalk.gray(displayName),
-					installScript,
-					root
-				);
-				const start = Date.now();
-				try {
-					await mirror.runScript(root, installScript, options);
-				} catch (err) {
-					options.console.warn(
-						"[npd:runscript:error] %s scripts.install run %j error: %s",
-						chalk.red(displayName),
-						installScript,
-						err
-					);
-					err.message = `run install error\n${err.message}`;
-					throw err;
-				}
-				options.console.warn(
-					"%s %s finished in %s",
-					chalk.yellow(`[${count}/${total}] scripts.install`),
-					chalk.gray(displayName),
-					ms(Date.now() - start)
-				);
-			}
-			if (postinstallScript) {
-				if (stage) await utils.setInstallStage(root, "postinstall");
-				options.console.warn(
-					"%s %s run %j, root: %j",
-					chalk.yellow(`[${count}/${total}] scripts.postinstall`),
-					chalk.gray(displayName),
-					postinstallScript,
-					root
-				);
-				const start = Date.now();
-				try {
-					await mirror.runScript(root, postinstallScript, options);
-				} catch (err) {
-					options.console.warn(
-						"[npd:runscript:error] %s scripts.postinstall run %j error: %s",
-						chalk.red(displayName),
-						postinstallScript,
-						err
-					);
-					err.message = `run postinstall error\n${err.message}`;
-					throw err;
-				}
-				options.console.warn(
-					"%s %s finished in %s",
-					chalk.yellow(`[${count}/${total}] scripts.postinstall`),
-					chalk.gray(displayName),
-					ms(Date.now() - start)
-				);
-			}
-			if (stage) await utils.setInstallStage(root, "finish");
-		} catch (err) {
-			// 阶段停在失败的脚本, 下次运行从这里继续; 失败被忽略的可选依赖不随本次运行清除标记
-			options.stagedDirs.delete(root);
-			if (task.optional) {
-				console.warn(chalk.red("%s optional error: %s"), displayName, err.stack);
-				options.optionalFailures.push({ displayName, error: err, name: pkg.name });
-				continue;
-			}
-			// 不中止其余脚本, 安装结束时汇总
-			options.failures.push({ displayName, error: err });
-		}
-	}
-	// 有失败时保留本次运行全部阶段标记, 下次运行经由上层包找到失败的包
-	if (options.failures.length === 0) await clearInstallStages(options);
-	if (options.spinner) options.spinner.succeed(`Run ${options.postInstallTasks.length} scripts`);
-}
-
 async function clearInstallStages(options) {
 	await pMap(options.stagedDirs, dir => utils.setInstallStage(dir), 10);
 	options.stagedDirs.clear();
@@ -604,6 +506,9 @@ async function linkPeer(options) {
 			options.linkPeerDependencies.map(item => checkLinkPeerDependencies(item, options))
 		);
 	}
+}
+
+async function validatePeer(options) {
 	if (options.peerDependencies.length) {
 		await Promise.all(
 			options.peerDependencies.map(item => validatePeerDependencies(item, options))

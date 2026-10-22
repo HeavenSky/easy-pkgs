@@ -6,6 +6,12 @@ easy-np 起步于 [cnpm/npminstall](https://github.com/cnpm/npminstall) 8.0.1，
 
 0.0.0 列出相对 npminstall 8.0.1 的全部改动，之后每个版本列出相对上一版的改动。
 
+## Unreleased
+
+### 修复
+
+- 续装时，一个包的脚本会等待经由「上次已完成的包」间接依赖的包的脚本跑完再运行。
+
 ## 0.0.6 (2026-10-21)
 
 ### 变更

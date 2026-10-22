@@ -6,7 +6,7 @@ const fs = require("fs/promises");
 const chalk = require("chalk");
 const semver = require("semver");
 const utils = require("./utils");
-const mirror = require("./mirror");
+const { runPackageScripts } = require("./lifecycle_scripts");
 const formatInstallOptions = require("./format_install_options");
 const allowScripts = require("./allow_scripts");
 
@@ -53,29 +53,9 @@ module.exports = async options => {
 	return targets;
 };
 
+// 与安装时一致执行 preinstall / install(或隐式 node-gyp rebuild)/ postinstall, 失败时阶段停在失败的脚本
 async function rebuildOne(pkg, dir, displayName, options) {
-	const scripts = pkg.scripts || {};
-	// 与安装时一致: 没有 install 脚本但有 binding.gyp 时执行 node-gyp rebuild
-	if (!scripts.install && (await utils.exists(path.join(dir, "binding.gyp")))) {
-		scripts.install = "node-gyp rebuild";
-	}
-	for (const script of ["preinstall", "install", "postinstall"]) {
-		if (!scripts[script]) continue;
-		await utils.setInstallStage(dir, script);
-		options.console.warn(
-			"%s %s run %j, root: %j",
-			chalk.yellow(`scripts.${script}`),
-			chalk.gray(displayName),
-			scripts[script],
-			dir
-		);
-		try {
-			await mirror.runScript(dir, scripts[script], options);
-		} catch (err) {
-			err.message = `run ${script} error\n${err.message}`;
-			throw err;
-		}
-	}
+	await runPackageScripts(pkg, dir, displayName, options, utils.FIRST_INSTALL_STAGE);
 	await utils.setInstallStage(dir);
 	options.console.info(chalk.green("rebuilt %s"), displayName);
 }

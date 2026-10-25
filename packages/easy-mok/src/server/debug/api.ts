@@ -13,6 +13,8 @@ import { createHistoryStore } from "./history";
 import { createSnapshotStore } from "./snapshot";
 import type { Refs } from "./refs";
 import { diffResults } from "./diff";
+import { curlOfResolved, curlOfTemplate, parseCurl, toCurl } from "./curl";
+import { exportOpenApi, importOpenApi, sanitizeName } from "./openapi";
 import { performSend } from "./send";
 import type { SendResult } from "./send";
 import { META_FILE } from "./names";
@@ -544,6 +546,70 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 			const fresh = history.get(out.id);
 			return { history: { id: out.id, meta: out.meta }, diff: diffResults({ meta: snap.meta, dir: snap.dir }, { meta: fresh.meta, dir: fresh.dir }) };
 		})
+	);
+
+	router.post(
+		"/import/curl",
+		wrap((req, res) => {
+			const body = isPlainObject(req.body) ? req.body : {};
+			if (typeof body.text !== "string" || !body.text.trim()) throw new MockError("BAD_REQUEST", 400, "请粘贴 cURL 命令", { field: "text" });
+			let parsed: ReturnType<typeof parseCurl>;
+			try {
+				parsed = parseCurl(body.text);
+			} catch (err) {
+				throw new MockError("BAD_REQUEST", 400, `无法解析 cURL 命令: ${(err as Error).message}`, { field: "text" });
+			}
+			const fallback = sanitizeName(new URL(parsed.definition.url).pathname.split("/").filter(Boolean).pop() || "request", "request");
+			const node = store.createNode({ parent: body.parent ?? null, kind: "request", name: typeof body.name === "string" && body.name ? body.name : fallback });
+			store.putRequest(node.id, parsed.definition);
+			changed();
+			res.status(201);
+			return { node: { ...node, method: parsed.definition.method, url: parsed.definition.url }, warnings: parsed.warnings };
+		})
+	);
+
+	router.post(
+		"/export/curl",
+		wrap(req => {
+			const body = isPlainObject(req.body) ? req.body : {};
+			const source = String(body.source || "");
+			if (source.startsWith("request:")) {
+				const requestId = source.slice(8);
+				const { definition } = store.getRequest(requestId);
+				if (body.resolve !== true) return { text: curlOfTemplate(definition) };
+				const env = body.env === undefined ? activeEnv() : body.env === null ? null : envs.get(String(body.env)).name;
+				return { text: curlOfResolved(resolveRequest({ store, envs }, { requestId, definition, env, mode: "send" })) };
+			}
+			if (source.startsWith("history:")) {
+				const entry = history.get(source.slice(8));
+				if (body.resolve !== true) return { text: curlOfTemplate(entry.meta.template.request) };
+				const sent = entry.meta.request;
+				const reqBody =
+					sent.body.type === "text"
+						? { type: "text", content: sent.body.text }
+						: sent.body.type === "binary"
+							? { type: "binary", file: path.join(entry.dir, "req.bin") }
+							: { type: "none" };
+				const headers = (sent.headers as Array<[string, string]>).filter(([k]) => k !== "host" && k !== "content-length");
+				return { text: toCurl({ method: sent.method, url: sent.url, headers, body: reqBody }) };
+			}
+			throw new MockError("BAD_REQUEST", 400, "source 必须是 request:<请求标识> 或 history:<历史标识>", { field: "source" });
+		})
+	);
+
+	router.post(
+		"/import/openapi",
+		wrap((req, res) => {
+			const out = importOpenApi({ store, envs }, isPlainObject(req.body) ? req.body : {});
+			changed();
+			res.status(201);
+			return out;
+		})
+	);
+
+	router.post(
+		"/export/openapi",
+		wrap(req => exportOpenApi(store, isPlainObject(req.body) ? req.body : {}))
 	);
 
 	const historyInfo = () => ({ historyBytes: history.totalBytes(), historyWarn: history.warn() });

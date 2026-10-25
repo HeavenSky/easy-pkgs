@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, FilePlus, FolderPlus, Pencil, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, FileDown, FilePlus, FileUp, FolderPlus, Pencil, Trash2 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import type { TreeNode } from "@/api/debug-contract";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,10 @@ export type TreeActions = {
 	onCreate: (kind: "group" | "request", parent: string | null) => void;
 	onEdit: (node: TreeNode) => void;
 	onDelete: (node: TreeNode) => void;
+	/** 导入到分组(null 为根) */
+	onImport?: (parent: string | null) => void;
+	/** 导出: 分组导出 OpenAPI, 请求导出 cURL; null 为全部 */
+	onExport?: (node: TreeNode | null) => void;
 	/** 请求节点下方的附加内容(快照列表等) */
 	renderExtra?: (node: TreeNode) => ReactNode;
 };
@@ -53,6 +57,16 @@ const Node = ({ node, depth, actions }: { node: TreeNode; depth: number; actions
 							</Button>
 						</>
 					)}
+					{group && actions.onImport && (
+						<Button size="icon" variant="ghost" aria-label={`导入到 ${node.title}`} onClick={() => actions.onImport?.(node.id)}>
+							<FileDown size={13} />
+						</Button>
+					)}
+					{actions.onExport && (
+						<Button size="icon" variant="ghost" aria-label={group ? `导出 ${node.title} 为 OpenAPI` : `导出 ${node.title} 为 cURL`} onClick={() => actions.onExport?.(node)}>
+							<FileUp size={13} />
+						</Button>
+					)}
 					<Button size="icon" variant="ghost" aria-label={`编辑 ${node.title}`} onClick={() => actions.onEdit(node)}>
 						<Pencil size={13} />
 					</Button>
@@ -85,6 +99,16 @@ export const DebugTree = ({ nodes, actions }: { nodes: TreeNode[]; actions: Tree
 				<FolderPlus size={14} />
 				分组
 			</Button>
+			{actions.onImport && (
+				<Button size="icon" variant="ghost" aria-label="导入 cURL 或 OpenAPI" title="导入 cURL 或 OpenAPI" onClick={() => actions.onImport?.(null)}>
+					<FileDown size={14} />
+				</Button>
+			)}
+			{actions.onExport && (
+				<Button size="icon" variant="ghost" aria-label="全部导出为 OpenAPI" title="全部导出为 OpenAPI" onClick={() => actions.onExport?.(null)}>
+					<FileUp size={14} />
+				</Button>
+			)}
 		</div>
 		{nodes.length ? (
 			<ul aria-label="请求集合">

@@ -249,3 +249,27 @@ export const useRefreshSnapshot = () => {
 		onSettled: () => qc.invalidateQueries({ queryKey: ["debug", "history"] }),
 	});
 };
+
+const Warnings = z.array(z.string());
+
+export const useImportCurl = () =>
+	useDebugMutation((body: { text: string; parent: string | null; name?: string }) =>
+		request(z.object({ node: TreeNode, warnings: Warnings }), "/debug/import/curl", { method: "POST", body })
+	);
+
+export const useImportOpenApi = () =>
+	useDebugMutation((body: { text: string; parent: string | null; env: string | null; snapshots: boolean }) =>
+		request(z.object({ created: z.number(), warnings: Warnings }), "/debug/import/openapi", { method: "POST", body })
+	);
+
+export const useExportCurl = () =>
+	useMutation({
+		mutationFn: (body: { source: string; resolve: boolean }) =>
+			request(z.object({ text: z.string() }), "/debug/export/curl", { method: "POST", body }),
+	});
+
+export const useExportOpenApi = () =>
+	useMutation({
+		mutationFn: (body: { node: string | null; format: "yaml" | "json" }) =>
+			request(z.object({ text: z.string(), filename: z.string(), warnings: Warnings }), "/debug/export/openapi", { method: "POST", body }),
+	});

@@ -7,6 +7,8 @@ import { encodeId, type TreeNode } from "@/api/debug-contract";
 import { historyRawUrl, useDebugTree, useDeleteNode, useDiff, useHistoryEntry, useSend } from "@/api/debug-queries";
 import { DiffView } from "@/components/debug/DiffView";
 import { HistoryList } from "@/components/debug/HistoryList";
+import { ExportDialog } from "@/components/debug/ExportDialog";
+import { ImportDialog } from "@/components/debug/ImportDialog";
 import { SaveSnapshotDialog } from "@/components/debug/SaveSnapshotDialog";
 import { SnapshotPanel } from "@/components/debug/SnapshotPanel";
 import { ResponseViewer } from "@/components/debug/ResponseViewer";
@@ -149,6 +151,8 @@ export const DebugPage = () => {
 	const remove = useDeleteNode();
 	const [dialog, setDialog] = useState<NodeDialogState>(null);
 	const [deleting, setDeleting] = useState<TreeNode | null>(null);
+	const [importing, setImporting] = useState<{ parent: string | null } | null>(null);
+	const [exporting, setExporting] = useState<{ node: TreeNode | null } | null>(null);
 
 	const doDelete = (node: TreeNode, recursive: boolean) =>
 		remove.mutate(
@@ -188,6 +192,8 @@ export const DebugPage = () => {
 									onCreate: (kind, parent) => setDialog({ mode: "create", kind, parent }),
 									onEdit: node => setDialog({ mode: "edit", node }),
 									onDelete: setDeleting,
+									onImport: parent => setImporting({ parent }),
+									onExport: node => setExporting({ node }),
 									renderExtra: node =>
 										!!node.snapshots?.length && (
 											<ul aria-label={`${node.title} 的快照`} className="ml-8 border-l border-zinc-200 pl-2 dark:border-zinc-800">
@@ -241,6 +247,24 @@ export const DebugPage = () => {
 					tree={tree.data?.nodes || []}
 					onClose={() => setDialog(null)}
 					onCreated={node => node.kind === "request" && navigate(requestPath(node.id))}
+				/>
+			)}
+			{importing && (
+				<ImportDialog
+					tree={tree.data?.nodes || []}
+					parent={importing.parent}
+					onClose={() => setImporting(null)}
+					onImported={node => navigate(requestPath(node.id))}
+				/>
+			)}
+			{exporting && (
+				<ExportDialog
+					target={
+						exporting.node && exporting.node.kind === "request"
+							? { kind: "curl", source: `request:${exporting.node.id}` }
+							: { kind: "openapi", node: exporting.node ? exporting.node.id : null, title: exporting.node ? exporting.node.title : "全部请求" }
+					}
+					onClose={() => setExporting(null)}
 				/>
 			)}
 			<ConfirmDialog

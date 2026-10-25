@@ -67,6 +67,13 @@ Snapshots become mock data from a route's **Scenes** tab: **Create from debug sn
 - Deleting a snapshot, request, or group that scenes reference asks for confirmation first and lists those scenes; after you confirm, they fall back to their next scene.
 - **Settings** (`设置`) of a request suggests the mock routes that match its resolved URL, or creates one.
 
+## Import and export cURL or OpenAPI
+
+The buttons at the top of the request list and next to each node import and export:
+
+- **cURL**: paste a command, such as Chrome's **Copy as cURL (bash)**, to create a request. Single and double quotes, `$'...'`, line continuations, `-X`, `-H`, `-d` and its `--data-*` variants, `-F`, `-u`, `-b`, `--compressed`, `-k`, `-L`, and `--url` are understood; anything else is listed as a warning. Exporting a request gives a command either with its `{{variables}}` or with the current environment filled in, secrets included.
+- **OpenAPI 3.0 and 3.1** (YAML or JSON): every operation becomes a request, grouped by its first tag, with the path, query, and header parameters and the JSON request body example. Response examples can become snapshots, and `servers[0]` can be written into an environment's `baseUrl`. Exporting a group writes one operation per request and its snapshots as response `examples`; binary snapshots are skipped. Swagger 2.0 is not supported.
+
 ## Fill requests from environments
 
 The right column manages environment groups such as `dev` or `test`. Select one under **Active environment** (`激活的环境组`) to use its variables.

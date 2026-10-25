@@ -1,4 +1,4 @@
-import { ExternalLink, EyeOff, Plus, Save, X } from "lucide-react";
+import { ExternalLink, EyeOff, FlaskConical, Plus, Save, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Link, useLocation } from "wouter";
@@ -15,6 +15,7 @@ import {
 import { cn, pretty } from "@/lib/utils";
 import { JsonEditor } from "./JsonEditor";
 import { NewRouteDialog } from "./NewRouteDialog";
+import { LogToRequestDialog } from "./debug/LogToRequestDialog";
 import { StatusBadge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Dialog } from "./ui/dialog";
@@ -58,6 +59,7 @@ const Part = ({ title, part }: { title: string; part: LogDetail["request"] }) =>
 );
 
 export const LogDetailPanel = ({ id, onClose }: { id: string; onClose: () => void }) => {
+	const [converting, setConverting] = useState(false);
 	const log = useLog(id);
 	const save = useSaveLogAsScene();
 	const ignore = useIgnore();
@@ -136,6 +138,10 @@ export const LogDetailPanel = ({ id, onClose }: { id: string; onClose: () => voi
 								为此请求新建 mock
 							</Button>
 						)}
+						<Button size="sm" title="生成一个调试请求, 由服务端发往真实后端" onClick={() => setConverting(true)}>
+							<FlaskConical size={14} />
+							转为调试请求
+						</Button>
 						<Button
 							size="sm"
 							disabled={!ignore.data || saveIgnore.isPending}
@@ -231,6 +237,7 @@ export const LogDetailPanel = ({ id, onClose }: { id: string; onClose: () => voi
 						: `将新建路由 ${entry?.method} ${entry ? new URL(entry.url, location.origin).pathname : ""} 并保存该场景.`}
 				</p>
 			</Dialog>
+			{converting && <LogToRequestDialog logId={id} onClose={() => setConverting(false)} />}
 			{entry && (
 				<NewRouteDialog
 					open={creating}

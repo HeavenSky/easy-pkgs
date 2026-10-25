@@ -20,7 +20,8 @@ import type { SendResult } from "./send";
 import { META_FILE } from "./names";
 import { createEnvStore } from "./env";
 import { decodeId } from "./names";
-import { createDebugStore, normalizeDefinition } from "./store";
+import { createDebugStore, defaultDefinition, normalizeDefinition } from "./store";
+import type { LogDetail } from "../journal";
 import { resolveRequest } from "./vars";
 
 export type DebugApiContext = {
@@ -612,9 +613,43 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 		wrap(req => exportOpenApi(store, isPlainObject(req.body) ? req.body : {}))
 	);
 
+	/** 请求日志条目转成调试请求(规格 6.6, D54): URL 写成 {{baseUrl}}<原路径>, 脱敏的头与 base64 体不带入 */
+	const fromLog = (entry: LogDetail, input: { parent?: unknown; name?: unknown }) => {
+		const warnings: string[] = [];
+		const def = defaultDefinition();
+		def.method = entry.method.toUpperCase();
+		const split = new URL(entry.url, "http://x");
+		def.url = `{{baseUrl}}${split.pathname}`;
+		def.params.query = [...split.searchParams.entries()].map(([k, v]) => [k, v, true]);
+		const SKIP = new Set(["host", "content-length", "connection", "transfer-encoding", "accept-encoding", "x-mock-scene"]);
+		Object.entries(entry.request.headers).forEach(([k, v]) => {
+			if (SKIP.has(k)) return;
+			if (v === "***") {
+				warnings.push(`请求头 ${k} 在日志中已脱敏, 未带入, 请在请求或环境组中补上`);
+				return;
+			}
+			def.headers.push([k, v, true]);
+		});
+		const { body, bodyEncoding, truncated } = entry.request;
+		const ctype = String(entry.request.headers["content-type"] || "");
+		if (truncated) warnings.push("请求体在日志中被截断, 未带入");
+		else if (bodyEncoding === "json") def.body = { type: "json", content: body };
+		else if (bodyEncoding === "utf8") {
+			if (/x-www-form-urlencoded/i.test(ctype)) {
+				def.body = { type: "form", fields: [...new URLSearchParams(String(body)).entries()].map(([k, v]) => [k, v, true]) };
+			} else def.body = { type: "text", content: String(body) };
+		} else if (bodyEncoding === "base64") warnings.push("二进制请求体未带入");
+		if (["form", "json"].includes(def.body.type)) def.headers = def.headers.filter((h: [string, string, boolean]) => h[0] !== "content-type");
+		const fallback = sanitizeName(split.pathname.split("/").filter(Boolean).pop() || "request", "request");
+		const node = store.createNode({ parent: input.parent ?? null, kind: "request", name: typeof input.name === "string" && input.name ? input.name : fallback });
+		store.putRequest(node.id, def);
+		changed();
+		return { node: { ...node, method: def.method, url: def.url }, warnings };
+	};
+
 	const historyInfo = () => ({ historyBytes: history.totalBytes(), historyWarn: history.warn() });
 
-	return { router, store, envs, history, snapshots, activeEnv, resolveInput, changed, sendAndRecord, sendStored, historyInfo };
+	return { router, store, envs, history, snapshots, fromLog, activeEnv, resolveInput, changed, sendAndRecord, sendStored, historyInfo };
 };
 
 export type DebugApi = ReturnType<typeof createDebugApi>;

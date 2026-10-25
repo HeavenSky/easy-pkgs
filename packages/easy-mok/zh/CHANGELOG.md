@@ -7,6 +7,7 @@
 ### 新增
 
 - 新增「调试」页：按分组维护真实接口请求，支持环境变量、敏感值占位符与请求解析预览；请求由 mock 服务发出，每次结果都保存为历史，想保留的可以另存为命名快照，响应体是 `raw.json`、`raw.csv` 这样的普通文件；数据保存在 mock 目录的 `__debug__/` 下。局域网设备要在局域网开关旁的「代发」打开后才能借它发送请求。见[在管理页调试真实接口](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/zh/docs/debug.md)。
+- 请求日志的「转为调试请求」可以把抓到的请求生成调试请求，路径前加 `{{baseUrl}}`。
 - 调试页支持导入导出 cURL 命令与 OpenAPI 3.0 / 3.1 文档（YAML 或 JSON），响应示例可以生成快照。easy-mok 新增依赖 `yaml`。
 - 刷新调试快照时先展示与已保存快照的差异，确认后才覆盖；JSON 比较不受 key 顺序影响；也可以任选两条历史对比。
 - 场景可以引用调试快照，始终返回快照的最新响应，也可以一次性拷贝；改名和移动不会断开引用，删除被引用的快照前会先确认，失效的引用会降级到下一级场景。见[切换场景与响应方式](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/zh/docs/scenes.md#用调试快照作为场景)。

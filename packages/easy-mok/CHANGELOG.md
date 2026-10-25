@@ -7,6 +7,7 @@
 ### Added
 
 - A **Debug** (`调试`) page keeps a collection of real API requests in groups, with environment variables, secret placeholders, and a preview of the resolved request, sends them from the mock server, keeps every result as history, and saves the ones you want as named snapshots whose response body is a plain file such as `raw.json` or `raw.csv`; it stores them under `__debug__/` in the mock folder. LAN devices can send through it only after you turn on **Send** (`代发`) next to the LAN switch. See [Debug real APIs from the admin page](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/docs/debug.md).
+- **Turn into a debug request** (`转为调试请求`) in the request log creates a debug request from a captured request, with `{{baseUrl}}` in front of its path.
 - The debug page imports and exports cURL commands and OpenAPI 3.0 / 3.1 documents (YAML or JSON), including response examples as snapshots. easy-mok now depends on `yaml`.
 - Refreshing a debug snapshot shows a diff against the saved one before you overwrite it, with JSON compared independently of key order; any two history entries can be compared too.
 - A scene can reference a debug snapshot and always answer with its latest response, or copy it once; references survive renames and moves, deleting a referenced snapshot asks first, and broken references fall back to the next scene. See [Switch scenes and response behavior](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/docs/scenes.md#answer-with-a-debug-snapshot).

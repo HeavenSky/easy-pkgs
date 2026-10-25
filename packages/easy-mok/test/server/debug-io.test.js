@@ -162,3 +162,43 @@ describe("导入导出接口", () => {
 		expect(JSON.parse(json.text).openapi).toBe("3.1.0");
 	});
 });
+
+describe("日志转调试请求", () => {
+	let ctx;
+	beforeAll(async () => {
+		ctx = await startHost({ files: { "mocks/a.js": "module.exports = { 'POST /api/user': (req, res) => res.json({ ok: true }) };" } });
+	});
+	afterAll(() => ctx.close());
+
+	const lastLog = async () => {
+		const logs = (await ctx.api("/logs")).body;
+		return logs[logs.length - 1];
+	};
+
+	it("JSON 体与查询参数带入, 脱敏的头丢弃并提示", async () => {
+		await ctx.fetch("/api/user?x=1", {
+			method: "POST",
+			headers: { "content-type": "application/json", authorization: "Bearer s3", "x-a": "1" },
+			body: JSON.stringify({ name: "a" }),
+		});
+		const log = await lastLog();
+		const res = await ctx.api(`/logs/${log.id}/debug-request`, { method: "POST", json: { parent: null } });
+		expect(res.status).toBe(201);
+		expect(res.body.node).toMatchObject({ id: "user", method: "POST", url: "{{baseUrl}}/api/user" });
+		expect(res.body.warnings).toEqual(["请求头 authorization 在日志中已脱敏, 未带入, 请在请求或环境组中补上"]);
+		const def = (await ctx.api(`/debug/requests/${enc("user")}`)).body.definition;
+		expect(def.params.query).toEqual([["x", "1", true]]);
+		expect(def.body).toEqual({ type: "json", content: { name: "a" } });
+		expect(def.headers.some(h => h[0] === "authorization" || h[0] === "host" || h[0] === "content-type")).toBe(false);
+		expect(def.headers).toContainEqual(["x-a", "1", true]);
+	});
+
+	it("二进制请求体不带入并提示, 日志不存在时 404", async () => {
+		await ctx.fetch("/api/user", { method: "POST", headers: { "content-type": "application/octet-stream" }, body: Buffer.from([0, 1, 2, 255]) });
+		const log = await lastLog();
+		const res = await ctx.api(`/logs/${log.id}/debug-request`, { method: "POST", json: { parent: null, name: "bin" } });
+		expect(res.body.warnings).toContain("二进制请求体未带入");
+		expect((await ctx.api(`/debug/requests/${enc("bin")}`)).body.definition.body).toEqual({ type: "none" });
+		expect((await ctx.api("/logs/nope/debug-request", { method: "POST", json: {} })).status).toBe(404);
+	});
+});

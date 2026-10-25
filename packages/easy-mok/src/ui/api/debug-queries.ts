@@ -273,3 +273,8 @@ export const useExportOpenApi = () =>
 		mutationFn: (body: { node: string | null; format: "yaml" | "json" }) =>
 			request(z.object({ text: z.string(), filename: z.string(), warnings: Warnings }), "/debug/export/openapi", { method: "POST", body }),
 	});
+
+export const useLogToRequest = () =>
+	useDebugMutation(({ logId, parent, name }: { logId: string; parent: string | null; name?: string }) =>
+		request(z.object({ node: TreeNode, warnings: Warnings }), `/logs/${logId}/debug-request`, { method: "POST", body: { parent, name } })
+	);

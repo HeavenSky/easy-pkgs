@@ -20,6 +20,12 @@ Unmatched requests are recorded only when they come from fetch or XHR, meaning t
 
 Only responses that were captured in full, without truncation, can be saved as scenes.
 
+## Replay a request against the real backend
+
+**Turn into a debug request** (`转为调试请求`) in a log entry creates a request on the **Debug** (`调试`) page from it, so you can send it to the real backend and keep the result, see [Debug real APIs from the admin page](debug.md). Its URL becomes `{{baseUrl}}` plus the original path and query; set `baseUrl` in an environment.
+
+The log masks `authorization`, `cookie`, and similar headers, so those are left out and listed as warnings; add them back in the request or an environment. Binary and truncated request bodies are left out too.
+
 ## Know what the log keeps
 
 Each entry captures at most 256 KB of response body and 64 KB of request body, which covers typical JSON APIs. The log keeps the latest 500 entries by default (option `logSize`), and the request and response bodies of all entries together are capped at 32 MB; beyond that the oldest entries are dropped. Without the cap, 500 entries could take about 160 MB of memory in the worst case.

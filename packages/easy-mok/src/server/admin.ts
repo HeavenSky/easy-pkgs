@@ -1087,6 +1087,19 @@ export const createAdmin = (ctx: AdminContext) => {
 
 	api.use("/debug", debug.router);
 
+	api.post(
+		"/logs/:id/debug-request",
+		wrap((req, res) => {
+			const entry = journal.get(String(req.params.id));
+			if (!entry) {
+				throw new MockError("NOT_FOUND", 404, "日志条目不存在或已滚出缓冲区");
+			}
+			const out = debug.fromLog(entry, req.body || {});
+			res.status(201);
+			return out;
+		})
+	);
+
 	api.get("/events", (req, res) => events.connect(req, res));
 
 	api.use((_req, _res, next) => next(new MockError("NOT_FOUND", 404, "接口不存在")));

@@ -12,6 +12,7 @@ import { streamFile } from "../respond";
 import { createHistoryStore } from "./history";
 import { createSnapshotStore } from "./snapshot";
 import type { Refs } from "./refs";
+import { diffResults } from "./diff";
 import { performSend } from "./send";
 import type { SendResult } from "./send";
 import { META_FILE } from "./names";
@@ -500,6 +501,48 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 				pathname,
 				candidates: pathname && ctx.routeCandidates ? ctx.routeCandidates(out.method, pathname) : [],
 			};
+		})
+	);
+
+	/** diff 的一侧: snapshot:<快照标识> 或 history:<历史标识> */
+	const sideOf = (raw: unknown) => {
+		const text = String(raw || "");
+		if (text.startsWith("snapshot:")) {
+			const s = snapshots.get(text.slice(9));
+			return { meta: s.meta, dir: s.dir };
+		}
+		if (text.startsWith("history:")) {
+			const h = history.get(text.slice(8));
+			return { meta: h.meta, dir: h.dir };
+		}
+		throw new MockError("BAD_REQUEST", 400, "a 与 b 必须是 snapshot:<快照标识> 或 history:<历史标识>");
+	};
+
+	router.get(
+		"/diff",
+		wrap(req => diffResults(sideOf(req.query.a), sideOf(req.query.b)))
+	);
+
+	/** 用快照记录的请求模板与快照变量重新发送, 返回新历史与 diff; 不覆盖快照 */
+	router.post(
+		"/snapshots/:sid/refresh",
+		wrap(async (req, res) => {
+			assertCanSend(req);
+			const snap = snapshots.get(idParam(req, "sid"));
+			const body = isPlainObject(req.body) ? req.body : {};
+			const template = snap.meta.template || {};
+			const definition = normalizeDefinition(template.request || store.getRequest(snap.request).definition);
+			const env = body.env !== undefined ? (body.env === null ? null : envs.get(String(body.env)).name) : template.env ? envs.get(template.env).name : activeEnv();
+			const controller = new AbortController();
+			res.on("close", () => {
+				if (!res.writableEnded) controller.abort();
+			});
+			const out = await sendAndRecord(
+				{ requestId: snap.request, definition, env, snapshotVars: snapshots.varsOf(snap.id) },
+				controller.signal
+			);
+			const fresh = history.get(out.id);
+			return { history: { id: out.id, meta: out.meta }, diff: diffResults({ meta: snap.meta, dir: snap.dir }, { meta: fresh.meta, dir: fresh.dir }) };
 		})
 	);
 

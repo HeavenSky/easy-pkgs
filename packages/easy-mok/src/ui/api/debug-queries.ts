@@ -11,6 +11,8 @@ import {
 	HistoryDays,
 	HistoryEntry,
 	HistoryPage,
+	DiffResult,
+	RefreshResult,
 	Resolved,
 	SnapshotDetail,
 	SnapshotSummary,
@@ -230,3 +232,20 @@ export const useRouteMatch = (requestId: string | null, enabled: boolean) =>
 				{ signal }
 			),
 	});
+
+/** a, b 取 snapshot:<快照标识> 或 history:<历史标识> */
+export const useDiff = (a: string | null, b: string | null) =>
+	useQuery({
+		queryKey: ["debug", "diff", a, b],
+		enabled: !!a && !!b,
+		queryFn: ({ signal }) =>
+			request(DiffResult, `/debug/diff?${new URLSearchParams({ a: a!, b: b! })}`, { signal }),
+	});
+
+export const useRefreshSnapshot = () => {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: (sid: string) => request(RefreshResult, `/debug/snapshots/${encodeId(sid)}/refresh`, { method: "POST", body: {} }),
+		onSettled: () => qc.invalidateQueries({ queryKey: ["debug", "history"] }),
+	});
+};

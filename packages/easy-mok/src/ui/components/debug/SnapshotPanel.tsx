@@ -3,7 +3,17 @@ import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { errorMessage } from "@/api/client";
 import { DEBUG_NAME_RE } from "@/api/debug-contract";
-import { snapshotRawUrl, useDeleteSnapshot, useSnapshot, useSnapshotRefs, useUpdateSnapshot } from "@/api/debug-queries";
+import {
+	snapshotRawUrl,
+	useDeleteSnapshot,
+	useRefreshSnapshot,
+	useSaveSnapshot,
+	useSnapshot,
+	useSnapshotRefs,
+	useUpdateSnapshot,
+} from "@/api/debug-queries";
+import { DiffView } from "./DiffView";
+import { RefreshCw } from "lucide-react";
 import { encodeId } from "@/api/debug-contract";
 import { Link } from "wouter";
 import { Button } from "../ui/button";
@@ -29,6 +39,8 @@ export const SnapshotPanel = ({
 }) => {
 	const snap = useSnapshot(sid);
 	const refs = useSnapshotRefs(sid);
+	const refresh = useRefreshSnapshot();
+	const overwrite = useSaveSnapshot();
 	const usedBy = refs.data || [];
 	const update = useUpdateSnapshot();
 	const remove = useDeleteSnapshot();
@@ -74,6 +86,10 @@ export const SnapshotPanel = ({
 				<span className="font-mono text-xs text-zinc-400">{data.id}</span>
 				<span className="ml-auto flex gap-1">
 					{extra}
+					<Button size="sm" disabled={refresh.isPending} onClick={() => refresh.mutate(sid, { onError: fail })}>
+						<RefreshCw size={14} />
+						{refresh.isPending ? "刷新中" : "刷新"}
+					</Button>
 					<Button size="sm" onClick={() => onResend(sid)}>
 						<Send size={14} />
 						按此快照重新发送
@@ -83,6 +99,44 @@ export const SnapshotPanel = ({
 					</Button>
 				</span>
 			</div>
+			{refresh.data && (
+				<div className="space-y-2 rounded-md border border-amber-300 bg-amber-50/50 p-2 dark:border-amber-800 dark:bg-amber-950/30">
+					<div className="flex items-center gap-2 text-sm font-medium">
+						刷新结果与当前快照的差异
+						<span className="ml-auto flex gap-1">
+							<Button size="sm" onClick={() => refresh.reset()}>
+								放弃
+							</Button>
+							<Button
+								size="sm"
+								variant="default"
+								disabled={overwrite.isPending || !!refresh.data.history.meta.error}
+								onClick={() =>
+									overwrite.mutate(
+										{ hid: refresh.data!.history.id, body: { request: data.request, name: data.name, overwrite: true } },
+										{
+											onSuccess: () => {
+												toast.success("快照已更新");
+												refresh.reset();
+											},
+											onError: fail,
+										}
+									)
+								}
+							>
+								用新结果覆盖快照
+							</Button>
+						</span>
+					</div>
+					{refresh.data.history.meta.error ? (
+						<p className="text-sm text-rose-600">
+							刷新失败: {refresh.data.history.meta.error.code} {refresh.data.history.meta.error.message}
+						</p>
+					) : (
+						<DiffView diff={refresh.data.diff} labels={["当前快照", "刷新结果"]} />
+					)}
+				</div>
+			)}
 			<div className="flex flex-wrap gap-2">
 				<Label className="w-40">
 					快照名

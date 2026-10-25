@@ -53,6 +53,12 @@ A history entry you want to keep becomes a named snapshot of its request: click 
 - A snapshot can have its own variables, which win over the request, group, and environment variables. **Resend with this snapshot** (`按此快照重新发送`) sends the saved request with them, for example to capture the same call with another id.
 - Each snapshot is a folder with `__meta__.json` and the response body as `raw.<ext>`, where the extension follows the `content-type`, so you can open `raw.csv` or `raw.html` directly.
 
+## Compare and refresh snapshots
+
+**Refresh** (`刷新`) on a snapshot sends its request again with the snapshot's variables and shows what changed before anything is saved: the status, the headers that differ, and a line diff of the body. JSON bodies are compared after sorting object keys, so a different key order does not count as a change; array order does. Click **Overwrite with the new result** (`用新结果覆盖快照`) to keep it, or **Discard** (`放弃`).
+
+To compare two sends, tick two entries in a request's history. Binary bodies, and bodies over 2 MB, are compared by size and checksum only.
+
 ## Use snapshots as mock scenes
 
 Snapshots become mock data from a route's **Scenes** tab: **Create from debug snapshot** (`从调试快照建`) either references a snapshot or copies it, see [Switch scenes and response behavior](scenes.md#answer-with-a-debug-snapshot). The snapshot panel lists the scenes that use it.

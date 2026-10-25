@@ -4,7 +4,8 @@ import { toast } from "sonner";
 import { Link, useLocation, useParams } from "wouter";
 import { errorMessage } from "@/api/client";
 import { encodeId, type TreeNode } from "@/api/debug-contract";
-import { historyRawUrl, useDebugTree, useDeleteNode, useHistoryEntry, useSend } from "@/api/debug-queries";
+import { historyRawUrl, useDebugTree, useDeleteNode, useDiff, useHistoryEntry, useSend } from "@/api/debug-queries";
+import { DiffView } from "@/components/debug/DiffView";
 import { HistoryList } from "@/components/debug/HistoryList";
 import { SaveSnapshotDialog } from "@/components/debug/SaveSnapshotDialog";
 import { SnapshotPanel } from "@/components/debug/SnapshotPanel";
@@ -39,6 +40,8 @@ const Workbench = ({ id, snapshot, tree }: { id: string; snapshot: string | null
 	const send = useSend();
 	const [viewing, setViewing] = useState<string | null>(null);
 	const [saving, setSaving] = useState<string | null>(null);
+	const [compare, setCompare] = useState<string[]>([]);
+	const diff = useDiff(compare.length === 2 ? `history:${compare[0]}` : null, compare.length === 2 ? `history:${compare[1]}` : null);
 	const fromHistory = useHistoryEntry(viewing && viewing !== send.data?.id ? viewing : null);
 	const current = viewing && viewing !== send.data?.id ? fromHistory.data : send.data;
 	const fail = (err: unknown) => toast.error(errorMessage(err));
@@ -94,7 +97,18 @@ const Workbench = ({ id, snapshot, tree }: { id: string; snapshot: string | null
 				current && <ResponseViewer meta={current.meta} rawUrl={historyRawUrl(current.id)} actions={saveButton(current.id)} />
 			)}
 			<section className="space-y-1">
-				<h3 className="text-xs font-medium text-zinc-500">该请求的发送历史</h3>
+				<h3 className="text-xs font-medium text-zinc-500">该请求的发送历史(勾选两条可对比)</h3>
+				{compare.length === 2 && diff.data && (
+					<div className="space-y-1 rounded-md border border-zinc-200 p-2 dark:border-zinc-800">
+						<div className="flex items-center text-xs font-medium">
+							对比两条历史(旧 → 新)
+							<Button size="sm" variant="ghost" className="ml-auto" onClick={() => setCompare([])}>
+								清除对比
+							</Button>
+						</div>
+						<DiffView diff={diff.data} />
+					</div>
+				)}
 				<HistoryList
 					requestId={id}
 					selected={snapshot ? null : current?.id || null}
@@ -102,6 +116,20 @@ const Workbench = ({ id, snapshot, tree }: { id: string; snapshot: string | null
 						setViewing(line.id);
 						if (snapshot) navigate(requestPath(id));
 					}}
+					extra={line => (
+						<input
+							type="checkbox"
+							aria-label={`对比 ${line.id}`}
+							checked={compare.includes(line.id)}
+							onChange={e =>
+								setCompare(prev =>
+									e.target.checked
+										? [...prev, line.id].slice(-2).sort((a, b) => (a < b ? -1 : 1))
+										: prev.filter(x => x !== line.id)
+								)
+							}
+						/>
+					)}
 				/>
 			</section>
 			{saving && (

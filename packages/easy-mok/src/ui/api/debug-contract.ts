@@ -208,6 +208,31 @@ export const SnapshotDetail = z.object({
 });
 export type SnapshotDetail = z.infer<typeof SnapshotDetail>;
 
+export const DiffResult = z.object({
+	status: z.object({ a: z.number().nullable(), b: z.number().nullable() }),
+	headers: z.array(
+		z.object({ name: z.string(), a: z.array(z.string()), b: z.array(z.string()), change: z.enum(["same", "added", "removed", "changed"]) })
+	),
+	body: z.object({
+		mode: z.enum(["json", "text", "binary", "too-large", "empty"]),
+		same: z.boolean(),
+		a: z.object({ size: z.number(), sha256: z.string() }),
+		b: z.object({ size: z.number(), sha256: z.string() }),
+		hunks: z.array(
+			z.object({
+				aStart: z.number(),
+				aLines: z.number(),
+				bStart: z.number(),
+				bLines: z.number(),
+				lines: z.array(z.object({ op: z.enum([" ", "-", "+"]), text: z.string() })),
+			})
+		),
+	}),
+});
+export type DiffResult = z.infer<typeof DiffResult>;
+
+export const RefreshResult = z.object({ history: HistoryEntry, diff: DiffResult });
+
 /** URL 中的调试标识用 base64url 编码 */
 export const encodeId = (id: string) =>
 	btoa(String.fromCharCode(...new TextEncoder().encode(id)))

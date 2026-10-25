@@ -105,6 +105,8 @@ module.exports = { "GET /a/:id": scenes({ default: 1, fn: (req, res) => res.json
 		d.SnapshotSummary.parse((await api(`/history/${enc(sent.id)}/snapshot`, { method: "POST", json: { request: "g/r", name: "down" } })).body);
 		d.SnapshotDetail.parse((await api(`/snapshots/${enc("g/r#down")}`)).body);
 		d.SnapshotSummary.parse((await api(`/snapshots/${enc("g/r#down")}`, { method: "PATCH", json: { weight: 1 } })).body);
+		d.DiffResult.parse((await api(`/diff?a=${encodeURIComponent("snapshot:g/r#down")}&b=${encodeURIComponent(`history:${sent.id}`)}`)).body);
+		d.RefreshResult.parse((await api(`/snapshots/${enc("g/r#down")}/refresh`, { method: "POST", json: {} })).body);
 		const routeId = Buffer.from("GET /a/:id").toString("base64url");
 		c.ApiErrorBody.parse((await ctx.api(`/routes/${routeId}/scenes/fs/from-snapshot`, { method: "POST", json: { snapshot: "g/r#down", mode: "ref" } })).body);
 		c.SceneDetail.parse((await ctx.api(`/routes/${routeId}/scenes/rs`, { method: "PUT", json: { ref: "g/r#down" } })).body);

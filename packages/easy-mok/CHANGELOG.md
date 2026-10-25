@@ -2,6 +2,12 @@
 
 **English** · [简体中文](./zh/CHANGELOG.md)
 
+## Unreleased
+
+### Fixed
+
+- When a mock file fails to load because of a top-level `await` that the loader reports without mentioning `await` (for example `export default { "GET /x": await 1 }` reports `Unexpected number`), the load error now notes that the file contains `await` and that top-level `await` is not supported.
+
 ## 0.0.4 (2026-10-21)
 
 ### Breaking changes

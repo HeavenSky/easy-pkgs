@@ -136,6 +136,8 @@ describe("响应与诊断", () => {
 			"mocks/broken.js": "module.exports = {",
 			"mocks/tla.mjs":
 				"const x = await Promise.resolve(1);\nexport default { 'GET /tla': x };\n",
+			"mocks/tla2.mjs": "export default { 'GET /tla2': await 1 };\n",
+			"mocks/syntax.mjs": "export default { 'GET /syntax': 1 1 };\n",
 		});
 		app = createMock({ cwd: dir, folder: "mocks", stateFile: "state.json", watch: false });
 		host = await startRaw(app);
@@ -177,6 +179,10 @@ describe("响应与诊断", () => {
 	it("顶层 await 的诊断带提示", () => {
 		const d = app.mock.registry.diagnostics.find(x => (x.file || "").endsWith("tla.mjs"));
 		expect(d.message).toMatch(/不支持顶层 await/);
+		const d2 = app.mock.registry.diagnostics.find(x => (x.file || "").endsWith("tla2.mjs"));
+		expect(d2.message).toMatch(/若为顶层 await 则不支持/); // jiti 报 Unexpected number, 信息不含 await
+		const d3 = app.mock.registry.diagnostics.find(x => (x.file || "").endsWith("syntax.mjs"));
+		expect(d3.message).not.toMatch(/await/);
 	});
 
 	it("代理创建失败只告警一次, 后续直接 500, 路由表重建后重试", async () => {

@@ -2,6 +2,12 @@
 
 [English](../CHANGELOG.md) · **简体中文**
 
+## Unreleased
+
+### 修复
+
+- mock 文件因顶层 `await` 加载失败、而报错信息不含 `await` 时（例如 `export default { "GET /x": await 1 }` 报 `Unexpected number`），加载错误现在会提示文件中有 `await`、顶层 `await` 不受支持。
+
 ## 0.0.4 (2026-10-21)
 
 ### 破坏性变更

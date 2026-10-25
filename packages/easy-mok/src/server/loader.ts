@@ -119,11 +119,23 @@ export const walk = (folder: string, dir = folder): string[] => {
 	});
 };
 
-/** 顶层 await 的报错没有指出原因, 补一句提示 */
-const hintOf = (message: string) =>
-	/await is only valid|top-level await/i.test(message)
-		? " (mock 文件不支持顶层 await, 请把异步逻辑放进处理函数, 或改为导出无参的 async 函数)"
+/** 顶层 await 的报错没有指出原因, 补一句提示; jiti 把部分顶层 await 当标识符解析(如 { v: await 1 }), 报错信息不含 await, 改看文件正文 */
+const hintOf = (err: unknown, file: string) => {
+	const e = err as { message?: unknown; code?: unknown } | null;
+	const raw = `${e && e.message} ${e && e.code}`;
+	if (/await is only valid|top-level await|ERR_REQUIRE_ASYNC_MODULE/i.test(raw)) {
+		return " (mock 文件不支持顶层 await, 请把异步逻辑放进处理函数, 或改为导出无参的 async 函数)";
+	}
+	let text = "";
+	try {
+		text = err instanceof SyntaxError ? fs.readFileSync(file, "utf8") : "";
+	} catch {
+		return "";
+	}
+	return /\bawait\b/.test(text)
+		? " (文件中有 await, 若为顶层 await 则不支持, 请把异步逻辑放进处理函数, 或改为导出无参的 async 函数)"
 		: "";
+};
 
 export const clearRequireCache = (id: string) => {
 	const mod = require.cache[id];
@@ -377,7 +389,7 @@ export const createRegistry = (opt: {
 			} else {
 				diagnostics.push({
 					type: "load-error",
-					message: `${(e && e.name) || "Error"}: ${text}${hintOf(text)}${suffix}`,
+					message: `${(e && e.name) || "Error"}: ${text}${hintOf(err, file)}${suffix}`,
 					file,
 				});
 			}

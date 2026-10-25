@@ -1,10 +1,12 @@
 // mock 请求处理: 匹配路由, 解析场景, 延迟与状态码覆盖, 执行数据 / 函数 / 代理 / JSON 场景
+import fs from "fs";
 import type { EventEmitter } from "events";
 import type { IncomingMessage } from "http";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import multer from "multer";
 import type { Response } from "express";
+import { extOfFile, typeOfExt } from "./mime";
 import { createProxy } from "./proxy";
 import { parseCookie, resolveScene } from "./scene";
 import type { DisplayKind, Envelope, Scene } from "./scene";
@@ -138,6 +140,31 @@ const sendBody = (res: Res, body: unknown) =>
 	typeof body === "string" || Buffer.isBuffer(body)
 		? res.send(body)
 		: res.json(body === undefined ? null : body);
+
+/** 流式返回文件; 未设置 content-type 时按扩展名补, 文件不存在时 reject */
+export const streamFile = (req: Req, res: Res, file: string) =>
+	new Promise<void>((resolve, reject) => {
+		fs.stat(file, (err, stat) => {
+			if (err || !stat.isFile()) {
+				return reject(new Error(`响应体文件不存在: ${file}`));
+			}
+			if (!res.getHeader("content-type")) {
+				res.setHeader("content-type", typeOfExt(extOfFile(file)));
+			}
+			res.setHeader("content-length", stat.size);
+			if (String(req.method).toUpperCase() === "HEAD") {
+				res.end();
+				return resolve();
+			}
+			const stream = fs.createReadStream(file);
+			stream.on("error", reject);
+			res.once("close", () => {
+				stream.destroy();
+				resolve();
+			});
+			stream.pipe(res);
+		});
+	});
 
 /** 处理函数的返回值能否当响应体: 数据才算, 定时器, res 等对象不算 */
 const isBodyValue = (v: unknown) =>
@@ -519,7 +546,10 @@ export const createResponder = ({
 					res.status(envelope.status);
 				}
 				Object.entries(envelope.headers || {}).forEach(([k, v]) => res.setHeader(k, v));
-				return scene.handler ? callHandler(scene.handler) : sendBody(res, envelope.body);
+				if (scene.handler) {
+					return callHandler(scene.handler);
+				}
+				return scene.file ? streamFile(req, res, scene.file) : sendBody(res, envelope.body);
 			}
 			return sendBody(res, scene.value);
 		};

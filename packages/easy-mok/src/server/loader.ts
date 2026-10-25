@@ -8,7 +8,7 @@ import type { CompiledRoute, ParsedKey } from "./route";
 import { codeScenes } from "./scene";
 import { compileScript } from "./script";
 import type { Scene } from "./scene";
-import { SCENES_DIR, GUI_FILE } from "./files";
+import { SCENES_DIR, GUI_FILE, bodyFileProblem } from "./files";
 import type { SceneFile, createFileStore } from "./files";
 import { etagOf, isPlainObject } from "./util";
 
@@ -22,6 +22,8 @@ export type Diagnostic = {
 		| "orphan-scenes"
 		| "broken-scene-file"
 		| "script-error"
+		| "invalid-body-file"
+		| "missing-body-file"
 		| "state"
 		| "stale-state";
 	message: string;
@@ -564,14 +566,47 @@ export const createRegistry = (opt: {
 						return;
 					}
 				}
+				let bodyFile: string | undefined;
+				let stat: fs.Stats | null = null;
+				if (env && env.bodyFile !== undefined && env.bodyFile !== null) {
+					const problem =
+						bodyFileProblem(env.bodyFile) ||
+						(env.script !== undefined || (env.body !== undefined && env.body !== null)
+							? "bodyFile 不能与 body 或 script 同时出现"
+							: null);
+					if (problem) {
+						diagnostics.push({
+							type: "invalid-body-file",
+							message: `场景 ${name} 的 bodyFile 无效, 已忽略该场景: ${problem}`,
+							file,
+							key: data.key,
+							routeId: route.id,
+						});
+						return;
+					}
+					bodyFile = path.resolve(fileStore.scenesDir, env.bodyFile as string);
+					try {
+						stat = fs.statSync(bodyFile);
+					} catch {
+						diagnostics.push({
+							type: "missing-body-file",
+							message: `场景 ${name} 的 bodyFile 不存在: ${bodyFile}`,
+							file,
+							key: data.key,
+							routeId: route.id,
+						});
+					}
+				}
 				route.scenes.set(name, {
 					name,
 					source: "json",
 					kind: "envelope",
 					value: env,
-					etag: etagOf(env),
+					// 文件内容改了 envelope 不变, etag 计入文件大小与修改时间, 让 If-Match 仍能发现冲突
+					etag: stat ? etagOf([env, stat.size, stat.mtimeMs]) : etagOf(env),
 					overrides: !!code && code.source === "code",
 					handler,
+					file: bodyFile,
 				});
 			});
 		});

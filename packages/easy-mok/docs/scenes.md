@@ -45,6 +45,25 @@ The function receives the parsed `req.params`, `req.query`, and `req.body`. Its 
 
 A script runs inside the mock server process with the same rights as your mock files, so easy-mok accepts script scenes only from the admin page on the same machine, even with `lan` on.
 
+## Return a file as the response body
+
+To answer with a CSV, HTML page, image, or any other file, point the scene's `bodyFile` at a file under `__scenes__/` in its scene file:
+
+```json
+{
+	"key": "GET /api/export",
+	"scenes": {
+		"csv": { "status": 200, "bodyFile": "GET_api_export.9f8e7d6c/export.raw.csv" }
+	}
+}
+```
+
+- `bodyFile` is a path relative to `__scenes__/` with `/` separators; it cannot leave `__scenes__/`, and it cannot be combined with `body` or a script.
+- The `content-type` comes from the file extension (`json`, `html`, `csv`, `txt`, `xml`, `js`, `css`, `svg`, `png`, `jpg`, `gif`, `webp`, `pdf`; anything else is `application/octet-stream`) unless the scene sets its own header.
+- A missing file answers 500 and shows up on the diagnostics page.
+
+On the admin page, editing such a scene shows the file: text files can be edited and saved in place, images are previewed, and other files can be downloaded.
+
 ## Set delay, status code, or passthrough
 
 ![Behavior panel: delay, status code override, or passthrough to the real backend](images/behavior.png)

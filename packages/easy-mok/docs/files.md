@@ -7,6 +7,7 @@ By the end of this page, you know which files the admin page creates and which b
 | File                                      | Contents                                                                               | Commit it?                                   |
 | ----------------------------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------- |
 | `<mock folder>/__scenes__/*.json`         | Scenes created or recorded on the admin page, one file per route                       | Yes, recommended                             |
+| `<mock folder>/__scenes__/<scene file name>/` | Response body files of that route's file scenes; deleted with the scene that uses them | Yes, recommended |
 | `<mock folder>/__gui__.json`              | Routes created on the admin page                                                       | Yes, recommended                             |
 | `node_modules/.cache/easy-mok/state.json` | Picked scenes, delays, status codes, scene groups, the global switch, and ignore rules | No; it resets when you delete `node_modules` |
 

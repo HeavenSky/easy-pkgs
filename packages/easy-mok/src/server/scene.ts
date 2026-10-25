@@ -8,13 +8,14 @@ export type SceneKind = "data" | "function" | "proxy" | "envelope";
 /** 管理页展示的场景类型: 无参函数(内部 kind 为 proxy)尚未调用时为 nullary, 调用后按返回值为 function 或 proxy; 带脚本的信封为 script */
 export type DisplayKind = SceneKind | "nullary" | "script";
 export type SceneSource = "code" | "json";
-/** script 为管理页写的处理函数源码; 有 script 时忽略 body */
+/** script 为管理页写的处理函数源码; 有 script 时忽略 body. bodyFile 是相对 __scenes__ 的文件路径, 与 body, script 互斥 */
 export type Envelope = {
 	status?: number;
 	headers?: Record<string, string>;
 	body?: unknown;
 	delay?: number;
 	script?: string;
+	bodyFile?: string;
 };
 /** handler 是 envelope 中 script 编译后的函数 */
 export type Scene = {
@@ -25,6 +26,8 @@ export type Scene = {
 	etag?: string;
 	overrides?: boolean;
 	handler?: Function;
+	/** envelope 中 bodyFile 解析后的绝对路径 */
+	file?: string;
 };
 export type SceneLevel = "request" | "browser" | "route" | "group" | "default";
 export type ActiveScene = { name: string; level: SceneLevel; fallback: boolean };

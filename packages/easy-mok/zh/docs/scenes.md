@@ -45,6 +45,25 @@ const user = require("./_data/user.json"); // 相对 mock 目录
 
 脚本在 mock 服务进程里运行，权限和 mock 文件相同，所以即使开启了 `lan`，easy-mok 也只接受本机管理页保存的脚本场景。
 
+## 用文件作为响应体
+
+要返回 CSV、HTML 页面、图片或其他文件时，在场景文件里把该场景的 `bodyFile` 指向 `__scenes__/` 下的文件：
+
+```json
+{
+	"key": "GET /api/export",
+	"scenes": {
+		"csv": { "status": 200, "bodyFile": "GET_api_export.9f8e7d6c/export.raw.csv" }
+	}
+}
+```
+
+- `bodyFile` 是相对 `__scenes__/` 的路径，用 `/` 分隔；不能跳出 `__scenes__/`，也不能和 `body` 或脚本同时使用。
+- 场景没有自行设置 `content-type` 时，按扩展名决定（`json`、`html`、`csv`、`txt`、`xml`、`js`、`css`、`svg`、`png`、`jpg`、`gif`、`webp`、`pdf`；其他扩展名为 `application/octet-stream`）。
+- 文件不存在时返回 500，并出现在诊断页。
+
+在管理页编辑这类场景时会显示文件：文本文件可以直接修改并保存，图片可以预览，其他文件可以下载。
+
 ## 设置延迟、状态码或放行
 
 ![行为面板：设置延迟与状态码覆盖，或放行到真实后端](../../docs/images/behavior.png)

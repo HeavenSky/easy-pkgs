@@ -6,6 +6,7 @@ import type { Envelope, RouteSummary, SceneDetail } from "@/api/contract";
 import { useDeleteScene, usePatchRouteState } from "@/api/queries";
 import { confirmLeave } from "@/lib/unsaved";
 import { cn, pretty } from "@/lib/utils";
+import { BodyFilePanel } from "./BodyFilePanel";
 import { JsonEditor } from "./JsonEditor";
 import { SceneEditor } from "./SceneEditor";
 import { Badge } from "./ui/badge";
@@ -29,6 +30,7 @@ const KIND_TITLE: Partial<Record<SceneDetail["kind"], string>> = {
 type Panel =
 	| { type: "view"; name: string }
 	| { type: "edit"; name: string }
+	| { type: "file"; name: string }
 	| { type: "new"; initial?: Envelope; name?: string }
 	| null;
 
@@ -127,6 +129,14 @@ export const ScenesPanel = ({ route, scenes }: { route: RouteSummary; scenes: Sc
 							>
 								{s.source === "json" ? "管理页" : "代码"}
 							</Badge>
+							{s.bodyFile && (
+								<Badge
+									className="bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300"
+									title={`__scenes__/${s.bodyFile.path}`}
+								>
+									文件
+								</Badge>
+							)}
 							{s.overrides && (
 								<Badge className="bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
 									覆盖代码同名场景
@@ -142,7 +152,9 @@ export const ScenesPanel = ({ route, scenes }: { route: RouteSummary; scenes: Sc
 									size="icon"
 									variant="ghost"
 									aria-label={`编辑场景 ${s.name}`}
-									onClick={() => open({ type: "edit", name: s.name })}
+									onClick={() =>
+										open({ type: s.bodyFile ? "file" : "edit", name: s.name })
+									}
 								>
 									<Pencil size={14} />
 								</Button>
@@ -208,6 +220,14 @@ export const ScenesPanel = ({ route, scenes }: { route: RouteSummary; scenes: Sc
 						</pre>
 					)}
 				</div>
+			)}
+			{panel?.type === "file" && current?.bodyFile && (
+				<BodyFilePanel
+					key={`file-${current.name}`}
+					route={route}
+					scene={current}
+					onClose={() => setPanel(null)}
+				/>
 			)}
 			{panel?.type === "edit" && current && (
 				<SceneEditor

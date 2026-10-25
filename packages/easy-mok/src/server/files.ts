@@ -10,6 +10,20 @@ export const GUI_FILE = "__gui__.json";
 
 export type SceneFile = { key: string; scenes: Record<string, Envelope> };
 
+/** bodyFile 的路径形态错误说明; 合法时为 null. 只接受 __scenes__ 内的 POSIX 相对路径 */
+export const bodyFileProblem = (value: unknown) => {
+	if (typeof value !== "string" || !value.trim()) {
+		return "bodyFile 必须是非空字符串";
+	}
+	if (value.includes("\\") || value.startsWith("/") || /^[A-Za-z]:/.test(value)) {
+		return "bodyFile 必须是相对 __scenes__ 的 POSIX 路径";
+	}
+	if (value.split("/").some(seg => seg === ".." || seg === "." || seg === "")) {
+		return "bodyFile 不能含 .., . 或空路径段";
+	}
+	return null;
+};
+
 /** 校验响应信封, 返回规范化后的副本. */
 export const normalizeEnvelope = (raw: unknown): Envelope => {
 	if (!isPlainObject(raw)) {
@@ -27,6 +41,19 @@ export const normalizeEnvelope = (raw: unknown): Envelope => {
 		}
 		out.body = null;
 		out.script = raw.script;
+	}
+	if (raw.bodyFile !== undefined && raw.bodyFile !== null) {
+		const problem = bodyFileProblem(raw.bodyFile);
+		if (problem) {
+			throw new MockError("BAD_REQUEST", 400, problem, { field: "bodyFile" });
+		}
+		if (out.script !== undefined || (raw.body !== undefined && raw.body !== null)) {
+			throw new MockError("BAD_REQUEST", 400, "bodyFile 不能与 body 或 script 同时出现", {
+				field: "bodyFile",
+			});
+		}
+		out.body = null;
+		out.bodyFile = raw.bodyFile as string;
 	}
 	if (raw.status !== undefined && raw.status !== null) {
 		if (
@@ -84,6 +111,47 @@ export const createFileStore = (folder: string) => {
 		return file;
 	};
 
+	/** bodyFile → 绝对路径; 越出 __scenes__ 时抛错 */
+	const bodyFilePath = (rel: string) => {
+		const file = path.resolve(scenesDir, rel);
+		if (!file.startsWith(scenesDir + path.sep)) {
+			throw new MockError("FORBIDDEN", 403, "bodyFile 路径越界");
+		}
+		return file;
+	};
+
+	/** 归属该路由的文件目录: 场景文件名去掉 .json; 其中被场景引用过的文件随场景删除 */
+	const ownedDirOf = (key: string) => sceneFileOf(key).replace(/\.json$/, "");
+
+	/** 删除不再被引用的归属文件, 目录空了一并删除 */
+	const dropOwnedFiles = (key: string, before: Record<string, Envelope>, after: Record<string, Envelope>) => {
+		const dir = ownedDirOf(key);
+		const kept = new Set(
+			Object.values(after)
+				.filter(env => env && typeof env.bodyFile === "string")
+				.map(env => path.resolve(scenesDir, env.bodyFile as string))
+		);
+		Object.values(before).forEach(env => {
+			if (!env || typeof env.bodyFile !== "string" || bodyFileProblem(env.bodyFile)) {
+				return;
+			}
+			const file = path.resolve(scenesDir, env.bodyFile);
+			if (path.dirname(file) !== dir || kept.has(file)) {
+				return;
+			}
+			try {
+				fs.unlinkSync(file);
+			} catch {
+				/* 文件可能已被手动删除 */
+			}
+		});
+		try {
+			if (fs.readdirSync(dir).length === 0) fs.rmdirSync(dir);
+		} catch {
+			/* 目录不存在 */
+		}
+	};
+
 	const readSceneFile = (file: string): SceneFile | null => {
 		try {
 			const raw = JSON.parse(fs.readFileSync(file, "utf8"));
@@ -115,6 +183,7 @@ export const createFileStore = (folder: string) => {
 		const current = readSceneFile(file);
 		const map: Record<string, Envelope> =
 			current && current.key === key ? { ...current.scenes } : {};
+		const before = { ...map };
 		mutate(map);
 		try {
 			if (Object.keys(map).length) {
@@ -125,6 +194,7 @@ export const createFileStore = (folder: string) => {
 		} catch (err) {
 			throw new MockError("IO_ERROR", 500, "写入场景文件失败", undefined, { cause: err });
 		}
+		dropOwnedFiles(key, before, map);
 	};
 
 	const removeFile = (file: string) => {
@@ -138,6 +208,8 @@ export const createFileStore = (folder: string) => {
 				throw new MockError("IO_ERROR", 500, "删除场景文件失败", undefined, { cause: err });
 			}
 		}
+		// 归属该场景文件的 bodyFile 目录随之删除
+		fs.rmSync(file.replace(/\.json$/, ""), { recursive: true, force: true });
 	};
 
 	/** 文件不存在时为空对象; 存在但不是 JSON 对象时抛 GUI_FILE_INVALID, 免得写入时整份覆盖手改的内容 */
@@ -212,6 +284,8 @@ export const createFileStore = (folder: string) => {
 		scenesDir,
 		guiFile,
 		sceneFileOf,
+		bodyFilePath,
+		ownedDirOf,
 		listSceneFiles,
 		updateScenes,
 		removeFile,

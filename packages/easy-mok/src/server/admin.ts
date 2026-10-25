@@ -9,6 +9,8 @@ import { resolveScene } from "./scene";
 import type { DisplayKind, Scene, Envelope } from "./scene";
 import { normalizeEnvelope } from "./files";
 import { compileScript } from "./script";
+import { extOfFile, isTextExt, typeOfExt } from "./mime";
+import { streamFile } from "./respond";
 import { isLoopback } from "./security";
 import type { LanControl } from "./lan";
 import type { createFileStore } from "./files";
@@ -127,6 +129,27 @@ export const createAdmin = (ctx: AdminContext) => {
 		};
 	};
 
+	const bodyFileInfo = (scene: Scene) => {
+		if (!scene.file) {
+			return null;
+		}
+		const ext = extOfFile(scene.file);
+		let size = 0;
+		let exists = true;
+		try {
+			size = fs.statSync(scene.file).size;
+		} catch {
+			exists = false;
+		}
+		return {
+			path: String((scene.value as Envelope).bodyFile),
+			size,
+			contentType: typeOfExt(ext),
+			text: isTextExt(ext),
+			exists,
+		};
+	};
+
 	const sceneDetail = (scene: Scene) => {
 		let content: unknown;
 		if (scene.kind === "function" || scene.kind === "proxy") {
@@ -142,6 +165,7 @@ export const createAdmin = (ctx: AdminContext) => {
 			overrides: !!scene.overrides,
 			content,
 			etag: scene.etag || null,
+			bodyFile: bodyFileInfo(scene),
 		};
 	};
 
@@ -468,6 +492,65 @@ export const createAdmin = (ctx: AdminContext) => {
 			);
 			res.status(existed ? 200 : 201);
 			return out;
+		})
+	);
+
+	const fileSceneOf = (req: Req) => {
+		const route = routeOf(String(req.params.id));
+		const name = String(req.params.name);
+		const scene = route.scenes.get(name);
+		if (!scene || !scene.file) {
+			throw new MockError("NOT_FOUND", 404, `场景 ${name} 没有 bodyFile`);
+		}
+		return { route, name, scene, file: scene.file };
+	};
+
+	// 文件原样返回; 管理接口与管理页同源, 用 sandbox 阻止 HTML 与 SVG 中的脚本在此源执行
+	api.get("/routes/:id/scenes/:name/body", (req, res, next) => {
+		try {
+			const { file } = fileSceneOf(req);
+			res.setHeader("content-security-policy", "sandbox");
+			res.setHeader("x-content-type-options", "nosniff");
+			res.setHeader("cache-control", "no-store");
+			streamFile(req as any, res, file).catch(err =>
+				next(new MockError("NOT_FOUND", 404, (err as Error).message))
+			);
+		} catch (err) {
+			next(err);
+		}
+	});
+
+	api.put(
+		"/routes/:id/scenes/:name/body",
+		wrap(req => {
+			const { route, name, scene, file } = fileSceneOf(req);
+			if (scene.source !== "json") {
+				throw new MockError("READ_ONLY", 409, "代码声明的场景只读, 请修改 mock 源文件");
+			}
+			if (!isTextExt(extOfFile(file))) {
+				throw new MockError("BAD_REQUEST", 400, "只有文本类型的文件可以在线编辑");
+			}
+			const text = (req.body || {}).text;
+			if (typeof text !== "string") {
+				throw new MockError("BAD_REQUEST", 400, "text 必须是字符串", { field: "text" });
+			}
+			const ifMatch = parseIfMatch(req.headers["if-match"]);
+			if (!ifMatch || ifMatch !== scene.etag) {
+				throw new MockError("CONFLICT", 409, "场景已被其他人修改", {
+					current: sceneDetail(scene),
+				});
+			}
+			try {
+				const tmp = `${file}.${process.pid}.${Date.now()}.tmp`;
+				fs.mkdirSync(path.dirname(file), { recursive: true });
+				fs.writeFileSync(tmp, text);
+				fs.renameSync(tmp, file);
+			} catch (err) {
+				throw new MockError("IO_ERROR", 500, "写入场景文件失败", undefined, { cause: err });
+			}
+			registry.reloadNow();
+			changed("routes");
+			return sceneDetail(routeOf(route.id).scenes.get(name) as Scene);
 		})
 	);
 

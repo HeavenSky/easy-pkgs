@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-import { request } from "./client";
+import { API_BASE, ApiError, request } from "./client";
 import {
 	Groups,
 	IgnoreConfig,
@@ -107,6 +107,36 @@ export const useSaveScene = () => {
 			request(SceneDetail, `/routes/${id}/scenes/${encodeURIComponent(name)}`, {
 				method: "PUT",
 				body: envelope,
+				headers: etag ? { "if-match": `"${etag}"` } : undefined,
+			}),
+		onSuccess: () => invalidateRoutes(qc),
+	});
+};
+
+export const sceneBodyUrl = (id: string, name: string) =>
+	`${API_BASE}/routes/${id}/scenes/${encodeURIComponent(name)}/body`;
+
+/** 文本类 bodyFile 的内容; etag 变化(文件被改)时重新读取 */
+export const useSceneBody = (id: string, name: string, etag: string | null, enabled: boolean) =>
+	useQuery({
+		queryKey: ["scene-body", id, name, etag],
+		enabled,
+		queryFn: async ({ signal }) => {
+			const res = await fetch(sceneBodyUrl(id, name), { signal });
+			if (!res.ok) {
+				throw new ApiError("HTTP", res.status, `读取文件失败 (${res.status})`);
+			}
+			return res.text();
+		},
+	});
+
+export const useSaveSceneBody = () => {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: ({ id, name, text, etag }: { id: string; name: string; text: string; etag: string | null }) =>
+			request(SceneDetail, `/routes/${id}/scenes/${encodeURIComponent(name)}/body`, {
+				method: "PUT",
+				body: { text },
 				headers: etag ? { "if-match": `"${etag}"` } : undefined,
 			}),
 		onSuccess: () => invalidateRoutes(qc),

@@ -14,6 +14,7 @@ const NAV = [
 	{ href: "/", label: "路由", match: (p: string) => p === "/" || p.startsWith("/routes") },
 	{ href: "/logs", label: "请求日志", match: (p: string) => p.startsWith("/logs") },
 	{ href: "/groups", label: "场景组", match: (p: string) => p.startsWith("/groups") },
+	{ href: "/debug", label: "调试", match: (p: string) => p.startsWith("/debug") },
 	{ href: "/diagnostics", label: "诊断", match: (p: string) => p.startsWith("/diagnostics") },
 ];
 

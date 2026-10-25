@@ -14,11 +14,13 @@ const loaders = {
 	diagnostics: () =>
 		import("./pages/DiagnosticsPage").then(m => ({ default: m.DiagnosticsPage })),
 	routes: () => import("./pages/RoutesPage").then(m => ({ default: m.RoutesPage })),
+	debug: () => import("./pages/DebugPage").then(m => ({ default: m.DebugPage })),
 };
 const LogsPage = lazy(loaders.logs);
 const GroupsPage = lazy(loaders.groups);
 const DiagnosticsPage = lazy(loaders.diagnostics);
 const RoutesPage = lazy(loaders.routes);
+const DebugPage = lazy(loaders.debug);
 
 export const App = () => {
 	const live = useLiveEvents();
@@ -28,7 +30,7 @@ export const App = () => {
 	useEffect(() => {
 		const page = location.split("/")[1];
 		void (
-			page === "logs" || page === "groups" || page === "diagnostics"
+			page === "logs" || page === "groups" || page === "diagnostics" || page === "debug"
 				? loaders[page]
 				: loaders.routes
 		)();
@@ -59,6 +61,8 @@ export const App = () => {
 						<Route path="/groups" component={GroupsPage} />
 						<Route path="/groups/:name" component={GroupsPage} />
 						<Route path="/diagnostics" component={DiagnosticsPage} />
+						<Route path="/debug" component={DebugPage} />
+						<Route path="/debug/req/:id" component={DebugPage} />
 						<Route path="/routes/:id" component={RoutesPage} />
 						<Route component={RoutesPage} />
 					</Switch>

@@ -19,8 +19,9 @@ module.exports = { "GET /a/:id": scenes({ default: 1, fn: (req, res) => res.json
 	});
 	afterAll(() => ctx.close());
 
+	let z;
 	it("各接口响应符合契约", async () => {
-		const z = await import("zod");
+		z = await import("zod");
 		const id = Buffer.from("GET /a/:id").toString("base64url");
 		c.Meta.parse((await ctx.api("/meta")).body);
 		c.LanInfo.parse((await ctx.api("/lan", { method: "PUT", json: { access: false } })).body);
@@ -74,5 +75,27 @@ module.exports = { "GET /a/:id": scenes({ default: 1, fn: (req, res) => res.json
 		);
 		c.Removed.parse((await ctx.api("/state/cleanup", { method: "POST" })).body);
 		c.ApiErrorBody.parse((await ctx.api("/routes/nope")).body);
+	});
+
+	it("调试接口响应符合契约, 名字正则与服务端逐字相同", async () => {
+		z = z || (await import("zod"));
+		const d = await import("../../src/ui/api/debug-contract.ts");
+		const { DEBUG_NAME_RE } = require("../helpers/src").loadSrc("debug/names.ts");
+		expect(d.DEBUG_NAME_RE.source).toBe(DEBUG_NAME_RE.source);
+		expect(d.DEBUG_NAME_RE.flags).toBe(DEBUG_NAME_RE.flags);
+		const api = (url, init) => ctx.api(`/debug${url}`, init);
+		const enc = s => Buffer.from(s).toString("base64url");
+		d.TreeNode.parse((await api("/nodes", { method: "POST", json: { parent: null, kind: "group", name: "g" } })).body);
+		d.TreeNode.parse((await api("/nodes", { method: "POST", json: { parent: "g", kind: "request", name: "r" } })).body);
+		d.DebugTree.parse((await api("/tree")).body);
+		const req = d.DebugRequest.parse((await api(`/requests/${enc("g/r")}`)).body);
+		d.DebugRequest.parse((await api(`/requests/${enc("g/r")}`, { method: "PUT", json: { definition: { ...req.definition, url: "{{base}}/x" } } })).body);
+		d.TreeNode.parse((await api(`/nodes/${enc("g/r")}`, { method: "PATCH", json: { title: "R" } })).body);
+		d.EnvGroup.parse((await api("/envs/dev", { method: "PUT", json: { vars: { base: "http://127.0.0.1:1" } } })).body);
+		d.EnvList.parse((await api("/envs")).body);
+		z.object({ active: z.string().nullable() }).parse((await api("/active-env", { method: "PUT", json: { name: "dev" } })).body);
+		d.SecretItem.parse((await api("/envs/dev/secrets/tk", { method: "PUT", json: { from: "env", name: "HOME" } })).body);
+		z.array(d.SecretItem).parse((await api("/envs/dev/secrets")).body);
+		d.Resolved.parse((await api("/resolve", { method: "POST", json: { request: "g/r" } })).body);
 	});
 });

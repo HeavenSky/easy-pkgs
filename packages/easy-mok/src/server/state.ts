@@ -20,6 +20,8 @@ export type MockState = {
 	groups: Record<string, Record<string, string>>;
 	/** 请求忽略: 内置规则总开关, 逐条停用的内置规则, 管理页自定义规则 */
 	ignore: { defaults: boolean; disabled: string[]; custom: string[] };
+	/** 调试页当前激活的环境组 */
+	debug: { env: string | null };
 };
 
 export const defaults = (): MockState => ({
@@ -30,6 +32,7 @@ export const defaults = (): MockState => ({
 	routes: {},
 	groups: {},
 	ignore: { defaults: true, disabled: [], custom: [] },
+	debug: { env: null },
 });
 
 /** 只保留结构合法的字段, 其余丢弃, 防止手改坏的状态文件让服务崩溃. */
@@ -99,6 +102,9 @@ export const sanitize = (raw: unknown): MockState => {
 		}
 		base.ignore.disabled = strings(ig.disabled);
 		base.ignore.custom = strings(ig.custom);
+	}
+	if (isPlainObject(raw.debug) && typeof raw.debug.env === "string" && raw.debug.env) {
+		base.debug.env = raw.debug.env;
 	}
 	if (base.group && !base.groups[base.group]) {
 		base.group = null;

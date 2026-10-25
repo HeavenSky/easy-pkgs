@@ -9,7 +9,8 @@
 | `<mock 目录>/__scenes__/*.json`           | 管理页新建或录制的场景，每个路由一个文件               | 建议提交                           |
 | `<mock 目录>/__scenes__/<场景文件名>/` | 该路由文件场景的响应体文件；删除使用它的场景时一并删除 | 建议提交 |
 | `<mock 目录>/__gui__.json`                | 管理页新建的路由                                       | 建议提交                           |
-| `node_modules/.cache/easy-mok/state.json` | 手选场景、延迟、状态码、场景组、全局开关与请求忽略规则 | 不提交；删除 `node_modules` 后重置 |
+| `<mock 目录>/__debug__/` | 调试页的请求、环境组与敏感值来源 | 部分提交；见[在管理页调试真实接口](debug.md#提交调试页写出的文件) |
+| `node_modules/.cache/easy-mok/state.json` | 手选场景、延迟、状态码、场景组、全局开关、请求忽略规则与调试页激活的环境组 | 不提交；删除 `node_modules` 后重置 |
 
 状态文件的位置可以用 `stateFile` 选项修改，见[选项与环境变量](options.md)。
 

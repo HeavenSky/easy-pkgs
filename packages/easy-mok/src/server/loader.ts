@@ -9,6 +9,7 @@ import { codeScenes } from "./scene";
 import { compileScript } from "./script";
 import type { Scene } from "./scene";
 import { SCENES_DIR, GUI_FILE, bodyFileProblem } from "./files";
+import { DEBUG_DIR } from "./debug/names";
 import type { SceneFile, createFileStore } from "./files";
 import { etagOf, isPlainObject } from "./util";
 
@@ -293,6 +294,7 @@ export const createRegistry = (opt: {
 
 	// mock 目录不存在时监听最近的已存在祖先目录, 只放行通向 mock 目录的路径, 目录稍后创建(含多级)也能自动加载
 	const root = nearestExisting(folder);
+	const debugDir = path.join(folder, DEBUG_DIR);
 	const outside = (p: string) =>
 		root !== folder && !watchedDeps.has(p) && !isWithin(folder, p) && !isWithin(p, folder);
 	const watcher =
@@ -300,7 +302,9 @@ export const createRegistry = (opt: {
 			? null
 			: watch(root, {
 					ignoreInitial: true,
-					ignored: p => /[\\/]node_modules([\\/]|$)/.test(p) || outside(p),
+					// 调试数据(请求, 快照, 历史)写入频繁且不参与路由, 不监听
+					ignored: p =>
+						/[\\/]node_modules([\\/]|$)/.test(p) || outside(p) || isWithin(debugDir, p),
 					followSymlinks: false, // 与 walk 一致不跟随软链, 软链环会让 chokidar 报 ELOOP
 				});
 	// 未监听的 error 事件会让宿主进程退出; 权限, 句柄耗尽等错误只告警

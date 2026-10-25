@@ -13,6 +13,7 @@ import { extOfFile, isTextExt, typeOfExt } from "./mime";
 import { streamFile } from "./respond";
 import { isLoopback } from "./security";
 import type { LanControl } from "./lan";
+import { createDebugApi } from "./debug/api";
 import type { createFileStore } from "./files";
 import { MockError, assertName, etagOf } from "./util";
 import { SECRET_HEADERS } from "./journal";
@@ -25,7 +26,7 @@ import type { createIgnore } from "./ignore";
 
 export const UI_DIR = path.join(__dirname, "../../dist/ui");
 const FLOAT_LOADER = path.join(__dirname, "../../src/float/loader.js");
-const SPA_PATHS = /^\/(routes|logs|groups|diagnostics)?(\/.*)?$/;
+const SPA_PATHS = /^\/(routes|logs|groups|diagnostics|debug)?(\/.*)?$/;
 // 存为场景时不保留的响应头: 由传输层或服务器自动生成
 const DROP_HEADERS = new Set([
 	"content-length",
@@ -1024,6 +1025,9 @@ export const createAdmin = (ctx: AdminContext) => {
 			return { route: summary(routeOf(route.id)), scene: out };
 		})
 	);
+
+	const debug = createDebugApi({ folder: ctx.folder, state: store, emit: changed });
+	api.use("/debug", debug.router);
 
 	api.get("/events", (req, res) => events.connect(req, res));
 

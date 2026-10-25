@@ -4,3 +4,4 @@ dist/
 .DS_Store
 test/dev/mocks/__scenes__/
 test/dev/mocks/__gui__.json
+test/dev/mocks/__debug__/

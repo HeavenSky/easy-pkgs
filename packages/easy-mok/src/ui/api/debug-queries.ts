@@ -278,3 +278,20 @@ export const useLogToRequest = () =>
 	useDebugMutation(({ logId, parent, name }: { logId: string; parent: string | null; name?: string }) =>
 		request(z.object({ node: TreeNode, warnings: Warnings }), `/logs/${logId}/debug-request`, { method: "POST", body: { parent, name } })
 	);
+
+export const useCookies = (env: string | null) =>
+	useQuery({
+		queryKey: ["debug", "cookies", env],
+		enabled: !!env,
+		queryFn: ({ signal }) =>
+			request(
+				z.array(z.object({ name: z.string(), domain: z.string(), path: z.string(), expires: z.number().nullable(), secure: z.boolean(), httpOnly: z.boolean() }).loose()),
+				`/debug/envs/${encodeURIComponent(env!)}/cookies`,
+				{ signal }
+			),
+	});
+
+export const useClearCookies = () =>
+	useDebugMutation(({ env, name, domain, path }: { env: string; name?: string; domain?: string; path?: string }) =>
+		request(null, `/debug/envs/${encodeURIComponent(env)}/cookies`, { method: "DELETE", body: name ? { name, domain, path } : undefined })
+	);

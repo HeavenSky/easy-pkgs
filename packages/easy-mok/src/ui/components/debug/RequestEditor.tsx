@@ -250,6 +250,10 @@ export const RequestFields = ({
 						<input type="checkbox" checked={def.settings.insecureTLS} onChange={e => setSettings({ insecureTLS: e.target.checked })} />
 						不校验 HTTPS 证书(自签证书)
 					</label>
+					<label className="flex items-center gap-2 text-sm">
+						<input type="checkbox" checked={def.settings.skipCookieJar === true} onChange={e => setSettings({ skipCookieJar: e.target.checked })} />
+						不使用环境组的 Cookie jar
+					</label>
 					<Field label="HTTP 代理(可选, 如 http://user:pass@127.0.0.1:8888)">
 						<Input className="font-mono" value={def.settings.proxy || ""} onChange={e => setSettings({ proxy: e.target.value || null })} />
 					</Field>

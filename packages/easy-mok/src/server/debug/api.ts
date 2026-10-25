@@ -13,6 +13,7 @@ import { createHistoryStore } from "./history";
 import { createSnapshotStore } from "./snapshot";
 import type { Refs } from "./refs";
 import { diffResults } from "./diff";
+import { createCookieJar } from "./cookies";
 import { curlOfResolved, curlOfTemplate, parseCurl, toCurl } from "./curl";
 import { exportOpenApi, importOpenApi, sanitizeName } from "./openapi";
 import { performSend } from "./send";
@@ -210,6 +211,20 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 	);
 
 	router.get(
+		"/envs/:name/cookies",
+		wrap(req => createCookieJar(envs.cookiesFileOf(envs.get(String(req.params.name)).name)).list())
+	);
+
+	router.delete(
+		"/envs/:name/cookies",
+		wrap((req, res) => {
+			createCookieJar(envs.cookiesFileOf(envs.get(String(req.params.name)).name)).clear(isPlainObject(req.body) ? req.body : undefined);
+			changed();
+			res.status(204).end();
+		})
+	);
+
+	router.get(
 		"/envs/:name/secrets",
 		wrap(req => envs.listSecrets(String(req.params.name)))
 	);
@@ -303,7 +318,15 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 		const slot = history.allocate();
 		let result: SendResult;
 		try {
-			result = await performSend({ resolved, settings: input.definition.settings, folder: ctx.folder, dir: slot.dir, signal });
+			const jar = input.env && input.definition.settings.skipCookieJar !== true ? createCookieJar(envs.cookiesFileOf(input.env)) : null;
+			result = await performSend({
+				resolved,
+				settings: input.definition.settings,
+				folder: ctx.folder,
+				dir: slot.dir,
+				signal,
+				cookies: jar ? { header: jar.header, store: jar.store } : undefined,
+			});
 		} catch (err) {
 			fs.rmSync(slot.dir, { recursive: true, force: true });
 			throw err;

@@ -37,6 +37,7 @@ export const DEFAULT_SETTINGS = {
 	followRedirects: true,
 	insecureTLS: false,
 	proxy: null as string | null,
+	skipCookieJar: false,
 };
 
 /** weight 只认安全整数, 其余一律当作 0 */
@@ -129,6 +130,7 @@ export const normalizeDefinition = (raw: unknown) => {
 	}
 	settings.followRedirects = settings.followRedirects !== false;
 	settings.insecureTLS = settings.insecureTLS === true;
+	settings.skipCookieJar = settings.skipCookieJar === true;
 	def.settings = settings;
 	if (def.route !== null && def.route !== undefined && typeof def.route !== "string") throw bad("route 必须是字符串或 null", "route");
 	def.route = def.route ?? null;

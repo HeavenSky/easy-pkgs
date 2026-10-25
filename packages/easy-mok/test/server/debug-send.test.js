@@ -257,3 +257,89 @@ describe("调试请求发送与历史", () => {
 		expect((await ctx.api("/lan", { method: "PUT", json: { access: false } })).body).toMatchObject({ access: false, send: false });
 	});
 });
+
+describe("Cookie jar", () => {
+	let ctx;
+	let up;
+	let base;
+	const api = (url, init) => ctx.api(`/debug${url}`, init);
+	const def = (p, settings = {}, headers = []) => ({
+		method: "GET",
+		url: `{{base}}${p}`,
+		params: { path: {}, query: [] },
+		headers,
+		auth: { type: "none" },
+		body: { type: "none" },
+		settings: { timeoutMs: 5000, followRedirects: true, insecureTLS: false, proxy: null, ...settings },
+		route: null,
+	});
+	const send = async (p, settings, headers) => {
+		const r = (await api("/send", { method: "POST", json: { request: null, definition: def(p, settings, headers) } })).body;
+		const raw = await ctx.fetch(`/__mock/api/debug/history/${enc(r.id)}/raw`);
+		return { meta: r.meta, body: raw.status === 200 ? await raw.json() : null };
+	};
+
+	beforeAll(async () => {
+		up = http.createServer((req, res) => {
+			const p = new URL(req.url, "http://x").pathname;
+			if (p === "/login") {
+				res.writeHead(200, [
+					["set-cookie", "sid=1; Path=/"],
+					["set-cookie", "p=2; Path=/admin"],
+					["set-cookie", "s=3; Secure"],
+					["set-cookie", "old=1; Expires=Thu, 01 Jan 1970 00:00:00 GMT"],
+					["set-cookie", "evil=1; Domain=example.com"],
+				]);
+				return res.end();
+			}
+			if (p === "/logout") {
+				res.writeHead(200, [["set-cookie", "sid=; Path=/; Max-Age=0"]]);
+				return res.end();
+			}
+			if (p === "/redir") {
+				res.writeHead(302, [["set-cookie", "r=1; Path=/"], ["location", "/check"]]);
+				return res.end();
+			}
+			res.setHeader("content-type", "application/json");
+			res.end(JSON.stringify({ cookie: req.headers.cookie || null }));
+		});
+		base = `http://127.0.0.1:${await listen(up)}`;
+		ctx = await startHost({ files: { "mocks/a.js": "module.exports = {};" } });
+		await api("/envs/dev", { method: "PUT", json: { vars: { base } } });
+		await api("/active-env", { method: "PUT", json: { name: "dev" } });
+	});
+	afterAll(async () => {
+		await ctx.close();
+		up.close();
+	});
+
+	it("保存并按路径, Secure 与域名匹配携带; 列表不含值", async () => {
+		await send("/login");
+		expect((await send("/check")).body.cookie).toBe("sid=1");
+		expect((await send("/admin/check")).body.cookie).toBe("p=2; sid=1");
+		const list = (await api("/envs/dev/cookies")).body;
+		expect(list.map(c => c.name).sort()).toEqual(["p", "s", "sid"]);
+		expect(JSON.stringify(list)).not.toContain('"value"');
+	});
+
+	it("重定向中途设置的 cookie 被后续跳使用; Max-Age=0 删除", async () => {
+		expect((await send("/redir")).body.cookie).toBe("sid=1; r=1");
+		await send("/logout");
+		expect((await send("/check")).body.cookie).toBe("r=1");
+	});
+
+	it("skipCookieJar 时不读不写; 手写同名 cookie 优先", async () => {
+		expect((await send("/check", { skipCookieJar: true })).body.cookie).toBeNull();
+		expect((await send("/check", {}, [["cookie", "r=manual", true]])).body.cookie).toBe("r=manual");
+	});
+
+	it("清除单个或全部, 环境组改名时 cookie 跟着走", async () => {
+		await send("/login");
+		await api("/envs/dev/cookies", { method: "DELETE", json: { name: "sid" } });
+		expect((await send("/check")).body.cookie).toBe("r=1");
+		await api("/envs/dev", { method: "PATCH", json: { name: "dev2" } });
+		expect((await api("/envs/dev2/cookies")).body.length).toBeGreaterThan(0);
+		await api("/envs/dev2/cookies", { method: "DELETE" });
+		expect((await api("/envs/dev2/cookies")).body).toEqual([]);
+	});
+});

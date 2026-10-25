@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { errorMessage } from "@/api/client";
 import { DEBUG_NAME_RE, type EnvGroup } from "@/api/debug-contract";
 import {
+	useClearCookies,
+	useCookies,
 	useDeleteEnv,
 	useDeleteSecret,
 	useEnvs,
@@ -95,6 +97,49 @@ const SecretsEditor = ({ env }: { env: string }) => {
 	);
 };
 
+const CookieList = ({ env }: { env: string }) => {
+	const cookies = useCookies(env);
+	const clear = useClearCookies();
+	const list = cookies.data || [];
+	return (
+		<div className="space-y-1">
+			<div className="flex items-center gap-1 text-xs font-medium text-zinc-500">
+				Cookie jar(发送时自动保存与携带; 不显示值)
+				{list.length > 0 && (
+					<Button size="sm" variant="ghost" className="ml-auto" onClick={() => clear.mutate({ env }, { onError: fail })}>
+						全部清除
+					</Button>
+				)}
+			</div>
+			{list.length ? (
+				<ul className="text-xs">
+					{list.map(c => (
+						<li key={`${c.domain}${c.path}${c.name}`} className="flex items-center gap-2">
+							<code>{c.name}</code>
+							<span className="text-zinc-500">
+								{c.domain}
+								{c.path}
+								{c.secure ? " · Secure" : ""}
+								{c.expires ? ` · 到期 ${new Date(c.expires).toLocaleString("zh-CN", { hour12: false })}` : " · 会话"}
+							</span>
+							<Button
+								size="icon"
+								variant="ghost"
+								aria-label={`删除 cookie ${c.name}`}
+								onClick={() => clear.mutate({ env, name: c.name, domain: c.domain, path: c.path }, { onError: fail })}
+							>
+								<Trash2 size={12} />
+							</Button>
+						</li>
+					))}
+				</ul>
+			) : (
+				<p className="text-xs text-zinc-400">暂无</p>
+			)}
+		</div>
+	);
+};
+
 const GroupEditor = ({ group }: { group: EnvGroup }) => {
 	const save = useSaveEnv();
 	const rename = useRenameEnv();
@@ -148,6 +193,7 @@ const GroupEditor = ({ group }: { group: EnvGroup }) => {
 				保存环境组
 			</Button>
 			<SecretsEditor env={group.name} />
+			<CookieList env={group.name} />
 		</div>
 	);
 };

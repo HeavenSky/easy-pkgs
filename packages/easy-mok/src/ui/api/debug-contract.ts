@@ -61,6 +61,7 @@ export const Definition = z
 				followRedirects: z.boolean(),
 				insecureTLS: z.boolean(),
 				proxy: z.string().nullable(),
+				skipCookieJar: z.boolean().optional(),
 			})
 			.loose(),
 		route: z.string().nullable(),

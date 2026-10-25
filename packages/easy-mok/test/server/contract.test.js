@@ -111,6 +111,8 @@ module.exports = { "GET /a/:id": scenes({ default: 1, fn: (req, res) => res.json
 		z.object({ text: z.string() }).parse((await api("/export/curl", { method: "POST", json: { source: "request:g/r" } })).body);
 		z.object({ created: z.number(), warnings: z.array(z.string()) }).parse((await api("/import/openapi", { method: "POST", json: { text: '{"openapi":"3.1.0","paths":{}}', parent: null } })).body);
 		z.object({ text: z.string(), filename: z.string(), warnings: z.array(z.string()) }).parse((await api("/export/openapi", { method: "POST", json: { node: null } })).body);
+		z.array(z.object({ name: z.string(), domain: z.string(), path: z.string() }).loose()).parse((await api("/envs/dev/cookies")).body);
+		expect((await api("/envs/dev/cookies", { method: "DELETE" })).status).toBe(204);
 		const lastLog = z.array(c.LogSummary).parse((await ctx.api("/logs")).body).pop();
 		z.object({ node: d.TreeNode, warnings: z.array(z.string()) }).parse((await ctx.api(`/logs/${lastLog.id}/debug-request`, { method: "POST", json: { parent: "g", name: "fromlog" } })).body);
 		const routeId = Buffer.from("GET /a/:id").toString("base64url");

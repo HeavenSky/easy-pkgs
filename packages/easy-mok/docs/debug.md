@@ -95,7 +95,17 @@ Keep tokens out of the environment file by writing a placeholder instead of the 
 { "vars": { "baseUrl": "https://dev.example.com", "token": "<secret:dev_token>" } }
 ```
 
-Then configure the source `dev_token` under **Secret sources** (`敏感值来源`) as either a plain value or the name of an environment variable of the mock server process. The admin page never shows secret values, the preview keeps the placeholder, and secret sources can only be changed from an admin page opened on the local machine.
+Then configure the source `dev_token` under **Secret sources** (`敏感值来源`). Prefer a source that keeps the value out of files:
+
+| Source | Where the value comes from |
+| --- | --- |
+| **System keychain** (`系统钥匙串`) | A service and account in the macOS keychain (`security`) or the Linux secret service (`secret-tool`) |
+| **Command output** (`命令输出`) | The standard output of a command, such as `op read op://dev/api/token`; it runs without a shell and times out after 15 seconds |
+| **Typed when sending** (`发送时输入`) | Asked for the first time you send; kept only in the mock server's memory until it restarts |
+| **Environment variable** (`环境变量`) | An environment variable of the mock server process |
+| **Plain value** (`明文值`) | Stored in `environments/secret/<group>.json`, which is never committed |
+
+Keychain and command values are cached in memory for 10 minutes. The admin page never shows secret values, the preview keeps the placeholder, and secret sources can only be changed from an admin page opened on the local machine.
 
 ## Commit what the debug page writes
 
@@ -105,7 +115,22 @@ Everything lives under `__debug__/` in the mock folder, which mock loading and h
 | --- | --- | --- |
 | `__debug__/requests/` | Groups and requests: `req.json` holds the request, `__meta__.json` holds the display name, weight, and variables; snapshots are in `res/<name>/` under each request | Yes |
 | `__debug__/environments/<group>.json` | Environment variables, with `<secret:id>` placeholders for secrets | Yes |
-| `__debug__/environments/secret/` | Secret sources, including plain values | No; add it to `.gitignore` |
-| `__debug__/history/` | Every send: the request actually sent, the response headers, and the body as its own file | No; add it to `.gitignore` |
+| `__debug__/redact.json` | Field rules for snapshots | Yes |
+| `__debug__/environments/secret/` | Secret sources and cookie jars | No; excluded automatically |
+| `__debug__/history/` | Every send: the request actually sent, the response headers, and the body as its own file | No; excluded automatically |
 
-Secret sources and history are stored as plain text for now, including the real `authorization` headers that were sent, so keep `environments/secret/` and `history/` out of version control.
+easy-mok writes a `.gitignore` containing `*` into `environments/secret/` and `history/` the first time it uses them, so they stay out of version control without touching your own `.gitignore`.
+
+## Keep secrets out of what you commit
+
+Everything easy-mok writes about a send replaces secrets before it reaches the disk:
+
+- Values from secret sources become `<secret:id>` in the URL, headers, text body, and recorded variables, as long as they are at least 6 characters long; shorter values are too likely to match unrelated text.
+- `authorization`, `proxy-authorization`, `cookie`, `set-cookie`, and `x-auth-token` request headers that still hold a real value are written as `***`.
+- Response bodies are kept as received in the history, which is not committed.
+
+Snapshots are committed, so saving one applies more:
+
+- `set-cookie` response headers become `***` unless you tick **Keep set-cookie** (`保留 set-cookie`) when saving; only snapshots saved that way can replay cookies in a scene.
+- JSON response and request bodies go through the field rules under **Snapshot redaction rules** (`快照脱敏规则`). A plain name such as `phone` matches that key at any depth, case-insensitively; a path such as `$.data.*.idCard` matches from the root, with `*` for any key or index. Matching values become `***`. Without your own rules, common credential fields such as `password`, `token`, and `apiKey` are redacted; your rules are saved in `__debug__/redact.json`.
+- After saving, the admin page reports how many fields were redacted, whether `set-cookie` was masked, and whether a binary request body was kept as is.

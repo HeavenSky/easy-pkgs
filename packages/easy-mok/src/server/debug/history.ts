@@ -5,6 +5,7 @@ import path from "path";
 import { MockError } from "../util";
 import { META_FILE } from "./names";
 import { readJson } from "./store";
+import { ensureIgnoredDir } from "./redact";
 
 export const DAY_SPLIT_BYTES = 50 * 1024 * 1024;
 export const WARN_BYTES = 1024 * 1024 * 1024;
@@ -73,6 +74,7 @@ const dirSize = (dir: string) => {
 export const createHistoryStore = (debugRoot: string) => {
 	const root = path.join(debugRoot, "history");
 	let total: number | null = null;
+	if (fs.existsSync(root)) ensureIgnoredDir(root);
 
 	const listDir = (dir: string, re: RegExp) => {
 		try {
@@ -113,6 +115,7 @@ export const createHistoryStore = (debugRoot: string) => {
 		const name = `${time}_${crypto.randomBytes(3).toString("hex")}`;
 		const id = [...parts, name].join("/");
 		const dir = path.join(root, ...parts, name);
+		ensureIgnoredDir(root); // 历史不提交
 		fs.mkdirSync(dir, { recursive: true });
 		return { id, dir, indexFile: path.join(root, ...parts, INDEX) };
 	};

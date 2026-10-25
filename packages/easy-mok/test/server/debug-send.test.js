@@ -109,7 +109,7 @@ describe("调试请求发送与历史", () => {
 		await listen(proxy);
 		ctx = await startHost({ files: { "mocks/a.js": "module.exports = {};", "mocks/_data/up.txt": "file-body" } });
 		await api("/envs/dev", { method: "PUT", json: { vars: { base: upUrl, token: "<secret:tk>" } } });
-		await api("/envs/dev/secrets/tk", { method: "PUT", json: { from: "value", value: "s3" } });
+		await api("/envs/dev/secrets/tk", { method: "PUT", json: { from: "value", value: "s3cret-token" } });
 		await api("/active-env", { method: "PUT", json: { name: "dev" } });
 	});
 	afterAll(async () => {
@@ -125,9 +125,10 @@ describe("调试请求发送与历史", () => {
 		const { meta, id } = res.body;
 		expect(meta.response.status).toBe(200);
 		expect(meta.request.url).toBe(`${upUrl}/echo`);
-		expect(meta.request.headers).toContainEqual(["authorization", "Bearer s3"]);
+		// 历史中敏感值回填为占位符
+		expect(meta.request.headers).toContainEqual(["authorization", "Bearer <secret:tk>"]);
 		expect(meta.request.body).toEqual({ type: "text", text: JSON.stringify({ a: upUrl }) });
-		expect(meta.template.values.token).toEqual({ value: "s3", from: "secret:tk" });
+		expect(meta.template.values.token).toEqual({ value: "<secret:tk>", from: "secret:tk" });
 		expect(meta.template.request.url).toBe("{{base}}/echo");
 		expect(meta.reqHash).toMatch(/^sha256:[0-9a-f]{64}$/);
 		const echoed = JSON.parse((await raw(id)).buf.toString());
@@ -216,7 +217,8 @@ describe("调试请求发送与历史", () => {
 		expect(next.items[0].id).not.toBe(all.items[1].id);
 		expect(all.totalBytes).toBeGreaterThan(50 * 1024 * 1024);
 		const hist = path.join(ctx.dir, "mocks", "__debug__", "history");
-		const day = fs.readdirSync(hist)[0];
+		const day = fs.readdirSync(hist).find(n => /^\d{8}$/.test(n));
+		expect(fs.readFileSync(path.join(hist, ".gitignore"), "utf8")).toBe("*\n");
 		const r = (await send(def("{{base}}/echo"))).body;
 		expect(r.id.split("/").length).toBe(3); // 当天已超过 50MB(截断用例), 新条目在小时目录下
 		expect(fs.existsSync(path.join(hist, ...r.id.split("/"), "__meta__.json"))).toBe(true);

@@ -12,6 +12,7 @@ import { streamFile } from "../respond";
 import { createHistoryStore } from "./history";
 import { createSnapshotStore } from "./snapshot";
 import type { Refs } from "./refs";
+import { createRedactRules, redactRequest, redactValues, secretHitsOf } from "./redact";
 import { diffResults } from "./diff";
 import { createCookieJar } from "./cookies";
 import { curlOfResolved, curlOfTemplate, parseCurl, toCurl } from "./curl";
@@ -70,7 +71,8 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 	const store = createDebugStore(ctx.folder);
 	const envs = createEnvStore(store.root);
 	const history = createHistoryStore(store.root);
-	const snapshots = createSnapshotStore({ store, history });
+	const redactRules = createRedactRules(store.root);
+	const snapshots = createSnapshotStore({ store, history, rules: () => redactRules.get().fields });
 	const router = express.Router();
 	const changed = () => ctx.emit("debug");
 	const idParam = (req: Req, name = "id") => decodeId(req.params[name]);
@@ -239,6 +241,31 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 		})
 	);
 
+	/** prompt 来源: 在管理页输入的值只保存在内存中 */
+	router.put(
+		"/envs/:name/secrets/:srcId/value",
+		wrap((req, res) => {
+			localOnly(req, "敏感值");
+			envs.enterPrompt(String(req.params.name), String(req.params.srcId), (req.body || {}).value);
+			changed();
+			res.status(204).end();
+		})
+	);
+
+	router.get(
+		"/redact",
+		wrap(() => redactRules.get())
+	);
+
+	router.put(
+		"/redact",
+		wrap(req => {
+			const out = redactRules.put((req.body || {}).fields);
+			changed();
+			return out;
+		})
+	);
+
 	router.delete(
 		"/envs/:name/secrets/:srcId",
 		wrap((req, res) => {
@@ -310,6 +337,7 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 		signal: AbortSignal,
 		extra?: (result: SendResult) => SendResult
 	) => {
+		if (input.env) await envs.prefetchSecrets(input.env);
 		const resolved = resolveRequest({ store, envs }, { ...input, mode: "send" });
 		if (resolved.unresolved.length) {
 			throw new MockError("UNRESOLVED_VARS", 400, `有未解析的变量: ${resolved.unresolved.join(", ")}`, { vars: resolved.unresolved });
@@ -332,14 +360,17 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 			throw err;
 		}
 		if (extra) result = extra(result);
+		// 历史与快照不落敏感值原文: 回填占位符, 敏感请求头写成 ***
+		const hits = secretHitsOf(resolved.values);
+		const request = redactRequest(result.request, hits);
 		const meta = {
 			version: 1,
 			origin: { kind: "debug", request: input.requestId },
 			capturedAt: localIso(new Date()),
 			reqHash: reqHashOf(input.definition),
 			timing: result.timing,
-			request: result.request,
-			template: { env: input.env, request: input.definition, values: resolved.values },
+			request,
+			template: { env: input.env, request: input.definition, values: redactValues(resolved.values) },
 			response: result.response,
 			error: result.error,
 			note: "",
@@ -348,8 +379,8 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 		const line = history.commit(slot, {
 			request: input.requestId,
 			env: input.env,
-			method: result.request.method,
-			url: result.request.url,
+			method: request.method,
+			url: request.url,
 			status: result.response ? result.response.status : null,
 			durationMs: result.timing.durationMs,
 			time: Date.now(),
@@ -594,7 +625,7 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 
 	router.post(
 		"/export/curl",
-		wrap(req => {
+		wrap(async req => {
 			const body = isPlainObject(req.body) ? req.body : {};
 			const source = String(body.source || "");
 			if (source.startsWith("request:")) {
@@ -602,6 +633,7 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 				const { definition } = store.getRequest(requestId);
 				if (body.resolve !== true) return { text: curlOfTemplate(definition) };
 				const env = body.env === undefined ? activeEnv() : body.env === null ? null : envs.get(String(body.env)).name;
+				if (env) await envs.prefetchSecrets(env);
 				return { text: curlOfResolved(resolveRequest({ store, envs }, { requestId, definition, env, mode: "send" })) };
 			}
 			if (source.startsWith("history:")) {

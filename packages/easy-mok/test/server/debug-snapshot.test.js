@@ -38,7 +38,7 @@ describe("命名快照", () => {
 		const sent = (await sendSaved()).body;
 		const res = await save(sent.id, { name: "ok", title: "正常", weight: 3 });
 		expect(res.status).toBe(201);
-		expect(res.body).toEqual({ id: "u/get#ok", request: "u/get", name: "ok", title: "正常", weight: 3 });
+		expect(res.body).toMatchObject({ id: "u/get#ok", request: "u/get", name: "ok", title: "正常", weight: 3, redaction: { fields: 0, setCookie: "none" } });
 		const snap = (await api(`/snapshots/${enc("u/get#ok")}`)).body;
 		expect(snap.meta).toMatchObject({ name: "正常", weight: 3, vars: {}, replay: { setCookie: false }, origin: { kind: "debug", historyId: sent.id } });
 		expect(snap.meta.response.status).toBe(200);

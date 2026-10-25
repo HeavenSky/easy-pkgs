@@ -18,9 +18,9 @@ describe("场景引用快照", () => {
 	const dapi = (url, init) => ctx.api(`/debug${url}`, init);
 	const putScene = (name, envelope, extra = "") => api(`/routes/${RID}/scenes/${name}${extra}`, { method: "PUT", json: envelope });
 	const fromSnap = (name, body) => api(`/routes/${RID}/scenes/${name}/from-snapshot`, { method: "POST", json: body });
-	const capture = async (request, name, overwrite = false) => {
+	const capture = async (request, name, overwrite = false, keepSetCookie) => {
 		const sent = (await dapi("/send", { method: "POST", json: { request } })).body;
-		return dapi(`/history/${enc(sent.id)}/snapshot`, { method: "POST", json: { request, name, overwrite } });
+		return dapi(`/history/${enc(sent.id)}/snapshot`, { method: "POST", json: { request, name, overwrite, keepSetCookie } });
 	};
 	const setUrl = async (id, url) => {
 		const got = (await dapi(`/requests/${enc(id)}`)).body;
@@ -51,6 +51,7 @@ describe("场景引用快照", () => {
 		await setUrl("u/csv", `${upUrl}/csv`);
 		await capture("u/get", "ok");
 		await capture("u/csv", "table");
+		await capture("u/csv", "tablek", false, true);
 	});
 	afterAll(async () => {
 		await ctx.close();
@@ -86,9 +87,15 @@ describe("场景引用快照", () => {
 		expect(res.headers.get("content-type")).toBe("text/csv");
 		expect(await res.text()).toBe("a,b\n1,2\n");
 		expect(res.headers.get("set-cookie")).toBeNull();
-		await dapi(`/snapshots/${enc("u/csv#table")}`, { method: "PATCH", json: { replay: { setCookie: true } } });
-		res = await ctx.fetch("/api/user/1?__scene=table");
+		// 默认另存时 set-cookie 已脱敏, 不能再开启回放
+		expect((await dapi(`/snapshots/${enc("u/csv#table")}`, { method: "PATCH", json: { replay: { setCookie: true } } })).status).toBe(409);
+		const meta = (await dapi(`/snapshots/${enc("u/csv#table")}`)).body.meta;
+		expect(meta.response.headers).toContainEqual(["set-cookie", "***"]);
+		expect(meta.redaction).toMatchObject({ setCookie: "masked" });
+		await putScene("tablek", { ref: "u/csv#tablek" });
+		res = await ctx.fetch("/api/user/1?__scene=tablek");
 		expect(res.headers.get("set-cookie")).toBe("sid=1");
+		await api(`/routes/${RID}/scenes/tablek`, { method: "DELETE" });
 	});
 
 	it("拷贝: 小 JSON 内联, 其他写归属文件; 失败的发送不能用作场景", async () => {

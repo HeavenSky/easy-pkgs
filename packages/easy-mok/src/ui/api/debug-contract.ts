@@ -98,9 +98,13 @@ export type EnvList = z.infer<typeof EnvList>;
 
 export const SecretItem = z.object({
 	id: z.string(),
-	from: z.enum(["value", "env"]).nullable(),
+	from: z.enum(["value", "env", "keychain", "command", "prompt"]).nullable(),
 	configured: z.boolean(),
 	envName: z.string().optional(),
+	service: z.string().optional(),
+	account: z.string().optional(),
+	argv: z.array(z.string()).optional(),
+	entered: z.boolean().optional(),
 });
 export type SecretItem = z.infer<typeof SecretItem>;
 
@@ -185,13 +189,23 @@ export type HistoryPage = z.infer<typeof HistoryPage>;
 
 export const HistoryDays = z.array(z.object({ day: z.string(), bytes: z.number(), count: z.number() }));
 
+export const Redaction = z.object({
+	fields: z.number(),
+	setCookie: z.enum(["kept", "masked", "none"]),
+	binaryRequest: z.boolean(),
+});
+export type Redaction = z.infer<typeof Redaction>;
+
 export const SnapshotSummary = z.object({
 	id: z.string(),
 	request: z.string(),
 	name: z.string(),
 	title: z.string(),
 	weight: z.number(),
+	redaction: Redaction.optional(),
 });
+
+export const RedactRules = z.object({ fields: z.array(z.string()), custom: z.boolean() });
 export type SnapshotSummary = z.infer<typeof SnapshotSummary>;
 
 export const SnapshotDetail = z.object({

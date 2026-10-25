@@ -2,11 +2,13 @@ import { KeyRound, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { errorMessage } from "@/api/client";
-import { DEBUG_NAME_RE, type EnvGroup } from "@/api/debug-contract";
+import { DEBUG_NAME_RE, type EnvGroup, type SecretItem } from "@/api/debug-contract";
 import {
 	useClearCookies,
 	useCookies,
 	useDeleteEnv,
+	useEnterSecret,
+	type SecretSourceInput,
 	useDeleteSecret,
 	useEnvs,
 	useRenameEnv,
@@ -16,32 +18,107 @@ import {
 	useSetActiveEnv,
 } from "@/api/debug-queries";
 import { Button } from "../ui/button";
-import { ConfirmDialog } from "../ui/dialog";
+import { ConfirmDialog, Dialog } from "../ui/dialog";
 import { Input, Label, Select } from "../ui/input";
 import { ErrorState, Spinner } from "../ui/state";
 import { VarsEditor, varsToRecord } from "./KeyValueEditor";
 
 const fail = (err: unknown) => toast.error(errorMessage(err));
 
+/** 命令行按空白拆分, 支持单双引号; 不做变量展开 */
+export const splitArgs = (text: string) => {
+	const out: string[] = [];
+	const re = /"([^"]*)"|'([^']*)'|(\S+)/g;
+	let m: RegExpExecArray | null;
+	while ((m = re.exec(text))) out.push(m[1] ?? m[2] ?? m[3]);
+	return out;
+};
+
+const FROM_TEXT: Record<string, string> = {
+	value: "明文值",
+	env: "环境变量",
+	keychain: "系统钥匙串",
+	command: "命令输出",
+	prompt: "发送时输入",
+};
+
+const describe = (s: SecretItem) =>
+	!s.configured
+		? "未配置"
+		: s.from === "env"
+			? `环境变量 ${s.envName}`
+			: s.from === "keychain"
+				? `钥匙串 ${s.service} / ${s.account}`
+				: s.from === "command"
+					? `命令 ${(s.argv || []).join(" ")}`
+					: s.from === "prompt"
+						? s.entered
+							? "发送时输入(本次运行已输入)"
+							: "发送时输入(尚未输入)"
+						: "明文值(保存在不提交的 secret/ 中)";
+
+/** prompt 来源的输入框; 值只发到本机服务端内存 */
+export const PromptSecretDialog = ({ env, srcId, onClose, onDone }: { env: string; srcId: string; onClose: () => void; onDone?: () => void }) => {
+	const enter = useEnterSecret();
+	const [value, setValue] = useState("");
+	return (
+		<Dialog
+			open
+			onClose={onClose}
+			title={`输入敏感值 ${srcId}`}
+			footer={
+				<>
+					<Button onClick={onClose}>取消</Button>
+					<Button
+						variant="default"
+						disabled={!value || enter.isPending}
+						onClick={() =>
+							enter.mutate(
+								{ env, id: srcId, value },
+								{
+									onSuccess: () => {
+										onClose();
+										onDone?.();
+									},
+									onError: fail,
+								}
+							)
+						}
+					>
+						确定
+					</Button>
+				</>
+			}
+		>
+			<Label>
+				环境组 {env} 的来源 {srcId}; 值只保存在 mock 服务的内存中, 重启后需要重新输入
+				<Input type="password" autoFocus value={value} onChange={e => setValue(e.target.value)} />
+			</Label>
+		</Dialog>
+	);
+};
+
 const SecretsEditor = ({ env }: { env: string }) => {
 	const secrets = useSecrets(env);
 	const save = useSaveSecret();
 	const remove = useDeleteSecret();
 	const [id, setId] = useState("");
-	const [from, setFrom] = useState<"value" | "env">("value");
-	const [value, setValue] = useState("");
-	const submit = (srcId: string) =>
-		save.mutate(
-			{ env, id: srcId, source: from === "value" ? { from, value } : { from, name: value } },
-			{
-				onSuccess: () => {
-					toast.success(`已配置来源 ${srcId}`);
-					setId("");
-					setValue("");
-				},
-				onError: fail,
-			}
-		);
+	const [from, setFrom] = useState<SecretSourceInput["from"]>("keychain");
+	const [a, setA] = useState("");
+	const [b, setB] = useState("");
+	const [prompting, setPrompting] = useState<string | null>(null);
+	const sourceOf = (): SecretSourceInput | null =>
+		from === "value"
+			? a ? { from, value: a } : null
+			: from === "env"
+				? a ? { from, name: a } : null
+				: from === "keychain"
+					? a ? { from, service: a, account: b } : null
+					: from === "command"
+						? splitArgs(a).length ? { from, argv: splitArgs(a) } : null
+						: { from: "prompt" };
+	const source = sourceOf();
+	const valid = /^[A-Za-z0-9_]{1,64}$/.test(id) && !!source;
 	return (
 		<div className="space-y-2">
 			<div className="flex items-center gap-1 text-xs font-medium text-zinc-500">
@@ -51,10 +128,11 @@ const SecretsEditor = ({ env }: { env: string }) => {
 			{secrets.data?.map(s => (
 				<div key={s.id} className="flex items-center gap-2 text-xs">
 					<code>{s.id}</code>
-					{s.configured ? (
-						<span className="text-emerald-700">{s.from === "env" ? `环境变量 ${s.envName}` : "已配置明文值"}</span>
-					) : (
-						<span className="text-amber-700">未配置</span>
+					<span className={s.configured ? "text-emerald-700" : "text-amber-700"}>{describe(s)}</span>
+					{s.from === "prompt" && (
+						<Button size="sm" variant="ghost" onClick={() => setPrompting(s.id)}>
+							输入
+						</Button>
 					)}
 					<Button size="sm" variant="ghost" onClick={() => setId(s.id)}>
 						{s.configured ? "修改" : "配置"}
@@ -70,29 +148,59 @@ const SecretsEditor = ({ env }: { env: string }) => {
 				className="flex flex-wrap items-end gap-1.5"
 				onSubmit={e => {
 					e.preventDefault();
-					if (/^[A-Za-z0-9_]{1,64}$/.test(id)) submit(id);
+					if (!valid || !source) return;
+					save.mutate(
+						{ env, id, source },
+						{
+							onSuccess: () => {
+								toast.success(`已配置来源 ${id}`);
+								setId("");
+								setA("");
+								setB("");
+							},
+							onError: fail,
+						}
+					);
 				}}
 			>
 				<Input aria-label="来源 id" className="w-28 font-mono text-xs" placeholder="来源 id" value={id} onChange={e => setId(e.target.value)} />
-				<Select aria-label="来源类型" className="w-24 text-xs" value={from} onChange={e => setFrom(e.target.value as "value" | "env")}>
-					<option value="value">明文值</option>
-					<option value="env">环境变量</option>
+				<Select
+					aria-label="来源类型"
+					className="w-28 text-xs"
+					value={from}
+					onChange={e => {
+						setFrom(e.target.value as SecretSourceInput["from"]);
+						setA("");
+						setB("");
+					}}
+				>
+					{Object.entries(FROM_TEXT).map(([k, t]) => (
+						<option key={k} value={k}>
+							{t}
+						</option>
+					))}
 				</Select>
-				<Input
-					aria-label="来源取值"
-					type={from === "value" ? "password" : "text"}
-					className="w-40 font-mono text-xs"
-					placeholder={from === "value" ? "值" : "环境变量名"}
-					value={value}
-					onChange={e => setValue(e.target.value)}
-				/>
-				<Button size="sm" type="submit" disabled={!/^[A-Za-z0-9_]{1,64}$/.test(id) || save.isPending}>
+				{from !== "prompt" && (
+					<Input
+						aria-label="来源取值"
+						type={from === "value" ? "password" : "text"}
+						className="w-44 font-mono text-xs"
+						placeholder={{ value: "值", env: "环境变量名", keychain: "service", command: "如 op read op://dev/api/token", prompt: "" }[from]}
+						value={a}
+						onChange={e => setA(e.target.value)}
+					/>
+				)}
+				{from === "keychain" && (
+					<Input aria-label="钥匙串 account" className="w-28 font-mono text-xs" placeholder="account" value={b} onChange={e => setB(e.target.value)} />
+				)}
+				<Button size="sm" type="submit" disabled={!valid || save.isPending}>
 					保存来源
 				</Button>
 			</form>
 			<p className="text-xs text-zinc-500">
-				在变量值里写 <code>{"<secret:来源id>"}</code> 引用来源.
+				在变量值里写 <code>{"<secret:来源id>"}</code> 引用来源. 推荐用钥匙串(macOS 的 security, Linux 的 secret-tool), 命令输出或发送时输入, 不把明文写进文件; 命令不经 shell 执行, 超时 15 秒, 结果在内存中缓存 10 分钟.
 			</p>
+			{prompting && <PromptSecretDialog env={env} srcId={prompting} onClose={() => setPrompting(null)} />}
 		</div>
 	);
 };

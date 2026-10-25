@@ -13,6 +13,7 @@ import {
 	HistoryPage,
 	DiffResult,
 	RefreshResult,
+	RedactRules,
 	Resolved,
 	SnapshotDetail,
 	SnapshotSummary,
@@ -21,6 +22,13 @@ import {
 	encodeId,
 	type Definition,
 } from "./debug-contract";
+
+export type SecretSourceInput =
+	| { from: "value"; value: string }
+	| { from: "env"; name: string }
+	| { from: "keychain"; service: string; account: string }
+	| { from: "command"; argv: string[] }
+	| { from: "prompt" };
 
 export const debugKeys = {
 	all: ["debug"] as const,
@@ -117,7 +125,7 @@ export const useSecrets = (env: string | null) =>
 
 export const useSaveSecret = () =>
 	useDebugMutation(
-		({ env, id, source }: { env: string; id: string; source: { from: "value"; value: string } | { from: "env"; name: string } }) =>
+		({ env, id, source }: { env: string; id: string; source: SecretSourceInput }) =>
 			request(SecretItem, `/debug/envs/${encodeURIComponent(env)}/secrets/${encodeURIComponent(id)}`, {
 				method: "PUT",
 				body: source,
@@ -191,7 +199,7 @@ export const snapshotRawUrl = (sid: string) => `${API_BASE}/debug/snapshots/${en
 
 export const useSaveSnapshot = () =>
 	useDebugMutation(
-		({ hid, body }: { hid: string; body: { request: string; name: string; title?: string; weight?: number; overwrite?: boolean } }) =>
+		({ hid, body }: { hid: string; body: { request: string; name: string; title?: string; weight?: number; overwrite?: boolean; keepSetCookie?: boolean } }) =>
 			request(SnapshotSummary, `/debug/history/${encodeId(hid)}/snapshot`, { method: "POST", body })
 	);
 
@@ -295,3 +303,14 @@ export const useClearCookies = () =>
 	useDebugMutation(({ env, name, domain, path }: { env: string; name?: string; domain?: string; path?: string }) =>
 		request(null, `/debug/envs/${encodeURIComponent(env)}/cookies`, { method: "DELETE", body: name ? { name, domain, path } : undefined })
 	);
+
+export const useEnterSecret = () =>
+	useDebugMutation(({ env, id, value }: { env: string; id: string; value: string }) =>
+		request(null, `/debug/envs/${encodeURIComponent(env)}/secrets/${encodeURIComponent(id)}/value`, { method: "PUT", body: { value } })
+	);
+
+export const useRedactRules = () =>
+	useQuery({ queryKey: ["debug", "redact"], queryFn: ({ signal }) => request(RedactRules, "/debug/redact", { signal }) });
+
+export const useSaveRedactRules = () =>
+	useDebugMutation((fields: string[]) => request(RedactRules, "/debug/redact", { method: "PUT", body: { fields } }));

@@ -2,7 +2,7 @@ import { Camera, History, Send, ShieldAlert, Square } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Link, useLocation, useParams } from "wouter";
-import { errorMessage } from "@/api/client";
+import { ApiError, errorMessage } from "@/api/client";
 import { encodeId, type TreeNode } from "@/api/debug-contract";
 import { historyRawUrl, useDebugTree, useDeleteNode, useDiff, useHistoryEntry, useSend } from "@/api/debug-queries";
 import { DiffView } from "@/components/debug/DiffView";
@@ -14,7 +14,8 @@ import { SnapshotPanel } from "@/components/debug/SnapshotPanel";
 import { ResponseViewer } from "@/components/debug/ResponseViewer";
 import { Button } from "@/components/ui/button";
 import { DebugTree } from "@/components/debug/DebugTree";
-import { EnvPanel } from "@/components/debug/EnvPanel";
+import { EnvPanel, PromptSecretDialog } from "@/components/debug/EnvPanel";
+import { RedactRulesPanel } from "@/components/debug/RedactRulesPanel";
 import { NodeDialog, type NodeDialogState } from "@/components/debug/NodeDialog";
 import { RequestEditor, definitionOf } from "@/components/debug/RequestEditor";
 import { ConfirmDialog } from "@/components/ui/dialog";
@@ -47,13 +48,20 @@ const Workbench = ({ id, snapshot, tree }: { id: string; snapshot: string | null
 	const fromHistory = useHistoryEntry(viewing && viewing !== send.data?.id ? viewing : null);
 	const current = viewing && viewing !== send.data?.id ? fromHistory.data : send.data;
 	const fail = (err: unknown) => toast.error(errorMessage(err));
+	const [prompt, setPrompt] = useState<{ env: string; srcId: string; retry: () => void } | null>(null);
 	const sendWith = (input: Parameters<typeof send.mutate>[0]) =>
 		send.mutate(input, {
 			onSuccess: e => {
 				setViewing(e.id);
 				if (snapshot) navigate(requestPath(id));
 			},
-			onError: fail,
+			onError: err => {
+				// prompt 来源尚未输入: 输入后自动重发
+				const d = err instanceof ApiError ? (err.details as { prompt?: boolean; srcId?: string; env?: string } | undefined) : undefined;
+				if (err instanceof ApiError && err.code === "SECRET_UNAVAILABLE" && d?.prompt && d.srcId && d.env) {
+					setPrompt({ env: d.env, srcId: d.srcId, retry: () => sendWith(input) });
+				} else fail(err);
+			},
 		});
 	const saveButton = (hid: string) => (
 		<Button size="sm" onClick={() => setSaving(hid)}>
@@ -134,6 +142,7 @@ const Workbench = ({ id, snapshot, tree }: { id: string; snapshot: string | null
 					)}
 				/>
 			</section>
+			{prompt && <PromptSecretDialog env={prompt.env} srcId={prompt.srcId} onClose={() => setPrompt(null)} onDone={prompt.retry} />}
 			{saving && (
 				<SaveSnapshotDialog hid={saving} requestId={id} tree={tree} onClose={() => setSaving(null)} onSaved={sid => navigate(snapshotPath(sid))} />
 			)}
@@ -170,7 +179,7 @@ export const DebugPage = () => {
 		<div className="flex h-full min-h-0 flex-col">
 			<div role="note" className="flex items-center gap-2 bg-amber-50 px-4 py-1.5 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-200">
 				<ShieldAlert size={14} />
-				调试数据目前以明文保存在 mock 目录的 <code>__debug__/</code> 下; 不要提交 <code>environments/secret/</code> 与 <code>history/</code>, 快照中的请求头也可能含真实凭据.
+				<code>environments/secret/</code> 与 <code>history/</code> 已用目录内的 <code>.gitignore</code> 排除在版本库外; 请求, 环境组与快照会提交, 敏感值写成 <code>{"<secret:id>"}</code>, 另存快照时按脱敏规则处理响应字段.
 				<Link href="/debug/history" className="ml-auto inline-flex items-center gap-1 text-sky-700 hover:underline">
 					<History size={14} />
 					全部历史
@@ -238,6 +247,8 @@ export const DebugPage = () => {
 				<aside className="min-h-0 overflow-auto p-3">
 					<div className="mb-2 text-xs font-medium text-zinc-500">环境组</div>
 					<EnvPanel />
+					<div className="mt-4 mb-2 text-xs font-medium text-zinc-500">快照脱敏规则</div>
+					<RedactRulesPanel />
 				</aside>
 			</div>
 			{dialog && (

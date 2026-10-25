@@ -28,14 +28,23 @@ export const SaveSnapshotDialog = ({
 	const [name, setName] = useState("");
 	const [title, setTitle] = useState("");
 	const [conflict, setConflict] = useState(false);
+	const [keepSetCookie, setKeepSetCookie] = useState(false);
 	const save = useSaveSnapshot();
 	const valid = DEBUG_NAME_RE.test(name.normalize("NFC")) && !!request;
 	const submit = (overwrite: boolean) =>
 		save.mutate(
-			{ hid, body: { request, name, title: title || undefined, overwrite } },
+			{ hid, body: { request, name, title: title || undefined, overwrite, keepSetCookie: keepSetCookie || undefined } },
 			{
 				onSuccess: out => {
-					toast.success(`已保存快照「${out.title}」`);
+					const r = out.redaction;
+					const notes = r
+						? [
+								r.fields ? `脱敏 ${r.fields} 个字段` : "",
+								r.setCookie === "masked" ? "set-cookie 已写成 ***" : "",
+								r.binaryRequest ? "二进制请求体未脱敏" : "",
+							].filter(Boolean)
+						: [];
+					toast.success(`已保存快照「${out.title}」${notes.length ? `: ${notes.join(", ")}` : ""}`);
 					onSaved?.(out.id);
 					onClose();
 				},
@@ -93,6 +102,13 @@ export const SaveSnapshotDialog = ({
 					展示名(可选)
 					<Input value={title} onChange={e => setTitle(e.target.value)} />
 				</Label>
+				<label className="flex items-center gap-2 text-sm">
+					<input type="checkbox" checked={keepSetCookie} onChange={e => setKeepSetCookie(e.target.checked)} />
+					保留 set-cookie(用于场景回放; 会写进快照)
+				</label>
+				<p className="text-xs text-zinc-500">
+					快照保存在 <code>requests/</code> 下, 通常会提交到仓库. 敏感值已写成 <code>{"<secret:id>"}</code>, 敏感请求头写成 <code>***</code>; JSON 响应体按右侧"快照脱敏规则"处理; 请确认响应中没有其他个人信息.
+				</p>
 				{conflict && <p className="text-sm text-amber-700">已有同名快照(名字比较不区分大小写); 覆盖后保留它的展示名, 权重与快照变量.</p>}
 			</div>
 		</Dialog>

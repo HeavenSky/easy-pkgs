@@ -62,6 +62,7 @@ For webpack-dev-server, Express, Fastify, and other hosts, see [Add easy-mok to 
 
 ![Request log with the detail panel of one request](docs/images/logs.png)
 
+- **Turn real API calls into mocks.** The debug page sends requests to your real backend with environment variables and secrets from your keychain, keeps the results, and lets a scene reference a saved result, so refreshing it updates the mock. Secrets and history stay out of version control, and saved results are redacted before you commit them.
 - **Tune delay and status code, or send one route to the real backend.** Delay (0-60000 ms) and status code overrides apply to data, function, and proxy scenes alike, and passthrough hands a single route to your dev server's proxy while the rest stay mocked.
 
 ![Behavior panel: delay, status code override, and passthrough](docs/images/behavior.png)

@@ -95,7 +95,17 @@
 { "vars": { "baseUrl": "https://dev.example.com", "token": "<secret:dev_token>" } }
 ```
 
-再在「敏感值来源」里配置来源 `dev_token`：可以是一个明文值，也可以是 mock 服务进程的某个环境变量名。管理页从不显示敏感值，解析预览也只显示占位符；敏感值来源只能在本机打开的管理页里修改。
+再在「敏感值来源」里配置来源 `dev_token`。优先选不把值写进文件的来源：
+
+| 来源 | 值从哪里来 |
+| --- | --- |
+| 「系统钥匙串」 | macOS 钥匙串（`security`）或 Linux secret service（`secret-tool`）中的 service 与 account |
+| 「命令输出」 | 一条命令的标准输出，例如 `op read op://dev/api/token`；不经 shell 执行，15 秒超时 |
+| 「发送时输入」 | 第一次发送时在管理页输入；只保存在 mock 服务的内存中，重启后需要重新输入 |
+| 「环境变量」 | mock 服务进程的某个环境变量 |
+| 「明文值」 | 保存在 `environments/secret/<组>.json`，这个目录不会提交 |
+
+钥匙串和命令的取值在内存中缓存 10 分钟。管理页从不显示敏感值，解析预览也只显示占位符；敏感值来源只能在本机打开的管理页里修改。
 
 ## 提交调试页写出的文件
 
@@ -105,7 +115,22 @@
 | --- | --- | --- |
 | `__debug__/requests/` | 分组与请求：`req.json` 是请求定义，`__meta__.json` 是展示名、权重与变量；快照在每个请求的 `res/<名称>/` 下 | 提交 |
 | `__debug__/environments/<组>.json` | 环境变量，敏感值写成 `<secret:id>` 占位符 | 提交 |
-| `__debug__/environments/secret/` | 敏感值来源，包括明文值 | 不提交；加进 `.gitignore` |
-| `__debug__/history/` | 每次发送：实际发出的请求、响应头，响应体单独存为文件 | 不提交；加进 `.gitignore` |
+| `__debug__/redact.json` | 快照的字段脱敏规则 | 提交 |
+| `__debug__/environments/secret/` | 敏感值来源与 Cookie jar | 不提交；自动排除 |
+| `__debug__/history/` | 每次发送：实际发出的请求、响应头，响应体单独存为文件 | 不提交；自动排除 |
 
-敏感值来源和历史目前以明文保存，包括实际发出的 `authorization` 请求头，所以不要把 `environments/secret/` 和 `history/` 提交进版本库。
+easy-mok 第一次用到 `environments/secret/` 和 `history/` 时，会在目录里写一个内容为 `*` 的 `.gitignore`，它们因此不进版本库，也不用改你自己的 `.gitignore`。
+
+## 不把敏感信息提交进仓库
+
+easy-mok 写下的发送记录在落盘前会先替换敏感值：
+
+- 来自敏感值来源、且至少 6 个字符的值，在 URL、请求头、文本请求体和记录的变量里都写成 `<secret:id>`；更短的值太容易误伤无关文本，不做替换。
+- `authorization`、`proxy-authorization`、`cookie`、`set-cookie`、`x-auth-token` 请求头如果仍是真实值，写成 `***`。
+- 响应体在历史中按原样保存，历史不会提交。
+
+快照会提交，所以另存时还会再处理：
+
+- 响应头 `set-cookie` 写成 `***`，除非另存时勾选「保留 set-cookie」；只有这样保存的快照才能在场景回放时带上 cookie。
+- JSON 响应体与请求体按「快照脱敏规则」处理。`phone` 这样的名字匹配任意层级的同名字段（不区分大小写）；`$.data.*.idCard` 这样的路径从根开始匹配，`*` 匹配任意字段或下标。命中的值写成 `***`。没有自定义规则时，默认脱敏 `password`、`token`、`apiKey` 等常见凭据字段；自定义规则保存在 `__debug__/redact.json`。
+- 保存后管理页会提示脱敏了几个字段、`set-cookie` 是否被屏蔽，以及二进制请求体是否原样保留。

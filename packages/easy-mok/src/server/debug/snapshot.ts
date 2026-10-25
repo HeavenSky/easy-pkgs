@@ -7,10 +7,15 @@ import type { HistoryStore } from "./history";
 import { META_FILE, SNAPSHOTS_DIR, assertDebugName, nameKey, splitSnapshotId } from "./names";
 import type { DebugStore } from "./store";
 import { normalizeVars, readJson, weightOf } from "./store";
+import { MASK, maskSetCookie, redactJsonText } from "./redact";
+import { extOfFile } from "../mime";
 
 export type SnapshotSummary = { id: string; request: string; name: string; title: string; weight: number };
 
-export const createSnapshotStore = (deps: { store: DebugStore; history: HistoryStore }) => {
+export type Redaction = { fields: number; setCookie: "kept" | "masked" | "none"; binaryRequest: boolean };
+
+/** rules 返回当前的字段脱敏规则; 快照会被提交, 写入时按规则脱敏 */
+export const createSnapshotStore = (deps: { store: DebugStore; history: HistoryStore; rules?: () => string[] }) => {
 	const { store } = deps;
 
 	const resDirOf = (request: string) => path.join(store.nodeDir(request, "request").dir, SNAPSHOTS_DIR);
@@ -54,7 +59,10 @@ export const createSnapshotStore = (deps: { store: DebugStore; history: HistoryS
 	};
 
 	/** 历史条目另存为快照; 重名时需 overwrite, 先写临时目录再替换, 中途失败不留半个快照 */
-	const saveFromHistory = (hid: string, input: { request?: unknown; name?: unknown; title?: unknown; weight?: unknown; overwrite?: unknown }) => {
+	const saveFromHistory = (
+		hid: string,
+		input: { request?: unknown; name?: unknown; title?: unknown; weight?: unknown; overwrite?: unknown; keepSetCookie?: unknown }
+	) => {
 		const entry = deps.history.get(hid);
 		if (typeof input.request !== "string" || !input.request) {
 			throw new MockError("BAD_REQUEST", 400, "请选择快照所属的请求", { field: "request" });
@@ -72,19 +80,59 @@ export const createSnapshotStore = (deps: { store: DebugStore; history: HistoryS
 		}
 		const tmp = path.join(resDir, `.tmp-${crypto.randomBytes(4).toString("hex")}`);
 		fs.mkdirSync(tmp);
+		let redaction: Redaction;
 		try {
 			fs.readdirSync(entry.dir).forEach(n => {
 				if (n !== META_FILE) fs.copyFileSync(path.join(entry.dir, n), path.join(tmp, n));
 			});
 			const previous = clash ? readJson(path.join(resDir, clash, META_FILE)).value : null;
 			const keep = isPlainObject(previous) ? previous : {};
+			const keepCookie =
+				typeof input.keepSetCookie === "boolean" ? input.keepSetCookie : isPlainObject(keep.replay) && keep.replay.setCookie === true;
+			const rules = deps.rules ? deps.rules() : [];
+			let fields = 0;
+			let response = entry.meta.response;
+			let request = entry.meta.request;
+			if (response) {
+				const hasCookie = (response.headers || []).some(([k]: [string, string]) => k === "set-cookie");
+				response = { ...response, headers: keepCookie ? response.headers : maskSetCookie(response.headers || []) };
+				const body = response.body || {};
+				// 快照会被提交: JSON 响应体按字段规则脱敏, 没有命中时保留原字节
+				if (body.file && body.decoded !== false && extOfFile(body.file) === "json" && rules.length) {
+					const file = path.join(tmp, body.file);
+					const out = redactJsonText(fs.readFileSync(file, "utf8"), rules);
+					if (out.count) {
+						fs.writeFileSync(file, out.text);
+						fields += out.count;
+						response = {
+							...response,
+							body: { ...body, size: Buffer.byteLength(out.text), sha256: crypto.createHash("sha256").update(out.text).digest("hex"), redacted: true },
+						};
+					}
+				}
+				redaction = { fields: 0, setCookie: hasCookie ? (keepCookie ? "kept" : "masked") : "none", binaryRequest: false };
+			} else {
+				redaction = { fields: 0, setCookie: "none", binaryRequest: false };
+			}
+			if (request && request.body && request.body.type === "text" && rules.length) {
+				const out = redactJsonText(String(request.body.text), rules);
+				if (out.count) {
+					fields += out.count;
+					request = { ...request, body: { ...request.body, text: out.text } };
+				}
+			}
+			redaction.fields = fields;
+			redaction.binaryRequest = !!(request && request.body && request.body.type === "binary");
 			const meta = {
 				...entry.meta,
+				request,
+				response,
 				version: 1,
 				name: typeof input.title === "string" && input.title ? input.title : keep.name,
 				weight: input.weight ?? keep.weight ?? 0,
 				vars: normalizeVars(keep.vars, false),
-				replay: isPlainObject(keep.replay) ? keep.replay : { setCookie: false },
+				replay: { setCookie: keepCookie },
+				redaction,
 				origin: { ...(entry.meta.origin || {}), kind: "debug", historyId: hid },
 			};
 			if (!meta.name) delete meta.name;
@@ -95,7 +143,7 @@ export const createSnapshotStore = (deps: { store: DebugStore; history: HistoryS
 			fs.rmSync(tmp, { recursive: true, force: true });
 			throw err instanceof MockError ? err : new MockError("IO_ERROR", 500, "保存快照失败", undefined, { cause: err });
 		}
-		return summary(request, name, readMeta(path.join(resDir, name)));
+		return { ...summary(request, name, readMeta(path.join(resDir, name))), redaction };
 	};
 
 	/** 改名与元数据; 返回新旧标识 */
@@ -125,6 +173,15 @@ export const createSnapshotStore = (deps: { store: DebugStore; history: HistoryS
 		if (patch.replay !== undefined) {
 			if (!isPlainObject(patch.replay) || typeof patch.replay.setCookie !== "boolean") {
 				throw new MockError("BAD_REQUEST", 400, "replay 必须是 { setCookie: boolean }", { field: "replay" });
+			}
+			const masked = (meta.response?.headers || []).some(([k, v]: [string, string]) => k === "set-cookie" && v === MASK);
+			if (patch.replay.setCookie && masked) {
+				throw new MockError(
+					"CONFLICT",
+					409,
+					"这个快照的 set-cookie 已脱敏, 不能回放; 请在另存为快照时勾选「保留 set-cookie」",
+					{ field: "replay" }
+				);
 			}
 			meta.replay = { setCookie: patch.replay.setCookie };
 		}

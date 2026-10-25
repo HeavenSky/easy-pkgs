@@ -29,6 +29,25 @@ export const LanControl = ({ lan }: { lan: LanInfo }) => {
 					)
 				}
 			/>
+			{lan.access && (
+				<>
+					<span className="text-zinc-500">代发</span>
+					<Switch
+						label="允许局域网代发"
+						checked={lan.send}
+						disabled={set.isPending || !lan.canToggle}
+						onChange={send =>
+							set.mutate(
+								{ send },
+								{
+									onSuccess: () => toast.success(send ? "已允许局域网代发" : "已关闭局域网代发"),
+									onError: err => toast.error(errorMessage(err)),
+								}
+							)
+						}
+					/>
+				</>
+			)}
 			{!lan.canToggle && (
 				<span className="text-xs text-zinc-500" title="局域网开关只能在本机打开的管理页中切换">
 					仅本机可切换
@@ -53,6 +72,7 @@ export const LanBanner = ({ lan }: { lan: LanInfo }) =>
 		>
 			<Wifi size={14} />
 			已允许局域网访问: 同一局域网的设备可以打开管理页并跨域读取 mock 响应.
+			{lan.send && <span className="font-medium">已允许局域网代发: 局域网设备可以借本机发出请求.</span>}
 			{lan.listening.length > 0 && <span>局域网地址: {lan.listening.join(", ")}</span>}
 			{lan.reachable === "no" && <span className="text-amber-700">{UNREACHABLE}</span>}
 			{lan.errors.length > 0 && (

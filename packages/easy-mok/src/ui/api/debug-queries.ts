@@ -1,12 +1,16 @@
 // 调试页的查询与变更钩子; 变更成功后失效 ["debug"] 下的全部缓存
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRef } from "react";
 import { z } from "zod";
-import { request } from "./client";
+import { API_BASE, request } from "./client";
 import {
 	DebugRequest,
 	DebugTree,
 	EnvGroup,
 	EnvList,
+	HistoryDays,
+	HistoryEntry,
+	HistoryPage,
 	Resolved,
 	SecretItem,
 	TreeNode,
@@ -127,3 +131,53 @@ export const useResolve = (input: { request: string | null; definition: Definiti
 		enabled: !!input,
 		queryFn: ({ signal }) => request(Resolved, "/debug/resolve", { method: "POST", body: input, signal }),
 	});
+
+export type SendInput = { request: string | null; definition: Definition; env?: string | null; snapshot?: string | null };
+
+/** 发送请求; cancel() 中止进行中的发送, 服务端随之取消并记为 ABORTED */
+export const useSend = () => {
+	const qc = useQueryClient();
+	const ctrl = useRef<AbortController | null>(null);
+	const mutation = useMutation({
+		mutationFn: (input: SendInput) => {
+			ctrl.current = new AbortController();
+			return request(HistoryEntry, "/debug/send", { method: "POST", body: input, signal: ctrl.current.signal });
+		},
+		onSettled: () => qc.invalidateQueries({ queryKey: ["debug", "history"] }),
+	});
+	return { ...mutation, cancel: () => ctrl.current?.abort() };
+};
+
+export const historyRawUrl = (id: string) => `${API_BASE}/debug/history/${encodeId(id)}/raw`;
+
+/** request 为 undefined 时列出全部历史 */
+export const useHistory = (requestId: string | undefined) =>
+	useInfiniteQuery({
+		queryKey: ["debug", "history", "list", requestId ?? null],
+		initialPageParam: null as string | null,
+		queryFn: ({ pageParam, signal }) => {
+			const q = new URLSearchParams({ limit: "30" });
+			if (requestId) q.set("request", requestId);
+			if (pageParam) q.set("cursor", pageParam);
+			return request(HistoryPage, `/debug/history?${q}`, { signal });
+		},
+		getNextPageParam: last => last.next,
+	});
+
+export const useHistoryEntry = (id: string | null) =>
+	useQuery({
+		queryKey: ["debug", "history", "entry", id],
+		enabled: !!id,
+		queryFn: ({ signal }) => request(HistoryEntry, `/debug/history/${encodeId(id!)}`, { signal }),
+	});
+
+export const useHistoryDays = () =>
+	useQuery({ queryKey: ["debug", "history", "days"], queryFn: ({ signal }) => request(HistoryDays, "/debug/history-days", { signal }) });
+
+export const useDeleteDay = () => {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: (day: string) => request(null, `/debug/history-days/${day}`, { method: "DELETE" }),
+		onSuccess: () => Promise.all([qc.invalidateQueries({ queryKey: ["debug", "history"] }), qc.invalidateQueries({ queryKey: ["meta"] })]),
+	});
+};

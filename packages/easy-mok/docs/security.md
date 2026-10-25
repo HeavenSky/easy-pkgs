@@ -17,6 +17,8 @@ The switch only helps if LAN devices can reach the server:
 
 While the switch is on, a banner at the top of every admin page reminds you that LAN devices can open the admin page.
 
+The debug page sends requests from this machine, so LAN devices cannot use it to send requests even while LAN access is on. To allow that, also turn on **Send** (`代发`), which appears next to the LAN switch; turning off LAN access turns it off too. Secret sources of the debug page can only be changed from the local machine.
+
 ## Use a custom domain
 
 Add the domain to `hosts`, or set `MOCK_HOSTS=a.test,b.test`; a leading `.`, as in `.example.com`, also matches subdomains.

@@ -234,6 +234,7 @@ export const createAdmin = (ctx: AdminContext) => {
 				: [];
 		return {
 			access: lan.access,
+			send: lan.send,
 			initial: lan.initial,
 			canToggle: !!req && isLoopback(req.socket.remoteAddress || ""),
 			reachable,
@@ -241,6 +242,8 @@ export const createAdmin = (ctx: AdminContext) => {
 			errors: lan.listening.errors,
 		};
 	};
+
+	const debug = createDebugApi({ folder: ctx.folder, state: store, emit: changed, lan: ctx.lan });
 
 	const meta = (req?: IncomingMessage) => {
 		const state = store.get();
@@ -262,6 +265,7 @@ export const createAdmin = (ctx: AdminContext) => {
 			counts: { routes: registry.routes.size, files: registry.fileCount },
 			diagnostics: diagnostics(),
 			lan: lanInfo(req),
+			debug: debug.historyInfo(),
 			env: { node: process.version, platform: process.platform },
 		};
 	};
@@ -335,10 +339,15 @@ export const createAdmin = (ctx: AdminContext) => {
 				throw new MockError("FORBIDDEN", 403, "局域网开关只能在本机的管理页中切换");
 			}
 			const body = req.body || {};
-			if ("access" in body && typeof body.access !== "boolean") {
-				throw new MockError("BAD_REQUEST", 400, "access 必须是布尔值", { field: "access" });
+			["access", "send"].forEach(k => {
+				if (k in body && typeof body[k] !== "boolean") {
+					throw new MockError("BAD_REQUEST", 400, `${k} 必须是布尔值`, { field: k });
+				}
+			});
+			if (body.send === true && !(body.access ?? ctx.lan.access)) {
+				throw new MockError("BAD_REQUEST", 400, "需要先允许局域网访问, 才能允许局域网代发", { field: "send" });
 			}
-			ctx.lan.set({ access: body.access });
+			ctx.lan.set({ access: body.access, send: body.send });
 			changed("meta");
 			return lanInfo(req);
 		})
@@ -1026,7 +1035,6 @@ export const createAdmin = (ctx: AdminContext) => {
 		})
 	);
 
-	const debug = createDebugApi({ folder: ctx.folder, state: store, emit: changed });
 	api.use("/debug", debug.router);
 
 	api.get("/events", (req, res) => events.connect(req, res));

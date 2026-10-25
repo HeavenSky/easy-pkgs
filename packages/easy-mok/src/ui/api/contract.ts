@@ -73,6 +73,7 @@ export const LogLevel = z.enum(["silent", "hit", "all"]);
 
 export const LanInfo = z.object({
 	access: z.boolean(),
+	send: z.boolean(),
 	initial: z.boolean(),
 	canToggle: z.boolean(),
 	reachable: z.enum(["yes", "no", "unknown"]),
@@ -95,6 +96,7 @@ export const Meta = z.object({
 	counts: z.object({ routes: z.number(), files: z.number() }),
 	diagnostics: z.array(Diagnostic),
 	lan: LanInfo,
+	debug: z.object({ historyBytes: z.number(), historyWarn: z.boolean() }),
 	env: z.object({ node: z.string(), platform: z.string() }),
 });
 export type Meta = z.infer<typeof Meta>;

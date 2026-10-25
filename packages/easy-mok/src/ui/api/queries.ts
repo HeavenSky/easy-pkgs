@@ -182,7 +182,7 @@ export const useDeleteRoute = () => {
 export const useSetLan = () => {
 	const qc = useQueryClient();
 	return useMutation({
-		mutationFn: (body: { access?: boolean }) =>
+		mutationFn: (body: { access?: boolean; send?: boolean }) =>
 			request(LanInfo, "/lan", { method: "PUT", body }),
 		onSuccess: () => qc.invalidateQueries({ queryKey: keys.meta }),
 	});

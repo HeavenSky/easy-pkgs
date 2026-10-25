@@ -1,14 +1,17 @@
-import { ShieldAlert } from "lucide-react";
+import { History, Send, ShieldAlert, Square } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useLocation, useParams } from "wouter";
+import { Link, useLocation, useParams } from "wouter";
 import { errorMessage } from "@/api/client";
 import { encodeId, type TreeNode } from "@/api/debug-contract";
-import { useDebugTree, useDeleteNode } from "@/api/debug-queries";
+import { historyRawUrl, useDebugTree, useDeleteNode, useHistoryEntry, useSend } from "@/api/debug-queries";
+import { HistoryList } from "@/components/debug/HistoryList";
+import { ResponseViewer } from "@/components/debug/ResponseViewer";
+import { Button } from "@/components/ui/button";
 import { DebugTree } from "@/components/debug/DebugTree";
 import { EnvPanel } from "@/components/debug/EnvPanel";
 import { NodeDialog, type NodeDialogState } from "@/components/debug/NodeDialog";
-import { RequestEditor } from "@/components/debug/RequestEditor";
+import { RequestEditor, definitionOf } from "@/components/debug/RequestEditor";
 import { ConfirmDialog } from "@/components/ui/dialog";
 import { EmptyState, ErrorState, Spinner } from "@/components/ui/state";
 
@@ -22,6 +25,50 @@ const decodeId = (raw: string) => {
 };
 
 export const requestPath = (id: string) => `/debug/req/${encodeId(id)}`;
+
+/** 请求编辑器, 发送按钮, 本次结果与该请求的历史 */
+const Workbench = ({ id }: { id: string }) => {
+	const send = useSend();
+	const [viewing, setViewing] = useState<string | null>(null);
+	const fromHistory = useHistoryEntry(viewing && viewing !== send.data?.id ? viewing : null);
+	const current = viewing && viewing !== send.data?.id ? fromHistory.data : send.data;
+	return (
+		<div className="space-y-4">
+			<RequestEditor id={id}>
+				{draft => (
+					<>
+						<Button
+							variant="default"
+							disabled={send.isPending}
+							onClick={() => {
+								const d = definitionOf(draft);
+								if (!d.ok) return toast.error(d.error);
+								send.mutate(
+									{ request: id, definition: d.def },
+									{ onSuccess: e => setViewing(e.id), onError: err => toast.error(errorMessage(err)) }
+								);
+							}}
+						>
+							<Send size={14} />
+							{send.isPending ? "发送中" : "发送"}
+						</Button>
+						{send.isPending && (
+							<Button onClick={send.cancel}>
+								<Square size={14} />
+								取消
+							</Button>
+						)}
+					</>
+				)}
+			</RequestEditor>
+			{current && <ResponseViewer meta={current.meta} rawUrl={historyRawUrl(current.id)} />}
+			<section className="space-y-1">
+				<h3 className="text-xs font-medium text-zinc-500">该请求的发送历史</h3>
+				<HistoryList requestId={id} selected={current?.id || null} onSelect={line => setViewing(line.id)} />
+			</section>
+		</div>
+	);
+};
 
 export const DebugPage = () => {
 	const params = useParams<{ id?: string }>();
@@ -49,6 +96,10 @@ export const DebugPage = () => {
 			<div role="note" className="flex items-center gap-2 bg-amber-50 px-4 py-1.5 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-200">
 				<ShieldAlert size={14} />
 				调试数据目前以明文保存在 mock 目录的 <code>__debug__/</code> 下; 不要提交 <code>environments/secret/</code> 与 <code>history/</code>, 快照中的请求头也可能含真实凭据.
+				<Link href="/debug/history" className="ml-auto inline-flex items-center gap-1 text-sky-700 hover:underline">
+					<History size={14} />
+					全部历史
+				</Link>
 			</div>
 			<div className="grid min-h-0 flex-1 grid-cols-[260px_minmax(0,1fr)_340px] divide-x divide-zinc-200 dark:divide-zinc-800">
 				<aside className="min-h-0 overflow-auto p-3">
@@ -78,7 +129,7 @@ export const DebugPage = () => {
 				</aside>
 				<section className="min-h-0 overflow-auto p-4">
 					{selected ? (
-						<RequestEditor key={selected} id={selected} />
+						<Workbench key={selected} id={selected} />
 					) : (
 						<EmptyState title="选择或新建一个请求">在左侧请求集合中选择请求, 或新建分组与请求.</EmptyState>
 					)}

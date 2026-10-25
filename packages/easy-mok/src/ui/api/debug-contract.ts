@@ -116,6 +116,74 @@ export const Resolved = z.object({
 });
 export type Resolved = z.infer<typeof Resolved>;
 
+const Pair = z.tuple([z.string(), z.string()]);
+
+export const ResponseBodyInfo = z.object({
+	file: z.string().nullable(),
+	contentType: z.string().nullable(),
+	charset: z.string().nullable(),
+	size: z.number(),
+	sha256: z.string(),
+	originalEncoding: z.string().nullable(),
+	decoded: z.boolean(),
+	truncated: z.boolean(),
+});
+export type ResponseBodyInfo = z.infer<typeof ResponseBodyInfo>;
+
+export const ResultMeta = z
+	.object({
+		capturedAt: z.string(),
+		reqHash: z.string(),
+		timing: z.object({ durationMs: z.number(), ttfbMs: z.number().nullable() }),
+		request: z.object({
+			method: z.string(),
+			url: z.string(),
+			headers: z.array(Pair),
+			body: z.object({ type: z.enum(["none", "text", "binary"]) }).loose(),
+		}),
+		template: z.object({ env: z.string().nullable(), request: Definition, values: z.record(z.string(), ResolvedValue) }),
+		response: z
+			.object({
+				status: z.number(),
+				statusText: z.string(),
+				httpVersion: z.string(),
+				headers: z.array(Pair),
+				body: ResponseBodyInfo,
+				redirects: z.array(z.object({ status: z.number(), location: z.string() })),
+			})
+			.nullable(),
+		error: z.object({ code: z.string(), message: z.string() }).nullable(),
+	})
+	.loose();
+export type ResultMeta = z.infer<typeof ResultMeta>;
+
+export const HistoryEntry = z.object({ id: z.string(), meta: ResultMeta });
+export type HistoryEntry = z.infer<typeof HistoryEntry>;
+
+export const HistoryLine = z.object({
+	id: z.string(),
+	request: z.string().nullable(),
+	env: z.string().nullable(),
+	method: z.string(),
+	url: z.string(),
+	status: z.number().nullable(),
+	size: z.number(),
+	durationMs: z.number(),
+	time: z.number(),
+	error: z.string().nullable(),
+});
+export type HistoryLine = z.infer<typeof HistoryLine>;
+
+export const HistoryPage = z.object({
+	items: z.array(HistoryLine),
+	next: z.string().nullable(),
+	totalBytes: z.number(),
+	warn: z.boolean(),
+});
+export type HistoryPage = z.infer<typeof HistoryPage>;
+
+export const HistoryDays = z.array(z.object({ day: z.string(), bytes: z.number(), count: z.number() }));
+
 /** URL 中的调试标识用 base64url 编码 */
 export const encodeId = (id: string) =>
 	btoa(String.fromCharCode(...new TextEncoder().encode(id)))

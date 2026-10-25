@@ -6,7 +6,7 @@
 
 ### 新增
 
-- 新增「调试」页：按分组维护真实接口请求，支持环境变量、敏感值占位符与请求解析预览，数据保存在 mock 目录的 `__debug__/` 下。见[在管理页调试真实接口](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/zh/docs/debug.md)。
+- 新增「调试」页：按分组维护真实接口请求，支持环境变量、敏感值占位符与请求解析预览；请求由 mock 服务发出，每次结果都保存为历史；数据保存在 mock 目录的 `__debug__/` 下。局域网设备要在局域网开关旁的「代发」打开后才能借它发送请求。见[在管理页调试真实接口](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/zh/docs/debug.md)。
 - 场景可以用 `bodyFile` 指向 `__scenes__/` 下的文件，返回 CSV、HTML 页面或图片等文件；管理页可以预览，文本文件可以直接编辑。见[切换场景与响应方式](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/zh/docs/scenes.md#用文件作为响应体)。
 - 在管理页页头用「局域网」开关运行时开关局域网访问；只有本机打开的管理页能切换，开关打开期间页面顶部显示提示条。见[放行其他主机、局域网与跨域页面](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/zh/docs/security.md#从其他机器打开管理页)。
 

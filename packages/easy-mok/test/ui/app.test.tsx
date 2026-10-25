@@ -21,8 +21,10 @@ const meta = {
 	float: true,
 	counts: { routes: 0, files: 0 },
 	diagnostics: [{ type: "load-error", message: "boom" }],
+	debug: { historyBytes: 0, historyWarn: false },
 	lan: {
 		access: false,
+		send: false,
 		initial: false,
 		canToggle: true,
 		reachable: "no",

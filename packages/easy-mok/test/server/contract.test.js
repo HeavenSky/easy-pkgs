@@ -97,5 +97,10 @@ module.exports = { "GET /a/:id": scenes({ default: 1, fn: (req, res) => res.json
 		d.SecretItem.parse((await api("/envs/dev/secrets/tk", { method: "PUT", json: { from: "env", name: "HOME" } })).body);
 		z.array(d.SecretItem).parse((await api("/envs/dev/secrets")).body);
 		d.Resolved.parse((await api("/resolve", { method: "POST", json: { request: "g/r" } })).body);
+		const sent = d.HistoryEntry.parse((await api("/send", { method: "POST", json: { request: "g/r" } })).body);
+		expect(sent.meta.error.code).toBe("ECONNREFUSED");
+		d.HistoryPage.parse((await api("/history")).body);
+		d.HistoryEntry.parse((await api(`/history/${enc(sent.id)}`)).body);
+		d.HistoryDays.parse((await api("/history-days")).body);
 	});
 });

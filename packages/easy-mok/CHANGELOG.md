@@ -6,7 +6,7 @@
 
 ### Added
 
-- A **Debug** (`调试`) page keeps a collection of real API requests in groups, with environment variables, secret placeholders, and a preview of the resolved request; it stores them under `__debug__/` in the mock folder. See [Debug real APIs from the admin page](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/docs/debug.md).
+- A **Debug** (`调试`) page keeps a collection of real API requests in groups, with environment variables, secret placeholders, and a preview of the resolved request, sends them from the mock server, and keeps every result as history; it stores them under `__debug__/` in the mock folder. LAN devices can send through it only after you turn on **Send** (`代发`) next to the LAN switch. See [Debug real APIs from the admin page](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/docs/debug.md).
 - A scene can answer with a file, such as a CSV, HTML page, or image, by pointing `bodyFile` at a file under `__scenes__/`; the admin page previews it and edits text files in place. See [Switch scenes and response behavior](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/docs/scenes.md#return-a-file-as-the-response-body).
 - Turn LAN access on and off at runtime with the **Allow LAN access** (`局域网`) switch in the admin page header; only an admin page opened on the local machine can flip it, and a banner shows while it is on. See [Allow other hosts, the LAN, and cross-origin pages](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/docs/security.md#open-the-admin-page-from-another-machine).
 

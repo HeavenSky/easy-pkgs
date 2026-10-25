@@ -15,12 +15,14 @@ const loaders = {
 		import("./pages/DiagnosticsPage").then(m => ({ default: m.DiagnosticsPage })),
 	routes: () => import("./pages/RoutesPage").then(m => ({ default: m.RoutesPage })),
 	debug: () => import("./pages/DebugPage").then(m => ({ default: m.DebugPage })),
+	history: () => import("./pages/DebugHistoryPage").then(m => ({ default: m.DebugHistoryPage })),
 };
 const LogsPage = lazy(loaders.logs);
 const GroupsPage = lazy(loaders.groups);
 const DiagnosticsPage = lazy(loaders.diagnostics);
 const RoutesPage = lazy(loaders.routes);
 const DebugPage = lazy(loaders.debug);
+const DebugHistoryPage = lazy(loaders.history);
 
 export const App = () => {
 	const live = useLiveEvents();
@@ -45,6 +47,11 @@ export const App = () => {
 		<div className="flex h-full flex-col">
 			<Header meta={meta.data} live={live} />
 			<LanBanner lan={meta.data.lan} />
+			{meta.data.debug.historyWarn && (
+				<div role="status" className="bg-amber-100 px-4 py-1.5 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-200">
+					调试历史已超过 1 GB({(meta.data.debug.historyBytes / 1024 ** 3).toFixed(2)} GB), 请到「调试 → 全部历史」按天删除不需要的记录.
+				</div>
+			)}
 			{live === "reconnecting" && (
 				<div
 					role="status"
@@ -62,6 +69,7 @@ export const App = () => {
 						<Route path="/groups/:name" component={GroupsPage} />
 						<Route path="/diagnostics" component={DiagnosticsPage} />
 						<Route path="/debug" component={DebugPage} />
+						<Route path="/debug/history" component={DebugHistoryPage} />
 						<Route path="/debug/req/:id" component={DebugPage} />
 						<Route path="/routes/:id" component={RoutesPage} />
 						<Route component={RoutesPage} />

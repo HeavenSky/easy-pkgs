@@ -32,6 +32,7 @@ export const Envelope = z.object({
 	delay: z.number().min(0).max(60000).optional(),
 	script: z.string().optional(),
 	bodyFile: z.string().optional(),
+	ref: z.string().optional(),
 });
 export type Envelope = z.infer<typeof Envelope>;
 
@@ -47,12 +48,13 @@ export type BodyFileInfo = z.infer<typeof BodyFileInfo>;
 export const SceneDetail = z.object({
 	name: z.string(),
 	source: z.enum(["code", "json"]),
-	kind: z.enum(["data", "function", "proxy", "envelope", "nullary", "script"]),
+	kind: z.enum(["data", "function", "proxy", "envelope", "nullary", "script", "ref"]),
 	editable: z.boolean(),
 	overrides: z.boolean(),
 	content: z.unknown(),
 	etag: z.string().nullable(),
 	bodyFile: BodyFileInfo.nullable().optional(),
+	ref: z.object({ snapshot: z.string(), broken: z.boolean() }).nullable().optional(),
 });
 export type SceneDetail = z.infer<typeof SceneDetail>;
 

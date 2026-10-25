@@ -1,12 +1,15 @@
-import { Copy, Eye, Pencil, Plus, Trash2 } from "lucide-react";
+import { Camera, Copy, Eye, Pencil, Plus, Trash2 } from "lucide-react";
+import { Link } from "wouter";
 import { useState } from "react";
 import { toast } from "sonner";
 import { errorMessage } from "@/api/client";
 import type { Envelope, RouteSummary, SceneDetail } from "@/api/contract";
+import { encodeId } from "@/api/debug-contract";
 import { useDeleteScene, usePatchRouteState } from "@/api/queries";
 import { confirmLeave } from "@/lib/unsaved";
 import { cn, pretty } from "@/lib/utils";
 import { BodyFilePanel } from "./BodyFilePanel";
+import { FromSnapshotDialog } from "./FromSnapshotDialog";
 import { JsonEditor } from "./JsonEditor";
 import { SceneEditor } from "./SceneEditor";
 import { Badge } from "./ui/badge";
@@ -20,11 +23,19 @@ const KIND_TEXT: Record<SceneDetail["kind"], string> = {
 	envelope: "JSON",
 	nullary: "无参函数",
 	script: "脚本",
+	ref: "引用快照",
 };
 const KIND_TITLE: Partial<Record<SceneDetail["kind"], string>> = {
 	nullary:
 		"尚未被请求过; 首次请求后按返回值显示为「函数」(返回数据)或「代理」(返回含 target / router 的对象)",
 	script: "在管理页编写的处理函数, 写法同 mock 文件中的 (req, res, next) => ...",
+	ref: "返回调试快照的最新内容; 快照失效时降级到下一级场景",
+};
+
+/** 快照标识 → 调试页地址 */
+const snapshotHref = (sid: string) => {
+	const i = sid.lastIndexOf("#");
+	return `/debug/req/${encodeId(sid.slice(0, i))}/snap/${encodeId(sid.slice(i + 1))}`;
 };
 
 type Panel =
@@ -32,6 +43,7 @@ type Panel =
 	| { type: "edit"; name: string }
 	| { type: "file"; name: string }
 	| { type: "new"; initial?: Envelope; name?: string }
+	| { type: "snapshot"; name?: string; snapshot?: string }
 	| null;
 
 export const ScenesPanel = ({ route, scenes }: { route: RouteSummary; scenes: SceneDetail[] }) => {
@@ -66,12 +78,11 @@ export const ScenesPanel = ({ route, scenes }: { route: RouteSummary; scenes: Sc
 					选中即生效并持久保存; 请求头 <code>x-mock-scene</code>, 查询参数{" "}
 					<code>__scene</code> 与浏览器场景组的优先级更高.
 				</p>
-				<Button
-					size="sm"
-					variant="default"
-					className="ml-auto"
-					onClick={() => open({ type: "new" })}
-				>
+				<Button size="sm" className="ml-auto" onClick={() => open({ type: "snapshot" })}>
+					<Camera size={14} />
+					从调试快照建
+				</Button>
+				<Button size="sm" variant="default" onClick={() => open({ type: "new" })}>
 					<Plus size={14} />
 					新建场景
 				</Button>
@@ -129,6 +140,16 @@ export const ScenesPanel = ({ route, scenes }: { route: RouteSummary; scenes: Sc
 							>
 								{s.source === "json" ? "管理页" : "代码"}
 							</Badge>
+							{s.ref && (
+								<Link
+									href={snapshotHref(s.ref.snapshot)}
+									className={cn("truncate font-mono text-xs hover:underline", s.ref.broken ? "text-rose-600" : "text-sky-700")}
+									title={s.ref.broken ? "快照不存在或不可用, 请求时会降级到下一级场景" : "打开调试页中的快照"}
+								>
+									{s.ref.snapshot}
+									{s.ref.broken && " (失效)"}
+								</Link>
+							)}
 							{s.bodyFile && (
 								<Badge
 									className="bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300"
@@ -153,7 +174,11 @@ export const ScenesPanel = ({ route, scenes }: { route: RouteSummary; scenes: Sc
 									variant="ghost"
 									aria-label={`编辑场景 ${s.name}`}
 									onClick={() =>
-										open({ type: s.bodyFile ? "file" : "edit", name: s.name })
+										open(
+											s.ref
+												? { type: "snapshot", name: s.name, snapshot: s.ref.snapshot }
+												: { type: s.bodyFile ? "file" : "edit", name: s.name }
+										)
 									}
 								>
 									<Pencil size={14} />
@@ -220,6 +245,13 @@ export const ScenesPanel = ({ route, scenes }: { route: RouteSummary; scenes: Sc
 						</pre>
 					)}
 				</div>
+			)}
+			{panel?.type === "snapshot" && (
+				<FromSnapshotDialog
+					route={route}
+					initial={panel.name ? { name: panel.name, snapshot: panel.snapshot } : undefined}
+					onClose={() => setPanel(null)}
+				/>
 			)}
 			{panel?.type === "file" && current?.bodyFile && (
 				<BodyFilePanel

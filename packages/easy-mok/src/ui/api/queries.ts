@@ -321,3 +321,15 @@ export const KIND_LABEL: Record<LogKind, string> = {
 	miss: "未命中",
 	error: "出错",
 };
+
+export const useSceneFromSnapshot = () => {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: ({ id, name, snapshot, mode, overwrite }: { id: string; name: string; snapshot: string; mode: "ref" | "copy"; overwrite?: boolean }) =>
+			request(SceneDetail, `/routes/${id}/scenes/${encodeURIComponent(name)}/from-snapshot`, {
+				method: "POST",
+				body: { snapshot, mode, overwrite },
+			}),
+		onSuccess: () => Promise.all([invalidateRoutes(qc), qc.invalidateQueries({ queryKey: ["debug"] })]),
+	});
+};

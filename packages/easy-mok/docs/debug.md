@@ -53,6 +53,14 @@ A history entry you want to keep becomes a named snapshot of its request: click 
 - A snapshot can have its own variables, which win over the request, group, and environment variables. **Resend with this snapshot** (`按此快照重新发送`) sends the saved request with them, for example to capture the same call with another id.
 - Each snapshot is a folder with `__meta__.json` and the response body as `raw.<ext>`, where the extension follows the `content-type`, so you can open `raw.csv` or `raw.html` directly.
 
+## Use snapshots as mock scenes
+
+Snapshots become mock data from a route's **Scenes** tab: **Create from debug snapshot** (`从调试快照建`) either references a snapshot or copies it, see [Switch scenes and response behavior](scenes.md#answer-with-a-debug-snapshot). The snapshot panel lists the scenes that use it.
+
+- Renaming or moving a request, a group, or a snapshot rewrites the scenes that reference it.
+- Deleting a snapshot, request, or group that scenes reference asks for confirmation first and lists those scenes; after you confirm, they fall back to their next scene.
+- **Settings** (`设置`) of a request suggests the mock routes that match its resolved URL, or creates one.
+
 ## Fill requests from environments
 
 The right column manages environment groups such as `dev` or `test`. Select one under **Active environment** (`激活的环境组`) to use its variables.

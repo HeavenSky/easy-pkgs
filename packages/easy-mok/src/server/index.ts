@@ -17,6 +17,8 @@ import { scenes } from "./scene";
 import { compileRoute } from "./route";
 import { createIgnore } from "./ignore";
 import { createLanControl } from "./lan";
+import { createRefs } from "./debug/refs";
+import type { Refs } from "./debug/refs";
 import type { LanControl } from "./lan";
 
 const { version } = require("../../package.json") as { version: string };
@@ -138,6 +140,7 @@ export const createMock = (options?: MockOptions): MockApp => {
 	const store = createStateStore(opt.stateFile);
 	const lan = createLanControl(opt.lan);
 	let responder: ReturnType<typeof createResponder> | null = null; // 注册表启动时先加载一次, 此时还没有代理需要清理
+	let refs: Refs | null = null; // 同上, 首次加载后再创建并重建引用索引
 	const registry = createRegistry({
 		folder: opt.folder,
 		builtin: opt.builtin,
@@ -146,9 +149,12 @@ export const createMock = (options?: MockOptions): MockApp => {
 		cacheDir: path.resolve(opt.cwd, "node_modules/.cache/easy-mok/jiti"),
 		onReload: () => {
 			if (responder) responder.prune();
+			if (refs) refs.rebuild();
 			events.emit("changed", { scope: "routes" });
 		},
 	});
+	refs = createRefs({ folder: opt.folder, fileStore, reload: () => registry.reloadNow() });
+	refs.rebuild();
 	const journal = createJournal({ size: opt.logSize, onLog: entry => events.emit("log", entry) });
 	const ignore = createIgnore({
 		defaults: opt.ignoreDefaults,
@@ -162,6 +168,7 @@ export const createMock = (options?: MockOptions): MockApp => {
 		hosts: opt.hosts,
 		lan: () => lan.access,
 		ignore,
+		folder: opt.folder,
 	});
 	responder = handler;
 
@@ -183,6 +190,7 @@ export const createMock = (options?: MockOptions): MockApp => {
 			float: opt.float,
 			ignore,
 			sceneKind: handler.sceneKind,
+			refs,
 		});
 		app.use("/__mock", admin.router);
 	}

@@ -14,9 +14,12 @@ import { streamFile } from "./respond";
 import { isLoopback } from "./security";
 import type { LanControl } from "./lan";
 import { createDebugApi } from "./debug/api";
+import type { Refs } from "./debug/refs";
+import { loadSnapshot, replayHeaders } from "./debug/refs";
+import { matchRoute } from "./route";
 import type { createFileStore } from "./files";
 import { MockError, assertName, etagOf } from "./util";
-import { SECRET_HEADERS } from "./journal";
+import { DROP_HEADERS, SECRET_HEADERS } from "./journal";
 import type { createJournal } from "./journal";
 import type { RouteEntry, createRegistry } from "./loader";
 import type { MockState, createStateStore } from "./state";
@@ -27,26 +30,6 @@ import type { createIgnore } from "./ignore";
 export const UI_DIR = path.join(__dirname, "../../dist/ui");
 const FLOAT_LOADER = path.join(__dirname, "../../src/float/loader.js");
 const SPA_PATHS = /^\/(routes|logs|groups|diagnostics|debug)?(\/.*)?$/;
-// 存为场景时不保留的响应头: 由传输层或服务器自动生成
-const DROP_HEADERS = new Set([
-	"content-length",
-	"content-encoding",
-	"transfer-encoding",
-	"connection",
-	"keep-alive",
-	"date",
-	"etag",
-	"last-modified",
-	"vary",
-	"access-control-allow-origin",
-	"access-control-allow-credentials",
-	"access-control-allow-methods",
-	"access-control-allow-headers",
-	"access-control-max-age",
-	"access-control-expose-headers",
-	"x-powered-by",
-]);
-
 const jsonSafe = (value: unknown) => {
 	try {
 		return JSON.parse(JSON.stringify(value === undefined ? null : value));
@@ -92,6 +75,8 @@ export interface AdminContext {
 	ignore: ReturnType<typeof createIgnore>;
 	/** 局域网开关的运行时状态 */
 	lan: LanControl;
+	/** 场景引用快照的索引与改写 */
+	refs: Refs;
 	/** 场景的展示类型, 由 responder 按无参函数的实际返回值给出 */
 	sceneKind?: (scene: Scene) => DisplayKind;
 }
@@ -167,6 +152,7 @@ export const createAdmin = (ctx: AdminContext) => {
 			content,
 			etag: scene.etag || null,
 			bodyFile: bodyFileInfo(scene),
+			ref: scene.ref ? { snapshot: scene.ref, broken: !loadSnapshot(ctx.folder, scene.ref) } : null,
 		};
 	};
 
@@ -243,7 +229,14 @@ export const createAdmin = (ctx: AdminContext) => {
 		};
 	};
 
-	const debug = createDebugApi({ folder: ctx.folder, state: store, emit: changed, lan: ctx.lan });
+	/** 路由推荐: 方法相同(或 ALL)且路径能匹配的全部路由 */
+	const routeCandidates = (method: string, pathname: string) =>
+		[...registry.routes.values()]
+			.filter(r => (r.methods.includes(method) || r.methods.includes("ALL")) && matchRoute(r.compiled, pathname))
+			.sort((a, b) => b.weight - a.weight || a.order - b.order)
+			.map(r => ({ routeId: r.id, key: r.key }));
+
+	const debug = createDebugApi({ folder: ctx.folder, state: store, emit: changed, lan: ctx.lan, refs: ctx.refs, routeCandidates });
 
 	const meta = (req?: IncomingMessage) => {
 		const state = store.get();
@@ -501,6 +494,63 @@ export const createAdmin = (ctx: AdminContext) => {
 				req
 			);
 			res.status(existed ? 200 : 201);
+			return out;
+		})
+	);
+
+	/** 从调试快照建场景: ref 模式写引用; copy 模式把响应拷进场景(小 JSON 内联, 其余写归属文件) */
+	api.post(
+		"/routes/:id/scenes/:name/from-snapshot",
+		wrap((req, res) => {
+			const route = routeOf(String(req.params.id));
+			const name = assertName(String(req.params.name), "场景名");
+			const body = req.body || {};
+			if (body.mode !== "ref" && body.mode !== "copy") {
+				throw new MockError("BAD_REQUEST", 400, "mode 只能是 ref 或 copy", { field: "mode" });
+			}
+			const snap = debug.snapshots.get(String(body.snapshot || ""));
+			const response = snap.meta.response;
+			if (snap.meta.error || !response) {
+				throw new MockError("BAD_REQUEST", 400, "这个快照是一次失败的发送, 不能用作场景", { field: "snapshot" });
+			}
+			const current = route.scenes.get(name);
+			if (current && current.source === "json" && body.overwrite !== true) {
+				throw new MockError("CONFLICT", 409, `场景 ${name} 已存在`, { current: sceneDetail(current) });
+			}
+			let envelope: Record<string, unknown>;
+			if (body.mode === "ref") {
+				envelope = { ref: snap.id };
+			} else {
+				// envelope 的响应头只能一名一值: 同名头合并, set-cookie 不拷贝
+				const headers: Record<string, string> = {};
+				replayHeaders(snap.meta).forEach(([k, v]) => {
+					if (k !== "set-cookie") headers[k] = headers[k] ? `${headers[k]}, ${v}` : v;
+				});
+				envelope = { status: response.status, headers };
+				const info = response.body || {};
+				const file = info.file ? path.join(snap.dir, info.file) : null;
+				let inline: { ok: boolean; value?: unknown } = { ok: false };
+				if (!file) {
+					inline = { ok: true, value: "" };
+				} else if (extOfFile(file) === "json" && info.decoded !== false && info.size <= 1024 * 1024) {
+					try {
+						inline = { ok: true, value: JSON.parse(fs.readFileSync(file, "utf8")) };
+					} catch {
+						inline = { ok: false };
+					}
+				}
+				if (inline.ok) {
+					envelope.body = inline.value;
+				} else {
+					const dir = fileStore.ownedDirOf(route.key);
+					const target = path.join(dir, `${name}.raw.${extOfFile(file as string)}`);
+					fs.mkdirSync(dir, { recursive: true });
+					fs.copyFileSync(file as string, target);
+					envelope.bodyFile = path.relative(fileStore.scenesDir, target).split(path.sep).join("/");
+				}
+			}
+			const out = writeScene(route, name, envelope, null, req, true);
+			res.status(201);
 			return out;
 		})
 	);

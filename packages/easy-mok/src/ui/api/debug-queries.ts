@@ -210,3 +210,23 @@ export const useDeleteSnapshot = () =>
 	useDebugMutation(({ sid, force }: { sid: string; force?: boolean }) =>
 		request(null, `/debug/snapshots/${encodeId(sid)}${force ? "?force=1" : ""}`, { method: "DELETE" })
 	);
+
+export const useSnapshotRefs = (sid: string | null) =>
+	useQuery({
+		queryKey: ["debug", "snapshot-refs", sid],
+		enabled: !!sid,
+		queryFn: ({ signal }) =>
+			request(z.array(z.object({ route: z.string(), scene: z.string(), file: z.string() })), `/debug/snapshots/${encodeId(sid!)}/refs`, { signal }),
+	});
+
+export const useRouteMatch = (requestId: string | null, enabled: boolean) =>
+	useQuery({
+		queryKey: ["debug", "route-match", requestId],
+		enabled: !!requestId && enabled,
+		queryFn: ({ signal }) =>
+			request(
+				z.object({ pathname: z.string(), candidates: z.array(z.object({ routeId: z.string(), key: z.string() })) }),
+				`/debug/requests/${encodeId(requestId!)}/route-match`,
+				{ signal }
+			),
+	});

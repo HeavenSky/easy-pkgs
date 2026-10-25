@@ -10,6 +10,7 @@ import { compileScript } from "./script";
 import type { Scene } from "./scene";
 import { SCENES_DIR, GUI_FILE, bodyFileProblem } from "./files";
 import { DEBUG_DIR } from "./debug/names";
+import { loadSnapshot, refProblem } from "./debug/refs";
 import type { SceneFile, createFileStore } from "./files";
 import { etagOf, isPlainObject } from "./util";
 
@@ -25,6 +26,8 @@ export type Diagnostic = {
 		| "script-error"
 		| "invalid-body-file"
 		| "missing-body-file"
+		| "invalid-ref"
+		| "broken-ref"
 		| "state"
 		| "stale-state";
 	message: string;
@@ -601,11 +604,40 @@ export const createRegistry = (opt: {
 						});
 					}
 				}
+				let ref: string | undefined;
+				if (env && env.ref !== undefined && env.ref !== null) {
+					const problem =
+						refProblem(env.ref) ||
+						(env.script !== undefined || env.bodyFile !== undefined || (env.body !== undefined && env.body !== null)
+							? "ref 不能与 body, bodyFile 或 script 同时出现"
+							: null);
+					if (problem) {
+						diagnostics.push({
+							type: "invalid-ref",
+							message: `场景 ${name} 的 ref 无效, 已忽略该场景: ${problem}`,
+							file,
+							key: data.key,
+							routeId: route.id,
+						});
+						return;
+					}
+					ref = env.ref as string;
+					if (!loadSnapshot(folder, ref)) {
+						diagnostics.push({
+							type: "broken-ref",
+							message: `场景 ${name} 引用的快照不存在, 无法解析或是一次失败的发送, 请求时会降级到下一级场景: ${ref}`,
+							file,
+							key: data.key,
+							routeId: route.id,
+						});
+					}
+				}
 				route.scenes.set(name, {
 					name,
 					source: "json",
 					kind: "envelope",
 					value: env,
+					ref,
 					// 文件内容改了 envelope 不变, etag 计入文件大小与修改时间, 让 If-Match 仍能发现冲突
 					etag: stat ? etagOf([env, stat.size, stat.mtimeMs]) : etagOf(env),
 					overrides: !!code && code.source === "code",

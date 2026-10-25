@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import multer from "multer";
 import type { Response } from "express";
 import { extOfFile, typeOfExt } from "./mime";
+import { loadSnapshot, replayHeaders } from "./debug/refs";
 import { createProxy } from "./proxy";
 import { parseCookie, resolveScene } from "./scene";
 import type { DisplayKind, Envelope, Scene } from "./scene";
@@ -193,6 +194,7 @@ export const createResponder = ({
 	hosts = [],
 	lan = false,
 	ignore,
+	folder = "",
 }: {
 	registry: ReturnType<typeof createRegistry>;
 	store: ReturnType<typeof createStateStore>;
@@ -202,6 +204,8 @@ export const createResponder = ({
 	lan?: boolean | (() => boolean);
 	/** 请求忽略规则; 命中的请求不进请求日志, 不打印终端日志, 路由匹配与响应照常 */
 	ignore?: { test: (method: string, pathname: string) => boolean };
+	/** mock 目录, 用于定位场景引用的调试快照 */
+	folder?: string;
 }) => {
 	const trustedHosts = new Set(hosts.map(h => h.toLowerCase()));
 	const anyHost = trustedHosts.has("*");
@@ -326,7 +330,11 @@ export const createResponder = ({
 	) =>
 		resolveScene({
 			routeId: route.id,
-			has: name => route.scenes.has(name),
+			// 引用的快照失效时视为场景不存在, 按优先级降级并在日志中标记
+			has: name => {
+				const scene = route.scenes.get(name);
+				return !!scene && (!scene.ref || !!loadSnapshot(folder, scene.ref));
+			},
 			state,
 			request: {
 				header: firstHeader(req, SCENE_HEADER) || null,
@@ -541,6 +549,20 @@ export const createResponder = ({
 			if (scene.kind === "function") {
 				return callHandler(scene.value as Function);
 			}
+			if (envelope && scene.ref) {
+				const snap = loadSnapshot(folder, scene.ref);
+				if (!snap) {
+					throw new Error(`引用的快照不可用: ${scene.ref}`);
+				}
+				if (typeof routeState.status !== "number") {
+					res.status(envelope.status || snap.meta.response.status);
+				}
+				const grouped = new Map<string, string[]>();
+				replayHeaders(snap.meta).forEach(([k, v]) => grouped.set(k, [...(grouped.get(k) || []), v]));
+				grouped.forEach((values, k) => res.setHeader(k, values.length > 1 ? values : values[0]));
+				Object.entries(envelope.headers || {}).forEach(([k, v]) => res.setHeader(k, v));
+				return snap.file ? streamFile(req, res, snap.file) : res.end();
+			}
 			if (envelope) {
 				if (typeof routeState.status !== "number" && envelope.status) {
 					res.status(envelope.status);
@@ -568,6 +590,9 @@ export const createResponder = ({
 
 	/** 管理页展示的场景类型: 无参函数调用前为 nullary, 之后按实际返回值为 function(返回数据)或 proxy */
 	const sceneKind = (scene: Scene): DisplayKind => {
+		if (scene.ref) {
+			return "ref";
+		}
 		if (scene.handler) {
 			return "script";
 		}

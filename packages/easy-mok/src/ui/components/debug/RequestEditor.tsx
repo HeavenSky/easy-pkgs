@@ -3,7 +3,8 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { ApiError, errorMessage } from "@/api/client";
 import type { Definition, Row } from "@/api/debug-contract";
-import { useDebugRequest, useResolve, useSaveRequest } from "@/api/debug-queries";
+import { useDebugRequest, useResolve, useRouteMatch, useSaveRequest } from "@/api/debug-queries";
+import { NewRouteDialog } from "../NewRouteDialog";
 import { cn, pretty } from "@/lib/utils";
 import { JsonEditor, parseJson } from "../JsonEditor";
 import { Button } from "../ui/button";
@@ -42,6 +43,46 @@ export const definitionOf = (draft: Draft): { ok: true; def: Definition } | { ok
 	if (def.body.type !== "json") return { ok: true, def };
 	const parsed = parseJson(draft.jsonText);
 	return parsed.ok ? { ok: true, def: { ...def, body: { ...def.body, content: parsed.value } } } : { ok: false, error: `JSON 请求体语法错误: ${parsed.error}` };
+};
+
+/** 关联路由的推荐: 已保存请求按解析后的路径匹配 mock 路由, 没有匹配时可新建 */
+const RouteSuggest = ({ requestId, method, onPick }: { requestId: string; method: string; onPick: (key: string) => void }) => {
+	const match = useRouteMatch(requestId, true);
+	const [creating, setCreating] = useState(false);
+	if (!match.data) return null;
+	const { pathname, candidates } = match.data;
+	return (
+		<div className="flex flex-wrap items-center gap-1 text-xs">
+			{candidates.length ? (
+				<>
+					<span className="text-zinc-500">按已保存的 URL 匹配到:</span>
+					{candidates.map(c => (
+						<Button key={c.routeId} size="sm" variant="ghost" className="font-mono" onClick={() => onPick(c.key)}>
+							{c.key}
+						</Button>
+					))}
+				</>
+			) : (
+				<>
+					<span className="text-zinc-500">没有匹配 {pathname || "该 URL"} 的 mock 路由.</span>
+					<Button size="sm" variant="ghost" onClick={() => setCreating(true)}>
+						新建路由
+					</Button>
+				</>
+			)}
+			{creating && (
+				<NewRouteDialog
+					open
+					defaults={{ methods: [method], path: pathname || "/api/" }}
+					onClose={() => setCreating(false)}
+					onCreated={id => {
+						setCreating(false);
+						onPick(new TextDecoder().decode(Uint8Array.from(atob(id.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0))));
+					}}
+				/>
+			)}
+		</div>
+	);
 };
 
 const Field = ({ label, children }: { label: string; children: ReactNode }) => (
@@ -215,6 +256,7 @@ export const RequestFields = ({
 					<Field label="关联的 mock 路由(如 GET /api/user/:id)">
 						<Input className="font-mono" value={def.route || ""} onChange={e => set({ route: e.target.value || null })} />
 					</Field>
+					{requestId && <RouteSuggest requestId={requestId} method={def.method} onPick={route => set({ route })} />}
 				</div>
 			)}
 			{tab === "preview" && (

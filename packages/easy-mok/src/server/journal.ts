@@ -20,6 +20,26 @@ export const SECRET_HEADERS = new Set([
 	"x-auth-token",
 ]);
 
+// 存为场景或回放快照时不保留的响应头: 由传输层或服务器自动生成
+export const DROP_HEADERS = new Set([
+	"content-length",
+	"content-encoding",
+	"transfer-encoding",
+	"connection",
+	"keep-alive",
+	"date",
+	"etag",
+	"last-modified",
+	"vary",
+	"access-control-allow-origin",
+	"access-control-allow-credentials",
+	"access-control-allow-methods",
+	"access-control-allow-headers",
+	"access-control-max-age",
+	"access-control-expose-headers",
+	"x-powered-by",
+]);
+
 export type LogKind = "mock" | "proxy" | "pass" | "miss" | "error";
 export type LogSummary = {
 	id: string;

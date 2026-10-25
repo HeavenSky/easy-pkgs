@@ -4,6 +4,7 @@ import path from "path";
 import { MockError, isPlainObject, sha1, writeJsonAtomic } from "./util";
 import { SCRIPT_LIMIT } from "./script";
 import type { Envelope } from "./scene";
+import { refProblem } from "./debug/refs";
 
 export const SCENES_DIR = "__scenes__";
 export const GUI_FILE = "__gui__.json";
@@ -54,6 +55,17 @@ export const normalizeEnvelope = (raw: unknown): Envelope => {
 		}
 		out.body = null;
 		out.bodyFile = raw.bodyFile as string;
+	}
+	if (raw.ref !== undefined && raw.ref !== null) {
+		const problem = refProblem(raw.ref);
+		if (problem) {
+			throw new MockError("BAD_REQUEST", 400, problem, { field: "ref" });
+		}
+		if (out.script !== undefined || out.bodyFile !== undefined || (raw.body !== undefined && raw.body !== null)) {
+			throw new MockError("BAD_REQUEST", 400, "ref 不能与 body, bodyFile 或 script 同时出现", { field: "ref" });
+		}
+		out.body = null;
+		out.ref = raw.ref as string;
 	}
 	if (raw.status !== undefined && raw.status !== null) {
 		if (

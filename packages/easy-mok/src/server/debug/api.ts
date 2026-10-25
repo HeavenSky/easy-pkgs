@@ -11,6 +11,7 @@ import type { LanControl } from "../lan";
 import { streamFile } from "../respond";
 import { createHistoryStore } from "./history";
 import { createSnapshotStore } from "./snapshot";
+import type { Refs } from "./refs";
 import { performSend } from "./send";
 import type { SendResult } from "./send";
 import { META_FILE } from "./names";
@@ -25,6 +26,10 @@ export type DebugApiContext = {
 	/** 通知管理页数据变化 */
 	emit: (scope: string) => void;
 	lan: LanControl;
+	/** 场景引用快照的索引与改写; 缺省时不做引用完整性检查 */
+	refs?: Refs;
+	/** 按方法与路径名推荐 mock 路由 */
+	routeCandidates?: (method: string, pathname: string) => Array<{ routeId: string; key: string }>;
 };
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -104,19 +109,31 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 		})
 	);
 
+	/** 有场景引用且未带 force=1 时拒绝删除, 返回引用方 */
+	const guardRefs = (req: Req, usages: Array<{ route: string; scene: string; file: string; ref: string }>) => {
+		if (usages.length && req.query.force !== "1") {
+			throw new MockError("REF_IN_USE", 409, `有 ${usages.length} 个场景引用了要删除的快照, 确认后再删除`, { refs: usages });
+		}
+	};
+
 	router.patch(
 		"/nodes/:id",
 		wrap(req => {
 			const out = store.updateNode(idParam(req), req.body || {}, parseIfMatch(req.headers["if-match"]));
+			const rewritten = out.from !== out.to && ctx.refs ? ctx.refs.moveNode(out.from, out.to) : 0;
 			changed();
-			return out.node;
+			return { ...out.node, rewritten };
 		})
 	);
 
 	router.delete(
 		"/nodes/:id",
 		wrap((req, res) => {
-			store.deleteNode(idParam(req), req.query.recursive === "1");
+			const id = idParam(req);
+			const usages = ctx.refs ? ctx.refs.forNode(store.nodeDir(id).segments.join("/")) : [];
+			guardRefs(req, usages);
+			store.deleteNode(id, req.query.recursive === "1");
+			if (usages.length && ctx.refs) ctx.refs.reload(); // 刷新失效引用的诊断
 			changed();
 			res.status(204).end();
 		})
@@ -399,6 +416,7 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 		"/history/:hid/snapshot",
 		wrap((req, res) => {
 			const out = snapshots.saveFromHistory(idParam(req, "hid"), req.body || {});
+			if (ctx.refs && ctx.refs.forSnapshot(out.id).length) ctx.refs.reload(); // 覆盖后引用可能由失效变为有效
 			changed();
 			res.status(201);
 			return out;
@@ -438,17 +456,50 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 		"/snapshots/:sid",
 		wrap(req => {
 			const out = snapshots.update(idParam(req, "sid"), req.body || {});
+			const rewritten = out.from !== out.to && ctx.refs ? ctx.refs.renameSnapshot(out.from, out.to) : 0;
 			changed();
-			return out.snapshot;
+			return { ...out.snapshot, rewritten };
 		})
 	);
 
 	router.delete(
 		"/snapshots/:sid",
 		wrap((req, res) => {
-			snapshots.remove(idParam(req, "sid"));
+			const loc = snapshots.locate(idParam(req, "sid"));
+			const usages = ctx.refs ? ctx.refs.forSnapshot(loc.id) : [];
+			guardRefs(req, usages);
+			snapshots.remove(loc.id);
+			if (usages.length && ctx.refs) ctx.refs.reload(); // 刷新失效引用的诊断
 			changed();
 			res.status(204).end();
+		})
+	);
+
+	router.get(
+		"/snapshots/:sid/refs",
+		wrap(req => {
+			const loc = snapshots.locate(idParam(req, "sid"));
+			return ctx.refs ? ctx.refs.forSnapshot(loc.id).map(({ route, scene, file }) => ({ route, scene, file })) : [];
+		})
+	);
+
+	router.get(
+		"/requests/:id/route-match",
+		wrap(req => {
+			const requestId = idParam(req);
+			const { definition } = store.getRequest(requestId);
+			const env = typeof req.query.env === "string" ? envs.get(req.query.env).name : activeEnv();
+			const out = resolveRequest({ store, envs }, { requestId, definition, env, mode: "preview" });
+			let pathname = "";
+			try {
+				pathname = new URL(out.url).pathname;
+			} catch {
+				pathname = "";
+			}
+			return {
+				pathname,
+				candidates: pathname && ctx.routeCandidates ? ctx.routeCandidates(out.method, pathname) : [],
+			};
 		})
 	);
 

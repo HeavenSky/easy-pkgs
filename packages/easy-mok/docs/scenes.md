@@ -64,6 +64,15 @@ To answer with a CSV, HTML page, image, or any other file, point the scene's `bo
 
 On the admin page, editing such a scene shows the file: text files can be edited and saved in place, images are previewed, and other files can be downloaded.
 
+## Answer with a debug snapshot
+
+A scene can return a snapshot saved on the **Debug** (`调试`) page, see [Debug real APIs from the admin page](debug.md). In a route's **Scenes** tab, click **Create from debug snapshot** (`从调试快照建`), pick the snapshot and a scene name, and choose how to use it:
+
+- **Reference** (`引用`, recommended) writes `{ "ref": "user/get-user#ok" }` into the scene file. The scene always answers with the snapshot's current status, headers, and body, so refreshing the snapshot updates the mock without touching the scene. `status`, `headers`, and `delay` written in the scene override the snapshot's.
+- **Copy** (`拷贝`) copies the response into the scene: a JSON body up to 1 MB goes inline, anything else becomes a `bodyFile`. The scene no longer follows the snapshot and can be edited on its own.
+
+A referenced snapshot that was deleted, cannot be read, or recorded a failed send makes the scene unavailable: requests fall back to the next scene level and are marked as downgraded in the request log, and the diagnostics page lists the broken reference. A snapshot's `set-cookie` headers are replayed only if you turn that on in the snapshot.
+
 ## Set delay, status code, or passthrough
 
 ![Behavior panel: delay, status code override, or passthrough to the real backend](images/behavior.png)

@@ -3,7 +3,9 @@ import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { errorMessage } from "@/api/client";
 import { DEBUG_NAME_RE } from "@/api/debug-contract";
-import { snapshotRawUrl, useDeleteSnapshot, useSnapshot, useUpdateSnapshot } from "@/api/debug-queries";
+import { snapshotRawUrl, useDeleteSnapshot, useSnapshot, useSnapshotRefs, useUpdateSnapshot } from "@/api/debug-queries";
+import { encodeId } from "@/api/debug-contract";
+import { Link } from "wouter";
 import { Button } from "../ui/button";
 import { ConfirmDialog } from "../ui/dialog";
 import { Input, Label } from "../ui/input";
@@ -26,6 +28,8 @@ export const SnapshotPanel = ({
 	extra?: ReactNode;
 }) => {
 	const snap = useSnapshot(sid);
+	const refs = useSnapshotRefs(sid);
+	const usedBy = refs.data || [];
 	const update = useUpdateSnapshot();
 	const remove = useDeleteSnapshot();
 	const [name, setName] = useState("");
@@ -116,15 +120,32 @@ export const SnapshotPanel = ({
 					保存快照设置
 				</Button>
 			</div>
+			<div className="text-xs">
+				<span className="text-zinc-500">被场景引用: </span>
+				{usedBy.length ? (
+					usedBy.map(u => (
+						<Link key={`${u.route}-${u.scene}`} href={`/routes/${encodeId(u.route)}`} className="mr-2 font-mono text-sky-700 hover:underline">
+							{u.route} · {u.scene}
+						</Link>
+					))
+				) : (
+					<span className="text-zinc-400">无; 在路由的场景面板中点「从调试快照建」即可引用</span>
+				)}
+			</div>
 			<ResponseViewer meta={data.meta} rawUrl={snapshotRawUrl(sid)} />
 			<ConfirmDialog
 				open={deleting}
 				title="删除快照"
 				danger
 				confirmText="删除"
-				message={<>确定删除快照「{data.meta.name || data.name}」?</>}
+				message={
+					<>
+						确定删除快照「{data.meta.name || data.name}」?
+						{usedBy.length > 0 && <> 有 {usedBy.length} 个场景引用它, 删除后这些场景会降级到下一级场景: {usedBy.map(u => `${u.route} · ${u.scene}`).join(", ")}</>}
+					</>
+				}
 				onClose={() => setDeleting(false)}
-				onConfirm={() => remove.mutate({ sid }, { onSuccess: onDeleted, onError: fail })}
+				onConfirm={() => remove.mutate({ sid, force: usedBy.length > 0 }, { onSuccess: onDeleted, onError: fail })}
 			/>
 		</div>
 	);

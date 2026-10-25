@@ -45,6 +45,14 @@ Every send is kept as a history entry, listed under the request and on **All his
 
 History is never deleted automatically. When it reaches 1 GB, every admin page shows a reminder; open **All history** to see the size of each day and delete whole days.
 
+## Save results as named snapshots
+
+A history entry you want to keep becomes a named snapshot of its request: click **Save as snapshot** (`另存为快照`) next to a result, give it a name such as `ok` or `empty`, and it appears under the request in the left column. Snapshots are what mock scenes use later, so pick names that describe the case.
+
+- Saving under an existing name (compared case-insensitively) asks before it overwrites; the overwritten snapshot keeps its display name, weight, and snapshot variables.
+- A snapshot can have its own variables, which win over the request, group, and environment variables. **Resend with this snapshot** (`按此快照重新发送`) sends the saved request with them, for example to capture the same call with another id.
+- Each snapshot is a folder with `__meta__.json` and the response body as `raw.<ext>`, where the extension follows the `content-type`, so you can open `raw.csv` or `raw.html` directly.
+
 ## Fill requests from environments
 
 The right column manages environment groups such as `dev` or `test`. Select one under **Active environment** (`激活的环境组`) to use its variables.
@@ -65,7 +73,7 @@ Everything lives under `__debug__/` in the mock folder, which mock loading and h
 
 | Path | Contents | Commit it? |
 | --- | --- | --- |
-| `__debug__/requests/` | Groups and requests: `req.json` holds the request, `__meta__.json` holds the display name, weight, and variables | Yes |
+| `__debug__/requests/` | Groups and requests: `req.json` holds the request, `__meta__.json` holds the display name, weight, and variables; snapshots are in `res/<name>/` under each request | Yes |
 | `__debug__/environments/<group>.json` | Environment variables, with `<secret:id>` placeholders for secrets | Yes |
 | `__debug__/environments/secret/` | Secret sources, including plain values | No; add it to `.gitignore` |
 | `__debug__/history/` | Every send: the request actually sent, the response headers, and the body as its own file | No; add it to `.gitignore` |

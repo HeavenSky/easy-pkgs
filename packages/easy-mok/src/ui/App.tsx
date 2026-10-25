@@ -71,6 +71,7 @@ export const App = () => {
 						<Route path="/debug" component={DebugPage} />
 						<Route path="/debug/history" component={DebugHistoryPage} />
 						<Route path="/debug/req/:id" component={DebugPage} />
+						<Route path="/debug/req/:id/snap/:snap" component={DebugPage} />
 						<Route path="/routes/:id" component={RoutesPage} />
 						<Route component={RoutesPage} />
 					</Switch>

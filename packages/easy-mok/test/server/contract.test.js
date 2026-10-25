@@ -102,5 +102,8 @@ module.exports = { "GET /a/:id": scenes({ default: 1, fn: (req, res) => res.json
 		d.HistoryPage.parse((await api("/history")).body);
 		d.HistoryEntry.parse((await api(`/history/${enc(sent.id)}`)).body);
 		d.HistoryDays.parse((await api("/history-days")).body);
+		d.SnapshotSummary.parse((await api(`/history/${enc(sent.id)}/snapshot`, { method: "POST", json: { request: "g/r", name: "down" } })).body);
+		d.SnapshotDetail.parse((await api(`/snapshots/${enc("g/r#down")}`)).body);
+		d.SnapshotSummary.parse((await api(`/snapshots/${enc("g/r#down")}`, { method: "PATCH", json: { weight: 1 } })).body);
 	});
 });

@@ -12,6 +12,8 @@ import {
 	HistoryEntry,
 	HistoryPage,
 	Resolved,
+	SnapshotDetail,
+	SnapshotSummary,
 	SecretItem,
 	TreeNode,
 	encodeId,
@@ -132,7 +134,8 @@ export const useResolve = (input: { request: string | null; definition: Definiti
 		queryFn: ({ signal }) => request(Resolved, "/debug/resolve", { method: "POST", body: input, signal }),
 	});
 
-export type SendInput = { request: string | null; definition: Definition; env?: string | null; snapshot?: string | null };
+/** definition 省略时使用已保存的请求定义 */
+export type SendInput = { request: string | null; definition?: Definition; env?: string | null; snapshot?: string | null };
 
 /** 发送请求; cancel() 中止进行中的发送, 服务端随之取消并记为 ABORTED */
 export const useSend = () => {
@@ -181,3 +184,29 @@ export const useDeleteDay = () => {
 		onSuccess: () => Promise.all([qc.invalidateQueries({ queryKey: ["debug", "history"] }), qc.invalidateQueries({ queryKey: ["meta"] })]),
 	});
 };
+
+export const snapshotRawUrl = (sid: string) => `${API_BASE}/debug/snapshots/${encodeId(sid)}/raw`;
+
+export const useSaveSnapshot = () =>
+	useDebugMutation(
+		({ hid, body }: { hid: string; body: { request: string; name: string; title?: string; weight?: number; overwrite?: boolean } }) =>
+			request(SnapshotSummary, `/debug/history/${encodeId(hid)}/snapshot`, { method: "POST", body })
+	);
+
+export const useSnapshot = (sid: string | null) =>
+	useQuery({
+		queryKey: ["debug", "snapshot", sid],
+		enabled: !!sid,
+		queryFn: ({ signal }) => request(SnapshotDetail, `/debug/snapshots/${encodeId(sid!)}`, { signal }),
+	});
+
+export const useUpdateSnapshot = () =>
+	useDebugMutation(
+		({ sid, patch }: { sid: string; patch: { name?: string; title?: string | null; weight?: number; vars?: Record<string, string>; replay?: { setCookie: boolean } } }) =>
+			request(SnapshotSummary, `/debug/snapshots/${encodeId(sid)}`, { method: "PATCH", body: patch })
+	);
+
+export const useDeleteSnapshot = () =>
+	useDebugMutation(({ sid, force }: { sid: string; force?: boolean }) =>
+		request(null, `/debug/snapshots/${encodeId(sid)}${force ? "?force=1" : ""}`, { method: "DELETE" })
+	);

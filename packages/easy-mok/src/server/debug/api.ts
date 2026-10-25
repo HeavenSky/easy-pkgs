@@ -10,6 +10,7 @@ import type { createStateStore } from "../state";
 import type { LanControl } from "../lan";
 import { streamFile } from "../respond";
 import { createHistoryStore } from "./history";
+import { createSnapshotStore } from "./snapshot";
 import { performSend } from "./send";
 import type { SendResult } from "./send";
 import { META_FILE } from "./names";
@@ -59,6 +60,7 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 	const store = createDebugStore(ctx.folder);
 	const envs = createEnvStore(store.root);
 	const history = createHistoryStore(store.root);
+	const snapshots = createSnapshotStore({ store, history });
 	const router = express.Router();
 	const changed = () => ctx.emit("debug");
 	const idParam = (req: Req, name = "id") => decodeId(req.params[name]);
@@ -223,15 +225,16 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 					})();
 		if (requestId) store.nodeDir(requestId, "request");
 		const env = body.env === undefined ? activeEnv() : body.env === null ? null : envs.get(String(body.env)).name;
-		return { requestId, definition, env };
+		const snapshotVars = typeof body.snapshot === "string" && body.snapshot ? snapshots.varsOf(body.snapshot) : null;
+		return { requestId, definition, env, snapshotVars };
 	};
 
 	router.post(
 		"/resolve",
 		wrap(req => {
 			const body = isPlainObject(req.body) ? req.body : {};
-			const { requestId, definition, env } = resolveInput(body);
-			const out = resolveRequest({ store, envs }, { requestId, definition, env, mode: "preview" });
+			const { requestId, definition, env, snapshotVars } = resolveInput(body);
+			const out = resolveRequest({ store, envs }, { requestId, definition, env, snapshotVars, mode: "preview" });
 			return {
 				method: out.method,
 				url: out.url,
@@ -392,9 +395,66 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 		})
 	);
 
+	router.post(
+		"/history/:hid/snapshot",
+		wrap((req, res) => {
+			const out = snapshots.saveFromHistory(idParam(req, "hid"), req.body || {});
+			changed();
+			res.status(201);
+			return out;
+		})
+	);
+
+	const snapshotOut = (sid: string) => {
+		const s = snapshots.get(sid);
+		return { id: s.id, request: s.request, name: s.name, meta: s.meta };
+	};
+
+	router.get(
+		"/snapshots/:sid",
+		wrap(req => snapshotOut(idParam(req, "sid")))
+	);
+
+	router.get(
+		"/snapshots/:sid/raw",
+		wrap(async (req, res) => {
+			const s = snapshots.get(idParam(req, "sid"));
+			const body = s.meta.response && s.meta.response.body;
+			if (!body || !body.file) throw new MockError("NOT_FOUND", 404, "该快照没有响应体");
+			await sendStored(res, req, path.join(s.dir, body.file), body.contentType, body.charset);
+		})
+	);
+
+	router.get(
+		"/snapshots/:sid/req",
+		wrap(async (req, res) => {
+			const s = snapshots.get(idParam(req, "sid"));
+			if (!s.meta.request || s.meta.request.body.type !== "binary") throw new MockError("NOT_FOUND", 404, "该快照没有单独保存的请求体");
+			await sendStored(res, req, path.join(s.dir, "req.bin"), "application/octet-stream", null);
+		})
+	);
+
+	router.patch(
+		"/snapshots/:sid",
+		wrap(req => {
+			const out = snapshots.update(idParam(req, "sid"), req.body || {});
+			changed();
+			return out.snapshot;
+		})
+	);
+
+	router.delete(
+		"/snapshots/:sid",
+		wrap((req, res) => {
+			snapshots.remove(idParam(req, "sid"));
+			changed();
+			res.status(204).end();
+		})
+	);
+
 	const historyInfo = () => ({ historyBytes: history.totalBytes(), historyWarn: history.warn() });
 
-	return { router, store, envs, history, activeEnv, resolveInput, changed, sendAndRecord, sendStored, historyInfo };
+	return { router, store, envs, history, snapshots, activeEnv, resolveInput, changed, sendAndRecord, sendStored, historyInfo };
 };
 
 export type DebugApi = ReturnType<typeof createDebugApi>;

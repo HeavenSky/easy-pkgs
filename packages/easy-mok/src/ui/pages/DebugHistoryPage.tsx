@@ -3,7 +3,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Link } from "wouter";
 import { errorMessage } from "@/api/client";
-import { historyRawUrl, useDeleteDay, useHistoryDays, useHistoryEntry } from "@/api/debug-queries";
+import { historyRawUrl, useDebugTree, useDeleteDay, useHistoryDays, useHistoryEntry } from "@/api/debug-queries";
+import { SaveSnapshotDialog } from "@/components/debug/SaveSnapshotDialog";
 import { HistoryList } from "@/components/debug/HistoryList";
 import { ResponseViewer, formatBytes } from "@/components/debug/ResponseViewer";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,8 @@ export const DebugHistoryPage = () => {
 	const [viewing, setViewing] = useState<string | null>(null);
 	const [deleting, setDeleting] = useState<string | null>(null);
 	const entry = useHistoryEntry(viewing);
+	const tree = useDebugTree();
+	const [saving, setSaving] = useState(false);
 	const total = (days.data || []).reduce((s, d) => s + d.bytes, 0);
 	return (
 		<div className="grid h-full min-h-0 grid-cols-[320px_minmax(0,1fr)] divide-x divide-zinc-200 dark:divide-zinc-800">
@@ -46,11 +49,27 @@ export const DebugHistoryPage = () => {
 			</aside>
 			<section className="min-h-0 overflow-auto p-4">
 				{entry.data ? (
-					<ResponseViewer meta={entry.data.meta} rawUrl={historyRawUrl(entry.data.id)} />
+					<ResponseViewer
+						meta={entry.data.meta}
+						rawUrl={historyRawUrl(entry.data.id)}
+						actions={
+							<Button size="sm" onClick={() => setSaving(true)}>
+								另存为快照
+							</Button>
+						}
+					/>
 				) : (
 					<p className="text-sm text-zinc-500">选择一条历史查看详情.</p>
 				)}
 			</section>
+			{saving && entry.data && (
+				<SaveSnapshotDialog
+					hid={entry.data.id}
+					requestId={(entry.data.meta.origin as { request?: string | null } | undefined)?.request ?? null}
+					tree={tree.data?.nodes || []}
+					onClose={() => setSaving(false)}
+				/>
+			)}
 			<ConfirmDialog
 				open={!!deleting}
 				title="删除历史"

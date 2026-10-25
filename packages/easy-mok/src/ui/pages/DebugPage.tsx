@@ -1,4 +1,4 @@
-import { History, Send, ShieldAlert, Square } from "lucide-react";
+import { Camera, History, Send, ShieldAlert, Square } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Link, useLocation, useParams } from "wouter";
@@ -6,6 +6,8 @@ import { errorMessage } from "@/api/client";
 import { encodeId, type TreeNode } from "@/api/debug-contract";
 import { historyRawUrl, useDebugTree, useDeleteNode, useHistoryEntry, useSend } from "@/api/debug-queries";
 import { HistoryList } from "@/components/debug/HistoryList";
+import { SaveSnapshotDialog } from "@/components/debug/SaveSnapshotDialog";
+import { SnapshotPanel } from "@/components/debug/SnapshotPanel";
 import { ResponseViewer } from "@/components/debug/ResponseViewer";
 import { Button } from "@/components/ui/button";
 import { DebugTree } from "@/components/debug/DebugTree";
@@ -14,6 +16,7 @@ import { NodeDialog, type NodeDialogState } from "@/components/debug/NodeDialog"
 import { RequestEditor, definitionOf } from "@/components/debug/RequestEditor";
 import { ConfirmDialog } from "@/components/ui/dialog";
 import { EmptyState, ErrorState, Spinner } from "@/components/ui/state";
+import { cn } from "@/lib/utils";
 
 const decodeId = (raw: string) => {
 	try {
@@ -25,13 +28,34 @@ const decodeId = (raw: string) => {
 };
 
 export const requestPath = (id: string) => `/debug/req/${encodeId(id)}`;
+export const snapshotPath = (sid: string) => {
+	const i = sid.lastIndexOf("#");
+	return `${requestPath(sid.slice(0, i))}/snap/${encodeId(sid.slice(i + 1))}`;
+};
 
-/** 请求编辑器, 发送按钮, 本次结果与该请求的历史 */
-const Workbench = ({ id }: { id: string }) => {
+/** 请求编辑器, 发送按钮, 本次结果或选中的快照, 以及该请求的历史 */
+const Workbench = ({ id, snapshot, tree }: { id: string; snapshot: string | null; tree: TreeNode[] }) => {
+	const [, navigate] = useLocation();
 	const send = useSend();
 	const [viewing, setViewing] = useState<string | null>(null);
+	const [saving, setSaving] = useState<string | null>(null);
 	const fromHistory = useHistoryEntry(viewing && viewing !== send.data?.id ? viewing : null);
 	const current = viewing && viewing !== send.data?.id ? fromHistory.data : send.data;
+	const fail = (err: unknown) => toast.error(errorMessage(err));
+	const sendWith = (input: Parameters<typeof send.mutate>[0]) =>
+		send.mutate(input, {
+			onSuccess: e => {
+				setViewing(e.id);
+				if (snapshot) navigate(requestPath(id));
+			},
+			onError: fail,
+		});
+	const saveButton = (hid: string) => (
+		<Button size="sm" onClick={() => setSaving(hid)}>
+			<Camera size={14} />
+			另存为快照
+		</Button>
+	);
 	return (
 		<div className="space-y-4">
 			<RequestEditor id={id}>
@@ -43,10 +67,7 @@ const Workbench = ({ id }: { id: string }) => {
 							onClick={() => {
 								const d = definitionOf(draft);
 								if (!d.ok) return toast.error(d.error);
-								send.mutate(
-									{ request: id, definition: d.def },
-									{ onSuccess: e => setViewing(e.id), onError: err => toast.error(errorMessage(err)) }
-								);
+								sendWith({ request: id, definition: d.def });
 							}}
 						>
 							<Send size={14} />
@@ -61,19 +82,41 @@ const Workbench = ({ id }: { id: string }) => {
 					</>
 				)}
 			</RequestEditor>
-			{current && <ResponseViewer meta={current.meta} rawUrl={historyRawUrl(current.id)} />}
+			{snapshot ? (
+				<SnapshotPanel
+					key={snapshot}
+					sid={snapshot}
+					onRenamed={sid => navigate(snapshotPath(sid))}
+					onDeleted={() => navigate(requestPath(id))}
+					onResend={sid => sendWith({ request: id, snapshot: sid })}
+				/>
+			) : (
+				current && <ResponseViewer meta={current.meta} rawUrl={historyRawUrl(current.id)} actions={saveButton(current.id)} />
+			)}
 			<section className="space-y-1">
 				<h3 className="text-xs font-medium text-zinc-500">该请求的发送历史</h3>
-				<HistoryList requestId={id} selected={current?.id || null} onSelect={line => setViewing(line.id)} />
+				<HistoryList
+					requestId={id}
+					selected={snapshot ? null : current?.id || null}
+					onSelect={line => {
+						setViewing(line.id);
+						if (snapshot) navigate(requestPath(id));
+					}}
+				/>
 			</section>
+			{saving && (
+				<SaveSnapshotDialog hid={saving} requestId={id} tree={tree} onClose={() => setSaving(null)} onSaved={sid => navigate(snapshotPath(sid))} />
+			)}
 		</div>
 	);
 };
 
 export const DebugPage = () => {
-	const params = useParams<{ id?: string }>();
+	const params = useParams<{ id?: string; snap?: string }>();
 	const [, navigate] = useLocation();
 	const selected = params.id ? decodeId(params.id) : null;
+	const snapName = params.snap ? decodeId(params.snap) : null;
+	const snapshot = selected && snapName ? `${selected}#${snapName}` : null;
 	const tree = useDebugTree();
 	const remove = useDeleteNode();
 	const [dialog, setDialog] = useState<NodeDialogState>(null);
@@ -117,6 +160,30 @@ export const DebugPage = () => {
 									onCreate: (kind, parent) => setDialog({ mode: "create", kind, parent }),
 									onEdit: node => setDialog({ mode: "edit", node }),
 									onDelete: setDeleting,
+									renderExtra: node =>
+										!!node.snapshots?.length && (
+											<ul aria-label={`${node.title} 的快照`} className="ml-8 border-l border-zinc-200 pl-2 dark:border-zinc-800">
+												{node.snapshots.map(s => {
+													const sid = `${node.id}#${s.name}`;
+													return (
+														<li key={s.name}>
+															<button
+																type="button"
+																title={sid}
+																className={cn(
+																	"flex w-full items-center gap-1 rounded px-1 text-left text-xs",
+																	snapshot === sid ? "bg-sky-100 dark:bg-sky-950" : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+																)}
+																onClick={() => navigate(snapshotPath(sid))}
+															>
+																<Camera size={12} />
+																{s.title}
+															</button>
+														</li>
+													);
+												})}
+											</ul>
+										),
 								}}
 							/>
 							{tree.data.problems.map((p, i) => (
@@ -129,7 +196,7 @@ export const DebugPage = () => {
 				</aside>
 				<section className="min-h-0 overflow-auto p-4">
 					{selected ? (
-						<Workbench key={selected} id={selected} />
+						<Workbench key={selected} id={selected} snapshot={snapshot} tree={tree.data?.nodes || []} />
 					) : (
 						<EmptyState title="选择或新建一个请求">在左侧请求集合中选择请求, 或新建分组与请求.</EmptyState>
 					)}

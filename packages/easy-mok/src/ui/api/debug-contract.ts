@@ -184,6 +184,30 @@ export type HistoryPage = z.infer<typeof HistoryPage>;
 
 export const HistoryDays = z.array(z.object({ day: z.string(), bytes: z.number(), count: z.number() }));
 
+export const SnapshotSummary = z.object({
+	id: z.string(),
+	request: z.string(),
+	name: z.string(),
+	title: z.string(),
+	weight: z.number(),
+});
+export type SnapshotSummary = z.infer<typeof SnapshotSummary>;
+
+export const SnapshotDetail = z.object({
+	id: z.string(),
+	request: z.string(),
+	name: z.string(),
+	meta: ResultMeta.and(
+		z.object({
+			name: z.string().optional(),
+			weight: z.number(),
+			vars: Vars,
+			replay: z.object({ setCookie: z.boolean() }),
+		})
+	),
+});
+export type SnapshotDetail = z.infer<typeof SnapshotDetail>;
+
 /** URL 中的调试标识用 base64url 编码 */
 export const encodeId = (id: string) =>
 	btoa(String.fromCharCode(...new TextEncoder().encode(id)))

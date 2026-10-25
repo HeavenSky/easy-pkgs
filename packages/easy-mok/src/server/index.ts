@@ -16,6 +16,8 @@ import { createAdmin } from "./admin";
 import { scenes } from "./scene";
 import { compileRoute } from "./route";
 import { createIgnore } from "./ignore";
+import { createLanControl } from "./lan";
+import type { LanControl } from "./lan";
 
 const { version } = require("../../package.json") as { version: string };
 
@@ -32,7 +34,7 @@ export interface MockOptions {
 	ui?: boolean;
 	/** 是否提供页内悬浮条, 默认读 MOCK_FLOAT !== "0", ui 关闭时恒为 false */
 	float?: boolean;
-	/** 是否允许私有网段访问管理接口, 并把私有网段 IP 来源当作可信跨域来源; 默认读 MOCK_LAN === "1" */
+	/** 局域网访问开关的初始值: 允许私有网段访问管理接口, 并把私有网段 IP 来源当作可信跨域来源; 默认读 MOCK_LAN === "1". 运行中可在本机管理页切换 */
 	lan?: boolean;
 	/**
 	 * 额外受信任的 Host 名, 默认读 MOCK_HOSTS(逗号分隔); 以 . 开头时同时匹配子域名.
@@ -120,6 +122,8 @@ export interface MockApp extends Express {
 		store: ReturnType<typeof createStateStore>;
 		journal: ReturnType<typeof createJournal>;
 		events: ReturnType<typeof createEvents>;
+		/** 局域网开关的运行时状态 */
+		lan: LanControl;
 		bootId: string;
 	};
 }
@@ -132,6 +136,7 @@ export const createMock = (options?: MockOptions): MockApp => {
 	const events = createEvents();
 	const fileStore = createFileStore(opt.folder);
 	const store = createStateStore(opt.stateFile);
+	const lan = createLanControl(opt.lan);
 	let responder: ReturnType<typeof createResponder> | null = null; // 注册表启动时先加载一次, 此时还没有代理需要清理
 	const registry = createRegistry({
 		folder: opt.folder,
@@ -155,7 +160,7 @@ export const createMock = (options?: MockOptions): MockApp => {
 		store,
 		journal,
 		hosts: opt.hosts,
-		lan: opt.lan,
+		lan: () => lan.access,
 		ignore,
 	});
 	responder = handler;
@@ -170,7 +175,8 @@ export const createMock = (options?: MockOptions): MockApp => {
 			journal,
 			events,
 			fileStore,
-			guard: createGuard({ lan: opt.lan, hosts: opt.hosts }),
+			guard: createGuard({ lan: () => lan.access, hosts: opt.hosts }),
+			lan,
 			bootId,
 			folder: opt.folder,
 			version,
@@ -222,7 +228,7 @@ export const createMock = (options?: MockOptions): MockApp => {
 			await registry.close();
 		},
 		floatScript: opt.float ? FLOAT_PATH : null,
-		mock: { options: opt, registry, store, journal, events, bootId },
+		mock: { options: opt, registry, store, journal, events, lan, bootId },
 	}) as MockApp;
 };
 

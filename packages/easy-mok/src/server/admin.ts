@@ -10,6 +10,7 @@ import type { DisplayKind, Scene, Envelope } from "./scene";
 import { normalizeEnvelope } from "./files";
 import { compileScript } from "./script";
 import { isLoopback } from "./security";
+import type { LanControl } from "./lan";
 import type { createFileStore } from "./files";
 import { MockError, assertName, etagOf } from "./util";
 import { SECRET_HEADERS } from "./journal";
@@ -86,6 +87,8 @@ export interface AdminContext {
 	version: string;
 	float: boolean;
 	ignore: ReturnType<typeof createIgnore>;
+	/** 局域网开关的运行时状态 */
+	lan: LanControl;
 	/** 场景的展示类型, 由 responder 按无参函数的实际返回值给出 */
 	sceneKind?: (scene: Scene) => DisplayKind;
 }
@@ -178,7 +181,43 @@ export const createAdmin = (ctx: AdminContext) => {
 		return list;
 	};
 
-	const meta = () => {
+	/** 局域网开关状态; 可达性按收到本次请求的 server 的监听地址判断, 拿不到时为 unknown */
+	const lanInfo = (req?: IncomingMessage) => {
+		const { lan } = ctx;
+		const server = req ? ((req.socket as any)?.server as { address?: () => unknown }) : null;
+		const addr = server && typeof server.address === "function" ? server.address() : null;
+		const bound =
+			addr && typeof addr === "object"
+				? (addr as { address: string; port: number })
+				: null;
+		const loopback = bound ? bound.address === "localhost" || isLoopback(bound.address) : null;
+		const extra = lan.listening.addresses;
+		let reachable: "yes" | "no" | "unknown";
+		if (!lan.access) {
+			reachable = "no";
+		} else if (extra.length) {
+			reachable = "yes";
+		} else if (loopback === null) {
+			reachable = "unknown";
+		} else {
+			reachable = loopback ? "no" : "yes";
+		}
+		const listening = extra.length
+			? extra
+			: lan.access && bound && !loopback
+				? [`${bound.address.includes(":") ? `[${bound.address}]` : bound.address}:${bound.port}`]
+				: [];
+		return {
+			access: lan.access,
+			initial: lan.initial,
+			canToggle: !!req && isLoopback(req.socket.remoteAddress || ""),
+			reachable,
+			listening,
+			errors: lan.listening.errors,
+		};
+	};
+
+	const meta = (req?: IncomingMessage) => {
 		const state = store.get();
 		return {
 			name: "easy-mok",
@@ -197,6 +236,7 @@ export const createAdmin = (ctx: AdminContext) => {
 			float: ctx.float,
 			counts: { routes: registry.routes.size, files: registry.fileCount },
 			diagnostics: diagnostics(),
+			lan: lanInfo(req),
 			env: { node: process.version, platform: process.platform },
 		};
 	};
@@ -259,7 +299,24 @@ export const createAdmin = (ctx: AdminContext) => {
 
 	api.get(
 		"/meta",
-		wrap(() => meta())
+		wrap(req => meta(req))
+	);
+
+	/** 局域网开关只能在本机切换; 局域网用户无法自行放开访问 */
+	api.put(
+		"/lan",
+		wrap(req => {
+			if (!isLoopback(req.socket.remoteAddress || "")) {
+				throw new MockError("FORBIDDEN", 403, "局域网开关只能在本机的管理页中切换");
+			}
+			const body = req.body || {};
+			if ("access" in body && typeof body.access !== "boolean") {
+				throw new MockError("BAD_REQUEST", 400, "access 必须是布尔值", { field: "access" });
+			}
+			ctx.lan.set({ access: body.access });
+			changed("meta");
+			return lanInfo(req);
+		})
 	);
 
 	api.get(
@@ -675,7 +732,7 @@ export const createAdmin = (ctx: AdminContext) => {
 					draft.logLevel = body.logLevel;
 				}
 			}, "state");
-			return meta();
+			return meta(req);
 		})
 	);
 

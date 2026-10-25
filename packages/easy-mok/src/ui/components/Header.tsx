@@ -6,6 +6,7 @@ import type { Meta } from "@/api/contract";
 import type { LiveStatus } from "@/api/live";
 import { useGroups, usePatchState } from "@/api/queries";
 import { cn } from "@/lib/utils";
+import { LanControl } from "./LanControl";
 import { Select } from "./ui/input";
 import { Switch } from "./ui/switch";
 
@@ -108,6 +109,7 @@ export const Header = ({ meta, live }: { meta: Meta; live: LiveStatus }) => {
 						</span>
 					)}
 				</div>
+				<LanControl lan={meta.lan} />
 				<span
 					title={LIVE_TEXT[live]}
 					aria-label={LIVE_TEXT[live]}

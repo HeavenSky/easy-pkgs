@@ -2,6 +2,16 @@
 
 **English** · [简体中文](./zh/CHANGELOG.md)
 
+## Unreleased
+
+### Added
+
+- Turn LAN access on and off at runtime with the **Allow LAN access** (`局域网`) switch in the admin page header; only an admin page opened on the local machine can flip it, and a banner shows while it is on. See [Allow other hosts, the LAN, and cross-origin pages](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/docs/security.md#open-the-admin-page-from-another-machine).
+
+### Changed
+
+- The standalone server started with `--lan` (or `lan: true`) on the default `127.0.0.1` now also listens on this machine's private-network IPv4 addresses, so LAN devices can actually reach it; start it without `--lan` to keep it local only.
+
 ## 0.0.5 (2026-10-25)
 
 ### Fixed

@@ -7,13 +7,15 @@ import { createJiti } from "jiti";
 import { createMock } from "./index";
 import type { MockApp, MockOptions } from "./index";
 import { exportedTable } from "./loader";
+import { privateAddresses } from "./lan";
 import { setCors } from "./respond";
+import { isLoopback } from "./security";
 import { isPlainObject } from "./util";
 
 export interface StartOptions extends MockOptions {
 	/** 监听端口, 默认 4100, 0 表示随机端口 */
 	port?: number;
-	/** 监听地址, 默认 127.0.0.1; 0.0.0.0 时局域网可访问 mock(管理页仍需 lan) */
+	/** 监听地址, 默认 127.0.0.1; 0.0.0.0 时局域网可访问 mock(管理页仍需 lan). 监听回环地址时, 局域网访问开关打开期间额外监听本机私有网段地址 */
 	host?: string;
 }
 
@@ -73,9 +75,9 @@ export const startMock = (options: StartOptions = {}): Promise<StartedMock> => {
 	}
 	const mock = createMock(mockOptions);
 	const trusted = new Set(mock.mock.options.hosts.map(h => h.toLowerCase()));
-	const server = http.createServer((req, res) =>
+	const onRequest = (req: http.IncomingMessage, res: http.ServerResponse) =>
 		mock(req, res, () => {
-			setCors(req, res as any, trusted, mock.mock.options.lan); // 让跨域页面读得到 404 说明, 预检直接放行
+			setCors(req, res as any, trusted, mock.mock.lan.access); // 让跨域页面读得到 404 说明, 预检直接放行
 			if (
 				String(req.method).toUpperCase() === "OPTIONS" &&
 				req.headers["access-control-request-method"]
@@ -94,9 +96,69 @@ export const startMock = (options: StartOptions = {}): Promise<StartedMock> => {
 					url: req.url,
 				})
 			);
-		})
-	);
+		});
+	const server = http.createServer(onRequest);
+	// 主监听在回环地址时, 局域网访问开关打开期间在每个私有网段地址上以同一端口额外监听; 逐个绑定具体地址, 不绑 0.0.0.0, 免得在 Linux 上与回环地址的同端口冲突
+	const lan = mock.mock.lan;
+	const extra = new Map<string, http.Server>();
+	const loopbackHost = host === "localhost" || isLoopback(host);
+	const closeExtra = () => {
+		extra.forEach(s => {
+			if (s.closeAllConnections) s.closeAllConnections();
+			s.close();
+		});
+		extra.clear();
+		lan.setListening({ addresses: [], errors: [] });
+	};
+	const syncLan = (port: number) => {
+		if (!loopbackHost) {
+			return;
+		}
+		if (!lan.access) {
+			closeExtra();
+			return;
+		}
+		const errors: string[] = [];
+		Promise.all(
+			privateAddresses()
+				.filter(addr => !extra.has(addr))
+				.map(
+					addr =>
+						new Promise<void>(resolve => {
+							const s = http.createServer(onRequest);
+							s.once("error", (err: NodeJS.ErrnoException) => {
+								errors.push(`${addr}:${port} ${err.code || err.message}`);
+								console.warn(
+									`[easy-mok] 局域网地址监听失败: ${addr}:${port}`,
+									err.code || err.message
+								);
+								resolve();
+							});
+							s.listen(port, addr, () => {
+								if (lan.access) {
+									extra.set(addr, s);
+									console.log(`[easy-mok] 局域网可访问: ${urlOf(addr, port)}`);
+								} else {
+									s.close(); // 监听期间开关已被关闭
+								}
+								resolve();
+							});
+						})
+				)
+		).then(() => {
+			if (lan.access) {
+				lan.setListening({
+					addresses: [...extra.keys()].map(addr => `${addr}:${port}`),
+					errors,
+				});
+				mock.mock.events.emit("changed", { scope: "meta" });
+			}
+		});
+	};
+	let unsubscribe = () => {};
 	const close = async () => {
+		unsubscribe();
+		closeExtra();
 		await mock.close(); // 先结束 SSE 长连接, 否则 server.close 等不到连接关闭
 		if (server.closeAllConnections) server.closeAllConnections();
 		await new Promise<void>(resolve => server.close(() => resolve()));
@@ -109,6 +171,8 @@ export const startMock = (options: StartOptions = {}): Promise<StartedMock> => {
 		server.listen(port, host, () => {
 			server.removeListener("error", onError);
 			const actual = (server.address() as { port: number }).port;
+			unsubscribe = lan.subscribe(() => syncLan(actual));
+			syncLan(actual);
 			resolve({ server, mock, url: urlOf(host, actual), port: actual, close });
 		});
 	});

@@ -4,6 +4,7 @@ import { Route, Switch, useLocation } from "wouter";
 import { useLiveEvents } from "./api/live";
 import { useMeta } from "./api/queries";
 import { Header } from "./components/Header";
+import { LanBanner } from "./components/LanControl";
 import { ErrorState, Spinner } from "./components/ui/state";
 
 // 页面按路由拆包, 首屏只加载框架与当前页
@@ -41,6 +42,7 @@ export const App = () => {
 	return (
 		<div className="flex h-full flex-col">
 			<Header meta={meta.data} live={live} />
+			<LanBanner lan={meta.data.lan} />
 			{live === "reconnecting" && (
 				<div
 					role="status"

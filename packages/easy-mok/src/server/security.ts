@@ -89,15 +89,20 @@ export const isTrustedOrigin = (
 	);
 };
 
-export const createGuard = (opt: { lan: boolean; hosts: string[] }) => {
+/** 布尔值或运行时取值函数统一成取值函数 */
+export const lanGetter = (lan: boolean | (() => boolean) | undefined) =>
+	typeof lan === "function" ? lan : () => lan === true;
+
+export const createGuard = (opt: { lan: boolean | (() => boolean); hosts: string[] }) => {
 	const hosts = new Set(opt.hosts.map(h => h.toLowerCase()));
+	const lanOn = lanGetter(opt.lan);
 	return (req: IncomingMessage) => {
 		const ip = req.socket.remoteAddress || "";
-		if (!isLoopback(ip) && !(opt.lan && isPrivate(ip))) {
+		if (!isLoopback(ip) && !(lanOn() && isPrivate(ip))) {
 			throw new MockError(
 				"FORBIDDEN",
 				403,
-				"管理页默认只允许本机访问, 局域网访问需设置环境变量 MOCK_LAN=1"
+				"管理页默认只允许本机访问, 局域网访问需在本机管理页打开「允许局域网访问」, 或设置环境变量 MOCK_LAN=1"
 			);
 		}
 		const hostname = hostnameOf(req.headers.host);

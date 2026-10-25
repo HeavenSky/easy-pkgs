@@ -21,6 +21,14 @@ const meta = {
 	float: true,
 	counts: { routes: 0, files: 0 },
 	diagnostics: [{ type: "load-error", message: "boom" }],
+	lan: {
+		access: false,
+		initial: false,
+		canToggle: true,
+		reachable: "no",
+		listening: [],
+		errors: [],
+	},
 	env: { node: "v26", platform: "darwin" },
 };
 

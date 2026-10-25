@@ -23,6 +23,7 @@ module.exports = { "GET /a/:id": scenes({ default: 1, fn: (req, res) => res.json
 		const z = await import("zod");
 		const id = Buffer.from("GET /a/:id").toString("base64url");
 		c.Meta.parse((await ctx.api("/meta")).body);
+		c.LanInfo.parse((await ctx.api("/lan", { method: "PUT", json: { access: false } })).body);
 		c.IgnoreConfig.parse((await ctx.api("/ignore")).body);
 		c.IgnoreConfig.parse(
 			(await ctx.api("/ignore", { method: "PUT", json: { custom: ["/x"] } })).body

@@ -9,7 +9,7 @@ By the end of this page, you can serve your mock folder and the admin page from 
 ```bash
 npx easy-mok                                   # src/mocks on http://127.0.0.1:4100/
 npx easy-mok --folder mock --port 0            # 0 picks a random port
-npx easy-mok --host 0.0.0.0 --lan              # reachable from the LAN, admin page included
+npx easy-mok --lan                             # also reachable from the LAN, admin page included
 npx easy-mok --builtin ./builtin.ts --no-float # built-in routes resolved from the current directory; ts / esm supported
 npx easy-mok --help
 ```

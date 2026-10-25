@@ -9,7 +9,7 @@
 ```bash
 npx easy-mok                                   # 默认 src/mocks，http://127.0.0.1:4100/
 npx easy-mok --folder mock --port 0            # 0 为随机端口
-npx easy-mok --host 0.0.0.0 --lan              # 局域网可访问，管理页也能从局域网打开
+npx easy-mok --lan                             # 局域网也能访问，管理页也能从局域网打开
 npx easy-mok --builtin ./builtin.ts --no-float # 内置路由文件相对当前目录解析，支持 ts / esm
 npx easy-mok --help
 ```

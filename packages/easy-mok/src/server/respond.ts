@@ -10,7 +10,7 @@ import { parseCookie, resolveScene } from "./scene";
 import type { DisplayKind, Envelope, Scene } from "./scene";
 import { isFetchLike } from "./journal";
 import { ParamError, paramsOf, splitUrl } from "./route";
-import { hostnameOf, isTrustedHost, isTrustedOrigin } from "./security";
+import { hostnameOf, isTrustedHost, isTrustedOrigin, lanGetter } from "./security";
 import { isPlainObject } from "./util";
 import type { RouteEntry, createRegistry } from "./loader";
 import type { MockState, createStateStore } from "./state";
@@ -171,13 +171,14 @@ export const createResponder = ({
 	store: ReturnType<typeof createStateStore>;
 	journal: ReturnType<typeof createJournal>;
 	hosts?: string[];
-	/** 是否把私有网段 IP 来源当作可信跨域来源, 与管理接口的 lan 同一开关 */
-	lan?: boolean;
+	/** 是否把私有网段 IP 来源当作可信跨域来源, 与管理接口的 lan 同一开关; 函数形式在每次请求时取值 */
+	lan?: boolean | (() => boolean);
 	/** 请求忽略规则; 命中的请求不进请求日志, 不打印终端日志, 路由匹配与响应照常 */
 	ignore?: { test: (method: string, pathname: string) => boolean };
 }) => {
 	const trustedHosts = new Set(hosts.map(h => h.toLowerCase()));
 	const anyHost = trustedHosts.has("*");
+	const lanOn = lanGetter(lan);
 	// 运行资源: 无参函数 → 代理槽位, 随路由表重建与 close() 销毁; 以函数为键, 沿用旧快照时代理不必重建
 	const proxies = new Map<Function, Slot>();
 	const servers = new Map<EventEmitter, string>(); // 已挂 upgrade 分发的 server → 挂载前缀(express 的 req.baseUrl)
@@ -410,7 +411,7 @@ export const createResponder = ({
 				})
 			);
 		}
-		setCors(req, res, trustedHosts, lan);
+		setCors(req, res, trustedHosts, lanOn());
 		if (preflight) {
 			res.statusCode = 204;
 			return res.end();

@@ -2,6 +2,16 @@
 
 [English](../CHANGELOG.md) · **简体中文**
 
+## Unreleased
+
+### 新增
+
+- 在管理页页头用「局域网」开关运行时开关局域网访问；只有本机打开的管理页能切换，开关打开期间页面顶部显示提示条。见[放行其他主机、局域网与跨域页面](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/zh/docs/security.md#从其他机器打开管理页)。
+
+### 变更
+
+- 独立服务以 `--lan`（或 `lan: true`）启动且监听默认的 `127.0.0.1` 时，现在会额外监听本机的私有网段 IPv4 地址，局域网设备才能真正连上；不想让局域网访问时不要加 `--lan`。
+
 ## 0.0.5 (2026-10-25)
 
 ### 修复

@@ -5,6 +5,7 @@ import {
 	Groups,
 	IgnoreConfig,
 	IgnoreValidation,
+	LanInfo,
 	LogDetail,
 	LogSummary,
 	Meta,
@@ -145,6 +146,15 @@ export const useDeleteRoute = () => {
 	return useMutation({
 		mutationFn: (id: string) => request(null, `/routes/${id}`, { method: "DELETE" }),
 		onSuccess: () => invalidateRoutes(qc),
+	});
+};
+
+export const useSetLan = () => {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: (body: { access?: boolean }) =>
+			request(LanInfo, "/lan", { method: "PUT", body }),
+		onSuccess: () => qc.invalidateQueries({ queryKey: keys.meta }),
 	});
 };
 

@@ -53,6 +53,9 @@ export const useLiveEvents = () => {
 				qc.invalidateQueries({ queryKey: keys.routes });
 				qc.invalidateQueries({ queryKey: keys.meta });
 			}
+			if (scope === "meta") {
+				qc.invalidateQueries({ queryKey: keys.meta });
+			}
 			if (scope === "logs") {
 				qc.invalidateQueries({ queryKey: keys.logs });
 			}

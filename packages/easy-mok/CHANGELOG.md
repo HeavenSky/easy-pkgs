@@ -2,7 +2,7 @@
 
 **English** · [简体中文](./zh/CHANGELOG.md)
 
-## Unreleased
+## 0.0.6 (2026-10-26)
 
 ### Added
 
@@ -20,6 +20,7 @@
 
 ### Changed
 
+- The admin page has a more compact layout that fits more on screen: panels put their tabs in the header, and detail views open read-only until you click **Edit** (`编辑`).
 - The standalone server started with `--lan` (or `lan: true`) on the default `127.0.0.1` now also listens on this machine's private-network IPv4 addresses, so LAN devices can actually reach it; start it without `--lan` to keep it local only.
 
 ## 0.0.5 (2026-10-25)

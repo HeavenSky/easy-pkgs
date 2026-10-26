@@ -1,6 +1,6 @@
 {
 	"name": "easy-mok",
-	"version": "0.0.5",
+	"version": "0.0.6",
 	"description": "Write each API mock once, then switch scenes, delays, and status codes in your browser and save real responses as mocks, with no code edits or dev server restarts.",
 	"keywords": [
 		"api-mock",

@@ -7,7 +7,8 @@ const { loadSrc } = require("./src");
 
 const { createMock } = loadSrc();
 
-const TMP_ROOT = path.join(__dirname, "../.tmp");
+// EASY_MOK_TEST_TMP 指定 test/ 下的另一个临时目录名, 多个测试进程并行时各用各的, 互不清空
+const TMP_ROOT = path.join(__dirname, "..", process.env.EASY_MOK_TEST_TMP || ".tmp");
 let seq = 0;
 
 /** @param {Record<string, string>} files */

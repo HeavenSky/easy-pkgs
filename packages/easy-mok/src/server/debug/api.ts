@@ -4,7 +4,7 @@ import fs from "fs";
 import path from "path";
 import express from "express";
 import type { NextFunction, Request as Req, Response as Res } from "express";
-import { MockError, isPlainObject, writeJsonAtomic } from "../util";
+import { MockError, isPlainObject, localIso, writeJsonAtomic } from "../util";
 import { isLoopback } from "../security";
 import type { createStateStore } from "../state";
 import type { LanControl } from "../lan";
@@ -28,6 +28,8 @@ import { resolveRequest } from "./vars";
 
 export type DebugApiContext = {
 	folder: string;
+	/** 调试存储目录(请求, 环境组, 快照, 历史) */
+	debugDir: string;
 	state: ReturnType<typeof createStateStore>;
 	/** 通知管理页数据变化 */
 	emit: (scope: string) => void;
@@ -36,14 +38,6 @@ export type DebugApiContext = {
 	refs?: Refs;
 	/** 按方法与路径名推荐 mock 路由 */
 	routeCandidates?: (method: string, pathname: string) => Array<{ routeId: string; key: string }>;
-};
-
-const pad = (n: number) => String(n).padStart(2, "0");
-/** 带时区偏移的本地时间, 如 2026-10-26T00:12:03+08:00 */
-export const localIso = (d: Date) => {
-	const off = -d.getTimezoneOffset();
-	const sign = off >= 0 ? "+" : "-";
-	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}${sign}${pad(Math.floor(Math.abs(off) / 60))}:${pad(Math.abs(off) % 60)}`;
 };
 
 const parseIfMatch = (header: string | undefined) =>
@@ -68,11 +62,15 @@ export const localOnly = (req: Req, what: string) => {
 };
 
 export const createDebugApi = (ctx: DebugApiContext) => {
-	const store = createDebugStore(ctx.folder);
+	const store = createDebugStore(ctx.debugDir);
 	const envs = createEnvStore(store.root);
 	const history = createHistoryStore(store.root);
 	const redactRules = createRedactRules(store.root);
-	const snapshots = createSnapshotStore({ store, history, rules: () => redactRules.get().fields });
+	const snapshots = createSnapshotStore({
+		store,
+		history,
+		rules: () => redactRules.get().fields,
+	});
 	const router = express.Router();
 	const changed = () => ctx.emit("debug");
 	const idParam = (req: Req, name = "id") => decodeId(req.params[name]);
@@ -99,7 +97,26 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 		meta: { title: r.meta.name || null, weight: r.meta.weight || 0, vars: r.meta.vars || {} },
 		etag: r.etag,
 		metaEtag: r.metaEtag,
+		// 集合与各级分组继承给它的请求头, 设置与认证(含来源), 编辑器据此显示继承值
+		inherited: store.inheritedOf(r.id),
 	});
+
+	router.get(
+		"/collection",
+		wrap(() => store.tree().root)
+	);
+
+	router.put(
+		"/collection",
+		wrap(req => {
+			const out = store.putCollection(
+				isPlainObject(req.body) ? req.body : {},
+				parseIfMatch(req.headers["if-match"])
+			);
+			changed();
+			return out;
+		})
+	);
 
 	router.get(
 		"/tree",
@@ -117,17 +134,30 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 	);
 
 	/** 有场景引用且未带 force=1 时拒绝删除, 返回引用方 */
-	const guardRefs = (req: Req, usages: Array<{ route: string; scene: string; file: string; ref: string }>) => {
+	const guardRefs = (
+		req: Req,
+		usages: Array<{ route: string; scene: string; file: string; ref: string }>
+	) => {
 		if (usages.length && req.query.force !== "1") {
-			throw new MockError("REF_IN_USE", 409, `有 ${usages.length} 个场景引用了要删除的快照, 确认后再删除`, { refs: usages });
+			throw new MockError(
+				"REF_IN_USE",
+				409,
+				`有 ${usages.length} 个场景引用了要删除的快照, 确认后再删除`,
+				{ refs: usages }
+			);
 		}
 	};
 
 	router.patch(
 		"/nodes/:id",
 		wrap(req => {
-			const out = store.updateNode(idParam(req), req.body || {}, parseIfMatch(req.headers["if-match"]));
-			const rewritten = out.from !== out.to && ctx.refs ? ctx.refs.moveNode(out.from, out.to) : 0;
+			const out = store.updateNode(
+				idParam(req),
+				req.body || {},
+				parseIfMatch(req.headers["if-match"])
+			);
+			const rewritten =
+				out.from !== out.to && ctx.refs ? ctx.refs.moveNode(out.from, out.to) : 0;
 			changed();
 			return { ...out.node, rewritten };
 		})
@@ -155,7 +185,11 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 		"/requests/:id",
 		wrap(req => {
 			const body = req.body || {};
-			const out = store.putRequest(idParam(req), body.definition, parseIfMatch(req.headers["if-match"]));
+			const out = store.putRequest(
+				idParam(req),
+				body.definition,
+				parseIfMatch(req.headers["if-match"])
+			);
 			changed();
 			return requestOut(out);
 		})
@@ -174,7 +208,9 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 		wrap(req => {
 			const name = (req.body || {}).name;
 			if (name !== null && typeof name !== "string") {
-				throw new MockError("BAD_REQUEST", 400, "name 必须是字符串或 null", { field: "name" });
+				throw new MockError("BAD_REQUEST", 400, "name 必须是字符串或 null", {
+					field: "name",
+				});
 			}
 			setActive(name === null ? null : envs.get(name).name);
 			changed();
@@ -185,7 +221,11 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 	router.put(
 		"/envs/:name",
 		wrap(req => {
-			const out = envs.put(String(req.params.name), req.body || {}, parseIfMatch(req.headers["if-match"]));
+			const out = envs.put(
+				String(req.params.name),
+				req.body || {},
+				parseIfMatch(req.headers["if-match"])
+			);
 			changed();
 			return out;
 		})
@@ -214,13 +254,17 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 
 	router.get(
 		"/envs/:name/cookies",
-		wrap(req => createCookieJar(envs.cookiesFileOf(envs.get(String(req.params.name)).name)).list())
+		wrap(req =>
+			createCookieJar(envs.cookiesFileOf(envs.get(String(req.params.name)).name)).list()
+		)
 	);
 
 	router.delete(
 		"/envs/:name/cookies",
 		wrap((req, res) => {
-			createCookieJar(envs.cookiesFileOf(envs.get(String(req.params.name)).name)).clear(isPlainObject(req.body) ? req.body : undefined);
+			createCookieJar(envs.cookiesFileOf(envs.get(String(req.params.name)).name)).clear(
+				isPlainObject(req.body) ? req.body : undefined
+			);
 			changed();
 			res.status(204).end();
 		})
@@ -246,7 +290,11 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 		"/envs/:name/secrets/:srcId/value",
 		wrap((req, res) => {
 			localOnly(req, "敏感值");
-			envs.enterPrompt(String(req.params.name), String(req.params.srcId), (req.body || {}).value);
+			envs.enterPrompt(
+				String(req.params.name),
+				String(req.params.srcId),
+				(req.body || {}).value
+			);
 			changed();
 			res.status(204).end();
 		})
@@ -279,16 +327,27 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 	/** 解析输入: 已保存的请求可省略 definition, 草稿直接传 definition */
 	const resolveInput = (body: Record<string, any>) => {
 		const requestId = typeof body.request === "string" && body.request ? body.request : null;
-		const definition = body.definition !== undefined
-			? normalizeDefinition(body.definition)
-			: requestId
-				? store.getRequest(requestId).definition
-				: (() => {
-						throw new MockError("BAD_REQUEST", 400, "缺少 request 或 definition");
-					})();
+		const own =
+			body.definition !== undefined
+				? normalizeDefinition(body.definition)
+				: requestId
+					? store.getRequest(requestId).definition
+					: (() => {
+							throw new MockError("BAD_REQUEST", 400, "缺少 request 或 definition");
+						})();
 		if (requestId) store.nodeDir(requestId, "request");
-		const env = body.env === undefined ? activeEnv() : body.env === null ? null : envs.get(String(body.env)).name;
-		const snapshotVars = typeof body.snapshot === "string" && body.snapshot ? snapshots.varsOf(body.snapshot) : null;
+		// 发送, 预览与历史都用合并了集合与分组默认配置后的定义
+		const definition = store.effectiveDefinition(requestId, own);
+		const env =
+			body.env === undefined
+				? activeEnv()
+				: body.env === null
+					? null
+					: envs.get(String(body.env)).name;
+		const snapshotVars =
+			typeof body.snapshot === "string" && body.snapshot
+				? snapshots.varsOf(body.snapshot)
+				: null;
 		return { requestId, definition, env, snapshotVars };
 	};
 
@@ -297,11 +356,15 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 		wrap(req => {
 			const body = isPlainObject(req.body) ? req.body : {};
 			const { requestId, definition, env, snapshotVars } = resolveInput(body);
-			const out = resolveRequest({ store, envs }, { requestId, definition, env, snapshotVars, mode: "preview" });
+			const out = resolveRequest(
+				{ store, envs },
+				{ requestId, definition, env, snapshotVars, mode: "preview" }
+			);
 			return {
 				method: out.method,
 				url: out.url,
 				urlError: out.urlError,
+				settings: definition.settings,
 				headers: out.headers,
 				values: out.values,
 				unresolved: out.unresolved,
@@ -315,16 +378,27 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 		Array.isArray(v)
 			? v.map(canonical)
 			: isPlainObject(v)
-				? Object.fromEntries(Object.keys(v).sort().map(k => [k, canonical(v[k])]))
+				? Object.fromEntries(
+						Object.keys(v)
+							.sort()
+							.map(k => [k, canonical(v[k])])
+					)
 				: v;
 	const reqHashOf = (def: unknown) =>
-		`sha256:${crypto.createHash("sha256").update(JSON.stringify(canonical(def))).digest("hex")}`;
+		`sha256:${crypto
+			.createHash("sha256")
+			.update(JSON.stringify(canonical(def)))
+			.digest("hex")}`;
 
 	/** 本机直接放行; 局域网设备需要访问与代发两个开关都打开 */
 	const assertCanSend = (req: Req) => {
 		if (isLoopback(req.socket.remoteAddress || "")) return;
 		if (!(ctx.lan.access && ctx.lan.send)) {
-			throw new MockError("FORBIDDEN", 403, "代发请求默认只允许本机, 局域网代发需在本机管理页打开「允许局域网代发」");
+			throw new MockError(
+				"FORBIDDEN",
+				403,
+				"代发请求默认只允许本机, 局域网代发需在本机管理页打开「允许局域网代发」"
+			);
 		}
 	};
 
@@ -333,20 +407,34 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 	 * signal 中止时(客户端断开)请求被取消, 历史中记为 ABORTED.
 	 */
 	const sendAndRecord = async (
-		input: { requestId: string | null; definition: Record<string, any>; env: string | null; snapshotVars?: Record<string, string> | null },
+		input: {
+			requestId: string | null;
+			definition: Record<string, any>;
+			env: string | null;
+			snapshotVars?: Record<string, string> | null;
+		},
 		signal: AbortSignal,
 		extra?: (result: SendResult) => SendResult
 	) => {
 		if (input.env) await envs.prefetchSecrets(input.env);
 		const resolved = resolveRequest({ store, envs }, { ...input, mode: "send" });
 		if (resolved.unresolved.length) {
-			throw new MockError("UNRESOLVED_VARS", 400, `有未解析的变量: ${resolved.unresolved.join(", ")}`, { vars: resolved.unresolved });
+			throw new MockError(
+				"UNRESOLVED_VARS",
+				400,
+				`有未解析的变量: ${resolved.unresolved.join(", ")}`,
+				{ vars: resolved.unresolved }
+			);
 		}
-		if (resolved.urlError) throw new MockError("BAD_REQUEST", 400, resolved.urlError, { field: "url" });
+		if (resolved.urlError)
+			throw new MockError("BAD_REQUEST", 400, resolved.urlError, { field: "url" });
 		const slot = history.allocate();
 		let result: SendResult;
 		try {
-			const jar = input.env && input.definition.settings.skipCookieJar !== true ? createCookieJar(envs.cookiesFileOf(input.env)) : null;
+			const jar =
+				input.env && input.definition.settings.skipCookieJar !== true
+					? createCookieJar(envs.cookiesFileOf(input.env))
+					: null;
 			result = await performSend({
 				resolved,
 				settings: input.definition.settings,
@@ -370,7 +458,11 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 			reqHash: reqHashOf(input.definition),
 			timing: result.timing,
 			request,
-			template: { env: input.env, request: input.definition, values: redactValues(resolved.values) },
+			template: {
+				env: input.env,
+				request: input.definition,
+				values: redactValues(resolved.values),
+			},
 			response: result.response,
 			error: result.error,
 			note: "",
@@ -409,7 +501,10 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 	router.get(
 		"/history",
 		wrap(req => {
-			const request = typeof req.query.request === "string" && req.query.request ? req.query.request : null;
+			const request =
+				typeof req.query.request === "string" && req.query.request
+					? req.query.request
+					: null;
 			const out = history.list({
 				request,
 				cursor: typeof req.query.cursor === "string" ? req.query.cursor : null,
@@ -443,11 +538,21 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 	);
 
 	/** 原文: 管理接口与管理页同源, 一律 sandbox, 防止 HTML 中的脚本在此源执行 */
-	const sendStored = (res: Res, req: Req, file: string, contentType: string | null, charset: string | null) => {
+	const sendStored = (
+		res: Res,
+		req: Req,
+		file: string,
+		contentType: string | null,
+		charset: string | null
+	) => {
 		res.setHeader("content-security-policy", "sandbox");
 		res.setHeader("x-content-type-options", "nosniff");
 		res.setHeader("cache-control", "no-store");
-		if (contentType) res.setHeader("content-type", charset ? `${contentType}; charset=${charset}` : contentType);
+		if (contentType)
+			res.setHeader(
+				"content-type",
+				charset ? `${contentType}; charset=${charset}` : contentType
+			);
 		return streamFile(req as any, res, file);
 	};
 
@@ -457,7 +562,13 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 			const entry = history.get(idParam(req, "hid"));
 			const body = entry.meta.response && entry.meta.response.body;
 			if (!body || !body.file) throw new MockError("NOT_FOUND", 404, "该条目没有响应体");
-			await sendStored(res, req, path.join(entry.dir, body.file), body.contentType, body.charset);
+			await sendStored(
+				res,
+				req,
+				path.join(entry.dir, body.file),
+				body.contentType,
+				body.charset
+			);
 		})
 	);
 
@@ -465,8 +576,15 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 		"/history/:hid/req",
 		wrap(async (req, res) => {
 			const entry = history.get(idParam(req, "hid"));
-			if (!entry.meta.request || entry.meta.request.body.type !== "binary") throw new MockError("NOT_FOUND", 404, "该条目没有单独保存的请求体");
-			await sendStored(res, req, path.join(entry.dir, "req.bin"), "application/octet-stream", null);
+			if (!entry.meta.request || entry.meta.request.body.type !== "binary")
+				throw new MockError("NOT_FOUND", 404, "该条目没有单独保存的请求体");
+			await sendStored(
+				res,
+				req,
+				path.join(entry.dir, "req.bin"),
+				"application/octet-stream",
+				null
+			);
 		})
 	);
 
@@ -505,8 +623,15 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 		"/snapshots/:sid/req",
 		wrap(async (req, res) => {
 			const s = snapshots.get(idParam(req, "sid"));
-			if (!s.meta.request || s.meta.request.body.type !== "binary") throw new MockError("NOT_FOUND", 404, "该快照没有单独保存的请求体");
-			await sendStored(res, req, path.join(s.dir, "req.bin"), "application/octet-stream", null);
+			if (!s.meta.request || s.meta.request.body.type !== "binary")
+				throw new MockError("NOT_FOUND", 404, "该快照没有单独保存的请求体");
+			await sendStored(
+				res,
+				req,
+				path.join(s.dir, "req.bin"),
+				"application/octet-stream",
+				null
+			);
 		})
 	);
 
@@ -514,7 +639,8 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 		"/snapshots/:sid",
 		wrap(req => {
 			const out = snapshots.update(idParam(req, "sid"), req.body || {});
-			const rewritten = out.from !== out.to && ctx.refs ? ctx.refs.renameSnapshot(out.from, out.to) : 0;
+			const rewritten =
+				out.from !== out.to && ctx.refs ? ctx.refs.renameSnapshot(out.from, out.to) : 0;
 			changed();
 			return { ...out.snapshot, rewritten };
 		})
@@ -537,7 +663,11 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 		"/snapshots/:sid/refs",
 		wrap(req => {
 			const loc = snapshots.locate(idParam(req, "sid"));
-			return ctx.refs ? ctx.refs.forSnapshot(loc.id).map(({ route, scene, file }) => ({ route, scene, file })) : [];
+			return ctx.refs
+				? ctx.refs
+						.forSnapshot(loc.id)
+						.map(({ route, scene, file }) => ({ route, scene, file }))
+				: [];
 		})
 	);
 
@@ -545,9 +675,16 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 		"/requests/:id/route-match",
 		wrap(req => {
 			const requestId = idParam(req);
-			const { definition } = store.getRequest(requestId);
-			const env = typeof req.query.env === "string" ? envs.get(req.query.env).name : activeEnv();
-			const out = resolveRequest({ store, envs }, { requestId, definition, env, mode: "preview" });
+			const definition = store.effectiveDefinition(
+				requestId,
+				store.getRequest(requestId).definition
+			);
+			const env =
+				typeof req.query.env === "string" ? envs.get(req.query.env).name : activeEnv();
+			const out = resolveRequest(
+				{ store, envs },
+				{ requestId, definition, env, mode: "preview" }
+			);
 			let pathname = "";
 			try {
 				pathname = new URL(out.url).pathname;
@@ -556,7 +693,10 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 			}
 			return {
 				pathname,
-				candidates: pathname && ctx.routeCandidates ? ctx.routeCandidates(out.method, pathname) : [],
+				candidates:
+					pathname && ctx.routeCandidates
+						? ctx.routeCandidates(out.method, pathname)
+						: [],
 			};
 		})
 	);
@@ -572,7 +712,11 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 			const h = history.get(text.slice(8));
 			return { meta: h.meta, dir: h.dir };
 		}
-		throw new MockError("BAD_REQUEST", 400, "a 与 b 必须是 snapshot:<快照标识> 或 history:<历史标识>");
+		throw new MockError(
+			"BAD_REQUEST",
+			400,
+			"a 与 b 必须是 snapshot:<快照标识> 或 history:<历史标识>"
+		);
 	};
 
 	router.get(
@@ -588,18 +732,39 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 			const snap = snapshots.get(idParam(req, "sid"));
 			const body = isPlainObject(req.body) ? req.body : {};
 			const template = snap.meta.template || {};
-			const definition = normalizeDefinition(template.request || store.getRequest(snap.request).definition);
-			const env = body.env !== undefined ? (body.env === null ? null : envs.get(String(body.env)).name) : template.env ? envs.get(template.env).name : activeEnv();
+			const definition = store.effectiveDefinition(
+				snap.request,
+				normalizeDefinition(template.request || store.getRequest(snap.request).definition)
+			);
+			const env =
+				body.env !== undefined
+					? body.env === null
+						? null
+						: envs.get(String(body.env)).name
+					: template.env
+						? envs.get(template.env).name
+						: activeEnv();
 			const controller = new AbortController();
 			res.on("close", () => {
 				if (!res.writableEnded) controller.abort();
 			});
 			const out = await sendAndRecord(
-				{ requestId: snap.request, definition, env, snapshotVars: snapshots.varsOf(snap.id) },
+				{
+					requestId: snap.request,
+					definition,
+					env,
+					snapshotVars: snapshots.varsOf(snap.id),
+				},
 				controller.signal
 			);
 			const fresh = history.get(out.id);
-			return { history: { id: out.id, meta: out.meta }, diff: diffResults({ meta: snap.meta, dir: snap.dir }, { meta: fresh.meta, dir: fresh.dir }) };
+			return {
+				history: { id: out.id, meta: out.meta },
+				diff: diffResults(
+					{ meta: snap.meta, dir: snap.dir },
+					{ meta: fresh.meta, dir: fresh.dir }
+				),
+			};
 		})
 	);
 
@@ -607,19 +772,36 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 		"/import/curl",
 		wrap((req, res) => {
 			const body = isPlainObject(req.body) ? req.body : {};
-			if (typeof body.text !== "string" || !body.text.trim()) throw new MockError("BAD_REQUEST", 400, "请粘贴 cURL 命令", { field: "text" });
+			if (typeof body.text !== "string" || !body.text.trim())
+				throw new MockError("BAD_REQUEST", 400, "请粘贴 cURL 命令", { field: "text" });
 			let parsed: ReturnType<typeof parseCurl>;
 			try {
 				parsed = parseCurl(body.text);
 			} catch (err) {
-				throw new MockError("BAD_REQUEST", 400, `无法解析 cURL 命令: ${(err as Error).message}`, { field: "text" });
+				throw new MockError(
+					"BAD_REQUEST",
+					400,
+					`无法解析 cURL 命令: ${(err as Error).message}`,
+					{ field: "text" }
+				);
 			}
-			const fallback = sanitizeName(new URL(parsed.definition.url).pathname.split("/").filter(Boolean).pop() || "request", "request");
-			const node = store.createNode({ parent: body.parent ?? null, kind: "request", name: typeof body.name === "string" && body.name ? body.name : fallback });
+			const fallback = sanitizeName(
+				new URL(parsed.definition.url).pathname.split("/").filter(Boolean).pop() ||
+					"request",
+				"request"
+			);
+			const node = store.createNode({
+				parent: body.parent ?? null,
+				kind: "request",
+				name: typeof body.name === "string" && body.name ? body.name : fallback,
+			});
 			store.putRequest(node.id, parsed.definition);
 			changed();
 			res.status(201);
-			return { node: { ...node, method: parsed.definition.method, url: parsed.definition.url }, warnings: parsed.warnings };
+			return {
+				node: { ...node, method: parsed.definition.method, url: parsed.definition.url },
+				warnings: parsed.warnings,
+			};
 		})
 	);
 
@@ -630,15 +812,31 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 			const source = String(body.source || "");
 			if (source.startsWith("request:")) {
 				const requestId = source.slice(8);
-				const { definition } = store.getRequest(requestId);
+				const definition = store.effectiveDefinition(
+					requestId,
+					store.getRequest(requestId).definition
+				);
 				if (body.resolve !== true) return { text: curlOfTemplate(definition) };
-				const env = body.env === undefined ? activeEnv() : body.env === null ? null : envs.get(String(body.env)).name;
+				const env =
+					body.env === undefined
+						? activeEnv()
+						: body.env === null
+							? null
+							: envs.get(String(body.env)).name;
 				if (env) await envs.prefetchSecrets(env);
-				return { text: curlOfResolved(resolveRequest({ store, envs }, { requestId, definition, env, mode: "send" })) };
+				return {
+					text: curlOfResolved(
+						resolveRequest(
+							{ store, envs },
+							{ requestId, definition, env, mode: "send" }
+						)
+					),
+				};
 			}
 			if (source.startsWith("history:")) {
 				const entry = history.get(source.slice(8));
-				if (body.resolve !== true) return { text: curlOfTemplate(entry.meta.template.request) };
+				if (body.resolve !== true)
+					return { text: curlOfTemplate(entry.meta.template.request) };
 				const sent = entry.meta.request;
 				const reqBody =
 					sent.body.type === "text"
@@ -646,10 +844,19 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 						: sent.body.type === "binary"
 							? { type: "binary", file: path.join(entry.dir, "req.bin") }
 							: { type: "none" };
-				const headers = (sent.headers as Array<[string, string]>).filter(([k]) => k !== "host" && k !== "content-length");
-				return { text: toCurl({ method: sent.method, url: sent.url, headers, body: reqBody }) };
+				const headers = (sent.headers as Array<[string, string]>).filter(
+					([k]) => k !== "host" && k !== "content-length"
+				);
+				return {
+					text: toCurl({ method: sent.method, url: sent.url, headers, body: reqBody }),
+				};
 			}
-			throw new MockError("BAD_REQUEST", 400, "source 必须是 request:<请求标识> 或 history:<历史标识>", { field: "source" });
+			throw new MockError(
+				"BAD_REQUEST",
+				400,
+				"source 必须是 request:<请求标识> 或 history:<历史标识>",
+				{ field: "source" }
+			);
 		})
 	);
 
@@ -676,7 +883,14 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 		const split = new URL(entry.url, "http://x");
 		def.url = `{{baseUrl}}${split.pathname}`;
 		def.params.query = [...split.searchParams.entries()].map(([k, v]) => [k, v, true]);
-		const SKIP = new Set(["host", "content-length", "connection", "transfer-encoding", "accept-encoding", "x-mock-scene"]);
+		const SKIP = new Set([
+			"host",
+			"content-length",
+			"connection",
+			"transfer-encoding",
+			"accept-encoding",
+			"x-mock-scene",
+		]);
 		Object.entries(entry.request.headers).forEach(([k, v]) => {
 			if (SKIP.has(k)) return;
 			if (v === "***") {
@@ -691,12 +905,29 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 		else if (bodyEncoding === "json") def.body = { type: "json", content: body };
 		else if (bodyEncoding === "utf8") {
 			if (/x-www-form-urlencoded/i.test(ctype)) {
-				def.body = { type: "form", fields: [...new URLSearchParams(String(body)).entries()].map(([k, v]) => [k, v, true]) };
+				def.body = {
+					type: "form",
+					fields: [...new URLSearchParams(String(body)).entries()].map(([k, v]) => [
+						k,
+						v,
+						true,
+					]),
+				};
 			} else def.body = { type: "text", content: String(body) };
 		} else if (bodyEncoding === "base64") warnings.push("二进制请求体未带入");
-		if (["form", "json"].includes(def.body.type)) def.headers = def.headers.filter((h: [string, string, boolean]) => h[0] !== "content-type");
-		const fallback = sanitizeName(split.pathname.split("/").filter(Boolean).pop() || "request", "request");
-		const node = store.createNode({ parent: input.parent ?? null, kind: "request", name: typeof input.name === "string" && input.name ? input.name : fallback });
+		if (["form", "json"].includes(def.body.type))
+			def.headers = def.headers.filter(
+				(h: [string, string, boolean]) => h[0] !== "content-type"
+			);
+		const fallback = sanitizeName(
+			split.pathname.split("/").filter(Boolean).pop() || "request",
+			"request"
+		);
+		const node = store.createNode({
+			parent: input.parent ?? null,
+			kind: "request",
+			name: typeof input.name === "string" && input.name ? input.name : fallback,
+		});
 		store.putRequest(node.id, def);
 		changed();
 		return { node: { ...node, method: def.method, url: def.url }, warnings };
@@ -704,7 +935,20 @@ export const createDebugApi = (ctx: DebugApiContext) => {
 
 	const historyInfo = () => ({ historyBytes: history.totalBytes(), historyWarn: history.warn() });
 
-	return { router, store, envs, history, snapshots, fromLog, activeEnv, resolveInput, changed, sendAndRecord, sendStored, historyInfo };
+	return {
+		router,
+		store,
+		envs,
+		history,
+		snapshots,
+		fromLog,
+		activeEnv,
+		resolveInput,
+		changed,
+		sendAndRecord,
+		sendStored,
+		historyInfo,
+	};
 };
 
 export type DebugApi = ReturnType<typeof createDebugApi>;

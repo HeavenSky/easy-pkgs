@@ -10,27 +10,31 @@ import { renderUi, routeSummary, sceneDetail } from "./render";
 import { server } from "./setup";
 
 const ID = "R0VUIC9hcGkvdXNlci86aWQ";
+/** 管理页维护的可编辑场景 slow */
+const slowScene = (content: unknown, etag: string) =>
+	sceneDetail({ name: "slow", source: "json", kind: "envelope", editable: true, content, etag });
 const detail = (route = routeSummary()) => ({
 	route,
 	scenes: [
 		sceneDetail(),
 		sceneDetail({ name: "empty", content: null }),
-		sceneDetail({
-			name: "slow",
-			source: "json",
-			kind: "envelope",
-			editable: true,
-			content: { status: 200, body: { a: 1 } },
-			etag: "e1",
-		}),
+		slowScene({ status: 200, body: { a: 1 } }, "e1"),
 	],
 });
+const detailStub = (route?: ReturnType<typeof routeSummary>) =>
+	http.get(`*/__mock/api/routes/${ID}`, () => HttpResponse.json(detail(route)));
+/** 清空路径输入框后填入新值 */
+const typePath = async (value: string) => {
+	const path = screen.getByLabelText(/^路径/);
+	await userEvent.clear(path);
+	await userEvent.type(path, value);
+};
 
 describe("路由详情", () => {
-	it("选中场景即发送 PATCH 并提示", async () => {
+	it("代码场景只读, 管理页场景可删除; 选中场景即发送 PATCH 并提示", async () => {
 		let patched: unknown = null;
 		server.use(
-			http.get(`*/__mock/api/routes/${ID}`, () => HttpResponse.json(detail())),
+			detailStub(),
 			http.patch(`*/__mock/api/routes/${ID}/state`, async ({ request }) => {
 				patched = await request.json();
 				expect(request.headers.get("x-mock-ui")).toBe("1");
@@ -40,7 +44,10 @@ describe("路由详情", () => {
 			})
 		);
 		renderUi(<RouteDetail id={ID} />);
-		await userEvent.click(await screen.findByRole("radio", { name: /^empty/ }));
+		expect(await screen.findByRole("button", { name: "查看场景 default" })).toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "删除场景 default" })).toBeNull();
+		expect(screen.getByRole("button", { name: "删除场景 slow" })).toBeInTheDocument();
+		await userEvent.click(screen.getByRole("radio", { name: /^empty/ }));
 		await waitFor(() => expect(patched).toEqual({ scene: "empty" }));
 		expect(await screen.findByText("已切换到场景「empty」")).toBeInTheDocument();
 	});
@@ -48,7 +55,7 @@ describe("路由详情", () => {
 	it("保存冲突时弹出对话框, 选择覆盖后带新 etag 重新提交", async () => {
 		const ifMatch: Array<string | null> = [];
 		server.use(
-			http.get(`*/__mock/api/routes/${ID}`, () => HttpResponse.json(detail())),
+			detailStub(),
 			http.put(`*/__mock/api/routes/${ID}/scenes/slow`, ({ request }) => {
 				ifMatch.push(request.headers.get("if-match"));
 				if (ifMatch.length === 1) {
@@ -57,31 +64,13 @@ describe("路由详情", () => {
 							error: {
 								code: "CONFLICT",
 								message: "场景已被其他人修改",
-								details: {
-									current: sceneDetail({
-										name: "slow",
-										source: "json",
-										kind: "envelope",
-										editable: true,
-										content: { body: "别处" },
-										etag: "e2",
-									}),
-								},
+								details: { current: slowScene({ body: "别处" }, "e2") },
 							},
 						},
 						{ status: 409 }
 					);
 				}
-				return HttpResponse.json(
-					sceneDetail({
-						name: "slow",
-						source: "json",
-						kind: "envelope",
-						editable: true,
-						content: { status: 201, body: { a: 1 } },
-						etag: "e3",
-					})
-				);
+				return HttpResponse.json(slowScene({ status: 201, body: { a: 1 } }, "e3"));
 			})
 		);
 		renderUi(<RouteDetail id={ID} />);
@@ -93,14 +82,6 @@ describe("路由详情", () => {
 		const dialog = await screen.findByRole("dialog", { name: "保存冲突" });
 		await userEvent.click(within(dialog).getByRole("button", { name: "用我的版本覆盖" }));
 		await waitFor(() => expect(ifMatch).toEqual(['"e1"', '"e2"']));
-	});
-
-	it("代码场景只读, 管理页场景可删除", async () => {
-		server.use(http.get(`*/__mock/api/routes/${ID}`, () => HttpResponse.json(detail())));
-		renderUi(<RouteDetail id={ID} />);
-		expect(await screen.findByRole("button", { name: "查看场景 default" })).toBeInTheDocument();
-		expect(screen.queryByRole("button", { name: "删除场景 default" })).toBeNull();
-		expect(screen.getByRole("button", { name: "删除场景 slow" })).toBeInTheDocument();
 	});
 
 	it("接口失败时显示错误与重试", async () => {
@@ -135,13 +116,10 @@ describe("新建路由", () => {
 			)
 		);
 		renderUi(<NewRouteDialog open onClose={() => undefined} onCreated={() => undefined} />);
-		const path = screen.getByLabelText(/^路径/);
-		await userEvent.clear(path);
-		await userEvent.type(path, "api/x");
+		await typePath("api/x");
 		await userEvent.click(screen.getByRole("button", { name: "创建" }));
 		expect(await screen.findByText("路径必须以 / 开头且不含空白")).toBeInTheDocument();
-		await userEvent.clear(path);
-		await userEvent.type(path, "/api/x");
+		await typePath("/api/x");
 		await userEvent.click(screen.getByRole("button", { name: "创建" }));
 		expect(await screen.findByText("路由已存在: GET /api/x")).toBeInTheDocument();
 	});
@@ -172,9 +150,7 @@ describe("新建路由", () => {
 				}}
 			/>
 		);
-		const path = screen.getByLabelText(/^路径/);
-		await userEvent.clear(path);
-		await userEvent.type(path, "/api/empty");
+		await typePath("/api/empty");
 		const body = screen.getByRole("textbox", { name: "响应体" });
 		await userEvent.clear(body);
 		await userEvent.type(body, "null");
@@ -198,11 +174,7 @@ describe("新建路由", () => {
 describe("来源链接", () => {
 	it("中文与特殊字符路径: 显示原始路径, 链接按段编码", async () => {
 		const file = "/项目/隐患 #1/a?.js";
-		server.use(
-			http.get(`*/__mock/api/routes/${ID}`, () =>
-				HttpResponse.json(detail(routeSummary({ source: { type: "code", file, line: 3 } })))
-			)
-		);
+		server.use(detailStub(routeSummary({ source: { type: "code", file, line: 3 } })));
 		renderUi(<RouteDetail id={ID} />);
 		const link = await screen.findByRole("link", {
 			name: new RegExp(`${file.replace(/[?#.]/g, "\\$&")}:3`),

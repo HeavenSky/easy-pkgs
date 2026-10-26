@@ -17,15 +17,15 @@ export const Switch = ({ checked, onChange, disabled, label, className }: Switch
 		disabled={disabled}
 		onClick={() => onChange(!checked)}
 		className={cn(
-			"relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors disabled:opacity-50",
-			checked ? "bg-emerald-500" : "bg-zinc-300 dark:bg-zinc-700",
+			"relative inline-flex h-4 w-7 shrink-0 items-center rounded-full transition-colors disabled:opacity-45",
+			checked ? "bg-zinc-900 dark:bg-zinc-100" : "bg-zinc-300 dark:bg-zinc-700",
 			className
 		)}
 	>
 		<span
 			className={cn(
-				"inline-block h-4 w-4 rounded-full bg-white shadow transition-transform",
-				checked ? "translate-x-4.5" : "translate-x-0.5"
+				"inline-block size-3 rounded-full bg-white shadow-sm transition-transform dark:bg-zinc-900",
+				checked ? "translate-x-3.5" : "translate-x-0.5"
 			)}
 		/>
 	</button>

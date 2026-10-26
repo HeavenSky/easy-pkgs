@@ -5,7 +5,7 @@ import type { IgnoreConfig } from "@/api/contract";
 import { useIgnore, useSaveIgnore, validateIgnore } from "@/api/queries";
 import { Button } from "./ui/button";
 import { Dialog } from "./ui/dialog";
-import { FieldError, Label, Textarea } from "./ui/input";
+import { FieldError, Hint, Label, Textarea } from "./ui/input";
 import { ErrorState, Spinner } from "./ui/state";
 import { Switch } from "./ui/switch";
 
@@ -96,23 +96,25 @@ export const IgnoreDialog = ({ open, onClose }: { open: boolean; onClose: () => 
 			{config.isPending && <Spinner />}
 			{config.isError && <ErrorState error={config.error} onRetry={() => config.refetch()} />}
 			{config.data && draft && (
-				<div className="space-y-4 text-sm">
-					<p className="text-xs text-zinc-500">
+				<div className="space-y-3">
+					<Hint>
 						命中的请求不进请求日志, 也不打印终端日志; mock 匹配与响应不受影响. 规则写法:{" "}
 						<code>[方法 ]路径</code>, <code>*</code> 匹配单段, <code>**</code> 跨段,
 						不区分大小写, 不含查询串.
-					</p>
-					<section className="space-y-2">
-						<div className="flex items-center gap-2">
+					</Hint>
+					<section className="space-y-1.5">
+						<div className="flex min-h-6 items-center gap-1.5">
 							<Switch
 								label="启用内置规则"
 								checked={draft.defaults && !forcedOff}
 								disabled={forcedOff}
 								onChange={v => setDraft({ ...draft, defaults: v })}
 							/>
-							<span className="font-medium">内置规则</span>
+							<h3 className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+								内置规则
+							</h3>
 							{forcedOff && (
-								<span className="text-xs text-amber-600">
+								<span className="text-xs text-amber-700">
 									已由选项 ignoreDefaults: false 关闭
 								</span>
 							)}
@@ -124,7 +126,7 @@ export const IgnoreDialog = ({ open, onClose }: { open: boolean; onClose: () => 
 							{config.data.defaults.rules.map(r => (
 								<li
 									key={r.pattern}
-									className="flex items-center gap-2 px-2 py-1 text-xs"
+									className="flex min-h-8 items-center gap-1.5 px-3 py-1"
 								>
 									<Switch
 										label={`内置规则 ${r.pattern}`}
@@ -137,16 +139,20 @@ export const IgnoreDialog = ({ open, onClose }: { open: boolean; onClose: () => 
 											setDraft({ ...draft, disabled: next });
 										}}
 									/>
-									<code className="font-mono">{r.pattern}</code>
-									<span className="ml-auto text-zinc-500">{r.reason}</span>
+									<code className="font-mono text-xs">{r.pattern}</code>
+									<span className="ml-auto text-xs text-zinc-500">
+										{r.reason}
+									</span>
 								</li>
 							))}
 						</ul>
 					</section>
 					{config.data.options.length > 0 && (
-						<section className="space-y-1">
-							<span className="font-medium">选项 ignore 追加的规则(只读)</span>
-							<ul className="font-mono text-xs text-zinc-600 dark:text-zinc-400">
+						<section className="space-y-1.5">
+							<h3 className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+								选项 ignore 追加的规则(只读)
+							</h3>
+							<ul className="font-mono text-xs leading-5 text-zinc-700 dark:text-zinc-300">
 								{config.data.options.map(p => (
 									<li key={p}>{p}</li>
 								))}

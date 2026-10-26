@@ -9,7 +9,8 @@ import { pretty } from "@/lib/utils";
 import { JsonEditor, parseJson } from "./JsonEditor";
 import { Button } from "./ui/button";
 import { Dialog } from "./ui/dialog";
-import { FieldError, Input, Label } from "./ui/input";
+import { FieldError, Hint, Input, Label } from "./ui/input";
+import { KV_ROW } from "./ui/kv";
 
 interface Form {
 	name: string;
@@ -138,7 +139,7 @@ export const SceneEditor = ({ route, scenes, scene, initial, initialName, onDone
 	return (
 		<form
 			aria-label={isNew ? "新建场景" : `编辑场景 ${scene?.name}`}
-			className="space-y-3 rounded-md border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
+			className="space-y-3 rounded-md border border-zinc-200 p-3 dark:border-zinc-800"
 			onSubmit={e => {
 				e.preventDefault();
 				if (!invalid) {
@@ -146,35 +147,36 @@ export const SceneEditor = ({ route, scenes, scene, initial, initialName, onDone
 				}
 			}}
 		>
-			<div className="flex items-center justify-between">
-				<h3 className="text-sm font-semibold">
+			<div className="flex items-center justify-between gap-2">
+				<h3 className="text-sm font-medium">
 					{isNew ? "新建场景" : `编辑场景「${scene?.name}」`}
 				</h3>
 				<Button
-					size="icon"
+					size="icon-sm"
 					variant="ghost"
 					aria-label="关闭编辑器"
+					title="关闭编辑器"
 					onClick={() => {
 						if (!dirty || window.confirm("放弃未保存的修改?")) {
 							onDone();
 						}
 					}}
 				>
-					<X size={14} />
+					<X size={12} />
 				</Button>
 			</div>
 			{externallyChanged && dirty && (
 				<div
 					role="alert"
-					className="flex items-center gap-2 rounded bg-amber-100 px-3 py-2 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-200"
+					className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200"
 				>
-					<AlertTriangle size={14} />
+					<AlertTriangle size={12} className="shrink-0" />
 					该场景已在别处被修改(可能是其他标签页或直接改了文件). 保存时会提示冲突.
 				</div>
 			)}
-			<div className="grid grid-cols-3 gap-3">
+			<div className="flex flex-wrap items-start gap-2">
 				{isNew && (
-					<Label>
+					<Label className="w-56">
 						场景名
 						<Input
 							value={form.name}
@@ -186,11 +188,13 @@ export const SceneEditor = ({ route, scenes, scene, initial, initialName, onDone
 						/>
 						<FieldError>{errors.name !== "required" && errors.name}</FieldError>
 						{!errors.name && existing?.source === "code" && (
-							<span className="text-xs text-amber-600">将覆盖代码中的同名场景</span>
+							<span className="font-normal text-amber-700 dark:text-amber-400">
+								将覆盖代码中的同名场景
+							</span>
 						)}
 					</Label>
 				)}
-				<Label>
+				<Label className="w-20">
 					状态码
 					<Input
 						inputMode="numeric"
@@ -200,7 +204,7 @@ export const SceneEditor = ({ route, scenes, scene, initial, initialName, onDone
 					/>
 					<FieldError>{errors.status}</FieldError>
 				</Label>
-				<Label>
+				<Label className="w-24">
 					延迟(毫秒)
 					<Input
 						inputMode="numeric"
@@ -217,7 +221,7 @@ export const SceneEditor = ({ route, scenes, scene, initial, initialName, onDone
 					响应头
 				</legend>
 				{form.headers.map((h, i) => (
-					<div key={i} className="flex gap-2">
+					<div key={i} className={KV_ROW}>
 						<Input
 							aria-label={`响应头 ${i + 1} 名称`}
 							value={h.k}
@@ -248,6 +252,7 @@ export const SceneEditor = ({ route, scenes, scene, initial, initialName, onDone
 							size="icon"
 							variant="ghost"
 							aria-label={`删除响应头 ${i + 1}`}
+							title={`删除响应头 ${i + 1}`}
 							onClick={() =>
 								set(
 									"headers",
@@ -264,30 +269,32 @@ export const SceneEditor = ({ route, scenes, scene, initial, initialName, onDone
 					variant="ghost"
 					onClick={() => set("headers", [...form.headers, { k: "", v: "" }])}
 				>
-					<Plus size={14} />
+					<Plus size={12} />
 					添加响应头
 				</Button>
 				<FieldError>{errors.headers}</FieldError>
 			</fieldset>
-			<div className="space-y-1">
+			<div className="space-y-1.5">
 				<div
 					role="radiogroup"
 					aria-label="响应方式"
 					className="flex items-center gap-3 text-xs font-medium text-zinc-600 dark:text-zinc-400"
 				>
-					<label className="flex items-center gap-1">
+					<label className="flex cursor-pointer items-center gap-1">
 						<input
 							type="radio"
 							name="mode"
+							className="accent-zinc-900 dark:accent-zinc-100"
 							checked={form.mode === "json"}
 							onChange={() => set("mode", "json")}
 						/>
 						JSON 响应体
 					</label>
-					<label className="flex items-center gap-1">
+					<label className="flex cursor-pointer items-center gap-1">
 						<input
 							type="radio"
 							name="mode"
+							className="accent-zinc-900 dark:accent-zinc-100"
 							checked={form.mode === "script"}
 							onChange={() => set("mode", "script")}
 						/>
@@ -296,7 +303,7 @@ export const SceneEditor = ({ route, scenes, scene, initial, initialName, onDone
 				</div>
 				{form.mode === "json" ? (
 					<>
-						<div className="text-xs text-zinc-500">写成字符串 "..." 时按文本返回</div>
+						<Hint>写成字符串 "..." 时按文本返回</Hint>
 						<JsonEditor
 							label="响应体"
 							value={form.body}
@@ -306,10 +313,10 @@ export const SceneEditor = ({ route, scenes, scene, initial, initialName, onDone
 					</>
 				) : (
 					<>
-						<div className="text-xs text-zinc-500">
+						<Hint>
 							一个处理函数, 在 mock 服务进程中执行; 上面的状态码与响应头作为默认值,
 							只能在本机保存
-						</div>
+						</Hint>
 						<JsonEditor
 							label="脚本"
 							language="javascript"
@@ -366,7 +373,7 @@ export const SceneEditor = ({ route, scenes, scene, initial, initialName, onDone
 					</>
 				}
 			>
-				<p className="mb-2 text-sm">该场景在你编辑期间已被修改. 服务端当前内容:</p>
+				<p>该场景在你编辑期间已被修改. 服务端当前内容:</p>
 				<JsonEditor
 					label="服务端当前内容"
 					readOnly

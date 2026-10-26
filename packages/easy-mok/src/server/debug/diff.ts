@@ -8,7 +8,13 @@ export const DIFF_LIMIT = 2 * 1024 * 1024;
 const CONTEXT = 3;
 
 export type DiffLine = { op: " " | "-" | "+"; text: string };
-export type Hunk = { aStart: number; aLines: number; bStart: number; bLines: number; lines: DiffLine[] };
+export type Hunk = {
+	aStart: number;
+	aLines: number;
+	bStart: number;
+	bLines: number;
+	lines: DiffLine[];
+};
 export type Side = { meta: Record<string, any>; dir: string };
 
 /** 递归排序对象的 key(数组保持顺序), 2 空格缩进 */
@@ -17,7 +23,11 @@ export const canonicalJson = (value: unknown) => {
 		Array.isArray(v)
 			? v.map(sort)
 			: isPlainObject(v)
-				? Object.fromEntries(Object.keys(v).sort().map(k => [k, sort(v[k])]))
+				? Object.fromEntries(
+						Object.keys(v)
+							.sort()
+							.map(k => [k, sort(v[k])])
+					)
 				: v;
 	return JSON.stringify(sort(value), null, 2);
 };
@@ -34,7 +44,10 @@ export const diffLines = (a: string[], b: string[]): DiffLine[] => {
 	for (let d = 0; d <= max && !found; d++) {
 		trace.push(v.slice());
 		for (let k = -d; k <= d; k += 2) {
-			let x = k === -d || (k !== d && v[offset + k - 1] < v[offset + k + 1]) ? v[offset + k + 1] : v[offset + k - 1] + 1;
+			let x =
+				k === -d || (k !== d && v[offset + k - 1] < v[offset + k + 1])
+					? v[offset + k + 1]
+					: v[offset + k - 1] + 1;
 			let y = x - k;
 			while (x < n && y < m && a[x] === b[y]) {
 				x++;
@@ -54,7 +67,8 @@ export const diffLines = (a: string[], b: string[]): DiffLine[] => {
 	for (let d = trace.length - 1; d >= 0; d--) {
 		const vd = trace[d];
 		const k = x - y;
-		const prevK = k === -d || (k !== d && vd[offset + k - 1] < vd[offset + k + 1]) ? k + 1 : k - 1;
+		const prevK =
+			k === -d || (k !== d && vd[offset + k - 1] < vd[offset + k + 1]) ? k + 1 : k - 1;
 		const prevX = vd[offset + prevK];
 		const prevY = prevX - prevK;
 		while (x > prevX && y > prevY) {
@@ -137,22 +151,37 @@ export const diffResults = (a: Side, b: Side) => {
 	const headers = names.map(name => {
 		const av = ha.get(name) || [];
 		const bv = hb.get(name) || [];
-		const change = !av.length ? "added" : !bv.length ? "removed" : JSON.stringify(av) === JSON.stringify(bv) ? "same" : "changed";
+		const change = !av.length
+			? "added"
+			: !bv.length
+				? "removed"
+				: JSON.stringify(av) === JSON.stringify(bv)
+					? "same"
+					: "changed";
 		return { name, a: av, b: bv, change };
 	});
 	const ba = bodyOf(a);
 	const bb = bodyOf(b);
-	const summary = { a: { size: ba.size, sha256: ba.sha256 }, b: { size: bb.size, sha256: bb.sha256 } };
+	const summary = {
+		a: { size: ba.size, sha256: ba.sha256 },
+		b: { size: bb.size, sha256: bb.sha256 },
+	};
 	let body: { mode: string; same: boolean; hunks: Hunk[] };
 	if (!ba.file && !bb.file) {
 		body = { mode: "empty", same: true, hunks: [] };
 	} else if (ba.size > DIFF_LIMIT || bb.size > DIFF_LIMIT) {
 		body = { mode: "too-large", same: ba.sha256 === bb.sha256, hunks: [] };
 	} else {
-		const textual = (f: string | null, decoded: boolean) => !f || (decoded && isTextExt(extOfFile(f)));
+		const textual = (f: string | null, decoded: boolean) =>
+			!f || (decoded && isTextExt(extOfFile(f)));
 		const ta = ba.file ? utf8(fs.readFileSync(ba.file)) : "";
 		const tb = bb.file ? utf8(fs.readFileSync(bb.file)) : "";
-		if (!textual(ba.file, ba.decoded) || !textual(bb.file, bb.decoded) || ta === null || tb === null) {
+		if (
+			!textual(ba.file, ba.decoded) ||
+			!textual(bb.file, bb.decoded) ||
+			ta === null ||
+			tb === null
+		) {
 			body = { mode: "binary", same: ba.sha256 === bb.sha256, hunks: [] };
 		} else {
 			let mode = "text";
@@ -172,7 +201,10 @@ export const diffResults = (a: Side, b: Side) => {
 		}
 	}
 	return {
-		status: { a: a.meta.response ? a.meta.response.status : null, b: b.meta.response ? b.meta.response.status : null },
+		status: {
+			a: a.meta.response ? a.meta.response.status : null,
+			b: b.meta.response ? b.meta.response.status : null,
+		},
 		headers,
 		body: { ...body, ...summary },
 	};

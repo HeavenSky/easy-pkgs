@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { errorMessage } from "@/api/client";
 import type { LanInfo } from "@/api/contract";
 import { useSetLan } from "@/api/queries";
+import { Notice } from "./ui/state";
 import { Switch } from "./ui/switch";
 
 const UNREACHABLE =
@@ -12,8 +13,8 @@ const UNREACHABLE =
 export const LanControl = ({ lan }: { lan: LanInfo }) => {
 	const set = useSetLan();
 	return (
-		<div className="flex items-center gap-2">
-			<span className="text-zinc-500">局域网</span>
+		<div className="flex items-center gap-1.5">
+			<span className="text-xs text-zinc-500">局域网</span>
 			<Switch
 				label="允许局域网访问"
 				checked={lan.access}
@@ -31,7 +32,7 @@ export const LanControl = ({ lan }: { lan: LanInfo }) => {
 			/>
 			{lan.access && (
 				<>
-					<span className="text-zinc-500">代发</span>
+					<span className="ml-1 text-xs text-zinc-500">代发</span>
 					<Switch
 						label="允许局域网代发"
 						checked={lan.send}
@@ -40,7 +41,10 @@ export const LanControl = ({ lan }: { lan: LanInfo }) => {
 							set.mutate(
 								{ send },
 								{
-									onSuccess: () => toast.success(send ? "已允许局域网代发" : "已关闭局域网代发"),
+									onSuccess: () =>
+										toast.success(
+											send ? "已允许局域网代发" : "已关闭局域网代发"
+										),
 									onError: err => toast.error(errorMessage(err)),
 								}
 							)
@@ -49,13 +53,19 @@ export const LanControl = ({ lan }: { lan: LanInfo }) => {
 				</>
 			)}
 			{!lan.canToggle && (
-				<span className="text-xs text-zinc-500" title="局域网开关只能在本机打开的管理页中切换">
+				<span
+					className="text-xs text-zinc-400"
+					title="局域网开关只能在本机打开的管理页中切换"
+				>
 					仅本机可切换
 				</span>
 			)}
 			{lan.access && lan.reachable === "no" && (
-				<span title={UNREACHABLE} className="flex items-center gap-1 text-xs text-amber-600">
-					<AlertTriangle size={14} />
+				<span
+					title={UNREACHABLE}
+					className="flex items-center gap-1 text-xs text-amber-700"
+				>
+					<AlertTriangle size={12} />
 					局域网不可达
 				</span>
 			)}
@@ -66,17 +76,15 @@ export const LanControl = ({ lan }: { lan: LanInfo }) => {
 /** 局域网访问打开期间的常驻提示 */
 export const LanBanner = ({ lan }: { lan: LanInfo }) =>
 	lan.access ? (
-		<div
-			role="status"
-			className="flex flex-wrap items-center gap-2 bg-sky-100 px-4 py-1.5 text-xs text-sky-900 dark:bg-sky-950 dark:text-sky-200"
-		>
-			<Wifi size={14} />
+		<Notice tone="info" icon={<Wifi size={12} className="shrink-0" />} className="flex-wrap">
 			已允许局域网访问: 同一局域网的设备可以打开管理页并跨域读取 mock 响应.
-			{lan.send && <span className="font-medium">已允许局域网代发: 局域网设备可以借本机发出请求.</span>}
+			{lan.send && (
+				<span className="font-medium">已允许局域网代发: 局域网设备可以借本机发出请求.</span>
+			)}
 			{lan.listening.length > 0 && <span>局域网地址: {lan.listening.join(", ")}</span>}
 			{lan.reachable === "no" && <span className="text-amber-700">{UNREACHABLE}</span>}
 			{lan.errors.length > 0 && (
 				<span className="text-amber-700">部分地址监听失败: {lan.errors.join("; ")}</span>
 			)}
-		</div>
+		</Notice>
 	) : null;

@@ -1,4 +1,5 @@
 // easy-mok 入口: 组装路由表, 运行状态, 请求日志, 管理接口, 返回可挂到任意宿主的 express 应用
+import { DEBUG_DIR } from "./debug/names";
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
@@ -28,6 +29,8 @@ export const FLOAT_PATH = "/__mock/float.js";
 export interface MockOptions {
 	/** mock 目录, 相对 cwd, 默认 src/mocks */
 	folder?: string;
+	/** 调试页的存储目录(请求, 环境组, 快照, 历史), 相对 cwd; 默认是 mock 目录下的 __debug__ */
+	debugDir?: string;
 	/** 解析相对路径的基准目录, 默认 process.cwd() */
 	cwd?: string;
 	/** 先于 mock 文件加载的内置路由 */
@@ -73,6 +76,9 @@ const resolveOptions = (options: MockOptions = {}) => {
 	return {
 		cwd,
 		folder,
+		debugDir: options.debugDir
+			? path.resolve(cwd, options.debugDir)
+			: path.join(folder, DEBUG_DIR),
 		builtin: options.builtin,
 		ui,
 		float: ui && (options.float ?? env.MOCK_FLOAT !== "0"),
@@ -143,6 +149,7 @@ export const createMock = (options?: MockOptions): MockApp => {
 	let refs: Refs | null = null; // 同上, 首次加载后再创建并重建引用索引
 	const registry = createRegistry({
 		folder: opt.folder,
+		debugDir: opt.debugDir,
 		builtin: opt.builtin,
 		fileStore,
 		watch: opt.watch,
@@ -153,7 +160,12 @@ export const createMock = (options?: MockOptions): MockApp => {
 			events.emit("changed", { scope: "routes" });
 		},
 	});
-	refs = createRefs({ folder: opt.folder, fileStore, reload: () => registry.reloadNow() });
+	refs = createRefs({
+		folder: opt.folder,
+		debugDir: opt.debugDir,
+		fileStore,
+		reload: () => registry.reloadNow(),
+	});
 	refs.rebuild();
 	const journal = createJournal({ size: opt.logSize, onLog: entry => events.emit("log", entry) });
 	const ignore = createIgnore({
@@ -169,6 +181,7 @@ export const createMock = (options?: MockOptions): MockApp => {
 		lan: () => lan.access,
 		ignore,
 		folder: opt.folder,
+		debugDir: opt.debugDir,
 	});
 	responder = handler;
 
@@ -186,6 +199,7 @@ export const createMock = (options?: MockOptions): MockApp => {
 			lan,
 			bootId,
 			folder: opt.folder,
+			debugDir: opt.debugDir,
 			version,
 			float: opt.float,
 			ignore,

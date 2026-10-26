@@ -9,7 +9,15 @@ export const shellWords = (input: string) => {
 	let has = false;
 	let i = 0;
 	const s = input.replace(/\\\r?\n/g, " ");
-	const ansi: Record<string, string> = { n: "\n", t: "\t", r: "\r", "\\": "\\", "'": "'", '"': '"', "0": "\0" };
+	const ansi: Record<string, string> = {
+		n: "\n",
+		t: "\t",
+		r: "\r",
+		"\\": "\\",
+		"'": "'",
+		'"': '"',
+		"0": "\0",
+	};
 	while (i < s.length) {
 		const c = s[i];
 		if (/\s/.test(c)) {
@@ -101,7 +109,18 @@ const BOOL_FLAGS: Record<string, string> = {
 	"--get": "get",
 };
 /** 不影响请求内容的参数, 静默忽略 */
-const IGNORED = new Set(["-s", "--silent", "-S", "--show-error", "-v", "--verbose", "-i", "--include", "--globoff", "-g"]);
+const IGNORED = new Set([
+	"-s",
+	"--silent",
+	"-S",
+	"--show-error",
+	"-v",
+	"--verbose",
+	"-i",
+	"--include",
+	"--globoff",
+	"-g",
+]);
 
 /** 解析 cURL 命令为请求定义; 无法识别的参数进 warnings */
 export const parseCurl = (text: string) => {
@@ -140,12 +159,19 @@ export const parseCurl = (text: string) => {
 			if (kind === "request") method = value.toUpperCase();
 			else if (kind === "header") {
 				const c = value.indexOf(":");
-				if (c > 0) headers.push([value.slice(0, c).trim().toLowerCase(), value.slice(c + 1).trim(), true]);
+				if (c > 0)
+					headers.push([
+						value.slice(0, c).trim().toLowerCase(),
+						value.slice(c + 1).trim(),
+						true,
+					]);
 				else warnings.push(`无法识别的请求头: ${value}`);
 			} else if (kind === "data" || kind === "data-raw") data.push(value);
 			else if (kind === "data-binary") {
 				if (value.startsWith("@")) {
-					warnings.push(`--data-binary 引用了本地文件 ${value.slice(1)}, 已改为 binary 请求体, 请确认路径相对 mock 目录`);
+					warnings.push(
+						`--data-binary 引用了本地文件 ${value.slice(1)}, 已改为 binary 请求体, 请确认路径相对 mock 目录`
+					);
 					def.body = { type: "binary", file: value.slice(1) };
 					binary = true;
 				} else data.push(value);
@@ -154,11 +180,16 @@ export const parseCurl = (text: string) => {
 				const e = value.indexOf("=");
 				const name = value.slice(0, e);
 				const v = value.slice(e + 1);
-				if (v.startsWith("@")) form.push({ name, file: v.slice(1).split(";")[0], enabled: true });
+				if (v.startsWith("@"))
+					form.push({ name, file: v.slice(1).split(";")[0], enabled: true });
 				else form.push({ name, value: v, enabled: true });
 			} else if (kind === "user") {
 				const c = value.indexOf(":");
-				def.auth = { type: "basic", username: c < 0 ? value : value.slice(0, c), password: c < 0 ? "" : value.slice(c + 1) };
+				def.auth = {
+					type: "basic",
+					username: c < 0 ? value : value.slice(0, c),
+					password: c < 0 ? "" : value.slice(c + 1),
+				};
 			} else if (kind === "cookie") headers.push(["cookie", value, true]);
 			else if (kind === "url") url = value;
 			else if (kind === "agent") headers.push(["user-agent", value, true]);
@@ -169,8 +200,10 @@ export const parseCurl = (text: string) => {
 		if (flag === "insecure") def.settings.insecureTLS = true;
 		else if (flag === "location") def.settings.followRedirects = true;
 		else if (flag === "get") get = true;
-		else if (flag === "compressed") headers.some(h => h[0] === "accept-encoding") || headers.push(["accept-encoding", "gzip, deflate, br", true]);
-		else if (IGNORED.has(w)) continue;
+		else if (flag === "compressed") {
+			if (!headers.some(h => h[0] === "accept-encoding"))
+				headers.push(["accept-encoding", "gzip, deflate, br", true]);
+		} else if (IGNORED.has(w)) continue;
 		else if (w.startsWith("-")) warnings.push(`未识别的参数, 已忽略: ${w}`);
 		else if (!url) url = w;
 		else warnings.push(`多余的参数, 已忽略: ${w}`);
@@ -182,10 +215,15 @@ export const parseCurl = (text: string) => {
 	} catch {
 		throw new Error(`URL 无效: ${url}`);
 	}
-	const bodyText = [...data, ...urlencoded.map(v => {
-		const e = v.indexOf("=");
-		return e < 0 ? encodeURIComponent(v) : `${v.slice(0, e)}=${encodeURIComponent(v.slice(e + 1))}`;
-	})].join("&");
+	const bodyText = [
+		...data,
+		...urlencoded.map(v => {
+			const e = v.indexOf("=");
+			return e < 0
+				? encodeURIComponent(v)
+				: `${v.slice(0, e)}=${encodeURIComponent(v.slice(e + 1))}`;
+		}),
+	].join("&");
 	if (get && bodyText) {
 		new URLSearchParams(bodyText).forEach((v, k) => parsed.searchParams.append(k, v));
 	}
@@ -202,7 +240,10 @@ export const parseCurl = (text: string) => {
 				def.body = { type: "text", content: bodyText };
 			}
 		} else if (!ctype || /x-www-form-urlencoded/i.test(ctype)) {
-			def.body = { type: "form", fields: [...new URLSearchParams(bodyText).entries()].map(([k, v]) => [k, v, true]) };
+			def.body = {
+				type: "form",
+				fields: [...new URLSearchParams(bodyText).entries()].map(([k, v]) => [k, v, true]),
+			};
 		} else def.body = { type: "text", content: bodyText };
 	}
 	// 生成的 content-type 与请求体一致时去掉手写的, 交给发送时补
@@ -218,7 +259,13 @@ export const parseCurl = (text: string) => {
 const q = (s: string) => `'${s.replace(/'/g, `'\\''`)}'`;
 
 /** 由请求定义(模板)或解析后的请求生成 cURL 命令 */
-export const toCurl = (input: { method: string; url: string; headers: Array<[string, string]>; body: Record<string, any>; user?: string }) => {
+export const toCurl = (input: {
+	method: string;
+	url: string;
+	headers: Array<[string, string]>;
+	body: Record<string, any>;
+	user?: string;
+}) => {
 	const parts = ["curl"];
 	if (input.method !== "GET") parts.push("-X", input.method);
 	parts.push(q(input.url));
@@ -228,12 +275,19 @@ export const toCurl = (input: { method: string; url: string; headers: Array<[str
 	if (body.type === "json") parts.push("--data-raw", q(JSON.stringify(body.content ?? null)));
 	if (body.type === "text") parts.push("--data-raw", q(String(body.content ?? "")));
 	if (body.type === "form") {
-		(body.fields || []).filter((r: [string, string, boolean]) => r[2] !== false).forEach((r: [string, string]) => parts.push("--data-urlencode", q(`${r[0]}=${r[1]}`)));
+		(body.fields || [])
+			.filter((r: [string, string, boolean]) => r[2] !== false)
+			.forEach((r: [string, string]) => parts.push("--data-urlencode", q(`${r[0]}=${r[1]}`)));
 	}
 	if (body.type === "multipart") {
-		(body.parts || []).filter((p: { enabled?: boolean }) => p.enabled !== false).forEach((p: { name: string; value?: string; file?: string }) =>
-			parts.push("-F", q(p.file !== undefined ? `${p.name}=@${p.file}` : `${p.name}=${p.value ?? ""}`))
-		);
+		(body.parts || [])
+			.filter((p: { enabled?: boolean }) => p.enabled !== false)
+			.forEach((p: { name: string; value?: string; file?: string }) =>
+				parts.push(
+					"-F",
+					q(p.file !== undefined ? `${p.name}=@${p.file}` : `${p.name}=${p.value ?? ""}`)
+				)
+			);
 	}
 	if (body.type === "binary") parts.push("--data-binary", q(`@${body.file}`));
 	return parts.join(" ");
@@ -242,9 +296,16 @@ export const toCurl = (input: { method: string; url: string; headers: Array<[str
 /** 模板形式: URL 与参数保留 {{var}} */
 export const curlOfTemplate = (def: Record<string, any>) => {
 	let url = String(def.url || "");
-	const query = (def.params?.query || []).filter((r: [string, string, boolean]) => r[2] !== false);
-	if (query.length) url += (url.includes("?") ? "&" : "?") + query.map((r: [string, string]) => `${r[0]}=${r[1]}`).join("&");
-	const headers = (def.headers || []).filter((r: [string, string, boolean]) => r[2] !== false).map((r: [string, string]) => [r[0], r[1]] as [string, string]);
+	const query = (def.params?.query || []).filter(
+		(r: [string, string, boolean]) => r[2] !== false
+	);
+	if (query.length)
+		url +=
+			(url.includes("?") ? "&" : "?") +
+			query.map((r: [string, string]) => `${r[0]}=${r[1]}`).join("&");
+	const headers = (def.headers || [])
+		.filter((r: [string, string, boolean]) => r[2] !== false)
+		.map((r: [string, string]) => [r[0], r[1]] as [string, string]);
 	const auth = def.auth || {};
 	let user: string | undefined;
 	if (!headers.some(([k]: [string, string]) => k === "authorization")) {
@@ -254,4 +315,5 @@ export const curlOfTemplate = (def: Record<string, any>) => {
 	return toCurl({ method: def.method || "GET", url, headers, body: def.body, user });
 };
 
-export const curlOfResolved = (r: ResolvedRequest) => toCurl({ method: r.method, url: r.url, headers: r.headers, body: r.body });
+export const curlOfResolved = (r: ResolvedRequest) =>
+	toCurl({ method: r.method, url: r.url, headers: r.headers, body: r.body });

@@ -74,7 +74,7 @@ try {
 	await biz.getByRole("button", { name: "GET /api/missing" }).click();
 	await biz.close();
 
-	await page.getByRole("link", { name: "请求日志" }).click();
+	await page.getByRole("link", { name: "日志" }).click();
 	await page.getByText("/api/missing").first().waitFor();
 	check("请求日志实时出现未命中的 fetch 请求", true);
 	check("管理页无脚本错误", errors.length === 0, errors.join("; "));

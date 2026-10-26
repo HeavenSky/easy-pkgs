@@ -5,7 +5,9 @@ import { pretty } from "@/lib/utils";
 import { JsonEditor } from "./JsonEditor";
 import { StatusBadge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { Input, Label, Select, Textarea } from "./ui/input";
+import { Hint, Input, Label, Select, Textarea } from "./ui/input";
+import { KvList } from "./ui/kv";
+import { Section } from "./ui/panel";
 
 const ALL_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"];
 
@@ -77,10 +79,10 @@ export const TryRequest = ({ route }: { route: RouteSummary }) => {
 
 	return (
 		<div className="space-y-3">
-			<p className="text-xs text-zinc-500">
+			<Hint>
 				由浏览器直接请求该地址, 与业务页面发出的请求完全一致; 可临时指定场景(经请求头{" "}
-				<code>x-mock-scene</code>, 不影响其他请求).
-			</p>
+				<code className="font-mono">x-mock-scene</code>, 不影响其他请求).
+			</Hint>
 			<form
 				className="flex flex-wrap items-end gap-2"
 				onSubmit={e => {
@@ -96,12 +98,12 @@ export const TryRequest = ({ route }: { route: RouteSummary }) => {
 						))}
 					</Select>
 				</Label>
-				<Label className="min-w-64 flex-1">
+				<Label className="min-w-60 flex-1">
 					地址(含查询参数)
 					<Input
 						value={url}
 						onChange={e => setUrl(e.target.value)}
-						className="font-mono"
+						className="font-mono text-xs"
 					/>
 				</Label>
 				<Label>
@@ -132,38 +134,40 @@ export const TryRequest = ({ route }: { route: RouteSummary }) => {
 				</Label>
 			)}
 			{error && (
-				<p role="alert" className="text-sm text-rose-600">
+				<p role="alert" className="text-xs text-rose-600">
 					{error}
 				</p>
 			)}
 			{result && (
-				<div className="space-y-2" aria-live="polite">
-					<div className="flex items-center gap-2 text-sm">
-						<StatusBadge status={result.status} />
-						<span className="text-zinc-500">{result.ms} ms</span>
-					</div>
-					<details className="text-xs">
-						<summary className="cursor-pointer text-zinc-500">
-							响应头 ({result.headers.length})
-						</summary>
-						<table className="mt-1 font-mono">
-							<tbody>
-								{result.headers.map(([k, v]) => (
-									<tr key={k}>
-										<td className="pr-3 text-zinc-500">{k}</td>
-										<td className="break-all">{v}</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</details>
-					{result.json ? (
-						<JsonEditor label="响应体" readOnly value={result.body} height="260px" />
-					) : (
-						<pre className="max-h-72 overflow-auto rounded-md bg-zinc-100 p-3 font-mono text-xs whitespace-pre-wrap dark:bg-zinc-800">
-							{result.body || "(空)"}
-						</pre>
-					)}
+				<div aria-live="polite">
+					<Section
+						title={
+							<span className="flex items-center gap-2">
+								响应
+								<StatusBadge status={result.status} />
+								<span className="font-normal text-zinc-400">{result.ms} ms</span>
+							</span>
+						}
+					>
+						<details className="text-xs">
+							<summary className="cursor-pointer text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100">
+								响应头 ({result.headers.length})
+							</summary>
+							<KvList mono className="mt-1.5" items={result.headers} />
+						</details>
+						{result.json ? (
+							<JsonEditor
+								label="响应体"
+								readOnly
+								value={result.body}
+								height="260px"
+							/>
+						) : (
+							<pre className="max-h-72 overflow-auto rounded-md border border-zinc-200 bg-zinc-50 p-3 font-mono text-xs whitespace-pre-wrap dark:border-zinc-800 dark:bg-zinc-800">
+								{result.body || "(空)"}
+							</pre>
+						)}
+					</Section>
 				</div>
 			)}
 		</div>

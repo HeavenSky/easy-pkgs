@@ -20,7 +20,9 @@ import {
 	SecretItem,
 	TreeNode,
 	encodeId,
+	Collection,
 	type Definition,
+	type NodeConfig,
 } from "./debug-contract";
 
 export type SecretSourceInput =
@@ -50,19 +52,28 @@ const useDebugMutation = <V, R>(fn: (v: V) => Promise<R>) => {
 };
 
 export const useDebugTree = () =>
-	useQuery({ queryKey: debugKeys.tree, queryFn: ({ signal }) => request(DebugTree, "/debug/tree", { signal }) });
+	useQuery({
+		queryKey: debugKeys.tree,
+		queryFn: ({ signal }) => request(DebugTree, "/debug/tree", { signal }),
+	});
 
 export const useDebugRequest = (id: string | null) =>
 	useQuery({
 		queryKey: debugKeys.request(id || ""),
 		enabled: !!id,
-		queryFn: ({ signal }) => request(DebugRequest, `/debug/requests/${encodeId(id!)}`, { signal }),
+		queryFn: ({ signal }) =>
+			request(DebugRequest, `/debug/requests/${encodeId(id!)}`, { signal }),
 	});
 
 export const useCreateNode = () =>
 	useDebugMutation(
-		(body: { parent: string | null; kind: "group" | "request"; name: string; title?: string; weight?: number }) =>
-			request(TreeNode, "/debug/nodes", { method: "POST", body })
+		(body: {
+			parent: string | null;
+			kind: "group" | "request";
+			name: string;
+			title?: string;
+			weight?: number;
+		}) => request(TreeNode, "/debug/nodes", { method: "POST", body })
 	);
 
 export const useUpdateNode = () =>
@@ -73,46 +84,99 @@ export const useUpdateNode = () =>
 			etag,
 		}: {
 			id: string;
-			patch: { name?: string; parent?: string | null; title?: string | null; weight?: number; vars?: Record<string, string> };
+			patch: {
+				name?: string;
+				parent?: string | null;
+				title?: string | null;
+				weight?: number;
+				vars?: Record<string, string>;
+			} & Partial<NodeConfig>;
 			etag?: string | null;
 		}) =>
-			request(TreeNode, `/debug/nodes/${encodeId(id)}`, { method: "PATCH", body: patch, headers: ifMatch(etag) })
+			request(TreeNode, `/debug/nodes/${encodeId(id)}`, {
+				method: "PATCH",
+				body: patch,
+				headers: ifMatch(etag),
+			})
+	);
+
+/** 集合根目录的变量与请求默认配置 */
+export const useSaveCollection = () =>
+	useDebugMutation(
+		({
+			body,
+			etag,
+		}: {
+			body: { vars: Record<string, string> } & NodeConfig;
+			etag?: string | null;
+		}) =>
+			request(Collection, "/debug/collection", {
+				method: "PUT",
+				body,
+				headers: ifMatch(etag),
+			})
 	);
 
 export const useDeleteNode = () =>
 	useDebugMutation(({ id, recursive }: { id: string; recursive?: boolean }) =>
-		request(null, `/debug/nodes/${encodeId(id)}${recursive ? "?recursive=1" : ""}`, { method: "DELETE" })
-	);
-
-export const useSaveRequest = () =>
-	useDebugMutation(({ id, definition, etag }: { id: string; definition: Definition; etag?: string | null }) =>
-		request(DebugRequest, `/debug/requests/${encodeId(id)}`, {
-			method: "PUT",
-			body: { definition },
-			headers: ifMatch(etag),
+		request(null, `/debug/nodes/${encodeId(id)}${recursive ? "?recursive=1" : ""}`, {
+			method: "DELETE",
 		})
 	);
 
+export const useSaveRequest = () =>
+	useDebugMutation(
+		({ id, definition, etag }: { id: string; definition: Definition; etag?: string | null }) =>
+			request(DebugRequest, `/debug/requests/${encodeId(id)}`, {
+				method: "PUT",
+				body: { definition },
+				headers: ifMatch(etag),
+			})
+	);
+
 export const useEnvs = () =>
-	useQuery({ queryKey: debugKeys.envs, queryFn: ({ signal }) => request(EnvList, "/debug/envs", { signal }) });
+	useQuery({
+		queryKey: debugKeys.envs,
+		queryFn: ({ signal }) => request(EnvList, "/debug/envs", { signal }),
+	});
 
 export const useSaveEnv = () =>
 	useDebugMutation(
-		({ name, body, etag }: { name: string; body: { title?: string | null; weight?: number; vars?: Record<string, string> }; etag?: string | null }) =>
-			request(EnvGroup, `/debug/envs/${encodeURIComponent(name)}`, { method: "PUT", body, headers: ifMatch(etag) })
+		({
+			name,
+			body,
+			etag,
+		}: {
+			name: string;
+			body: { title?: string | null; weight?: number; vars?: Record<string, string> };
+			etag?: string | null;
+		}) =>
+			request(EnvGroup, `/debug/envs/${encodeURIComponent(name)}`, {
+				method: "PUT",
+				body,
+				headers: ifMatch(etag),
+			})
 	);
 
 export const useRenameEnv = () =>
 	useDebugMutation(({ name, to }: { name: string; to: string }) =>
-		request(EnvGroup, `/debug/envs/${encodeURIComponent(name)}`, { method: "PATCH", body: { name: to } })
+		request(EnvGroup, `/debug/envs/${encodeURIComponent(name)}`, {
+			method: "PATCH",
+			body: { name: to },
+		})
 	);
 
 export const useDeleteEnv = () =>
-	useDebugMutation((name: string) => request(null, `/debug/envs/${encodeURIComponent(name)}`, { method: "DELETE" }));
+	useDebugMutation((name: string) =>
+		request(null, `/debug/envs/${encodeURIComponent(name)}`, { method: "DELETE" })
+	);
 
 export const useSetActiveEnv = () =>
 	useDebugMutation((name: string | null) =>
-		request(z.object({ active: z.string().nullable() }), "/debug/active-env", { method: "PUT", body: { name } })
+		request(z.object({ active: z.string().nullable() }), "/debug/active-env", {
+			method: "PUT",
+			body: { name },
+		})
 	);
 
 export const useSecrets = (env: string | null) =>
@@ -120,32 +184,43 @@ export const useSecrets = (env: string | null) =>
 		queryKey: debugKeys.secrets(env || ""),
 		enabled: !!env,
 		queryFn: ({ signal }) =>
-			request(z.array(SecretItem), `/debug/envs/${encodeURIComponent(env!)}/secrets`, { signal }),
+			request(z.array(SecretItem), `/debug/envs/${encodeURIComponent(env!)}/secrets`, {
+				signal,
+			}),
 	});
 
 export const useSaveSecret = () =>
 	useDebugMutation(
 		({ env, id, source }: { env: string; id: string; source: SecretSourceInput }) =>
-			request(SecretItem, `/debug/envs/${encodeURIComponent(env)}/secrets/${encodeURIComponent(id)}`, {
-				method: "PUT",
-				body: source,
-			})
+			request(
+				SecretItem,
+				`/debug/envs/${encodeURIComponent(env)}/secrets/${encodeURIComponent(id)}`,
+				{ method: "PUT", body: source }
+			)
 	);
 
 export const useDeleteSecret = () =>
 	useDebugMutation(({ env, id }: { env: string; id: string }) =>
-		request(null, `/debug/envs/${encodeURIComponent(env)}/secrets/${encodeURIComponent(id)}`, { method: "DELETE" })
+		request(null, `/debug/envs/${encodeURIComponent(env)}/secrets/${encodeURIComponent(id)}`, {
+			method: "DELETE",
+		})
 	);
 
 export const useResolve = (input: { request: string | null; definition: Definition } | null) =>
 	useQuery({
 		queryKey: debugKeys.resolve(input),
 		enabled: !!input,
-		queryFn: ({ signal }) => request(Resolved, "/debug/resolve", { method: "POST", body: input, signal }),
+		queryFn: ({ signal }) =>
+			request(Resolved, "/debug/resolve", { method: "POST", body: input, signal }),
 	});
 
 /** definition 省略时使用已保存的请求定义 */
-export type SendInput = { request: string | null; definition?: Definition; env?: string | null; snapshot?: string | null };
+export type SendInput = {
+	request: string | null;
+	definition?: Definition;
+	env?: string | null;
+	snapshot?: string | null;
+};
 
 /** 发送请求; cancel() 中止进行中的发送, 服务端随之取消并记为 ABORTED */
 export const useSend = () => {
@@ -154,7 +229,11 @@ export const useSend = () => {
 	const mutation = useMutation({
 		mutationFn: (input: SendInput) => {
 			ctrl.current = new AbortController();
-			return request(HistoryEntry, "/debug/send", { method: "POST", body: input, signal: ctrl.current.signal });
+			return request(HistoryEntry, "/debug/send", {
+				method: "POST",
+				body: input,
+				signal: ctrl.current.signal,
+			});
 		},
 		onSettled: () => qc.invalidateQueries({ queryKey: ["debug", "history"] }),
 	});
@@ -181,17 +260,26 @@ export const useHistoryEntry = (id: string | null) =>
 	useQuery({
 		queryKey: ["debug", "history", "entry", id],
 		enabled: !!id,
-		queryFn: ({ signal }) => request(HistoryEntry, `/debug/history/${encodeId(id!)}`, { signal }),
+		queryFn: ({ signal }) =>
+			request(HistoryEntry, `/debug/history/${encodeId(id!)}`, { signal }),
 	});
 
 export const useHistoryDays = () =>
-	useQuery({ queryKey: ["debug", "history", "days"], queryFn: ({ signal }) => request(HistoryDays, "/debug/history-days", { signal }) });
+	useQuery({
+		queryKey: ["debug", "history", "days"],
+		queryFn: ({ signal }) => request(HistoryDays, "/debug/history-days", { signal }),
+	});
 
 export const useDeleteDay = () => {
 	const qc = useQueryClient();
 	return useMutation({
-		mutationFn: (day: string) => request(null, `/debug/history-days/${day}`, { method: "DELETE" }),
-		onSuccess: () => Promise.all([qc.invalidateQueries({ queryKey: ["debug", "history"] }), qc.invalidateQueries({ queryKey: ["meta"] })]),
+		mutationFn: (day: string) =>
+			request(null, `/debug/history-days/${day}`, { method: "DELETE" }),
+		onSuccess: () =>
+			Promise.all([
+				qc.invalidateQueries({ queryKey: ["debug", "history"] }),
+				qc.invalidateQueries({ queryKey: ["meta"] }),
+			]),
 	});
 };
 
@@ -199,26 +287,60 @@ export const snapshotRawUrl = (sid: string) => `${API_BASE}/debug/snapshots/${en
 
 export const useSaveSnapshot = () =>
 	useDebugMutation(
-		({ hid, body }: { hid: string; body: { request: string; name: string; title?: string; weight?: number; overwrite?: boolean; keepSetCookie?: boolean } }) =>
-			request(SnapshotSummary, `/debug/history/${encodeId(hid)}/snapshot`, { method: "POST", body })
+		({
+			hid,
+			body,
+		}: {
+			hid: string;
+			body: {
+				request: string;
+				name: string;
+				title?: string;
+				weight?: number;
+				overwrite?: boolean;
+				keepSetCookie?: boolean;
+			};
+		}) =>
+			request(SnapshotSummary, `/debug/history/${encodeId(hid)}/snapshot`, {
+				method: "POST",
+				body,
+			})
 	);
 
 export const useSnapshot = (sid: string | null) =>
 	useQuery({
 		queryKey: ["debug", "snapshot", sid],
 		enabled: !!sid,
-		queryFn: ({ signal }) => request(SnapshotDetail, `/debug/snapshots/${encodeId(sid!)}`, { signal }),
+		queryFn: ({ signal }) =>
+			request(SnapshotDetail, `/debug/snapshots/${encodeId(sid!)}`, { signal }),
 	});
 
 export const useUpdateSnapshot = () =>
 	useDebugMutation(
-		({ sid, patch }: { sid: string; patch: { name?: string; title?: string | null; weight?: number; vars?: Record<string, string>; replay?: { setCookie: boolean } } }) =>
-			request(SnapshotSummary, `/debug/snapshots/${encodeId(sid)}`, { method: "PATCH", body: patch })
+		({
+			sid,
+			patch,
+		}: {
+			sid: string;
+			patch: {
+				name?: string;
+				title?: string | null;
+				weight?: number;
+				vars?: Record<string, string>;
+				replay?: { setCookie: boolean };
+			};
+		}) =>
+			request(SnapshotSummary, `/debug/snapshots/${encodeId(sid)}`, {
+				method: "PATCH",
+				body: patch,
+			})
 	);
 
 export const useDeleteSnapshot = () =>
 	useDebugMutation(({ sid, force }: { sid: string; force?: boolean }) =>
-		request(null, `/debug/snapshots/${encodeId(sid)}${force ? "?force=1" : ""}`, { method: "DELETE" })
+		request(null, `/debug/snapshots/${encodeId(sid)}${force ? "?force=1" : ""}`, {
+			method: "DELETE",
+		})
 	);
 
 export const useSnapshotRefs = (sid: string | null) =>
@@ -226,7 +348,11 @@ export const useSnapshotRefs = (sid: string | null) =>
 		queryKey: ["debug", "snapshot-refs", sid],
 		enabled: !!sid,
 		queryFn: ({ signal }) =>
-			request(z.array(z.object({ route: z.string(), scene: z.string(), file: z.string() })), `/debug/snapshots/${encodeId(sid!)}/refs`, { signal }),
+			request(
+				z.array(z.object({ route: z.string(), scene: z.string(), file: z.string() })),
+				`/debug/snapshots/${encodeId(sid!)}/refs`,
+				{ signal }
+			),
 	});
 
 export const useRouteMatch = (requestId: string | null, enabled: boolean) =>
@@ -235,7 +361,10 @@ export const useRouteMatch = (requestId: string | null, enabled: boolean) =>
 		enabled: !!requestId && enabled,
 		queryFn: ({ signal }) =>
 			request(
-				z.object({ pathname: z.string(), candidates: z.array(z.object({ routeId: z.string(), key: z.string() })) }),
+				z.object({
+					pathname: z.string(),
+					candidates: z.array(z.object({ routeId: z.string(), key: z.string() })),
+				}),
 				`/debug/requests/${encodeId(requestId!)}/route-match`,
 				{ signal }
 			),
@@ -253,7 +382,11 @@ export const useDiff = (a: string | null, b: string | null) =>
 export const useRefreshSnapshot = () => {
 	const qc = useQueryClient();
 	return useMutation({
-		mutationFn: (sid: string) => request(RefreshResult, `/debug/snapshots/${encodeId(sid)}/refresh`, { method: "POST", body: {} }),
+		mutationFn: (sid: string) =>
+			request(RefreshResult, `/debug/snapshots/${encodeId(sid)}/refresh`, {
+				method: "POST",
+				body: {},
+			}),
 		onSettled: () => qc.invalidateQueries({ queryKey: ["debug", "history"] }),
 	});
 };
@@ -262,12 +395,20 @@ const Warnings = z.array(z.string());
 
 export const useImportCurl = () =>
 	useDebugMutation((body: { text: string; parent: string | null; name?: string }) =>
-		request(z.object({ node: TreeNode, warnings: Warnings }), "/debug/import/curl", { method: "POST", body })
+		request(z.object({ node: TreeNode, warnings: Warnings }), "/debug/import/curl", {
+			method: "POST",
+			body,
+		})
 	);
 
 export const useImportOpenApi = () =>
-	useDebugMutation((body: { text: string; parent: string | null; env: string | null; snapshots: boolean }) =>
-		request(z.object({ created: z.number(), warnings: Warnings }), "/debug/import/openapi", { method: "POST", body })
+	useDebugMutation(
+		(body: { text: string; parent: string | null; env: string | null; snapshots: boolean }) =>
+			request(
+				z.object({ created: z.number(), warnings: Warnings }),
+				"/debug/import/openapi",
+				{ method: "POST", body }
+			)
 	);
 
 export const useExportCurl = () =>
@@ -279,12 +420,21 @@ export const useExportCurl = () =>
 export const useExportOpenApi = () =>
 	useMutation({
 		mutationFn: (body: { node: string | null; format: "yaml" | "json" }) =>
-			request(z.object({ text: z.string(), filename: z.string(), warnings: Warnings }), "/debug/export/openapi", { method: "POST", body }),
+			request(
+				z.object({ text: z.string(), filename: z.string(), warnings: Warnings }),
+				"/debug/export/openapi",
+				{ method: "POST", body }
+			),
 	});
 
 export const useLogToRequest = () =>
-	useDebugMutation(({ logId, parent, name }: { logId: string; parent: string | null; name?: string }) =>
-		request(z.object({ node: TreeNode, warnings: Warnings }), `/logs/${logId}/debug-request`, { method: "POST", body: { parent, name } })
+	useDebugMutation(
+		({ logId, parent, name }: { logId: string; parent: string | null; name?: string }) =>
+			request(
+				z.object({ node: TreeNode, warnings: Warnings }),
+				`/logs/${logId}/debug-request`,
+				{ method: "POST", body: { parent, name } }
+			)
 	);
 
 export const useCookies = (env: string | null) =>
@@ -293,24 +443,58 @@ export const useCookies = (env: string | null) =>
 		enabled: !!env,
 		queryFn: ({ signal }) =>
 			request(
-				z.array(z.object({ name: z.string(), domain: z.string(), path: z.string(), expires: z.number().nullable(), secure: z.boolean(), httpOnly: z.boolean() }).loose()),
+				z.array(
+					z
+						.object({
+							name: z.string(),
+							domain: z.string(),
+							path: z.string(),
+							expires: z.number().nullable(),
+							secure: z.boolean(),
+							httpOnly: z.boolean(),
+						})
+						.loose()
+				),
 				`/debug/envs/${encodeURIComponent(env!)}/cookies`,
 				{ signal }
 			),
 	});
 
 export const useClearCookies = () =>
-	useDebugMutation(({ env, name, domain, path }: { env: string; name?: string; domain?: string; path?: string }) =>
-		request(null, `/debug/envs/${encodeURIComponent(env)}/cookies`, { method: "DELETE", body: name ? { name, domain, path } : undefined })
+	useDebugMutation(
+		({
+			env,
+			name,
+			domain,
+			path,
+		}: {
+			env: string;
+			name?: string;
+			domain?: string;
+			path?: string;
+		}) =>
+			request(null, `/debug/envs/${encodeURIComponent(env)}/cookies`, {
+				method: "DELETE",
+				body: name ? { name, domain, path } : undefined,
+			})
 	);
 
 export const useEnterSecret = () =>
 	useDebugMutation(({ env, id, value }: { env: string; id: string; value: string }) =>
-		request(null, `/debug/envs/${encodeURIComponent(env)}/secrets/${encodeURIComponent(id)}/value`, { method: "PUT", body: { value } })
+		request(
+			null,
+			`/debug/envs/${encodeURIComponent(env)}/secrets/${encodeURIComponent(id)}/value`,
+			{ method: "PUT", body: { value } }
+		)
 	);
 
 export const useRedactRules = () =>
-	useQuery({ queryKey: ["debug", "redact"], queryFn: ({ signal }) => request(RedactRules, "/debug/redact", { signal }) });
+	useQuery({
+		queryKey: ["debug", "redact"],
+		queryFn: ({ signal }) => request(RedactRules, "/debug/redact", { signal }),
+	});
 
 export const useSaveRedactRules = () =>
-	useDebugMutation((fields: string[]) => request(RedactRules, "/debug/redact", { method: "PUT", body: { fields } }));
+	useDebugMutation((fields: string[]) =>
+		request(RedactRules, "/debug/redact", { method: "PUT", body: { fields } })
+	);

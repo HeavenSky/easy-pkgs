@@ -133,7 +133,17 @@ export const useSceneBody = (id: string, name: string, etag: string | null, enab
 export const useSaveSceneBody = () => {
 	const qc = useQueryClient();
 	return useMutation({
-		mutationFn: ({ id, name, text, etag }: { id: string; name: string; text: string; etag: string | null }) =>
+		mutationFn: ({
+			id,
+			name,
+			text,
+			etag,
+		}: {
+			id: string;
+			name: string;
+			text: string;
+			etag: string | null;
+		}) =>
 			request(SceneDetail, `/routes/${id}/scenes/${encodeURIComponent(name)}/body`, {
 				method: "PUT",
 				body: { text },
@@ -325,11 +335,24 @@ export const KIND_LABEL: Record<LogKind, string> = {
 export const useSceneFromSnapshot = () => {
 	const qc = useQueryClient();
 	return useMutation({
-		mutationFn: ({ id, name, snapshot, mode, overwrite }: { id: string; name: string; snapshot: string; mode: "ref" | "copy"; overwrite?: boolean }) =>
+		mutationFn: ({
+			id,
+			name,
+			snapshot,
+			mode,
+			overwrite,
+		}: {
+			id: string;
+			name: string;
+			snapshot: string;
+			mode: "ref" | "copy";
+			overwrite?: boolean;
+		}) =>
 			request(SceneDetail, `/routes/${id}/scenes/${encodeURIComponent(name)}/from-snapshot`, {
 				method: "POST",
 				body: { snapshot, mode, overwrite },
 			}),
-		onSuccess: () => Promise.all([invalidateRoutes(qc), qc.invalidateQueries({ queryKey: ["debug"] })]),
+		onSuccess: () =>
+			Promise.all([invalidateRoutes(qc), qc.invalidateQueries({ queryKey: ["debug"] })]),
 	});
 };

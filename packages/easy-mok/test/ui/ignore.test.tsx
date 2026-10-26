@@ -22,11 +22,24 @@ const config = (over: Record<string, unknown> = {}) => ({
 	...over,
 });
 
+/** 读取与保存忽略配置的桩; 保存的请求体记在返回对象的 body 上 */
+const ignoreStubs = () => {
+	const saved: { body: unknown } = { body: null };
+	const handlers = [
+		http.get("*/__mock/api/ignore", () => HttpResponse.json(config())),
+		http.put("*/__mock/api/ignore", async ({ request }) => {
+			saved.body = await request.json();
+			return HttpResponse.json(config());
+		}),
+	];
+	return { saved, handlers };
+};
+
 describe("忽略规则对话框", () => {
 	it("逐条停用内置规则, 自定义规则即时校验, 修正后保存", async () => {
-		let saved: unknown = null;
+		const { saved, handlers } = ignoreStubs();
 		server.use(
-			http.get("*/__mock/api/ignore", () => HttpResponse.json(config())),
+			...handlers,
 			http.post("*/__mock/api/ignore/validate", async ({ request }) => {
 				const { rules } = (await request.json()) as { rules: string[] };
 				return HttpResponse.json({
@@ -36,10 +49,6 @@ describe("忽略规则对话框", () => {
 							: [{ index, pattern: p, error: "路径必须以 / 或 ** 开头" }]
 					),
 				});
-			}),
-			http.put("*/__mock/api/ignore", async ({ request }) => {
-				saved = await request.json();
-				return HttpResponse.json(config());
 			})
 		);
 		renderUi(<IgnoreDialog open onClose={() => undefined} />);
@@ -53,7 +62,7 @@ describe("忽略规则对话框", () => {
 		await waitFor(() => expect(screen.getByRole("button", { name: "保存" })).toBeEnabled());
 		await userEvent.click(screen.getByRole("button", { name: "保存" }));
 		await waitFor(() =>
-			expect(saved).toEqual({
+			expect(saved.body).toEqual({
 				defaults: true,
 				disabled: ["/favicon.ico"],
 				custom: ["/health", "/x/**"],
@@ -76,7 +85,7 @@ describe("忽略规则对话框", () => {
 describe("日志详情: 忽略此路径", () => {
 	it("生成方法 + 不含查询串的精确规则并追加保存", async () => {
 		expect(exactIgnoreRule("get", "/a/b?x=1#h")).toBe("GET /a/b");
-		let saved: unknown = null;
+		const { saved, handlers } = ignoreStubs();
 		const part = { headers: {}, body: null, bodyEncoding: "none", truncated: false };
 		server.use(
 			http.get("*/__mock/api/logs/1", () =>
@@ -97,16 +106,12 @@ describe("日志详情: 忽略此路径", () => {
 					response: part,
 				})
 			),
-			http.get("*/__mock/api/ignore", () => HttpResponse.json(config())),
-			http.put("*/__mock/api/ignore", async ({ request }) => {
-				saved = await request.json();
-				return HttpResponse.json(config());
-			})
+			...handlers
 		);
 		renderUi(<LogDetailPanel id="1" onClose={() => undefined} />);
 		await userEvent.click(await screen.findByRole("button", { name: /忽略此路径/ }));
 		await waitFor(() =>
-			expect(saved).toEqual({
+			expect(saved.body).toEqual({
 				custom: ["/health", "GET /.well-known/appspecific/com.chrome.devtools.json"],
 			})
 		);

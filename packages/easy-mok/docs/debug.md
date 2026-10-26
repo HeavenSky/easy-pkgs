@@ -6,11 +6,20 @@ By the end of this page, you can keep a collection of real API requests on the *
 
 ## Organize requests in groups
 
-The left column lists groups and requests. Use **Request** (`请求`) and **Group** (`分组`) to create them at the top level, or the buttons next to a group to create them inside it; the pencil edits a node and the bin deletes it.
+The left column lists groups at the top level and requests inside them. Use **Group** (`分组`) to create a group, then the button next to a group to create a request in it; the pencil edits a node and the bin deletes it. Each node shows its directory name followed by its display name in parentheses, such as `user(用户)`.
 
 - A name may contain letters, digits, Chinese characters, `.`, `_`, and `-`, up to 64 characters, and cannot start or end with `.`, `_`, or `-`. Names are compared case-insensitively, so `User` and `user` cannot sit in the same group.
 - A node can have a display name and a weight; higher weights come first, and equal weights sort by name.
-- Editing a node also moves it to another group and sets its own variables.
+- Editing a request also moves it to another group; editing any node sets its own variables.
+
+## Share headers, auth, and settings across requests
+
+**Click a group, or the 请求集合 row at the top of the tree, to set headers, auth, and send settings that every request below it inherits.** The panel opens read-only; click **Edit** (`编辑`) to change it.
+
+- Headers merge by name from the collection down to the request: a request header with the same name replaces the inherited one, and the same name left unchecked removes it.
+- A request's auth defaults to **Inherit** (`继承`), which uses the nearest group or collection auth.
+- In a request's **Settings** tab each setting shows where its value comes from. **Override** (`覆盖`) sets it for this request, and **Restore inheritance** (`恢复继承`) goes back to the inherited value. Requests created before this feature keep their own values until you restore inheritance.
+- **Resolve preview** (`解析预览`) shows the merged headers and settings that will be sent.
 
 ## Write a request
 
@@ -97,27 +106,27 @@ Keep tokens out of the environment file by writing a placeholder instead of the 
 
 Then configure the source `dev_token` under **Secret sources** (`敏感值来源`). Prefer a source that keeps the value out of files:
 
-| Source | Where the value comes from |
-| --- | --- |
-| **System keychain** (`系统钥匙串`) | A service and account in the macOS keychain (`security`) or the Linux secret service (`secret-tool`) |
-| **Command output** (`命令输出`) | The standard output of a command, such as `op read op://dev/api/token`; it runs without a shell and times out after 15 seconds |
-| **Typed when sending** (`发送时输入`) | Asked for the first time you send; kept only in the mock server's memory until it restarts |
-| **Environment variable** (`环境变量`) | An environment variable of the mock server process |
-| **Plain value** (`明文值`) | Stored in `environments/secret/<group>.json`, which is never committed |
+| Source                                | Where the value comes from                                                                                                     |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **System keychain** (`系统钥匙串`)    | A service and account in the macOS keychain (`security`) or the Linux secret service (`secret-tool`)                           |
+| **Command output** (`命令输出`)       | The standard output of a command, such as `op read op://dev/api/token`; it runs without a shell and times out after 15 seconds |
+| **Typed when sending** (`发送时输入`) | Asked for the first time you send; kept only in the mock server's memory until it restarts                                     |
+| **Environment variable** (`环境变量`) | An environment variable of the mock server process                                                                             |
+| **Plain value** (`明文值`)            | Stored in `environments/secret/<group>.json`, which is never committed                                                         |
 
 Keychain and command values are cached in memory for 10 minutes. The admin page never shows secret values, the preview keeps the placeholder, and secret sources can only be changed from an admin page opened on the local machine.
 
 ## Commit what the debug page writes
 
-Everything lives under `__debug__/` in the mock folder, which mock loading and hot reload ignore.
+Everything lives under `__debug__/` in the mock folder, or in the folder set by `debugDir` / `--debug-dir`; mock loading and hot reload ignore it. For the format of each file, see [Hand-edit the files behind the debug page](debug-storage.md).
 
-| Path | Contents | Commit it? |
-| --- | --- | --- |
-| `__debug__/requests/` | Groups and requests: `req.json` holds the request, `__meta__.json` holds the display name, weight, and variables; snapshots are in `res/<name>/` under each request | Yes |
-| `__debug__/environments/<group>.json` | Environment variables, with `<secret:id>` placeholders for secrets | Yes |
-| `__debug__/redact.json` | Field rules for snapshots | Yes |
-| `__debug__/environments/secret/` | Secret sources and cookie jars | No; excluded automatically |
-| `__debug__/history/` | Every send: the request actually sent, the response headers, and the body as its own file | No; excluded automatically |
+| Path                                  | Contents                                                                                                                                                            | Commit it?                 |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| `__debug__/requests/`                 | Groups and requests: `req.json` holds the request, `__meta__.json` holds the display name, weight, and variables; snapshots are in `res/<name>/` under each request | Yes                        |
+| `__debug__/environments/<group>.json` | Environment variables, with `<secret:id>` placeholders for secrets                                                                                                  | Yes                        |
+| `__debug__/redact.json`               | Field rules for snapshots                                                                                                                                           | Yes                        |
+| `__debug__/environments/secret/`      | Secret sources and cookie jars                                                                                                                                      | No; excluded automatically |
+| `__debug__/history/`                  | Every send: the request actually sent, the response headers, and the body as its own file                                                                           | No; excluded automatically |
 
 easy-mok writes a `.gitignore` containing `*` into `environments/secret/` and `history/` the first time it uses them, so they stay out of version control without touching your own `.gitignore`.
 

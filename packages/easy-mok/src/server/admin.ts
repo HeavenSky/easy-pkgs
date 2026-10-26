@@ -14,6 +14,7 @@ import { streamFile } from "./respond";
 import { isLoopback } from "./security";
 import type { LanControl } from "./lan";
 import { createDebugApi } from "./debug/api";
+import { DEBUG_DIR } from "./debug/names";
 import type { Refs } from "./debug/refs";
 import { loadSnapshot, replayHeaders } from "./debug/refs";
 import { matchRoute } from "./route";
@@ -70,6 +71,8 @@ export interface AdminContext {
 	guard: (req: IncomingMessage) => void;
 	bootId: string;
 	folder: string;
+	/** 调试存储目录, 缺省为 <folder>/__debug__ */
+	debugDir?: string;
 	version: string;
 	float: boolean;
 	ignore: ReturnType<typeof createIgnore>;
@@ -152,7 +155,15 @@ export const createAdmin = (ctx: AdminContext) => {
 			content,
 			etag: scene.etag || null,
 			bodyFile: bodyFileInfo(scene),
-			ref: scene.ref ? { snapshot: scene.ref, broken: !loadSnapshot(ctx.folder, scene.ref) } : null,
+			ref: scene.ref
+				? {
+						snapshot: scene.ref,
+						broken: !loadSnapshot(
+							ctx.debugDir || path.join(ctx.folder, DEBUG_DIR),
+							scene.ref
+						),
+					}
+				: null,
 		};
 	};
 
@@ -198,9 +209,7 @@ export const createAdmin = (ctx: AdminContext) => {
 		const server = req ? ((req.socket as any)?.server as { address?: () => unknown }) : null;
 		const addr = server && typeof server.address === "function" ? server.address() : null;
 		const bound =
-			addr && typeof addr === "object"
-				? (addr as { address: string; port: number })
-				: null;
+			addr && typeof addr === "object" ? (addr as { address: string; port: number }) : null;
 		const loopback = bound ? bound.address === "localhost" || isLoopback(bound.address) : null;
 		const extra = lan.listening.addresses;
 		let reachable: "yes" | "no" | "unknown";
@@ -216,7 +225,9 @@ export const createAdmin = (ctx: AdminContext) => {
 		const listening = extra.length
 			? extra
 			: lan.access && bound && !loopback
-				? [`${bound.address.includes(":") ? `[${bound.address}]` : bound.address}:${bound.port}`]
+				? [
+						`${bound.address.includes(":") ? `[${bound.address}]` : bound.address}:${bound.port}`,
+					]
 				: [];
 		return {
 			access: lan.access,
@@ -232,11 +243,23 @@ export const createAdmin = (ctx: AdminContext) => {
 	/** 路由推荐: 方法相同(或 ALL)且路径能匹配的全部路由 */
 	const routeCandidates = (method: string, pathname: string) =>
 		[...registry.routes.values()]
-			.filter(r => (r.methods.includes(method) || r.methods.includes("ALL")) && matchRoute(r.compiled, pathname))
+			.filter(
+				r =>
+					(r.methods.includes(method) || r.methods.includes("ALL")) &&
+					matchRoute(r.compiled, pathname)
+			)
 			.sort((a, b) => b.weight - a.weight || a.order - b.order)
 			.map(r => ({ routeId: r.id, key: r.key }));
 
-	const debug = createDebugApi({ folder: ctx.folder, state: store, emit: changed, lan: ctx.lan, refs: ctx.refs, routeCandidates });
+	const debug = createDebugApi({
+		folder: ctx.folder,
+		debugDir: ctx.debugDir || path.join(ctx.folder, DEBUG_DIR),
+		state: store,
+		emit: changed,
+		lan: ctx.lan,
+		refs: ctx.refs,
+		routeCandidates,
+	});
 
 	const meta = (req?: IncomingMessage) => {
 		const state = store.get();
@@ -338,7 +361,12 @@ export const createAdmin = (ctx: AdminContext) => {
 				}
 			});
 			if (body.send === true && !(body.access ?? ctx.lan.access)) {
-				throw new MockError("BAD_REQUEST", 400, "需要先允许局域网访问, 才能允许局域网代发", { field: "send" });
+				throw new MockError(
+					"BAD_REQUEST",
+					400,
+					"需要先允许局域网访问, 才能允许局域网代发",
+					{ field: "send" }
+				);
 			}
 			ctx.lan.set({ access: body.access, send: body.send });
 			changed("meta");
@@ -506,16 +534,22 @@ export const createAdmin = (ctx: AdminContext) => {
 			const name = assertName(String(req.params.name), "场景名");
 			const body = req.body || {};
 			if (body.mode !== "ref" && body.mode !== "copy") {
-				throw new MockError("BAD_REQUEST", 400, "mode 只能是 ref 或 copy", { field: "mode" });
+				throw new MockError("BAD_REQUEST", 400, "mode 只能是 ref 或 copy", {
+					field: "mode",
+				});
 			}
 			const snap = debug.snapshots.get(String(body.snapshot || ""));
 			const response = snap.meta.response;
 			if (snap.meta.error || !response) {
-				throw new MockError("BAD_REQUEST", 400, "这个快照是一次失败的发送, 不能用作场景", { field: "snapshot" });
+				throw new MockError("BAD_REQUEST", 400, "这个快照是一次失败的发送, 不能用作场景", {
+					field: "snapshot",
+				});
 			}
 			const current = route.scenes.get(name);
 			if (current && current.source === "json" && body.overwrite !== true) {
-				throw new MockError("CONFLICT", 409, `场景 ${name} 已存在`, { current: sceneDetail(current) });
+				throw new MockError("CONFLICT", 409, `场景 ${name} 已存在`, {
+					current: sceneDetail(current),
+				});
 			}
 			let envelope: Record<string, unknown>;
 			if (body.mode === "ref") {
@@ -532,7 +566,11 @@ export const createAdmin = (ctx: AdminContext) => {
 				let inline: { ok: boolean; value?: unknown } = { ok: false };
 				if (!file) {
 					inline = { ok: true, value: "" };
-				} else if (extOfFile(file) === "json" && info.decoded !== false && info.size <= 1024 * 1024) {
+				} else if (
+					extOfFile(file) === "json" &&
+					info.decoded !== false &&
+					info.size <= 1024 * 1024
+				) {
 					try {
 						inline = { ok: true, value: JSON.parse(fs.readFileSync(file, "utf8")) };
 					} catch {
@@ -546,7 +584,10 @@ export const createAdmin = (ctx: AdminContext) => {
 					const target = path.join(dir, `${name}.raw.${extOfFile(file as string)}`);
 					fs.mkdirSync(dir, { recursive: true });
 					fs.copyFileSync(file as string, target);
-					envelope.bodyFile = path.relative(fileStore.scenesDir, target).split(path.sep).join("/");
+					envelope.bodyFile = path
+						.relative(fileStore.scenesDir, target)
+						.split(path.sep)
+						.join("/");
 				}
 			}
 			const out = writeScene(route, name, envelope, null, req, true);

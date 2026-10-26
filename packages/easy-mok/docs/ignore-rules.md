@@ -14,7 +14,7 @@ A rule is `[METHOD ]path`:
 
 ## Add rules
 
-- On the admin page, open **Request log → Ignore rules** (`请求日志 → 忽略规则`) to edit custom rules. They are validated as you type and saved in the state file.
+- On the admin page, open **Logs → Ignore rules** (`日志 → 忽略规则`) to edit custom rules. They are validated as you type and saved in the state file.
 - In a log entry's detail panel, **Ignore this path** (`忽略此路径`) creates an exact rule from its method and path.
 - In code, pass `ignore: ["/health", "GET /static/**"]` to add rules; for the [standalone server](standalone.md), use `--ignore` or `MOCK_IGNORE`.
 

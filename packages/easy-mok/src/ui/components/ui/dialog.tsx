@@ -24,7 +24,9 @@ export const Dialog = ({ open, onClose, title, children, footer, className }: Di
 			el.showModal?.();
 			el.setAttribute("open", "");
 			// showModal 把焦点给首个可聚焦元素(标题栏的关闭按钮); 有输入框时改为聚焦内容区的第一个输入框
-			el.querySelector<HTMLElement>("[data-dialog-body] :is(input:not([type=checkbox],[type=radio],[type=hidden]),textarea):not(:disabled)")?.focus();
+			el.querySelector<HTMLElement>(
+				"[data-dialog-body] :is(input:not([type=checkbox],[type=radio],[type=hidden]),textarea):not(:disabled)"
+			)?.focus();
 		}
 		if (!open && el.open) {
 			el.close?.();
@@ -43,19 +45,21 @@ export const Dialog = ({ open, onClose, title, children, footer, className }: Di
 				onClose();
 			}}
 			className={cn(
-				"m-auto w-[min(640px,92vw)] rounded-lg border border-zinc-200 bg-white p-0 text-zinc-900 shadow-xl backdrop:bg-black/40 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100",
+				"m-auto w-[min(640px,92vw)] overflow-hidden rounded-lg border border-zinc-200 bg-white p-0 text-sm text-zinc-900 shadow-xl backdrop:bg-black/30 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100",
 				className
 			)}
 		>
-			<div className="flex items-center justify-between border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-800">
-				<h2 className="text-sm font-semibold">{title}</h2>
+			<div className="flex h-10 items-center justify-between border-b border-zinc-200 pr-2 pl-4 dark:border-zinc-800">
+				<h2 className="text-base font-medium">{title}</h2>
 				<Button variant="ghost" size="icon" aria-label="关闭" onClick={onClose}>
-					<X size={16} />
+					<X size={14} />
 				</Button>
 			</div>
-			<div data-dialog-body className="max-h-[70vh] overflow-auto px-4 py-3">{children}</div>
+			<div data-dialog-body className="max-h-[70vh] space-y-3 overflow-auto px-4 py-3">
+				{children}
+			</div>
 			{footer && (
-				<div className="flex justify-end gap-2 border-t border-zinc-200 px-4 py-2.5 dark:border-zinc-800">
+				<div className="flex items-center justify-end gap-2 border-t border-zinc-200 bg-zinc-50 px-4 py-2 dark:border-zinc-800 dark:bg-zinc-900/60">
 					{footer}
 				</div>
 			)}
@@ -102,6 +106,6 @@ export const ConfirmDialog = ({
 			</>
 		}
 	>
-		<div className="text-sm">{message}</div>
+		<div>{message}</div>
 	</Dialog>
 );

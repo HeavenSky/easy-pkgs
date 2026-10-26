@@ -13,6 +13,40 @@ export const Problem = z.object({
 export const SnapshotItem = z.object({ name: z.string(), title: z.string(), weight: z.number() });
 export type SnapshotItem = z.infer<typeof SnapshotItem>;
 
+const Row = z.tuple([z.string(), z.string(), z.boolean()]);
+export type Row = z.infer<typeof Row>;
+
+/** 发送设置; 请求, 分组与集合里都是按字段可选, 没写即继承外层 */
+export const Settings = z
+	.object({
+		timeoutMs: z.number(),
+		followRedirects: z.boolean(),
+		insecureTLS: z.boolean(),
+		proxy: z.string().nullable(),
+		skipCookieJar: z.boolean(),
+	})
+	.partial()
+	.loose();
+export type Settings = z.infer<typeof Settings>;
+export type SettingKey =
+	| "timeoutMs"
+	| "followRedirects"
+	| "insecureTLS"
+	| "proxy"
+	| "skipCookieJar";
+
+/** inherit 只用于请求: 沿用最近一层分组或集合的认证 */
+export const Auth = z.object({ type: z.enum(["inherit", "none", "bearer", "basic"]) }).loose();
+export type Auth = z.infer<typeof Auth>;
+
+/** 集合根目录与分组的请求默认配置; auth 为 null 表示本层不设置 */
+export const NodeConfig = z.object({
+	headers: z.array(Row),
+	settings: Settings,
+	auth: Auth.nullable(),
+});
+export type NodeConfig = z.infer<typeof NodeConfig>;
+
 export type TreeNode = {
 	id: string;
 	kind: "group" | "request";
@@ -24,6 +58,7 @@ export type TreeNode = {
 	url?: string;
 	snapshots?: SnapshotItem[];
 	children?: TreeNode[];
+	config?: NodeConfig;
 };
 export const TreeNode: z.ZodType<TreeNode> = z.lazy(() =>
 	z.object({
@@ -37,14 +72,23 @@ export const TreeNode: z.ZodType<TreeNode> = z.lazy(() =>
 		url: z.string().optional(),
 		snapshots: z.array(SnapshotItem).optional(),
 		children: z.array(TreeNode).optional(),
+		config: NodeConfig.optional(),
 	})
 );
 
-export const DebugTree = z.object({ nodes: z.array(TreeNode), problems: z.array(Problem) });
-export type DebugTree = z.infer<typeof DebugTree>;
+/** 集合根目录 requests/__meta__.json: 全部请求共用的变量与默认配置 */
+export const Collection = NodeConfig.extend({
+	vars: z.record(z.string(), z.string()),
+	etag: z.string(),
+});
+export type Collection = z.infer<typeof Collection>;
 
-const Row = z.tuple([z.string(), z.string(), z.boolean()]);
-export type Row = z.infer<typeof Row>;
+export const DebugTree = z.object({
+	nodes: z.array(TreeNode),
+	problems: z.array(Problem),
+	root: Collection,
+});
+export type DebugTree = z.infer<typeof DebugTree>;
 
 export const Definition = z
 	.object({
@@ -53,17 +97,11 @@ export const Definition = z
 		url: z.string(),
 		params: z.object({ path: z.record(z.string(), z.string()), query: z.array(Row) }).loose(),
 		headers: z.array(Row),
-		auth: z.object({ type: z.enum(["none", "bearer", "basic"]) }).loose(),
-		body: z.object({ type: z.enum(["none", "json", "text", "form", "multipart", "binary"]) }).loose(),
-		settings: z
-			.object({
-				timeoutMs: z.number(),
-				followRedirects: z.boolean(),
-				insecureTLS: z.boolean(),
-				proxy: z.string().nullable(),
-				skipCookieJar: z.boolean().optional(),
-			})
+		auth: Auth,
+		body: z
+			.object({ type: z.enum(["none", "json", "text", "form", "multipart", "binary"]) })
 			.loose(),
+		settings: Settings,
 		route: z.string().nullable(),
 	})
 	.loose();
@@ -77,6 +115,12 @@ export const DebugRequest = z.object({
 	meta: z.object({ title: z.string().nullable(), weight: z.number(), vars: Vars }),
 	etag: z.string(),
 	metaEtag: z.string(),
+	/** 外层继承来的配置与来源: from 为 default, collection 或 group:<分组标识> */
+	inherited: z.object({
+		settings: z.record(z.string(), z.object({ value: z.unknown(), from: z.string() })),
+		headers: z.array(z.object({ name: z.string(), value: z.string(), from: z.string() })),
+		auth: z.object({ value: Auth, from: z.string() }),
+	}),
 });
 export type DebugRequest = z.infer<typeof DebugRequest>;
 
@@ -114,6 +158,7 @@ export const Resolved = z.object({
 	method: z.string(),
 	url: z.string(),
 	urlError: z.string().nullable(),
+	settings: Settings,
 	headers: z.array(z.tuple([z.string(), z.string()])),
 	values: z.record(z.string(), ResolvedValue),
 	unresolved: z.array(z.string()),
@@ -146,7 +191,11 @@ export const ResultMeta = z
 			headers: z.array(Pair),
 			body: z.object({ type: z.enum(["none", "text", "binary"]) }).loose(),
 		}),
-		template: z.object({ env: z.string().nullable(), request: Definition, values: z.record(z.string(), ResolvedValue) }),
+		template: z.object({
+			env: z.string().nullable(),
+			request: Definition,
+			values: z.record(z.string(), ResolvedValue),
+		}),
 		response: z
 			.object({
 				status: z.number(),
@@ -187,7 +236,9 @@ export const HistoryPage = z.object({
 });
 export type HistoryPage = z.infer<typeof HistoryPage>;
 
-export const HistoryDays = z.array(z.object({ day: z.string(), bytes: z.number(), count: z.number() }));
+export const HistoryDays = z.array(
+	z.object({ day: z.string(), bytes: z.number(), count: z.number() })
+);
 
 export const Redaction = z.object({
 	fields: z.number(),
@@ -226,7 +277,12 @@ export type SnapshotDetail = z.infer<typeof SnapshotDetail>;
 export const DiffResult = z.object({
 	status: z.object({ a: z.number().nullable(), b: z.number().nullable() }),
 	headers: z.array(
-		z.object({ name: z.string(), a: z.array(z.string()), b: z.array(z.string()), change: z.enum(["same", "added", "removed", "changed"]) })
+		z.object({
+			name: z.string(),
+			a: z.array(z.string()),
+			b: z.array(z.string()),
+			change: z.enum(["same", "added", "removed", "changed"]),
+		})
 	),
 	body: z.object({
 		mode: z.enum(["json", "text", "binary", "too-large", "empty"]),

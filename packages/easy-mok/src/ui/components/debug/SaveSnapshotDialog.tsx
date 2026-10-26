@@ -5,7 +5,7 @@ import { DEBUG_NAME_RE, type TreeNode } from "@/api/debug-contract";
 import { useSaveSnapshot } from "@/api/debug-queries";
 import { Button } from "../ui/button";
 import { Dialog } from "../ui/dialog";
-import { FieldError, Input, Label, Select } from "../ui/input";
+import { FieldError, Hint, Input, Label, Select } from "../ui/input";
 
 const requestIds = (nodes: TreeNode[]): string[] =>
 	nodes.flatMap(n => (n.kind === "request" ? [n.id] : requestIds(n.children || [])));
@@ -33,7 +33,16 @@ export const SaveSnapshotDialog = ({
 	const valid = DEBUG_NAME_RE.test(name.normalize("NFC")) && !!request;
 	const submit = (overwrite: boolean) =>
 		save.mutate(
-			{ hid, body: { request, name, title: title || undefined, overwrite, keepSetCookie: keepSetCookie || undefined } },
+			{
+				hid,
+				body: {
+					request,
+					name,
+					title: title || undefined,
+					overwrite,
+					keepSetCookie: keepSetCookie || undefined,
+				},
+			},
 			{
 				onSuccess: out => {
 					const r = out.redaction;
@@ -44,7 +53,9 @@ export const SaveSnapshotDialog = ({
 								r.binaryRequest ? "二进制请求体未脱敏" : "",
 							].filter(Boolean)
 						: [];
-					toast.success(`已保存快照「${out.title}」${notes.length ? `: ${notes.join(", ")}` : ""}`);
+					toast.success(
+						`已保存快照「${out.title}」${notes.length ? `: ${notes.join(", ")}` : ""}`
+					);
 					onSaved?.(out.id);
 					onClose();
 				},
@@ -63,18 +74,26 @@ export const SaveSnapshotDialog = ({
 				<>
 					<Button onClick={onClose}>取消</Button>
 					{conflict ? (
-						<Button variant="danger" disabled={save.isPending} onClick={() => submit(true)}>
+						<Button
+							variant="danger"
+							disabled={save.isPending}
+							onClick={() => submit(true)}
+						>
 							覆盖同名快照
 						</Button>
 					) : (
-						<Button variant="default" disabled={!valid || save.isPending} onClick={() => submit(false)}>
+						<Button
+							variant="default"
+							disabled={!valid || save.isPending}
+							onClick={() => submit(false)}
+						>
 							保存
 						</Button>
 					)}
 				</>
 			}
 		>
-			<div className="space-y-3">
+			<div className="grid gap-2">
 				{!requestId && (
 					<Label>
 						所属请求
@@ -89,27 +108,43 @@ export const SaveSnapshotDialog = ({
 				<Label>
 					快照名(用于场景引用, 如 ok, empty)
 					<Input
-						className="font-mono"
+						className="font-mono text-xs"
+						aria-invalid={!!name && !DEBUG_NAME_RE.test(name.normalize("NFC"))}
 						value={name}
 						onChange={e => {
 							setName(e.target.value);
 							setConflict(false);
 						}}
 					/>
-					<FieldError>{name && !DEBUG_NAME_RE.test(name.normalize("NFC")) && "只能包含字母, 数字, 中文, 点, 下划线与连字符, 首尾不能是 . _ -"}</FieldError>
+					<FieldError>
+						{name &&
+							!DEBUG_NAME_RE.test(name.normalize("NFC")) &&
+							"只能包含字母, 数字, 中文, 点, 下划线与连字符, 首尾不能是 . _ -"}
+					</FieldError>
 				</Label>
 				<Label>
 					展示名(可选)
 					<Input value={title} onChange={e => setTitle(e.target.value)} />
 				</Label>
-				<label className="flex items-center gap-2 text-sm">
-					<input type="checkbox" checked={keepSetCookie} onChange={e => setKeepSetCookie(e.target.checked)} />
+				<label className="flex items-center gap-1.5 text-sm">
+					<input
+						type="checkbox"
+						checked={keepSetCookie}
+						onChange={e => setKeepSetCookie(e.target.checked)}
+					/>
 					保留 set-cookie(用于场景回放; 会写进快照)
 				</label>
-				<p className="text-xs text-zinc-500">
-					快照保存在 <code>requests/</code> 下, 通常会提交到仓库. 敏感值已写成 <code>{"<secret:id>"}</code>, 敏感请求头写成 <code>***</code>; JSON 响应体按右侧"快照脱敏规则"处理; 请确认响应中没有其他个人信息.
-				</p>
-				{conflict && <p className="text-sm text-amber-700">已有同名快照(名字比较不区分大小写); 覆盖后保留它的展示名, 权重与快照变量.</p>}
+				<Hint>
+					快照保存在 <code className="font-mono">requests/</code> 下, 通常会提交到仓库.
+					敏感值已写成 <code className="font-mono">{"<secret:id>"}</code>, 敏感请求头写成{" "}
+					<code className="font-mono">***</code>; JSON 响应体按右侧"快照脱敏规则"处理;
+					请确认响应中没有其他个人信息.
+				</Hint>
+				{conflict && (
+					<p className="text-xs text-amber-700 dark:text-amber-400">
+						已有同名快照(名字比较不区分大小写); 覆盖后保留它的展示名, 权重与快照变量.
+					</p>
+				)}
 			</div>
 		</Dialog>
 	);

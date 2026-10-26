@@ -1,5 +1,5 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { EyeOff, Pause, Play, Search, Trash2 } from "lucide-react";
+import { AlertTriangle, EyeOff, Pause, Play, Search, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useSearchParams } from "wouter";
@@ -11,18 +11,23 @@ import { LogDetailPanel } from "@/components/LogDetailPanel";
 import { Badge, MethodBadge, StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
+import { Toolbar } from "@/components/ui/panel";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/state";
 import { clockTime, cn } from "@/lib/utils";
 
 export const KIND_COLOR: Record<LogKind, string> = {
 	mock: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
-	proxy: "bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300",
+	proxy: "bg-white text-zinc-700 ring-1 ring-zinc-300 ring-inset dark:bg-zinc-900 dark:text-zinc-300 dark:ring-zinc-700",
 	pass: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
 	miss: "bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
 	error: "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300",
 };
 
-const ROW = 34;
+const ROW = 32;
+/** 表头与行共用的列宽 */
+const COLS =
+	"grid grid-cols-[72px_64px_minmax(0,1fr)_64px_minmax(0,200px)_104px_52px_56px] items-center gap-2 px-3";
+const HINT = "只记录命中的请求与未命中的 fetch / XHR 请求, 不含忽略规则命中的请求";
 
 export const LogsPage = () => {
 	const logs = useLogs();
@@ -82,9 +87,12 @@ export const LogsPage = () => {
 	return (
 		<div className="flex h-full min-h-0">
 			<div className="flex min-w-0 flex-1 flex-col">
-				<div className="flex flex-wrap items-center gap-2 border-b border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900">
-					<div className="relative w-72">
-						<Search size={14} className="absolute top-2.5 left-2 text-zinc-400" />
+				<Toolbar>
+					<div className="relative w-64">
+						<Search
+							size={14}
+							className="pointer-events-none absolute top-1/2 left-2 -translate-y-1/2 text-zinc-400"
+						/>
 						<Input
 							aria-label="搜索日志"
 							className="pl-7"
@@ -106,7 +114,6 @@ export const LogsPage = () => {
 						))}
 					</Select>
 					<Button
-						size="sm"
 						onClick={() => setPaused(paused ? null : [...(logs.data || [])])}
 						aria-pressed={!!paused}
 					>
@@ -123,7 +130,6 @@ export const LogsPage = () => {
 						)}
 					</Button>
 					<Button
-						size="sm"
 						variant="ghost"
 						disabled={clear.isPending}
 						onClick={() =>
@@ -140,17 +146,22 @@ export const LogsPage = () => {
 						<Trash2 size={14} />
 						清空
 					</Button>
-					<Button size="sm" variant="ghost" onClick={() => setIgnoring(true)}>
+					<Button variant="ghost" onClick={() => setIgnoring(true)}>
 						<EyeOff size={14} />
 						忽略规则
 					</Button>
-					<span className="ml-auto text-xs text-zinc-500">
-						共 {rows.length} 条; 只记录命中的请求与未命中的 fetch / XHR 请求,
-						不含忽略规则命中的请求
+					<span
+						className="ml-auto min-w-0 truncate text-xs text-zinc-500"
+						title={`共 ${rows.length} 条; ${HINT}`}
+					>
+						共 {rows.length} 条; {HINT}
 					</span>
-				</div>
+				</Toolbar>
 				<div
-					className="grid grid-cols-[80px_64px_minmax(0,1fr)_72px_minmax(0,220px)_110px_56px_64px] border-b border-zinc-200 bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900"
+					className={cn(
+						COLS,
+						"h-8 shrink-0 border-b border-zinc-200 bg-zinc-50 text-xs font-medium text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900"
+					)}
 					role="row"
 				>
 					<span>时间</span>
@@ -173,7 +184,7 @@ export const LogsPage = () => {
 					ref={scrollRef}
 					role="table"
 					aria-label="请求日志"
-					className="min-h-0 flex-1 overflow-auto"
+					className="min-h-0 flex-1 overflow-auto bg-white dark:bg-zinc-900"
 					onScroll={e => {
 						const el = e.currentTarget;
 						stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < ROW * 2;
@@ -203,45 +214,52 @@ export const LogsPage = () => {
 										transform: `translateY(${item.start}px)`,
 									}}
 									className={cn(
-										"grid cursor-pointer grid-cols-[80px_64px_minmax(0,1fr)_72px_minmax(0,220px)_110px_56px_64px] items-center border-b border-zinc-100 px-3 text-xs dark:border-zinc-800/60",
+										COLS,
+										"cursor-pointer border-b border-zinc-100 dark:border-zinc-800/60",
 										selected === l.id
-											? "bg-sky-50 dark:bg-sky-950/40"
+											? "bg-zinc-100 dark:bg-zinc-800"
 											: "hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
 									)}
 								>
-									<span className="font-mono text-zinc-500">
+									<span className="font-mono text-xs text-zinc-400">
 										{clockTime(l.time)}
 									</span>
-									<span>
+									<span className="flex">
 										<MethodBadge method={l.method} />
 									</span>
-									<span className="truncate font-mono" title={l.url}>
+									<span className="truncate font-mono text-xs" title={l.url}>
 										{l.url}
 									</span>
-									<span>
+									<span className="flex">
 										<Badge className={KIND_COLOR[l.kind]}>
 											{KIND_LABEL[l.kind]}
 										</Badge>
 									</span>
 									<span
-										className="truncate font-mono text-zinc-500"
+										className="truncate font-mono text-xs text-zinc-500"
 										title={l.routeKey || undefined}
 									>
 										{l.routeKey || "—"}
 									</span>
 									<span
-										className="truncate"
+										className="flex min-w-0 items-center gap-0.5 text-zinc-700 dark:text-zinc-300"
 										title={
 											l.sceneFallback ? "指定的场景不存在, 已降级" : undefined
 										}
 									>
-										{l.scene || "—"}
-										{l.sceneFallback && " ⚠"}
+										<span className="truncate">{l.scene || "—"}</span>
+										{l.sceneFallback && (
+											<AlertTriangle
+												size={12}
+												aria-label="已降级"
+												className="shrink-0 text-amber-600"
+											/>
+										)}
 									</span>
-									<span>
+									<span className="flex">
 										<StatusBadge status={l.status} />
 									</span>
-									<span className="text-right font-mono text-zinc-500">
+									<span className="text-right font-mono text-xs text-zinc-400">
 										{l.durationMs}ms
 									</span>
 								</div>

@@ -1,5 +1,6 @@
 // mock 请求处理: 匹配路由, 解析场景, 延迟与状态码覆盖, 执行数据 / 函数 / 代理 / JSON 场景
 import fs from "fs";
+import path from "path";
 import type { EventEmitter } from "events";
 import type { IncomingMessage } from "http";
 import bodyParser from "body-parser";
@@ -7,6 +8,7 @@ import cookieParser from "cookie-parser";
 import multer from "multer";
 import type { Response } from "express";
 import { extOfFile, typeOfExt } from "./mime";
+import { DEBUG_DIR } from "./debug/names";
 import { loadSnapshot, replayHeaders } from "./debug/refs";
 import { createProxy } from "./proxy";
 import { parseCookie, resolveScene } from "./scene";
@@ -195,6 +197,7 @@ export const createResponder = ({
 	lan = false,
 	ignore,
 	folder = "",
+	debugDir = path.join(folder, DEBUG_DIR),
 }: {
 	registry: ReturnType<typeof createRegistry>;
 	store: ReturnType<typeof createStateStore>;
@@ -204,8 +207,10 @@ export const createResponder = ({
 	lan?: boolean | (() => boolean);
 	/** 请求忽略规则; 命中的请求不进请求日志, 不打印终端日志, 路由匹配与响应照常 */
 	ignore?: { test: (method: string, pathname: string) => boolean };
-	/** mock 目录, 用于定位场景引用的调试快照 */
+	/** mock 目录 */
 	folder?: string;
+	/** 调试存储目录, 用于定位场景引用的调试快照; 缺省为 <folder>/__debug__ */
+	debugDir?: string;
 }) => {
 	const trustedHosts = new Set(hosts.map(h => h.toLowerCase()));
 	const anyHost = trustedHosts.has("*");
@@ -333,7 +338,7 @@ export const createResponder = ({
 			// 引用的快照失效时视为场景不存在, 按优先级降级并在日志中标记
 			has: name => {
 				const scene = route.scenes.get(name);
-				return !!scene && (!scene.ref || !!loadSnapshot(folder, scene.ref));
+				return !!scene && (!scene.ref || !!loadSnapshot(debugDir, scene.ref));
 			},
 			state,
 			request: {
@@ -550,7 +555,7 @@ export const createResponder = ({
 				return callHandler(scene.value as Function);
 			}
 			if (envelope && scene.ref) {
-				const snap = loadSnapshot(folder, scene.ref);
+				const snap = loadSnapshot(debugDir, scene.ref);
 				if (!snap) {
 					throw new Error(`引用的快照不可用: ${scene.ref}`);
 				}
@@ -558,8 +563,12 @@ export const createResponder = ({
 					res.status(envelope.status || snap.meta.response.status);
 				}
 				const grouped = new Map<string, string[]>();
-				replayHeaders(snap.meta).forEach(([k, v]) => grouped.set(k, [...(grouped.get(k) || []), v]));
-				grouped.forEach((values, k) => res.setHeader(k, values.length > 1 ? values : values[0]));
+				replayHeaders(snap.meta).forEach(([k, v]) =>
+					grouped.set(k, [...(grouped.get(k) || []), v])
+				);
+				grouped.forEach((values, k) =>
+					res.setHeader(k, values.length > 1 ? values : values[0])
+				);
 				Object.entries(envelope.headers || {}).forEach(([k, v]) => res.setHeader(k, v));
 				return snap.file ? streamFile(req, res, snap.file) : res.end();
 			}

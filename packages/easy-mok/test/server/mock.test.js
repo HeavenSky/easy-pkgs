@@ -3,7 +3,8 @@ const fs = require("fs");
 const http = require("http");
 const path = require("path");
 const zlib = require("zlib");
-const { listen, sleep, startHost, waitFor } = require("../helpers/server");
+const { listen, makeFixture, sleep, startHost, waitFor } = require("../helpers/server");
+const { createMock, createMockware } = require("../helpers/src").loadSrc();
 
 const MOCKS = `
 const { scenes } = require(${JSON.stringify(path.join(__dirname, "../../src/server"))});
@@ -16,7 +17,6 @@ module.exports = {
 	}),
 	"GET /api/text": "hello",
 	"POST /api/echo": (req, res) => res.json({ body: req.body, query: req.query }),
-	"GET /api/dep": () => undefined,
 	"GET /api/throw": () => { throw new Error("同步出错"); },
 	"GET /api/reject": async (req, res) => { throw new Error("异步出错"); },
 	"GET /api/next": (req, res, next) => next(),
@@ -36,7 +36,8 @@ module.exports = {
 	"GET /n/nullish": null,
 	"GET /n/skipped": undefined,
 };
-`.replace(`"GET /api/dep": () => undefined,\n`, "");
+`;
+const idOf = key => Buffer.from(key).toString("base64url");
 
 describe.each(["express4", "express5"])("宿主 %s", hostName => {
 	/** @type {Awaited<ReturnType<typeof startHost>>} */
@@ -83,36 +84,39 @@ describe.each(["express4", "express5"])("宿主 %s", hostName => {
 		await new Promise(resolve => upstream.close(resolve));
 	});
 
-	it("命中数据场景并解析路径参数", async () => {
-		const res = await ctx.fetch("/api/user/7");
+	const postJson = (url, body) =>
+		ctx.fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body });
+	const patchRoute = (key, json) =>
+		ctx.api(`/routes/${idOf(key)}/state`, { method: "PATCH", json });
+
+	it.each([
+		["数据场景, 解析路径参数", "/api/user/7", { id: 1, name: "张三" }],
+		["权重高者优先", "/api/w", { w: 5 }],
+		["同权重先声明者优先, 具体路由不因声明在后而生效", "/api/specific", { generic: true }],
+		["无参函数返回数据即响应体", "/fn/ret", { ret: true }],
+		["无参异步函数返回数据即响应体", "/fn/async", [1, 2]],
+		["带参函数未响应时用返回值", "/fn/one/5", { id: "5" }],
+		["首参带默认值按无参函数调用", "/fn/dflt", { dflt: true }],
+		["带参函数稍后自行响应", "/fn/later", { later: true }],
+	])("%s: GET %s", async (_, url, expected) => {
+		const res = await ctx.fetch(url);
 		expect(res.status).toBe(200);
-		expect(await res.json()).toEqual({ id: 1, name: "张三" });
-		expect(await (await ctx.fetch("/api/text")).text()).toBe("hello");
+		expect(await res.json()).toEqual(expected);
 	});
 
-	it("未命中时交给宿主, 且宿主拿回自己的 req/res 原型", async () => {
-		const res = await ctx.fetch("/nope");
+	it.each([
+		["未命中", "/nope"],
+		["函数场景调用 next()", "/api/next"],
+		["// 开头的路径不被当成主机名", "//x/api/text"],
+	])("%s 时交给宿主, 且宿主拿回自己的 req/res 原型", async (_, url) => {
+		const res = await ctx.fetch(url);
 		expect(res.status).toBe(404);
 		expect(await res.json()).toMatchObject({ host: true, isHostApp: true });
 	});
 
-	it("函数场景可调用 next() 回落到宿主", async () => {
-		const res = await ctx.fetch("/api/next");
-		expect(await res.json()).toMatchObject({ host: true, isHostApp: true });
-	});
-
 	it("解析请求体与查询参数", async () => {
-		const res = await ctx.fetch("/api/echo?a=1", {
-			method: "POST",
-			headers: { "content-type": "application/json" },
-			body: JSON.stringify({ x: [1] }),
-		});
+		const res = await postJson("/api/echo?a=1", JSON.stringify({ x: [1] }));
 		expect(await res.json()).toEqual({ body: { x: [1] }, query: { a: "1" } });
-	});
-
-	it("权重高者优先, 同权重先声明者优先, 具体路由不因声明在后而生效", async () => {
-		expect(await (await ctx.fetch("/api/w")).json()).toEqual({ w: 5 });
-		expect(await (await ctx.fetch("/api/specific")).json()).toEqual({ generic: true });
 	});
 
 	it("代码中值为 null 的路由回放 null, undefined 的跳过", async () => {
@@ -123,93 +127,60 @@ describe.each(["express4", "express5"])("宿主 %s", hostName => {
 		expect((await ctx.fetch("/n/skipped")).status).toBe(404);
 	});
 
-	it("同步与异步异常都返回 500 JSON", async () => {
-		const a = await ctx.fetch("/api/throw");
-		expect(a.status).toBe(500);
-		expect(await a.json()).toMatchObject({ mock: true, message: "同步出错" });
-		const b = await ctx.fetch("/api/reject");
-		expect(b.status).toBe(500);
-		expect(await b.json()).toMatchObject({ message: "异步出错" });
+	it.each([
+		["/api/throw", "同步出错"],
+		["/api/reject", "异步出错"],
+	])("同步与异步异常都返回 500 JSON: %s", async (url, message) => {
+		const res = await ctx.fetch(url);
+		expect(res.status).toBe(500);
+		expect(await res.json()).toMatchObject({ mock: true, message });
 	});
 
-	it("预检只拦截命中的路由", async () => {
-		const hit = await ctx.fetch("/api/user/1", {
-			method: "OPTIONS",
-			headers: { origin: "http://localhost:5173", "access-control-request-method": "GET" },
-		});
+	it("预检只拦截命中的路由, 显式声明的 OPTIONS 路由接管预检, HEAD 回落到 GET", async () => {
+		const preflight = (url, origin) =>
+			ctx.fetch(url, {
+				method: "OPTIONS",
+				headers: { ...(origin && { origin }), "access-control-request-method": "GET" },
+			});
+		const hit = await preflight("/api/user/1", "http://localhost:5173");
 		expect(hit.status).toBe(204);
 		expect(hit.headers.get("access-control-allow-origin")).toBe("http://localhost:5173");
 		expect(hit.headers.get("access-control-allow-credentials")).toBe("true");
-		const miss = await ctx.fetch("/nope", {
-			method: "OPTIONS",
-			headers: { "access-control-request-method": "GET" },
-		});
-		expect(miss.status).toBe(404);
+		expect((await preflight("/nope")).status).toBe(404);
+		const own = await preflight("/fn/opt", "http://localhost");
+		expect(own.status).toBe(200);
+		expect(await own.json()).toEqual({ own: true });
+		expect((await ctx.fetch("/api/text", { method: "HEAD" })).status).toBe(200);
+		expect(await (await ctx.fetch("/api/text")).text()).toBe("hello");
 	});
 
 	it("跨域只放行本机与同 Host 来源, 不回显任意网页; 私有网段来源默认不放行", async () => {
 		const acao = async origin =>
-			(await ctx.fetch("/api/text", { headers: { origin } })).headers.get(
+			(await ctx.fetch("/api/text", origin ? { headers: { origin } } : {})).headers.get(
 				"access-control-allow-origin"
 			);
-		expect(await acao("http://evil.test")).toBeNull();
-		expect(await acao("http://8.8.8.8")).toBeNull();
-		expect(await acao("null")).toBeNull();
-		expect(await acao("http://192.168.1.2:3000")).toBeNull();
+		for (const bad of [
+			"http://evil.test",
+			"http://8.8.8.8",
+			"null",
+			"http://192.168.1.2:3000",
+		]) {
+			expect([bad, await acao(bad)]).toEqual([bad, null]);
+		}
 		expect(await acao(ctx.base)).toBe(ctx.base);
-		expect((await ctx.fetch("/api/text")).headers.get("access-control-allow-origin")).toBe("*");
-	});
-
-	it("显式声明的 OPTIONS 路由接管预检, HEAD 回落到 GET", async () => {
-		const own = await ctx.fetch("/fn/opt", {
-			method: "OPTIONS",
-			headers: { origin: "http://localhost", "access-control-request-method": "GET" },
-		});
-		expect(own.status).toBe(200);
-		expect(await own.json()).toEqual({ own: true });
-		const head = await ctx.fetch("/api/text", { method: "HEAD" });
-		expect(head.status).toBe(200);
-	});
-
-	it("无参函数返回数据即响应体, 带参函数未响应时用返回值, 首参带默认值按无参函数调用", async () => {
-		expect(await (await ctx.fetch("/fn/ret")).json()).toEqual({ ret: true });
-		expect(await (await ctx.fetch("/fn/async")).json()).toEqual([1, 2]);
-		expect(await (await ctx.fetch("/fn/one/5")).json()).toEqual({ id: "5" });
-		expect(await (await ctx.fetch("/fn/dflt")).json()).toEqual({ dflt: true });
-		expect(await (await ctx.fetch("/fn/later")).json()).toEqual({ later: true });
+		expect(await acao()).toBe("*");
 	});
 
 	it("请求体非法返回 400, 超限返回 413, 处理函数不执行", async () => {
 		global.__bodyHandled = 0;
-		const bad = await ctx.fetch("/fn/body", {
-			method: "POST",
-			headers: { "content-type": "application/json" },
-			body: "{bad",
-		});
+		const bad = await postJson("/fn/body", "{bad");
 		expect(bad.status).toBe(400);
 		expect(await bad.json()).toMatchObject({ mock: true, route: "POST /fn/body" });
-		const big = await ctx.fetch("/fn/body", {
-			method: "POST",
-			headers: { "content-type": "application/json" },
-			body: JSON.stringify({ s: "x".repeat(6 * 1024 * 1024) }),
-		});
+		const big = await postJson("/fn/body", JSON.stringify({ s: "x".repeat(6 * 1024 * 1024) }));
 		expect(big.status).toBe(413);
 		expect(global.__bodyHandled).toBe(0);
-		expect(
-			(
-				await ctx.fetch("/fn/body", {
-					method: "POST",
-					headers: { "content-type": "application/json" },
-					body: "{}",
-				})
-			).status
-		).toBe(200);
+		expect((await postJson("/fn/body", "{}")).status).toBe(200);
 		expect(global.__bodyHandled).toBe(1);
-	});
-
-	it("// 开头的路径不被当成主机名", async () => {
-		const res = await ctx.fetch("//x/api/text");
-		expect(await res.json()).toMatchObject({ host: true });
 	});
 
 	it("代理场景: 旧写法 onProxyReq / onProxyRes 生效", async () => {
@@ -219,62 +190,47 @@ describe.each(["express4", "express5"])("宿主 %s", hostName => {
 	});
 
 	it("场景切换: 路由手选, 请求头, 查询参数, cookie 组", async () => {
-		const id = Buffer.from("GET /api/user/:id").toString("base64url");
-		expect(
-			(await ctx.api(`/routes/${id}/state`, { method: "PATCH", json: { scene: "empty" } }))
-				.status
-		).toBe(200);
-		expect(await (await ctx.fetch("/api/user/1")).json()).toBeNull();
-		expect(
-			await (
-				await ctx.fetch("/api/user/1", { headers: { "x-mock-scene": "default" } })
-			).json()
-		).toEqual({ id: 1, name: "张三" });
+		const user = async init => (await ctx.fetch("/api/user/1", init)).json();
+		const DEFAULT = { id: 1, name: "张三" };
+		expect((await patchRoute("GET /api/user/:id", { scene: "empty" })).status).toBe(200);
+		expect(await user()).toBeNull();
+		expect(await user({ headers: { "x-mock-scene": "default" } })).toEqual(DEFAULT);
 		const err = await ctx.fetch("/api/user/9?__scene=error");
 		expect(err.status).toBe(500);
 		expect(await err.json()).toEqual({ code: 500, id: "9" });
-		await ctx.api("/groups/浏览器", { method: "PUT", json: { [id]: "default" } });
-		const viaCookie = await ctx.fetch("/api/user/1", {
-			headers: { cookie: `__mock_group=${encodeURIComponent("浏览器")}` },
+		await ctx.api("/groups/浏览器", {
+			method: "PUT",
+			json: { [idOf("GET /api/user/:id")]: "default" },
 		});
-		expect(await viaCookie.json()).toEqual({ id: 1, name: "张三" });
-		await ctx.api(`/routes/${id}/state`, { method: "PATCH", json: { scene: null } });
-		expect(await (await ctx.fetch("/api/user/1")).json()).toEqual({ id: 1, name: "张三" });
+		const cookie = `__mock_group=${encodeURIComponent("浏览器")}`;
+		expect(await user({ headers: { cookie } })).toEqual(DEFAULT);
+		await patchRoute("GET /api/user/:id", { scene: null });
+		expect(await user()).toEqual(DEFAULT);
 	});
 
-	it("延迟, 状态码覆盖与放行", async () => {
-		const id = Buffer.from("GET /api/text").toString("base64url");
-		await ctx.api(`/routes/${id}/state`, {
-			method: "PATCH",
-			json: { delay: 300, status: 503 },
-		});
+	it("延迟, 状态码覆盖, 放行与全局开关", async () => {
+		await patchRoute("GET /api/text", { delay: 300, status: 503 });
 		const t0 = Date.now();
 		const res = await ctx.fetch("/api/text");
 		expect(Date.now() - t0).toBeGreaterThanOrEqual(290);
 		expect(res.status).toBe(503);
 		expect(await res.text()).toBe("hello");
-		const proxyId = Buffer.from("GET /proxy/*").toString("base64url");
-		await ctx.api(`/routes/${proxyId}/state`, { method: "PATCH", json: { status: 418 } });
+		await patchRoute("GET /proxy/*", { status: 418 });
 		expect((await ctx.fetch("/proxy/x")).status).toBe(418);
-		await ctx.api(`/routes/${proxyId}/state`, { method: "PATCH", json: { status: null } });
-		await ctx.api(`/routes/${id}/state`, {
-			method: "PATCH",
-			json: { mode: "pass", delay: null, status: null },
-		});
+		await patchRoute("GET /proxy/*", { status: null });
+		await patchRoute("GET /api/text", { mode: "pass", delay: null, status: null });
 		expect(await (await ctx.fetch("/api/text")).json()).toMatchObject({ host: true });
-		expect(ctx.mock.match({ method: "GET", url: "/api/text", headers: {} })).toBe(false);
-		await ctx.api(`/routes/${id}/state`, { method: "PATCH", json: { mode: "mock" } });
-		expect(ctx.mock.match({ method: "GET", url: "/api/text", headers: {} })).toBe(true);
-	});
-
-	it("全局开关与代码 MOCK:false", async () => {
+		const match = () => ctx.mock.match({ method: "GET", url: "/api/text", headers: {} });
+		expect(match()).toBe(false);
+		await patchRoute("GET /api/text", { mode: "mock" });
+		expect(match()).toBe(true);
 		await ctx.api("/state", { method: "PATCH", json: { enabled: false } });
 		expect((await ctx.fetch("/api/text")).status).toBe(404);
 		await ctx.api("/state", { method: "PATCH", json: { enabled: true } });
 		expect((await ctx.fetch("/api/text")).status).toBe(200);
 	});
 
-	it("修改 mock 文件与其依赖后自动重载, 删除的路由失效", async () => {
+	it("修改 mock 文件与其依赖后自动重载, 代码 MOCK: false 关闭全部 mock, 删除的路由失效", async () => {
 		fs.writeFileSync(path.join(ctx.dir, "mocks/dep.js"), "module.exports = { v: 2 };");
 		await waitFor(async () => (await (await ctx.fetch("/dep/value")).json()).v === 2);
 		fs.writeFileSync(
@@ -318,34 +274,44 @@ describe("ESM 与 TS 写法的 mock 文件", () => {
 		await ctx.close();
 	});
 
+	const get = async (url, init) => (await ctx.fetch(url, init)).json();
+
 	it("加载 ESM 与 TS 文件, 默认导入 CJS 模块, 跳过 .d.ts", async () => {
-		expect(await (await ctx.fetch("/esm")).json()).toEqual({ esm: true });
-		expect(
-			await (await ctx.fetch("/esm", { headers: { "x-mock-scene": "other" } })).json()
-		).toEqual({ esm: 2 });
-		expect(await (await ctx.fetch("/ts/user")).json()).toEqual({ id: 1, role: 1 });
-		expect(await (await ctx.fetch("/mts")).json()).toEqual({ mts: true });
-		expect(await (await ctx.fetch("/cts")).json()).toEqual({ cts: true });
-		expect(await (await ctx.fetch("/interop")).json()).toEqual({ base: "b.txt", legacy: 1 });
+		expect(await get("/esm")).toEqual({ esm: true });
+		expect(await get("/esm", { headers: { "x-mock-scene": "other" } })).toEqual({ esm: 2 });
+		expect(await get("/ts/user")).toEqual({ id: 1, role: 1 });
+		expect(await get("/ts/dep")).toEqual({ v: 1 });
+		expect(await get("/mts")).toEqual({ mts: true });
+		expect(await get("/cts")).toEqual({ cts: true });
+		expect(await get("/interop")).toEqual({ base: "b.txt", legacy: 1 });
 		expect((await ctx.api("/meta")).body.diagnostics).toEqual([]);
 	});
 
-	it("修改 ESM 写法的 .js 后自动重载", async () => {
-		fs.writeFileSync(
-			path.join(ctx.dir, "mocks/esm.js"),
-			'export default { "GET /esm": { esm: 3 } };\n'
-		);
-		await waitFor(async () => (await (await ctx.fetch("/esm")).json()).esm === 3);
-	});
-
-	it("修改 TS 文件与 mock 目录外的 TS 依赖后自动重载", async () => {
-		fs.writeFileSync(path.join(ctx.dir, "shared/dep.ts"), "export const v: number = 2;\n");
-		await waitFor(async () => (await (await ctx.fetch("/ts/dep")).json()).v === 2);
-		fs.writeFileSync(
-			path.join(ctx.dir, "mocks/m.mts"),
-			'export default { "GET /mts": { mts: 2 } };\n'
-		);
-		await waitFor(async () => (await (await ctx.fetch("/mts")).json()).mts === 2);
+	it.each([
+		[
+			"ESM 写法的 .js",
+			"mocks/esm.js",
+			'export default { "GET /esm": { esm: 3 } };\n',
+			"/esm",
+			{ esm: 3 },
+		],
+		[
+			"mock 目录外的 TS 依赖",
+			"shared/dep.ts",
+			"export const v: number = 2;\n",
+			"/ts/dep",
+			{ v: 2 },
+		],
+		[
+			"TS 文件",
+			"mocks/m.mts",
+			'export default { "GET /mts": { mts: 2 } };\n',
+			"/mts",
+			{ mts: 2 },
+		],
+	])("修改%s后自动重载", async (_, file, content, url, expected) => {
+		fs.writeFileSync(path.join(ctx.dir, file), content);
+		await waitFor(async () => JSON.stringify(await get(url)) === JSON.stringify(expected));
 	});
 });
 
@@ -362,8 +328,6 @@ describe("加载失败与依赖追踪", () => {
 		`const pre = require("../shared/pre.js");\nconst d = require("../shared/data.json");\nmodule.exports = { "GET /a": { pre: pre.v, j: d.j }${extra} };\n`;
 
 	beforeAll(async () => {
-		const { makeFixture } = require("../helpers/server");
-		const { createMock } = require("../helpers/src").loadSrc();
 		dir = makeFixture({
 			"state.json": JSON.stringify({ logLevel: "silent" }),
 			"shared/pre.js": "module.exports = { v: 1 };",
@@ -443,8 +407,6 @@ describe("mock 目录出现软链环", () => {
 
 describe("挂到原生 http 与关闭", () => {
 	it("作为 (req, res, next) 调用, close() 后进程资源释放", async () => {
-		const { makeFixture } = require("../helpers/server");
-		const { createMockware } = require("../helpers/src").loadSrc();
 		const dir = makeFixture({ "m/a.js": "module.exports = { 'GET /a': { a: 1 } };" });
 		const app = createMockware(path.join(dir, "m"), { stateFile: path.join(dir, "s.json") });
 		const server = http.createServer((req, res) =>

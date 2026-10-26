@@ -11,11 +11,37 @@ import { Select } from "./ui/input";
 import { Switch } from "./ui/switch";
 
 const NAV = [
-	{ href: "/", label: "路由", match: (p: string) => p === "/" || p.startsWith("/routes") },
-	{ href: "/logs", label: "请求日志", match: (p: string) => p.startsWith("/logs") },
-	{ href: "/groups", label: "场景组", match: (p: string) => p.startsWith("/groups") },
-	{ href: "/debug", label: "调试", match: (p: string) => p.startsWith("/debug") },
-	{ href: "/diagnostics", label: "诊断", match: (p: string) => p.startsWith("/diagnostics") },
+	// 顺序: 先是 mock 配置(路由, 场景组), 再是观察与真实接口(日志可一键转为调试请求, 两者相邻), 诊断最后; 标签统一两个字, 全称放在悬停提示
+	{
+		href: "/",
+		label: "路由",
+		title: "路由与场景",
+		match: (p: string) => p === "/" || p.startsWith("/routes"),
+	},
+	{
+		href: "/groups",
+		label: "场景",
+		title: "场景组",
+		match: (p: string) => p.startsWith("/groups"),
+	},
+	{
+		href: "/logs",
+		label: "日志",
+		title: "请求日志",
+		match: (p: string) => p.startsWith("/logs"),
+	},
+	{
+		href: "/debug",
+		label: "调试",
+		title: "调试真实接口",
+		match: (p: string) => p.startsWith("/debug"),
+	},
+	{
+		href: "/diagnostics",
+		label: "诊断",
+		title: "诊断与设置",
+		match: (p: string) => p.startsWith("/diagnostics"),
+	},
 ];
 
 const LIVE_TEXT: Record<LiveStatus, string> = {
@@ -35,37 +61,38 @@ export const Header = ({ meta, live }: { meta: Meta; live: LiveStatus }) => {
 		});
 	const issues = meta.diagnostics.length;
 	return (
-		<header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-zinc-200 bg-white px-4 py-2 dark:border-zinc-800 dark:bg-zinc-900">
-			<div className="flex items-center gap-2 font-semibold">
-				<Boxes size={18} className="text-sky-600" />
+		<header className="flex min-h-11 flex-wrap items-center gap-x-5 gap-y-1 border-b border-zinc-200 bg-white px-4 py-1.5 dark:border-zinc-800 dark:bg-zinc-900">
+			<div className="flex items-center gap-1.5 text-base font-semibold">
+				<Boxes size={16} />
 				easy-mok
-				<span className="text-xs font-normal text-zinc-500">v{meta.version}</span>
+				<span className="text-2xs font-normal text-zinc-400">v{meta.version}</span>
 			</div>
-			<nav aria-label="主导航" className="flex gap-1">
+			<nav aria-label="主导航" className="flex gap-0.5">
 				{NAV.map(item => (
 					<Link
 						key={item.href}
 						href={item.href}
+						title={item.title}
 						aria-current={item.match(location) ? "page" : undefined}
 						className={cn(
-							"rounded-md px-2.5 py-1 text-sm",
+							"inline-flex h-7 items-center rounded-md px-2.5 text-sm",
 							item.match(location)
-								? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-								: "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+								? "bg-zinc-900 font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+								: "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
 						)}
 					>
 						{item.label}
 						{item.href === "/diagnostics" && issues > 0 && (
-							<span className="ml-1 rounded-full bg-amber-500 px-1.5 text-[10px] text-white">
+							<span className="ml-1 rounded-full bg-amber-500 px-1.5 text-2xs leading-4 text-white">
 								{issues}
 							</span>
 						)}
 					</Link>
 				))}
 			</nav>
-			<div className="ml-auto flex flex-wrap items-center gap-4 text-sm">
-				<label className="flex items-center gap-2">
-					<span className="text-zinc-500">全局场景组</span>
+			<div className="ml-auto flex flex-wrap items-center gap-4">
+				<label className="flex items-center gap-1.5">
+					<span className="text-xs text-zinc-500">全局场景组</span>
 					<Select
 						aria-label="全局场景组"
 						value={meta.group || ""}
@@ -87,8 +114,8 @@ export const Header = ({ meta, live }: { meta: Meta; live: LiveStatus }) => {
 						))}
 					</Select>
 				</label>
-				<div className="flex items-center gap-2">
-					<span className="text-zinc-500">mock</span>
+				<div className="flex items-center gap-1.5">
+					<span className="text-xs text-zinc-500">mock</span>
 					<Switch
 						label="全局 mock 开关"
 						checked={meta.enabled.state}
@@ -103,9 +130,9 @@ export const Header = ({ meta, live }: { meta: Meta; live: LiveStatus }) => {
 					{!meta.enabled.code && (
 						<span
 							title="mock 文件中声明了 MOCK: false"
-							className="flex items-center gap-1 text-xs text-amber-600"
+							className="flex items-center gap-1 text-xs text-amber-700"
 						>
-							<AlertTriangle size={14} />
+							<AlertTriangle size={12} />
 							代码中已关闭
 						</span>
 					)}
@@ -115,7 +142,7 @@ export const Header = ({ meta, live }: { meta: Meta; live: LiveStatus }) => {
 					title={LIVE_TEXT[live]}
 					aria-label={LIVE_TEXT[live]}
 					className={cn(
-						"h-2.5 w-2.5 rounded-full",
+						"size-2 rounded-full",
 						live === "open"
 							? "bg-emerald-500"
 							: live === "connecting"
@@ -125,7 +152,7 @@ export const Header = ({ meta, live }: { meta: Meta; live: LiveStatus }) => {
 				/>
 			</div>
 			{meta.readOnly && (
-				<p className="w-full text-xs text-amber-600">
+				<p className="w-full text-xs text-amber-700">
 					状态文件版本高于当前 easy-mok, 已以只读方式运行, 改动不会保存.
 				</p>
 			)}

@@ -3,7 +3,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const TMP_ROOT = path.join(__dirname, "../.tmp");
+const TMP_ROOT = path.join(__dirname, "..", process.env.EASY_MOK_TEST_TMP || ".tmp");
 
 module.exports = () => {
 	fs.rmSync(TMP_ROOT, { recursive: true, force: true });

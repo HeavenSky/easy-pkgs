@@ -61,8 +61,17 @@ export const normalizeEnvelope = (raw: unknown): Envelope => {
 		if (problem) {
 			throw new MockError("BAD_REQUEST", 400, problem, { field: "ref" });
 		}
-		if (out.script !== undefined || out.bodyFile !== undefined || (raw.body !== undefined && raw.body !== null)) {
-			throw new MockError("BAD_REQUEST", 400, "ref 不能与 body, bodyFile 或 script 同时出现", { field: "ref" });
+		if (
+			out.script !== undefined ||
+			out.bodyFile !== undefined ||
+			(raw.body !== undefined && raw.body !== null)
+		) {
+			throw new MockError(
+				"BAD_REQUEST",
+				400,
+				"ref 不能与 body, bodyFile 或 script 同时出现",
+				{ field: "ref" }
+			);
 		}
 		out.body = null;
 		out.ref = raw.ref as string;
@@ -136,7 +145,11 @@ export const createFileStore = (folder: string) => {
 	const ownedDirOf = (key: string) => sceneFileOf(key).replace(/\.json$/, "");
 
 	/** 删除不再被引用的归属文件, 目录空了一并删除 */
-	const dropOwnedFiles = (key: string, before: Record<string, Envelope>, after: Record<string, Envelope>) => {
+	const dropOwnedFiles = (
+		key: string,
+		before: Record<string, Envelope>,
+		after: Record<string, Envelope>
+	) => {
 		const dir = ownedDirOf(key);
 		const kept = new Set(
 			Object.values(after)

@@ -3,7 +3,7 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import YAML from "yaml";
-import { MockError, isPlainObject, writeJsonAtomic } from "../util";
+import { MockError, isPlainObject, localIso, writeJsonAtomic } from "../util";
 import { extOfType } from "../mime";
 import type { EnvStore } from "./env";
 import { DEBUG_NAME_RE, META_FILE, SNAPSHOTS_DIR, nameKey } from "./names";
@@ -71,26 +71,38 @@ const exampleOf = (p: Record<string, any>, resolve: (n: any) => any) => {
 	return undefined;
 };
 
-const asText = (v: unknown) => (v === undefined || v === null ? "" : typeof v === "string" ? v : JSON.stringify(v));
+const asText = (v: unknown) =>
+	v === undefined || v === null ? "" : typeof v === "string" ? v : JSON.stringify(v);
 
 export const importOpenApi = (
 	deps: { store: DebugStore; envs: EnvStore },
 	input: { text?: unknown; parent?: unknown; env?: unknown; snapshots?: unknown }
 ) => {
-	if (typeof input.text !== "string" || !input.text.trim()) throw new MockError("BAD_REQUEST", 400, "请粘贴或选择 OpenAPI 文档", { field: "text" });
+	if (typeof input.text !== "string" || !input.text.trim())
+		throw new MockError("BAD_REQUEST", 400, "请粘贴或选择 OpenAPI 文档", { field: "text" });
 	let doc: Record<string, any>;
 	try {
 		doc = YAML.parse(input.text);
 	} catch (err) {
-		throw new MockError("BAD_REQUEST", 400, `文档无法解析: ${(err as Error).message}`, { field: "text" });
+		throw new MockError("BAD_REQUEST", 400, `文档无法解析: ${(err as Error).message}`, {
+			field: "text",
+		});
 	}
 	if (!isPlainObject(doc) || typeof doc.openapi !== "string" || !/^3\.[01]\./.test(doc.openapi)) {
-		throw new MockError("BAD_REQUEST", 400, "只支持 OpenAPI 3.0.x 与 3.1.x(Swagger 2.0 请先转换)", { field: "text" });
+		throw new MockError(
+			"BAD_REQUEST",
+			400,
+			"只支持 OpenAPI 3.0.x 与 3.1.x(Swagger 2.0 请先转换)",
+			{ field: "text" }
+		);
 	}
 	const resolve = resolverOf(doc);
 	const warnings: string[] = [];
 	const { store, envs } = deps;
-	const parent = input.parent === null || input.parent === undefined || input.parent === "" ? null : String(input.parent);
+	const parent =
+		input.parent === null || input.parent === undefined || input.parent === ""
+			? null
+			: String(input.parent);
 	const parentSegs = parent ? store.nodeDir(parent, "group").segments : [];
 	const groupIds = new Map<string, string | null>();
 	const groupFor = (tag: string | undefined) => {
@@ -100,7 +112,13 @@ export const importOpenApi = (
 		const name = sanitizeName(tag, "tag");
 		const existing = store.siblingOf(dir, name);
 		const id = [...parentSegs, existing || name].join("/");
-		if (!existing) store.createNode({ parent, kind: "group", name, title: name === tag ? undefined : tag });
+		if (!existing)
+			store.createNode({
+				parent,
+				kind: "group",
+				name,
+				title: name === tag ? undefined : tag,
+			});
 		else if (store.isRequestDir(store.dirOf([...parentSegs, existing]))) {
 			warnings.push(`tag ${tag} 与已有请求同名, 该 tag 下的操作放在导入目标分组的根下`);
 			groupIds.set(tag, parent);
@@ -118,19 +136,36 @@ export const importOpenApi = (
 		METHODS.forEach(m => {
 			const op = resolve(pathItem[m]);
 			if (!isPlainObject(op)) return;
-			const groupId = groupFor(Array.isArray(op.tags) && typeof op.tags[0] === "string" ? op.tags[0] : undefined);
+			const groupId = groupFor(
+				Array.isArray(op.tags) && typeof op.tags[0] === "string" ? op.tags[0] : undefined
+			);
 			const groupSegs = groupId ? groupId.split("/") : [];
-			const name = uniqueName(store.dirOf(groupSegs), sanitizeName(String(op.operationId || `${m}-${rawPath}`), `${m}-op`));
+			const name = uniqueName(
+				store.dirOf(groupSegs),
+				sanitizeName(String(op.operationId || `${m}-${rawPath}`), `${m}-op`)
+			);
 			const def = defaultDefinition();
 			def.method = m.toUpperCase();
-			const paramName = (n: string) => n.replace(/[^A-Za-z0-9_]/g, "_").replace(/^(\d)/, "_$1");
+			const paramName = (n: string) =>
+				n.replace(/[^A-Za-z0-9_]/g, "_").replace(/^(\d)/, "_$1");
 			def.url = `{{baseUrl}}${rawPath.replace(/\{([^}]+)\}/g, (_: string, n: string) => `:${paramName(n)}`)}`;
-			const params = [...shared, ...(Array.isArray(op.parameters) ? op.parameters : [])].map(p => resolve(p)).filter(isPlainObject);
+			const params = [...shared, ...(Array.isArray(op.parameters) ? op.parameters : [])]
+				.map(p => resolve(p))
+				.filter(isPlainObject);
 			params.forEach(p => {
 				const value = asText(exampleOf(p, resolve));
 				if (p.in === "path") def.params.path[paramName(String(p.name))] = value;
-				if (p.in === "query") def.params.query.push([String(p.name), value, p.required === true || value !== ""]);
-				if (p.in === "header" && !/^(authorization|content-type|accept)$/i.test(String(p.name))) def.headers.push([String(p.name).toLowerCase(), value, true]);
+				if (p.in === "query")
+					def.params.query.push([
+						String(p.name),
+						value,
+						p.required === true || value !== "",
+					]);
+				if (
+					p.in === "header" &&
+					!/^(authorization|content-type|accept)$/i.test(String(p.name))
+				)
+					def.headers.push([String(p.name).toLowerCase(), value, true]);
 			});
 			const body = resolve(op.requestBody);
 			if (isPlainObject(body) && isPlainObject(body.content)) {
@@ -140,14 +175,25 @@ export const importOpenApi = (
 					def.body = { type: "json", content: ex === undefined ? {} : ex };
 				} else warnings.push(`${m.toUpperCase()} ${rawPath}: 只导入 JSON 请求体示例`);
 			}
-			const node = store.createNode({ parent: groupId, kind: "request", name, title: op.summary && op.summary !== name ? String(op.summary).slice(0, 200) : undefined });
+			const node = store.createNode({
+				parent: groupId,
+				kind: "request",
+				name,
+				title:
+					op.summary && op.summary !== name
+						? String(op.summary).slice(0, 200)
+						: undefined,
+			});
 			store.putRequest(node.id, def);
 			created++;
 			if (snapshotsOn) importExamples(store, node.id, def, op, resolve, warnings);
 		});
 	});
 	if (typeof input.env === "string" && input.env) {
-		const server = Array.isArray(doc.servers) && isPlainObject(doc.servers[0]) ? String(doc.servers[0].url || "") : "";
+		const server =
+			Array.isArray(doc.servers) && isPlainObject(doc.servers[0])
+				? String(doc.servers[0].url || "")
+				: "";
 		if (server) {
 			let current: Record<string, string> = {};
 			try {
@@ -174,7 +220,12 @@ const importExamples = (
 	Object.entries(isPlainObject(op.responses) ? op.responses : {}).forEach(([code, raw]) => {
 		const status = Number(code);
 		const response = resolve(raw);
-		if (!Number.isInteger(status) || !isPlainObject(response) || !isPlainObject(response.content)) return;
+		if (
+			!Number.isInteger(status) ||
+			!isPlainObject(response) ||
+			!isPlainObject(response.content)
+		)
+			return;
 		Object.entries(response.content).forEach(([ct, media]) => {
 			const m = resolve(media);
 			if (!isPlainObject(m)) return;
@@ -184,7 +235,10 @@ const importExamples = (
 				Object.entries(m.examples).forEach(([exName, ex]) => {
 					const e = resolve(ex);
 					// 本工具导出的示例名就是快照名(已带状态码前缀), 再导入时不重复加前缀
-					const named = exName === String(status) || exName.startsWith(`${status}-`) ? exName : `${status}-${exName}`;
+					const named =
+						exName === String(status) || exName.startsWith(`${status}-`)
+							? exName
+							: `${status}-${exName}`;
 					if (isPlainObject(e) && e.value !== undefined) examples.push([named, e.value]);
 				});
 			}
@@ -192,7 +246,10 @@ const importExamples = (
 				const name = uniqueName(resDir, sanitizeName(rawName, String(status)));
 				const dir = path.join(resDir, name);
 				const ext = extOfType(ct);
-				const text = typeof value === "string" && ext !== "json" ? value : JSON.stringify(value, null, 2);
+				const text =
+					typeof value === "string" && ext !== "json"
+						? value
+						: JSON.stringify(value, null, 2);
 				fs.mkdirSync(dir, { recursive: true });
 				fs.writeFileSync(path.join(dir, `raw.${ext}`), text);
 				writeJsonAtomic(path.join(dir, META_FILE), {
@@ -201,10 +258,15 @@ const importExamples = (
 					vars: {},
 					replay: { setCookie: false },
 					origin: { kind: "import" },
-					capturedAt: new Date().toISOString(),
+					capturedAt: localIso(new Date()),
 					reqHash: null,
 					timing: { durationMs: 0, ttfbMs: null },
-					request: { method: def.method, url: def.url, headers: [], body: { type: "none" } },
+					request: {
+						method: def.method,
+						url: def.url,
+						headers: [],
+						body: { type: "none" },
+					},
 					template: { env: null, request: def, values: {} },
 					response: {
 						status,
@@ -227,7 +289,8 @@ const importExamples = (
 					note: "",
 				});
 			});
-			if (!examples.length && m.schema) warnings.push(`${def.method} ${def.url} 的 ${status} 响应没有 example, 未生成快照`);
+			if (!examples.length && m.schema)
+				warnings.push(`${def.method} ${def.url} 的 ${status} 响应没有 example, 未生成快照`);
 		});
 	});
 };
@@ -274,20 +337,44 @@ export const exportOpenApi = (store: DebugStore, input: { node?: unknown; format
 		}
 		const parameters: Array<Record<string, any>> = [];
 		Object.entries(def.params?.path || {}).forEach(([name, v]) =>
-			parameters.push({ name, in: "path", required: true, schema: { type: "string" }, ...(v ? { example: v } : {}) })
+			parameters.push({
+				name,
+				in: "path",
+				required: true,
+				schema: { type: "string" },
+				...(v ? { example: v } : {}),
+			})
 		);
 		(def.params?.query || []).forEach((r: [string, string, boolean]) =>
-			parameters.push({ name: r[0], in: "query", required: false, schema: { type: "string" }, ...(r[1] ? { example: r[1] } : {}) })
+			parameters.push({
+				name: r[0],
+				in: "query",
+				required: false,
+				schema: { type: "string" },
+				...(r[1] ? { example: r[1] } : {}),
+			})
 		);
-		(def.headers || []).filter((r: [string, string, boolean]) => !/^(authorization|content-type|cookie)$/i.test(r[0])).forEach((r: [string, string]) =>
-			parameters.push({ name: r[0], in: "header", required: false, schema: { type: "string" }, ...(r[1] ? { example: r[1] } : {}) })
-		);
+		(def.headers || [])
+			.filter(
+				(r: [string, string, boolean]) =>
+					!/^(authorization|content-type|cookie)$/i.test(r[0])
+			)
+			.forEach((r: [string, string]) =>
+				parameters.push({
+					name: r[0],
+					in: "header",
+					required: false,
+					schema: { type: "string" },
+					...(r[1] ? { example: r[1] } : {}),
+				})
+			);
 		const op: Record<string, any> = { operationId: node.name };
 		if (meta.name) op.summary = meta.name;
 		const tag = tagOf(node.id);
 		if (tag) op.tags = [tag];
 		if (parameters.length) op.parameters = parameters;
-		if (def.body?.type === "json") op.requestBody = { content: { "application/json": { example: def.body.content } } };
+		if (def.body?.type === "json")
+			op.requestBody = { content: { "application/json": { example: def.body.content } } };
 		const responses: Record<string, any> = {};
 		(node.snapshots || []).forEach(s => {
 			const dir = path.join(store.nodeDir(node.id, "request").dir, SNAPSHOTS_DIR, s.name);
@@ -311,11 +398,16 @@ export const exportOpenApi = (store: DebugStore, input: { node?: unknown; format
 				warnings.push(`${node.id}#${s.name} 是二进制响应, 未导出`);
 				return;
 			}
-			const r = (responses[String(res.status)] ||= { description: res.statusText || String(res.status), content: {} });
+			const r = (responses[String(res.status)] ||= {
+				description: res.statusText || String(res.status),
+				content: {},
+			});
 			const media = (r.content[ct] ||= { examples: {} });
 			media.examples[s.name] = { summary: s.title, value: example };
 		});
-		op.responses = Object.keys(responses).length ? responses : { default: { description: "没有快照" } };
+		op.responses = Object.keys(responses).length
+			? responses
+			: { default: { description: "没有快照" } };
 		paths[p][method] = op;
 	});
 	const doc = {
@@ -326,5 +418,9 @@ export const exportOpenApi = (store: DebugStore, input: { node?: unknown; format
 	};
 	const format = input.format === "json" ? "json" : "yaml";
 	const text = format === "json" ? `${JSON.stringify(doc, null, 2)}\n` : YAML.stringify(doc);
-	return { text, filename: `${root ? root.name : "requests"}.openapi.${format === "json" ? "json" : "yaml"}`, warnings };
+	return {
+		text,
+		filename: `${root ? root.name : "requests"}.openapi.${format === "json" ? "json" : "yaml"}`,
+		warnings,
+	};
 };

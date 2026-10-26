@@ -11,6 +11,7 @@ const { loadSrc } = require("../helpers/src");
 const PKG = path.join(__dirname, "../..");
 const { createMock, mockVitePlugin } = loadSrc();
 const { createJournal } = loadSrc("journal.ts");
+const { isTrustedOrigin } = loadSrc("security.ts");
 
 /** @param {number} port @param {string} urlPath @param {Record<string, string>} headers */
 const rawGet = (port, urlPath, headers = {}) =>
@@ -26,14 +27,15 @@ const rawGet = (port, urlPath, headers = {}) =>
 		}).on("error", reject);
 	});
 
-/** 起一个原生 http 宿主, 未命中时回落 404 */
-const startRaw = async app => {
-	const server = http.createServer((req, res) =>
-		app(req, res, () => {
-			res.statusCode = 404;
-			res.end("fallback");
-		})
-	);
+/** 起一个原生 http 宿主, 未命中时交给 fallback(默认回落 404) */
+const startRaw = async (
+	app,
+	fallback = (req, res) => {
+		res.statusCode = 404;
+		res.end("fallback");
+	}
+) => {
+	const server = http.createServer((req, res) => app(req, res, () => fallback(req, res)));
 	const port = await listen(server);
 	return {
 		port,
@@ -177,12 +179,11 @@ describe("响应与诊断", () => {
 	});
 
 	it("顶层 await 的诊断带提示", () => {
-		const d = app.mock.registry.diagnostics.find(x => (x.file || "").endsWith("tla.mjs"));
-		expect(d.message).toMatch(/不支持顶层 await/);
-		const d2 = app.mock.registry.diagnostics.find(x => (x.file || "").endsWith("tla2.mjs"));
-		expect(d2.message).toMatch(/若为顶层 await 则不支持/); // jiti 报 Unexpected number, 信息不含 await
-		const d3 = app.mock.registry.diagnostics.find(x => (x.file || "").endsWith("syntax.mjs"));
-		expect(d3.message).not.toMatch(/await/);
+		const messageOf = name =>
+			app.mock.registry.diagnostics.find(x => (x.file || "").endsWith(name)).message;
+		expect(messageOf("tla.mjs")).toMatch(/不支持顶层 await/);
+		expect(messageOf("tla2.mjs")).toMatch(/若为顶层 await 则不支持/); // jiti 报 Unexpected number, 信息不含 await
+		expect(messageOf("syntax.mjs")).not.toMatch(/await/);
 	});
 
 	it("代理创建失败只告警一次, 后续直接 500, 路由表重建后重试", async () => {
@@ -205,21 +206,18 @@ describe("非 express 宿主", () => {
 		const dir = makeFixture({ "m/a.js": "module.exports = { 'GET /a': 1 };" });
 		const app = createMock({ cwd: dir, folder: "m", stateFile: "s.json", watch: false });
 		let seen = null;
-		const server = http.createServer((req, res) =>
-			app(req, res, () => {
-				seen = {
-					req: Object.getPrototypeOf(req) === http.IncomingMessage.prototype,
-					res: Object.getPrototypeOf(res) === http.ServerResponse.prototype,
-					extra: ["res" in req, res.req === req, "locals" in res], // Node 自身就有 res.req
-				};
-				res.end("fallback");
-			})
-		);
-		const port = await listen(server);
-		expect(await (await fetch(`http://127.0.0.1:${port}/miss`)).text()).toBe("fallback");
+		const host = await startRaw(app, (req, res) => {
+			seen = {
+				req: Object.getPrototypeOf(req) === http.IncomingMessage.prototype,
+				res: Object.getPrototypeOf(res) === http.ServerResponse.prototype,
+				extra: ["res" in req, res.req === req, "locals" in res], // Node 自身就有 res.req
+			};
+			res.end("fallback");
+		});
+		expect(await (await fetch(`${host.base}/miss`)).text()).toBe("fallback");
 		expect(seen).toEqual({ req: true, res: true, extra: [false, true, false] });
 		await app.close();
-		await new Promise(resolve => server.close(resolve));
+		await host.close();
 	});
 });
 
@@ -317,6 +315,7 @@ describe("mock 路由的 Host 校验", () => {
 			"http://localhost@evil.test",
 			"http://x.dev.example.com",
 			"file://",
+			"https://192.168.1.2", // 私有网段来源只在 lan 开启时放行
 		]) {
 			expect([bad, await acao(bad)]).toEqual([bad, null]);
 		}
@@ -329,58 +328,50 @@ describe("mock 路由的 Host 校验", () => {
 		]) {
 			expect([ok, await acao(ok)]).toEqual([ok, ok]);
 		}
-		expect(await acao("https://192.168.1.2")).toBeNull(); // 私有网段来源只在 lan 开启时放行
 		const patch = headers =>
 			ctx.api("/state", {
 				method: "PATCH",
 				body: "{}",
 				headers: { "content-type": "application/json", ...headers },
 			});
-		expect((await patch({ "content-type": "application/json-patch+json" })).status).toBe(400);
-		expect((await patch({ "content-type": "application/json; charset=utf-8" })).status).toBe(
-			200
-		);
-		expect((await patch({ "x-mock-ui": "true" })).status).toBe(403);
-		expect((await patch({ origin: "null" })).status).toBe(403);
+		for (const [headers, status] of [
+			[{ "content-type": "application/json-patch+json" }, 400],
+			[{ "content-type": "application/json; charset=utf-8" }, 200],
+			[{ "x-mock-ui": "true" }, 403],
+			[{ origin: "null" }, 403],
+		]) {
+			expect([headers, (await patch(headers)).status]).toEqual([headers, status]);
+		}
 	});
 
 	it("私有网段来源只在 lan 开启时放行, 同一 IP 的其他端口始终放行", () => {
-		const { isTrustedOrigin } = loadSrc("security.ts");
-		const none = new Set();
-		expect(isTrustedOrigin("http://192.168.1.9:5173", "192.168.1.5:3000", none)).toBe(false);
-		expect(isTrustedOrigin("http://192.168.1.9:5173", "192.168.1.5:3000", none, true)).toBe(
-			true
-		);
-		expect(isTrustedOrigin("http://10.0.0.2", "localhost:3000", none, true)).toBe(true);
-		expect(isTrustedOrigin("http://192.168.1.5:5173", "192.168.1.5:3000", none)).toBe(true);
-		expect(isTrustedOrigin("http://[fd00::5]:5173", "[fd00::5]:3000", none)).toBe(true);
-		expect(isTrustedOrigin("http://8.8.8.8", "8.8.8.8:3000", none)).toBe(true); // 同机不同端口, 与公网与否无关
-		expect(isTrustedOrigin("http://evil.test:5173", "evil.test:3000", none)).toBe(false); // 域名仍要求 Host 完全一致
-		expect(isTrustedOrigin("http://8.8.8.8", "localhost:3000", none, true)).toBe(false);
-		// URL 把 IPv4 映射地址规范成十六进制([::ffff:7f00:1]), 按对应的 IPv4 判断
-		expect(isTrustedOrigin("http://[::ffff:127.0.0.1]", "localhost:3000", none)).toBe(true);
-		expect(isTrustedOrigin("http://[::ffff:192.168.1.9]", "localhost:3000", none)).toBe(false);
-		expect(isTrustedOrigin("http://[::ffff:192.168.1.9]", "localhost:3000", none, true)).toBe(
-			true
-		);
-		expect(isTrustedOrigin("http://[::ffff:8.8.8.8]", "localhost:3000", none, true)).toBe(
-			false
-		);
+		// [来源, Host, lan, 结果]; URL 把 IPv4 映射地址规范成十六进制([::ffff:7f00:1]), 按对应的 IPv4 判断
+		for (const [origin, host, lan, expected] of [
+			["http://192.168.1.9:5173", "192.168.1.5:3000", undefined, false],
+			["http://192.168.1.9:5173", "192.168.1.5:3000", true, true],
+			["http://10.0.0.2", "localhost:3000", true, true],
+			["http://192.168.1.5:5173", "192.168.1.5:3000", undefined, true],
+			["http://[fd00::5]:5173", "[fd00::5]:3000", undefined, true],
+			["http://8.8.8.8", "8.8.8.8:3000", undefined, true], // 同机不同端口, 与公网与否无关
+			["http://evil.test:5173", "evil.test:3000", undefined, false], // 域名仍要求 Host 完全一致
+			["http://8.8.8.8", "localhost:3000", true, false],
+			["http://[::ffff:127.0.0.1]", "localhost:3000", undefined, true],
+			["http://[::ffff:192.168.1.9]", "localhost:3000", undefined, false],
+			["http://[::ffff:192.168.1.9]", "localhost:3000", true, true],
+			["http://[::ffff:8.8.8.8]", "localhost:3000", true, false],
+		]) {
+			const args = [origin, host, lan];
+			expect([args, isTrustedOrigin(origin, host, new Set(), lan)]).toEqual([args, expected]);
+		}
 	});
 
 	it("hosts 含 * 时不校验", async () => {
-		const dir = makeFixture({ "m/a.js": "module.exports = { 'GET /a': 1 };" });
-		const app = createMock({
-			cwd: dir,
-			folder: "m",
-			stateFile: "s.json",
-			watch: false,
-			hosts: ["*"],
+		const other = await startHost({
+			files: { "m/a.js": "module.exports = { 'GET /a': 1 };" },
+			options: { folder: "m", hosts: ["*"] },
 		});
-		const host = await startRaw(app);
-		expect((await rawGet(host.port, "/a", { host: "anything.test" })).status).toBe(200);
-		await app.close();
-		await host.close();
+		expect((await rawGet(other.port, "/a", { host: "anything.test" })).status).toBe(200);
+		await other.close();
 	});
 });
 

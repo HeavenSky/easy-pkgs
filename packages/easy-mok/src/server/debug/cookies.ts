@@ -27,10 +27,15 @@ const domainMatch = (host: string, c: JarCookie) =>
 
 const pathMatch = (reqPath: string, cookiePath: string) =>
 	reqPath === cookiePath ||
-	(reqPath.startsWith(cookiePath) && (cookiePath.endsWith("/") || reqPath[cookiePath.length] === "/"));
+	(reqPath.startsWith(cookiePath) &&
+		(cookiePath.endsWith("/") || reqPath[cookiePath.length] === "/"));
 
 /** 解析一条 set-cookie; 无效或 Domain 不属于当前主机时为 null */
-export const parseSetCookie = (header: string, url: URL, now = Date.now()): JarCookie | { delete: true; name: string; domain: string; path: string } | null => {
+export const parseSetCookie = (
+	header: string,
+	url: URL,
+	now = Date.now()
+): JarCookie | { delete: true; name: string; domain: string; path: string } | null => {
 	const [pair, ...attrs] = header.split(";");
 	const eq = pair.indexOf("=");
 	if (eq <= 0) return null;
@@ -73,22 +78,34 @@ export const parseSetCookie = (header: string, url: URL, now = Date.now()): JarC
 export const createCookieJar = (file: string) => {
 	const read = (now = Date.now()): JarCookie[] => {
 		const { value } = readJson(file);
-		const list = isPlainObject(value) && Array.isArray(value.cookies) ? (value.cookies as JarCookie[]) : [];
-		return list.filter(c => c && typeof c.name === "string" && (c.expires === null || c.expires > now));
+		const list =
+			isPlainObject(value) && Array.isArray(value.cookies)
+				? (value.cookies as JarCookie[])
+				: [];
+		return list.filter(
+			c => c && typeof c.name === "string" && (c.expires === null || c.expires > now)
+		);
 	};
 	const write = (cookies: JarCookie[]) => {
 		if (!cookies.length && !fs.existsSync(file)) return;
 		writeJsonAtomic(file, { version: 1, cookies });
 	};
-	const same = (a: { name: string; domain: string; path: string }, b: { name: string; domain: string; path: string }) =>
-		a.name === b.name && a.domain === b.domain && a.path === b.path;
+	const same = (
+		a: { name: string; domain: string; path: string },
+		b: { name: string; domain: string; path: string }
+	) => a.name === b.name && a.domain === b.domain && a.path === b.path;
 
 	/** 该 URL 应携带的 cookie 头; 路径长的在前 */
 	const header = (url: URL) => {
 		const host = url.hostname.toLowerCase();
 		const secure = url.protocol === "https:";
 		const hits = read()
-			.filter(c => domainMatch(host, c) && pathMatch(url.pathname || "/", c.path) && (!c.secure || secure))
+			.filter(
+				c =>
+					domainMatch(host, c) &&
+					pathMatch(url.pathname || "/", c.path) &&
+					(!c.secure || secure)
+			)
 			.sort((a, b) => b.path.length - a.path.length);
 		return hits.length ? hits.map(c => `${c.name}=${c.value}`).join("; ") : null;
 	};
@@ -112,7 +129,16 @@ export const createCookieJar = (file: string) => {
 			write([]);
 			return;
 		}
-		write(read().filter(c => !(c.name === filter.name && (filter.domain === undefined || c.domain === filter.domain) && (filter.path === undefined || c.path === filter.path))));
+		write(
+			read().filter(
+				c =>
+					!(
+						c.name === filter.name &&
+						(filter.domain === undefined || c.domain === filter.domain) &&
+						(filter.path === undefined || c.path === filter.path)
+					)
+			)
+		);
 	};
 
 	return { header, store, list, clear };

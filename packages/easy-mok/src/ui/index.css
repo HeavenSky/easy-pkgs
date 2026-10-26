@@ -1,9 +1,21 @@
 @import "tailwindcss";
 
+/* 紧凑模式的字号分级: 比 Tailwind 默认小一档, 页面只用这五级; 规范见 DESIGN.md */
 @theme {
 	--font-sans:
 		ui-sans-serif, system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
 	--font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+	--text-2xs: 11px;
+	--text-2xs--line-height: 1.45; /* 16/11 */
+	--text-xs: 12px;
+	--text-xs--line-height: 1.33; /* 16/12 */
+	--text-sm: 13px;
+	--text-sm--line-height: 1.54; /* 20/13 */
+	--text-base: 14px;
+	--text-base--line-height: 1.43; /* 20/14 */
+	--text-lg: 16px;
+	--text-lg--line-height: 1.5; /* 24/16 */
 }
 
 @layer base {
@@ -13,10 +25,17 @@
 		height: 100%;
 	}
 	body {
-		@apply bg-zinc-50 text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100;
+		@apply bg-zinc-50 text-sm text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100;
 	}
 	:focus-visible {
-		@apply outline-2 outline-offset-2 outline-sky-500;
+		@apply outline-2 outline-offset-1 outline-zinc-900 dark:outline-zinc-100;
+	}
+	input[type="checkbox"],
+	input[type="radio"] {
+		@apply size-3.5 accent-zinc-900 dark:accent-zinc-100;
+	}
+	code {
+		@apply font-mono;
 	}
 }
 
@@ -25,6 +44,6 @@
 	appearance: none;
 	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 	background-repeat: no-repeat;
-	background-position: right 0.5rem center;
-	background-size: 1rem;
+	background-position: right 0.375rem center;
+	background-size: 0.875rem;
 }

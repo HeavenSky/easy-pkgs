@@ -7,6 +7,9 @@ import { META_FILE } from "./names";
 import { readJson } from "./store";
 import { ensureIgnoredDir } from "./redact";
 
+/** 历史总量缓存的有效期 */
+const TOTAL_TTL_MS = 30_000;
+
 export const DAY_SPLIT_BYTES = 50 * 1024 * 1024;
 export const WARN_BYTES = 1024 * 1024 * 1024;
 const INDEX = "index.ndjson";
@@ -74,6 +77,7 @@ const dirSize = (dir: string) => {
 export const createHistoryStore = (debugRoot: string) => {
 	const root = path.join(debugRoot, "history");
 	let total: number | null = null;
+	let totalAt = 0;
 	if (fs.existsSync(root)) ensureIgnoredDir(root);
 
 	const listDir = (dir: string, re: RegExp) => {
@@ -99,11 +103,19 @@ export const createHistoryStore = (debugRoot: string) => {
 			.reverse()
 			.map(day => {
 				const lines = dayLines(day);
-				return { day, bytes: lines.reduce((s, l) => s + (l.size || 0), 0), count: lines.length };
+				return {
+					day,
+					bytes: lines.reduce((s, l) => s + (l.size || 0), 0),
+					count: lines.length,
+				};
 			});
 
+	// 总量按索引累加并缓存; 超过有效期重新统计, 手动删除历史目录后不必重启也会更新
 	const totalBytes = () => {
-		if (total === null) total = days().reduce((s, d) => s + d.bytes, 0);
+		if (total === null || Date.now() - totalAt > TOTAL_TTL_MS) {
+			total = days().reduce((s, d) => s + d.bytes, 0);
+			totalAt = Date.now();
+		}
 		return total;
 	};
 
@@ -121,7 +133,10 @@ export const createHistoryStore = (debugRoot: string) => {
 	};
 
 	/** 条目目录写完后追加索引行 */
-	const commit = (slot: { id: string; dir: string; indexFile: string }, line: Omit<IndexLine, "id" | "size">) => {
+	const commit = (
+		slot: { id: string; dir: string; indexFile: string },
+		line: Omit<IndexLine, "id" | "size">
+	) => {
 		const size = dirSize(slot.dir);
 		const full: IndexLine = { ...line, id: slot.id, size };
 		const before = totalBytes(); // 先取总量再追加, 否则首次统计会把这一条算两遍
@@ -133,7 +148,8 @@ export const createHistoryStore = (debugRoot: string) => {
 	const dirOf = (id: string) => {
 		if (!ID_RE.test(id)) throw new MockError("BAD_REQUEST", 400, `历史标识无效: ${id}`);
 		const dir = path.join(root, ...id.split("/"));
-		if (!fs.existsSync(dir)) throw new MockError("NOT_FOUND", 404, `历史条目不存在或已删除: ${id}`);
+		if (!fs.existsSync(dir))
+			throw new MockError("NOT_FOUND", 404, `历史条目不存在或已删除: ${id}`);
 		return dir;
 	};
 
@@ -157,8 +173,17 @@ export const createHistoryStore = (debugRoot: string) => {
 					if (line.id === opt.cursor) passed = true;
 					continue;
 				}
-				if (opt.request !== undefined && opt.request !== null && line.request !== opt.request) continue;
-				if (!ENTRY_RE.test(line.id.split("/").pop() || "") || !fs.existsSync(path.join(root, ...line.id.split("/")))) continue;
+				if (
+					opt.request !== undefined &&
+					opt.request !== null &&
+					line.request !== opt.request
+				)
+					continue;
+				if (
+					!ENTRY_RE.test(line.id.split("/").pop() || "") ||
+					!fs.existsSync(path.join(root, ...line.id.split("/")))
+				)
+					continue;
 				if (items.length === limit) {
 					more = true;
 					break;

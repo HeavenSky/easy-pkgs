@@ -4,7 +4,9 @@ import { errorMessage } from "@/api/client";
 import type { Diagnostic } from "@/api/contract";
 import { useCleanup, useMeta, usePatchState } from "@/api/queries";
 import { Button } from "@/components/ui/button";
-import { Select } from "@/components/ui/input";
+import { Label, Select } from "@/components/ui/input";
+import { KvList } from "@/components/ui/kv";
+import { Panel } from "@/components/ui/panel";
 import { EmptyState, ErrorState, Spinner } from "@/components/ui/state";
 import { vscodeLink } from "@/lib/utils";
 
@@ -38,68 +40,70 @@ export const DiagnosticsPage = () => {
 	const fixable = m.diagnostics.some(d => FIXABLE.has(d.type));
 
 	return (
-		<div className="mx-auto max-w-4xl space-y-6 overflow-auto p-5">
-			<section className="space-y-3">
-				<div className="flex items-center gap-2">
-					<h1 className="text-base font-semibold">诊断</h1>
-					{fixable && (
-						<Button
-							size="sm"
-							className="ml-auto"
-							disabled={cleanup.isPending}
-							onClick={() =>
-								cleanup.mutate(undefined, {
-									onSuccess: n => toast.success(`已清理 ${n} 项`),
-									onError: err => toast.error(errorMessage(err)),
-								})
-							}
-						>
-							<Wrench size={14} />
-							清理失效引用与孤儿场景文件
-						</Button>
-					)}
-				</div>
-				{!m.diagnostics.length && (
+		<div className="h-full space-y-4 overflow-auto p-4">
+			<div className="flex min-h-7 items-center gap-2">
+				<h1 className="text-lg font-medium">诊断</h1>
+				{fixable && (
+					<Button
+						className="ml-auto"
+						disabled={cleanup.isPending}
+						onClick={() =>
+							cleanup.mutate(undefined, {
+								onSuccess: n => toast.success(`已清理 ${n} 项`),
+								onError: err => toast.error(errorMessage(err)),
+							})
+						}
+					>
+						<Wrench size={14} />
+						清理失效引用与孤儿场景文件
+					</Button>
+				)}
+			</div>
+			{!m.diagnostics.length && (
+				<Panel>
 					<EmptyState title="一切正常">
 						mock 文件, 场景文件与运行状态都没有发现问题.
 					</EmptyState>
-				)}
-				{[...byType].map(([type, items]) => (
-					<div
-						key={type}
-						className="rounded-md border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900"
-					>
-						<h2 className="border-b border-zinc-200 px-3 py-2 text-sm font-medium dark:border-zinc-800">
+				</Panel>
+			)}
+			{[...byType].map(([type, items]) => (
+				<Panel
+					key={type}
+					flush
+					title={
+						<>
 							{TYPE_TEXT[type] || type}{" "}
-							<span className="text-zinc-500">({items.length})</span>
-						</h2>
-						<ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
-							{items.map((d, i) => {
-								const link = vscodeLink(d.file, d.line);
-								return (
-									<li key={i} className="space-y-0.5 px-3 py-2 text-sm">
-										<div>{d.message}</div>
-										{link && (
-											<a
-												href={link}
-												className="inline-flex items-center gap-1 font-mono text-xs text-sky-600 hover:underline"
-											>
-												{d.file}
-												{d.line ? `:${d.line}` : ""}
-												<ExternalLink size={12} />
-											</a>
-										)}
-									</li>
-								);
-							})}
-						</ul>
-					</div>
-				))}
-			</section>
-			<section className="space-y-2 text-sm">
-				<h2 className="font-semibold">设置与环境</h2>
-				<label className="flex items-center gap-2">
-					<span className="w-28 text-zinc-500">控制台日志</span>
+							<span className="text-2xs font-normal text-zinc-400">
+								{items.length}
+							</span>
+						</>
+					}
+				>
+					<ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
+						{items.map((d, i) => {
+							const link = vscodeLink(d.file, d.line);
+							return (
+								<li key={i} className="px-3 py-1.5">
+									<div className="break-words">{d.message}</div>
+									{link && (
+										<a
+											href={link}
+											className="inline-flex items-center gap-1 font-mono text-xs text-zinc-600 hover:text-zinc-900 hover:underline dark:text-zinc-400 dark:hover:text-zinc-100"
+										>
+											{d.file}
+											{d.line ? `:${d.line}` : ""}
+											<ExternalLink size={12} />
+										</a>
+									)}
+								</li>
+							);
+						})}
+					</ul>
+				</Panel>
+			))}
+			<Panel title="设置与环境">
+				<Label className="w-64">
+					控制台日志
 					<Select
 						value={m.logLevel}
 						disabled={patch.isPending}
@@ -117,27 +121,23 @@ export const DiagnosticsPage = () => {
 						<option value="hit">只输出命中的请求</option>
 						<option value="all">输出全部(含未命中与放行)</option>
 					</Select>
-				</label>
-				<dl className="grid grid-cols-[7rem_1fr] gap-y-1 text-xs">
-					<dt className="text-zinc-500">版本</dt>
-					<dd>
-						easy-mok {m.version} · Node {m.env.node} · {m.env.platform}
-					</dd>
-					<dt className="text-zinc-500">mock 目录</dt>
-					<dd className="font-mono break-all">{m.folder}</dd>
-					<dt className="text-zinc-500">状态文件</dt>
-					<dd className="font-mono break-all">
-						{m.stateFile}
-						{m.readOnly && "(只读)"}
-					</dd>
-					<dt className="text-zinc-500">路由 / 文件</dt>
-					<dd>
-						{m.counts.routes} / {m.counts.files}
-					</dd>
-					<dt className="text-zinc-500">页内悬浮条</dt>
-					<dd>{m.float ? "已启用(MOCK_FLOAT=0 可关闭)" : "未启用"}</dd>
-				</dl>
-			</section>
+				</Label>
+				<KvList
+					items={[
+						["版本", `easy-mok ${m.version} · Node ${m.env.node} · ${m.env.platform}`],
+						["mock 目录", <span className="font-mono text-xs">{m.folder}</span>],
+						[
+							"状态文件",
+							<>
+								<span className="font-mono text-xs">{m.stateFile}</span>
+								{m.readOnly && "(只读)"}
+							</>,
+						],
+						["路由 / 文件", `${m.counts.routes} / ${m.counts.files}`],
+						["页内悬浮条", m.float ? "已启用(MOCK_FLOAT=0 可关闭)" : "未启用"],
+					]}
+				/>
+			</Panel>
 		</div>
 	);
 };

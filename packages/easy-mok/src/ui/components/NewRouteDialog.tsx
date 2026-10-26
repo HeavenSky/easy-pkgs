@@ -9,7 +9,7 @@ import { JsonEditor, parseJson } from "./JsonEditor";
 import { samplePath } from "./TryRequest";
 import { Button } from "./ui/button";
 import { Dialog } from "./ui/dialog";
-import { FieldError, Input, Label } from "./ui/input";
+import { FieldError, Hint, Input, Label } from "./ui/input";
 
 const METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "ALL"] as const;
 
@@ -115,7 +115,7 @@ export const NewRouteDialog = ({ open, onClose, onCreated, defaults }: Props) =>
 			}
 		>
 			<form id="new-route" className="space-y-3" onSubmit={handleSubmit(onSubmit)}>
-				<fieldset>
+				<fieldset className="space-y-1">
 					<legend className="mb-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
 						请求方法
 					</legend>
@@ -125,9 +125,13 @@ export const NewRouteDialog = ({ open, onClose, onCreated, defaults }: Props) =>
 						render={({ field }) => (
 							<div className="flex flex-wrap gap-3">
 								{METHODS.map(m => (
-									<label key={m} className="flex items-center gap-1 text-sm">
+									<label
+										key={m}
+										className="flex cursor-pointer items-center gap-1 font-mono text-xs"
+									>
 										<input
 											type="checkbox"
+											className="accent-zinc-900 dark:accent-zinc-100"
 											checked={field.value.includes(m)}
 											onChange={e =>
 												field.onChange(
@@ -145,8 +149,8 @@ export const NewRouteDialog = ({ open, onClose, onCreated, defaults }: Props) =>
 					/>
 					<FieldError>{errors.methods?.message}</FieldError>
 				</fieldset>
-				<div className="grid grid-cols-[1fr_120px] gap-3">
-					<Label>
+				<div className="flex items-start gap-2">
+					<Label className="flex-1">
 						路径
 						<Input
 							className="font-mono"
@@ -161,18 +165,18 @@ export const NewRouteDialog = ({ open, onClose, onCreated, defaults }: Props) =>
 							</span>
 						)}
 					</Label>
-					<Label>
+					<Label className="w-24">
 						权重(可选)
 						<Input inputMode="numeric" {...register("weight")} placeholder="0" />
 						<FieldError>{errors.weight?.message}</FieldError>
 					</Label>
 				</div>
-				<Label className="w-32">
+				<Label className="w-20">
 					状态码
 					<Input inputMode="numeric" {...register("status")} />
 					<FieldError>{errors.status?.message}</FieldError>
 				</Label>
-				<div className="space-y-1">
+				<div className="flex flex-col gap-1">
 					<div className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
 						响应体(JSON)
 					</div>
@@ -190,9 +194,10 @@ export const NewRouteDialog = ({ open, onClose, onCreated, defaults }: Props) =>
 					/>
 					<FieldError>{errors.body?.message}</FieldError>
 				</div>
-				<p className="text-xs text-zinc-500">
-					路由写入 mock 目录下的 <code>__gui__.json</code>, 可提交到仓库共享.
-				</p>
+				<Hint>
+					路由写入 mock 目录下的 <code className="font-mono">__gui__.json</code>,
+					可提交到仓库共享.
+				</Hint>
 			</form>
 		</Dialog>
 	);

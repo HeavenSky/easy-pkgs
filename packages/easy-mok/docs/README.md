@@ -11,7 +11,8 @@ Find the page for what you want to do; each page covers one task. For what easy-
 | Write mock files, scenes, handler functions, and proxies                                                       | [Write mock files](writing-mocks.md)                              |
 | Pick the scene a request gets, write a scene as a script, set delays and status codes, or pass a route through | [Switch scenes and response behavior](scenes.md)                  |
 | See which requests were mocked and turn real responses into mocks                                              | [Inspect requests and save them as mocks](request-log.md)         |
-| Keep a collection of real API requests and fill them from environments                                         | [Debug real APIs from the admin page](debug.md) |
+| Keep a collection of real API requests and fill them from environments                                         | [Debug real APIs from the admin page](debug.md)                   |
+| Hand-write debug requests and snapshots, or resolve merge conflicts in them                                    | [Hand-edit the files behind the debug page](debug-storage.md)     |
 | Stop browser probes and dev server traffic from cluttering the log                                             | [Keep noise out of the request log](ignore-rules.md)              |
 | Decide which generated files to commit                                                                         | [Commit what the admin page writes](files.md)                     |
 | Look up an option or environment variable                                                                      | [Options and environment variables](options.md)                   |

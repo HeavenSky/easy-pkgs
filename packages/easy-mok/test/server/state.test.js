@@ -65,31 +65,26 @@ describe("场景解析优先级", () => {
 		routes: { r: { scene: "手选" } },
 		groups: { 全局: { r: "全局场景" }, 浏览器: { r: "浏览器场景" } },
 	});
+	const noRoute = sanitize({ ...state, routes: {} });
 	const has = n => ["default", "手选", "全局场景", "浏览器场景", "请求场景"].includes(n);
+	const scene = (name, level, fallback = false) => ({ name, level, fallback });
 
-	it("请求级 > 浏览器组 > 路由手选 > 全局组 > default", () => {
-		expect(
-			resolveScene({
-				routeId: "r",
-				has,
-				state,
-				request: { header: "请求场景", cookieGroup: "浏览器" },
-			})
-		).toEqual({ name: "请求场景", level: "request", fallback: false });
-		expect(
-			resolveScene({ routeId: "r", has, state, request: { cookieGroup: "浏览器" } }).level
-		).toBe("browser");
-		expect(resolveScene({ routeId: "r", has, state }).level).toBe("route");
-		const noRoute = sanitize({ ...state, routes: {} });
-		expect(resolveScene({ routeId: "r", has, state: noRoute }).level).toBe("group");
-		expect(resolveScene({ routeId: "x", has, state: noRoute }).level).toBe("default");
-	});
-
-	it("指定的场景不存在时降级并标记 fallback", () => {
-		expect(resolveScene({ routeId: "r", has, state, request: { query: "不存在" } })).toEqual({
-			name: "手选",
-			level: "route",
-			fallback: true,
-		});
+	it.each([
+		[
+			"请求级",
+			{ request: { header: "请求场景", cookieGroup: "浏览器" } },
+			scene("请求场景", "request"),
+		],
+		["浏览器组", { request: { cookieGroup: "浏览器" } }, scene("浏览器场景", "browser")],
+		["路由手选", {}, scene("手选", "route")],
+		["全局组", { state: noRoute }, scene("全局场景", "group")],
+		["default", { routeId: "x", state: noRoute }, scene("default", "default")],
+		[
+			"指定的场景不存在时降级并标记 fallback",
+			{ request: { query: "不存在" } },
+			scene("手选", "route", true),
+		],
+	])("请求级 > 浏览器组 > 路由手选 > 全局组 > default: %s", (_, opt, expected) => {
+		expect(resolveScene({ routeId: "r", has, state, ...opt })).toEqual(expected);
 	});
 });

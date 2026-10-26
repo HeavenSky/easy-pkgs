@@ -4,7 +4,15 @@ import { toast } from "sonner";
 import { Link, useLocation, useParams } from "wouter";
 import { ApiError, errorMessage } from "@/api/client";
 import { encodeId, type TreeNode } from "@/api/debug-contract";
-import { historyRawUrl, useDebugTree, useDeleteNode, useDiff, useEnvs, useHistoryEntry, useSend } from "@/api/debug-queries";
+import {
+	historyRawUrl,
+	useDebugTree,
+	useDeleteNode,
+	useDiff,
+	useEnvs,
+	useHistoryEntry,
+	useSend,
+} from "@/api/debug-queries";
 import { DiffView } from "@/components/debug/DiffView";
 import { HistoryList } from "@/components/debug/HistoryList";
 import { ExportDialog } from "@/components/debug/ExportDialog";
@@ -14,13 +22,19 @@ import { SnapshotPanel } from "@/components/debug/SnapshotPanel";
 import { ResponseViewer } from "@/components/debug/ResponseViewer";
 import { Button } from "@/components/ui/button";
 import { DebugTree } from "@/components/debug/DebugTree";
-import { ActiveEnvSelect, EnvPanel, PanelSection, PromptSecretDialog } from "@/components/debug/EnvPanel";
+import { NodeConfigPanel } from "@/components/debug/NodeConfigPanel";
+import {
+	ActiveEnvSelect,
+	EnvPanel,
+	PanelSection,
+	PromptSecretDialog,
+} from "@/components/debug/EnvPanel";
 import { RedactRulesPanel } from "@/components/debug/RedactRulesPanel";
 import { NodeDialog, type NodeDialogState } from "@/components/debug/NodeDialog";
 import { MOD_KEY, RequestEditor, definitionOf, type Draft } from "@/components/debug/RequestEditor";
 import { ConfirmDialog } from "@/components/ui/dialog";
-import { EmptyState, ErrorState, Spinner } from "@/components/ui/state";
-import { cn } from "@/lib/utils";
+import { Panel } from "@/components/ui/panel";
+import { EmptyState, ErrorState, Notice, Spinner } from "@/components/ui/state";
 
 const decodeId = (raw: string) => {
 	try {
@@ -32,24 +46,48 @@ const decodeId = (raw: string) => {
 };
 
 export const requestPath = (id: string) => `/debug/req/${encodeId(id)}`;
+export const groupPath = (id: string) => `/debug/group/${encodeId(id)}`;
+export const COLLECTION_PATH = "/debug/collection";
+
+const findNode = (nodes: TreeNode[], id: string): TreeNode | null => {
+	for (const n of nodes) {
+		if (n.id === id) return n;
+		const hit = findNode(n.children || [], id);
+		if (hit) return hit;
+	}
+	return null;
+};
 export const snapshotPath = (sid: string) => {
 	const i = sid.lastIndexOf("#");
 	return `${requestPath(sid.slice(0, i))}/snap/${encodeId(sid.slice(i + 1))}`;
 };
 
 /** 请求编辑器, 发送按钮, 本次结果或选中的快照, 以及该请求的历史 */
-const Workbench = ({ id, snapshot, tree }: { id: string; snapshot: string | null; tree: TreeNode[] }) => {
+const Workbench = ({
+	id,
+	snapshot,
+	tree,
+}: {
+	id: string;
+	snapshot: string | null;
+	tree: TreeNode[];
+}) => {
 	const [, navigate] = useLocation();
 	const send = useSend();
 	const envs = useEnvs();
 	const [viewing, setViewing] = useState<string | null>(null);
 	const [saving, setSaving] = useState<string | null>(null);
 	const [compare, setCompare] = useState<string[]>([]);
-	const diff = useDiff(compare.length === 2 ? `history:${compare[0]}` : null, compare.length === 2 ? `history:${compare[1]}` : null);
+	const diff = useDiff(
+		compare.length === 2 ? `history:${compare[0]}` : null,
+		compare.length === 2 ? `history:${compare[1]}` : null
+	);
 	const fromHistory = useHistoryEntry(viewing && viewing !== send.data?.id ? viewing : null);
 	const current = viewing && viewing !== send.data?.id ? fromHistory.data : send.data;
 	const fail = (err: unknown) => toast.error(errorMessage(err));
-	const [prompt, setPrompt] = useState<{ env: string; srcId: string; retry: () => void } | null>(null);
+	const [prompt, setPrompt] = useState<{ env: string; srcId: string; retry: () => void } | null>(
+		null
+	);
 	const sendWith = (input: Parameters<typeof send.mutate>[0]) =>
 		send.mutate(input, {
 			onSuccess: e => {
@@ -58,10 +96,25 @@ const Workbench = ({ id, snapshot, tree }: { id: string; snapshot: string | null
 			},
 			onError: err => {
 				// prompt 来源尚未输入: 输入后自动重发
-				const d = err instanceof ApiError ? (err.details as { prompt?: boolean; srcId?: string; env?: string } | undefined) : undefined;
-				if (err instanceof ApiError && err.code === "SECRET_UNAVAILABLE" && d?.prompt && d.srcId && d.env) {
+				const d =
+					err instanceof ApiError
+						? (err.details as
+								| { prompt?: boolean; srcId?: string; env?: string }
+								| undefined)
+						: undefined;
+				if (
+					err instanceof ApiError &&
+					err.code === "SECRET_UNAVAILABLE" &&
+					d?.prompt &&
+					d.srcId &&
+					d.env
+				) {
 					setPrompt({ env: d.env, srcId: d.srcId, retry: () => sendWith(input) });
-				} else if (err instanceof ApiError && err.code === "UNRESOLVED_VARS" && !envs.data?.active) {
+				} else if (
+					err instanceof ApiError &&
+					err.code === "UNRESOLVED_VARS" &&
+					!envs.data?.active
+				) {
 					toast.error(`${errorMessage(err)}; 还没有激活环境组, 在发送按钮左侧选择`);
 				} else fail(err);
 			},
@@ -74,7 +127,7 @@ const Workbench = ({ id, snapshot, tree }: { id: string; snapshot: string | null
 	};
 	const saveButton = (hid: string) => (
 		<Button size="sm" onClick={() => setSaving(hid)}>
-			<Camera size={14} />
+			<Camera size={12} />
 			另存为快照
 		</Button>
 	);
@@ -83,8 +136,13 @@ const Workbench = ({ id, snapshot, tree }: { id: string; snapshot: string | null
 			<RequestEditor id={id} onSend={sendDraft}>
 				{draft => (
 					<>
-						<ActiveEnvSelect label="发送使用的环境组" className="w-32" />
-						<Button variant="default" disabled={send.isPending} title={`发送 (${MOD_KEY}Enter)`} onClick={() => sendDraft(draft)}>
+						<ActiveEnvSelect label="发送使用的环境组" className="w-28" />
+						<Button
+							variant="default"
+							disabled={send.isPending}
+							title={`发送 (${MOD_KEY}Enter)`}
+							onClick={() => sendDraft(draft)}
+						>
 							<Send size={14} />
 							{send.isPending ? "发送中" : "发送"}
 						</Button>
@@ -107,32 +165,45 @@ const Workbench = ({ id, snapshot, tree }: { id: string; snapshot: string | null
 				/>
 			) : (
 				current && (
-					<section aria-label="响应" className="rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
-						<ResponseViewer meta={current.meta} rawUrl={historyRawUrl(current.id)} actions={saveButton(current.id)} />
-					</section>
+					<ResponseViewer
+						title="响应"
+						label="响应"
+						meta={current.meta}
+						rawUrl={historyRawUrl(current.id)}
+						actions={saveButton(current.id)}
+					/>
 				)
 			)}
 			{!snapshot && !viewing && !send.data && !send.isPending && (
-				<p className="rounded-lg border border-dashed border-zinc-300 p-6 text-center text-xs text-zinc-500 dark:border-zinc-700">
-					点击发送或按 {MOD_KEY}Enter 查看响应; 也可以从下方历史中选一条
-				</p>
+				<Panel title="响应">
+					<p className="py-3 text-center text-xs text-zinc-500">
+						点击发送或按 {MOD_KEY}Enter 查看响应; 也可以从下方历史中选一条
+					</p>
+				</Panel>
 			)}
-			<section className="space-y-1">
-				<h3 className="flex items-baseline gap-2 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-					发送历史
-					<span className="font-normal text-zinc-400">勾选两条可对比</span>
-				</h3>
-				{compare.length === 2 && diff.data && (
-					<div className="space-y-1 rounded-md border border-zinc-200 p-2 dark:border-zinc-800">
-						<div className="flex items-center text-xs font-medium">
-							对比两条历史(旧 → 新)
-							<Button size="sm" variant="ghost" className="ml-auto" onClick={() => setCompare([])}>
-								清除对比
-							</Button>
-						</div>
-						<DiffView diff={diff.data} />
-					</div>
-				)}
+			{compare.length === 2 && diff.data && (
+				<Panel
+					title="对比两条历史(旧 → 新)"
+					actions={
+						<Button size="sm" variant="ghost" onClick={() => setCompare([])}>
+							清除对比
+						</Button>
+					}
+				>
+					<DiffView diff={diff.data} />
+				</Panel>
+			)}
+			<Panel
+				flush
+				title={
+					<>
+						发送历史
+						<span className="ml-2 text-xs font-normal text-zinc-400">
+							勾选两条可对比
+						</span>
+					</>
+				}
+			>
 				<HistoryList
 					requestId={id}
 					selected={snapshot ? null : current?.id || null}
@@ -148,26 +219,44 @@ const Workbench = ({ id, snapshot, tree }: { id: string; snapshot: string | null
 							onChange={e =>
 								setCompare(prev =>
 									e.target.checked
-										? [...prev, line.id].slice(-2).sort((a, b) => (a < b ? -1 : 1))
+										? [...prev, line.id]
+												.slice(-2)
+												.sort((a, b) => (a < b ? -1 : 1))
 										: prev.filter(x => x !== line.id)
 								)
 							}
 						/>
 					)}
 				/>
-			</section>
-			{prompt && <PromptSecretDialog env={prompt.env} srcId={prompt.srcId} onClose={() => setPrompt(null)} onDone={prompt.retry} />}
+			</Panel>
+			{prompt && (
+				<PromptSecretDialog
+					env={prompt.env}
+					srcId={prompt.srcId}
+					onClose={() => setPrompt(null)}
+					onDone={prompt.retry}
+				/>
+			)}
 			{saving && (
-				<SaveSnapshotDialog hid={saving} requestId={id} tree={tree} onClose={() => setSaving(null)} onSaved={sid => navigate(snapshotPath(sid))} />
+				<SaveSnapshotDialog
+					hid={saving}
+					requestId={id}
+					tree={tree}
+					onClose={() => setSaving(null)}
+					onSaved={sid => navigate(snapshotPath(sid))}
+				/>
 			)}
 		</div>
 	);
 };
 
 export const DebugPage = () => {
-	const params = useParams<{ id?: string; snap?: string }>();
-	const [, navigate] = useLocation();
+	const params = useParams<{ id?: string; snap?: string; gid?: string }>();
+	const [location, navigate] = useLocation();
 	const selected = params.id ? decodeId(params.id) : null;
+	// 选中分组或集合时, 中间区显示它的默认配置
+	const groupId = params.gid ? decodeId(params.gid) : null;
+	const collectionSelected = location === COLLECTION_PATH;
 	const snapName = params.snap ? decodeId(params.snap) : null;
 	const snapshot = selected && snapName ? `${selected}#${snapName}` : null;
 	const tree = useDebugTree();
@@ -183,7 +272,9 @@ export const DebugPage = () => {
 			{
 				onSuccess: () => {
 					toast.success("已删除");
-					if (selected && (selected === node.id || selected.startsWith(`${node.id}/`))) navigate("/debug");
+					const current = selected || groupId;
+					if (current && (current === node.id || current.startsWith(`${node.id}/`)))
+						navigate("/debug");
 				},
 				onError: err => toast.error(errorMessage(err)),
 			}
@@ -191,18 +282,24 @@ export const DebugPage = () => {
 
 	return (
 		<div className="flex h-full min-h-0 flex-col">
-			<div role="note" className="flex items-center gap-2 border-b border-amber-200/70 bg-amber-50 px-4 py-1.5 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
-				<ShieldAlert size={14} className="shrink-0" />
-				<span className="min-w-0 truncate" title="environments/secret/ 与 history/ 已用目录内的 .gitignore 排除在版本库外; 请求, 环境组与快照会提交, 敏感值写成 <secret:id>, 另存快照时按脱敏规则处理响应字段.">
-					敏感值来源, cookie 与发送历史不进版本库(目录内 <code>.gitignore</code>); 请求, 环境组与快照会提交, 敏感值写成 <code>{"<secret:id>"}</code>, 快照按脱敏规则处理.
+			<Notice role="note" icon={<ShieldAlert size={12} className="shrink-0" />}>
+				<span
+					className="min-w-0 truncate"
+					title="environments/secret/ 与 history/ 已用目录内的 .gitignore 排除在版本库外; 请求, 环境组与快照会提交, 敏感值写成 <secret:id>, 另存快照时按脱敏规则处理响应字段."
+				>
+					敏感值来源, cookie 与发送历史不进版本库(目录内 <code>.gitignore</code>); 请求,
+					环境组与快照会提交, 敏感值写成 <code>{"<secret:id>"}</code>, 快照按脱敏规则处理.
 				</span>
-				<Link href="/debug/history" className="ml-auto inline-flex shrink-0 items-center gap-1 text-sky-700 hover:underline">
-					<History size={14} />
+				<Link
+					href="/debug/history"
+					className="ml-auto inline-flex shrink-0 items-center gap-1 text-zinc-900 underline decoration-zinc-300 underline-offset-2 hover:decoration-zinc-900 dark:text-zinc-100 dark:decoration-zinc-600"
+				>
+					<History size={12} />
 					全部历史
 				</Link>
-			</div>
-			<div className="grid min-h-0 flex-1 grid-cols-[240px_minmax(0,1fr)_320px] 2xl:grid-cols-[260px_minmax(0,1fr)_360px] divide-x divide-zinc-200 dark:divide-zinc-800">
-				<aside className="min-h-0 overflow-auto p-3">
+			</Notice>
+			<div className="flex min-h-0 flex-1">
+				<aside className="w-56 shrink-0 overflow-auto border-r border-zinc-200 bg-white xl:w-64 dark:border-zinc-800 dark:bg-zinc-900">
 					{tree.isPending ? (
 						<Spinner label="加载请求集合" />
 					) : tree.isError ? (
@@ -212,55 +309,74 @@ export const DebugPage = () => {
 							<DebugTree
 								nodes={tree.data.nodes}
 								actions={{
-									selected,
+									selected: selected || groupId,
+									collectionSelected,
+									onSelectCollection: () => navigate(COLLECTION_PATH),
+									onSelectGroup: node => navigate(groupPath(node.id)),
+									selectedSnapshot: snapshot,
 									onSelect: node => navigate(requestPath(node.id)),
-									onCreate: (kind, parent) => setDialog({ mode: "create", kind, parent }),
+									onSelectSnapshot: sid => navigate(snapshotPath(sid)),
+									onCreate: (kind, parent) =>
+										setDialog({ mode: "create", kind, parent }),
 									onEdit: node => setDialog({ mode: "edit", node }),
 									onDelete: setDeleting,
 									onImport: parent => setImporting({ parent }),
 									onExport: node => setExporting({ node }),
-									renderExtra: node =>
-										!!node.snapshots?.length && (
-											<ul aria-label={`${node.title} 的快照`} className="ml-8 border-l border-zinc-200 pl-2 dark:border-zinc-800">
-												{node.snapshots.map(s => {
-													const sid = `${node.id}#${s.name}`;
-													return (
-														<li key={s.name}>
-															<button
-																type="button"
-																title={sid}
-																className={cn(
-																	"flex w-full items-center gap-1 rounded px-1 text-left text-xs",
-																	snapshot === sid ? "bg-sky-100 dark:bg-sky-950" : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
-																)}
-																onClick={() => navigate(snapshotPath(sid))}
-															>
-																<Camera size={12} />
-																{s.title}
-															</button>
-														</li>
-													);
-												})}
-											</ul>
-										),
 								}}
 							/>
-							{tree.data.problems.map((p, i) => (
-								<p key={i} className="mt-2 text-xs text-amber-700" title={p.file}>
-									{p.message}
-								</p>
-							))}
+							{tree.data.problems.length > 0 && (
+								<div className="space-y-1.5 border-t border-zinc-200 p-3 dark:border-zinc-800">
+									{tree.data.problems.map((p, i) => (
+										<p
+											key={i}
+											className="text-xs text-amber-700"
+											title={p.file}
+										>
+											{p.message}
+										</p>
+									))}
+								</div>
+							)}
 						</>
 					)}
 				</aside>
-				<section className="min-h-0 overflow-auto p-4">
+				<section className="min-h-0 min-w-0 flex-1 overflow-auto bg-zinc-50 p-4 dark:bg-zinc-950">
 					{selected ? (
-						<Workbench key={selected} id={selected} snapshot={snapshot} tree={tree.data?.nodes || []} />
+						<Workbench
+							key={selected}
+							id={selected}
+							snapshot={snapshot}
+							tree={tree.data?.nodes || []}
+						/>
+					) : (collectionSelected || groupId) && tree.data ? (
+						(() => {
+							const group = groupId ? findNode(tree.data.nodes, groupId) : null;
+							return groupId && !group ? (
+								<Panel>
+									<EmptyState title="分组不存在">
+										它可能已被删除或改名, 在左侧重新选择.
+									</EmptyState>
+								</Panel>
+							) : (
+								<NodeConfigPanel
+									key={groupId || "collection"}
+									tree={tree.data}
+									group={group}
+								/>
+							);
+						})()
 					) : (
-						<EmptyState title="选择或新建一个请求">在左侧请求集合中选择请求, 或新建分组与请求.</EmptyState>
+						<Panel>
+							<EmptyState title="选择或新建一个请求">
+								在左侧请求集合中选择请求, 或新建分组与请求.
+							</EmptyState>
+						</Panel>
 					)}
 				</section>
-				<aside aria-label="环境与脱敏设置" className="min-h-0 overflow-auto bg-zinc-50/60 dark:bg-zinc-950">
+				<aside
+					aria-label="环境与脱敏设置"
+					className="w-80 shrink-0 overflow-auto border-l border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900"
+				>
 					<EnvPanel />
 					<PanelSection title="快照脱敏规则" defaultOpen={false}>
 						<RedactRulesPanel />
@@ -269,7 +385,11 @@ export const DebugPage = () => {
 			</div>
 			{dialog && (
 				<NodeDialog
-					key={dialog.mode === "edit" ? `edit-${dialog.node.id}` : `new-${dialog.kind}-${dialog.parent}`}
+					key={
+						dialog.mode === "edit"
+							? `edit-${dialog.node.id}`
+							: `new-${dialog.kind}-${dialog.parent}`
+					}
 					state={dialog}
 					tree={tree.data?.nodes || []}
 					onClose={() => setDialog(null)}
@@ -289,7 +409,11 @@ export const DebugPage = () => {
 					target={
 						exporting.node && exporting.node.kind === "request"
 							? { kind: "curl", source: `request:${exporting.node.id}` }
-							: { kind: "openapi", node: exporting.node ? exporting.node.id : null, title: exporting.node ? exporting.node.title : "全部请求" }
+							: {
+									kind: "openapi",
+									node: exporting.node ? exporting.node.id : null,
+									title: exporting.node ? exporting.node.title : "全部请求",
+								}
 					}
 					onClose={() => setExporting(null)}
 				/>
@@ -301,7 +425,11 @@ export const DebugPage = () => {
 				confirmText="删除"
 				message={
 					<>
-						确定删除{deleting?.kind === "group" ? "分组(含其中全部请求与快照)" : "请求(含其全部快照)"}「{deleting?.title}」?
+						确定删除
+						{deleting?.kind === "group"
+							? "分组(含其中全部请求与快照)"
+							: "请求(含其全部快照)"}
+						「{deleting?.title}」?
 					</>
 				}
 				onClose={() => setDeleting(null)}

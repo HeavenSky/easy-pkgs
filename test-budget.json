@@ -6,7 +6,7 @@
 		"easy-gonz": { "files": 137, "bytes": 976896 },
 		"easy-np": { "files": 277, "bytes": 1445888 },
 		"easy-npd": { "files": 237, "bytes": 1347584 },
-		"easy-mok": { "files": 21, "bytes": 135168 }
+		"easy-mok": { "files": 32, "bytes": 225280 }
 	},
 	"allow": {
 		"packages/easy-np/test/fixtures/registry-snapshot.json": 1030144,

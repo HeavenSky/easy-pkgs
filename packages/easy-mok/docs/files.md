@@ -4,14 +4,14 @@
 
 By the end of this page, you know which files the admin page creates and which belong in version control. Scenes and routes you create in the browser are written to your mock folder so they can be shared; runtime state stays out of the repository.
 
-| File                                      | Contents                                                                               | Commit it?                                   |
-| ----------------------------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------- |
-| `<mock folder>/__scenes__/*.json`         | Scenes created or recorded on the admin page, one file per route                       | Yes, recommended                             |
-| `<mock folder>/__scenes__/<scene file name>/` | Response body files of that route's file scenes; deleted with the scene that uses them | Yes, recommended |
-| `<mock folder>/__gui__.json`              | Routes created on the admin page                                                       | Yes, recommended                             |
-| `<mock folder>/__debug__/requests/__refs__.json` | Which scenes reference which debug snapshots; rebuilt from `__scenes__/` whenever routes reload | Yes; on a merge conflict, delete it and it is rebuilt |
-| `<mock folder>/__debug__/` | Debug requests, environments, snapshots, and redaction rules from the debug page; `environments/secret/` and `history/` exclude themselves | Partly; see [Debug real APIs from the admin page](debug.md#commit-what-the-debug-page-writes) |
-| `node_modules/.cache/easy-mok/state.json` | Picked scenes, delays, status codes, scene groups, the global switch, ignore rules, and the active debug environment | No; it resets when you delete `node_modules` |
+| File                                             | Contents                                                                                                                                   | Commit it?                                                                                    |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| `<mock folder>/__scenes__/*.json`                | Scenes created or recorded on the admin page, one file per route                                                                           | Yes, recommended                                                                              |
+| `<mock folder>/__scenes__/<scene file name>/`    | Response body files of that route's file scenes; deleted with the scene that uses them                                                     | Yes, recommended                                                                              |
+| `<mock folder>/__gui__.json`                     | Routes created on the admin page                                                                                                           | Yes, recommended                                                                              |
+| `<mock folder>/__debug__/requests/__refs__.json` | Which scenes reference which debug snapshots; rebuilt from `__scenes__/` whenever routes reload                                            | Yes; on a merge conflict, delete it and it is rebuilt                                         |
+| `<mock folder>/__debug__/`                       | Debug requests, environments, snapshots, and redaction rules from the debug page; `environments/secret/` and `history/` exclude themselves | Partly; see [Debug real APIs from the admin page](debug.md#commit-what-the-debug-page-writes) |
+| `node_modules/.cache/easy-mok/state.json`        | Picked scenes, delays, status codes, scene groups, the global switch, ignore rules, and the active debug environment                       | No; it resets when you delete `node_modules`                                                  |
 
 The state file location can be changed with the `stateFile` option; see [Options and environment variables](options.md).
 

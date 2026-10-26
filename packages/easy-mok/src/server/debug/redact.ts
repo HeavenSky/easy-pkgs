@@ -37,33 +37,55 @@ export const ensureIgnoredDir = (dir: string) => {
 export type SecretHit = { id: string; value: string };
 
 /** 解析结果中来自敏感值来源的变量; 按长度降序, 先替换长的 */
-export const secretHitsOf = (values: Record<string, { value: string; from: string }>): SecretHit[] => {
+export const secretHitsOf = (
+	values: Record<string, { value: string; from: string }>
+): SecretHit[] => {
 	const hits = new Map<string, string>();
 	Object.values(values).forEach(v => {
-		if (v.from.startsWith("secret:") && v.value.length >= SECRET_MIN_LENGTH && !v.value.startsWith("<secret:")) {
+		if (
+			v.from.startsWith("secret:") &&
+			v.value.length >= SECRET_MIN_LENGTH &&
+			!v.value.startsWith("<secret:")
+		) {
 			hits.set(v.value, v.from.slice(7));
 		}
 	});
-	return [...hits.entries()].map(([value, id]) => ({ id, value })).sort((a, b) => b.value.length - a.value.length);
+	return [...hits.entries()]
+		.map(([value, id]) => ({ id, value }))
+		.sort((a, b) => b.value.length - a.value.length);
 };
 
 export const replaceSecrets = (text: string, hits: SecretHit[]) =>
 	hits.reduce((s, h) => s.split(h.value).join(`<secret:${h.id}>`), text);
 
 /** 实际发出的请求: 敏感值回填占位符; 敏感头没有占位符时写成 *** */
-export const redactRequest = <T extends { url: string; headers: Array<[string, string]>; body: Record<string, any> }>(req: T, hits: SecretHit[]): T => {
+export const redactRequest = <
+	T extends { url: string; headers: Array<[string, string]>; body: Record<string, any> },
+>(
+	req: T,
+	hits: SecretHit[]
+): T => {
 	const headers = req.headers.map(([k, v]) => {
 		const replaced = replaceSecrets(v, hits);
-		return [k, SECRET_HEADERS.has(k) && !replaced.includes("<secret:") ? MASK : replaced] as [string, string];
+		return [k, SECRET_HEADERS.has(k) && !replaced.includes("<secret:") ? MASK : replaced] as [
+			string,
+			string,
+		];
 	});
-	const body = req.body && req.body.type === "text" ? { ...req.body, text: replaceSecrets(String(req.body.text), hits) } : req.body;
+	const body =
+		req.body && req.body.type === "text"
+			? { ...req.body, text: replaceSecrets(String(req.body.text), hits) }
+			: req.body;
 	return { ...req, url: replaceSecrets(req.url, hits), headers, body };
 };
 
 /** 模板中的变量取值: 敏感值写成占位符 */
 export const redactValues = (values: Record<string, { value: string; from: string }>) =>
 	Object.fromEntries(
-		Object.entries(values).map(([k, v]) => [k, v.from.startsWith("secret:") ? { ...v, value: `<secret:${v.from.slice(7)}>` } : v])
+		Object.entries(values).map(([k, v]) => [
+			k,
+			v.from.startsWith("secret:") ? { ...v, value: `<secret:${v.from.slice(7)}>` } : v,
+		])
 	);
 
 export const maskSetCookie = (headers: Array<[string, string]>) =>
@@ -76,7 +98,13 @@ export const parseRules = (rules: string[]) =>
 		.filter(Boolean)
 		.map(r =>
 			r.startsWith("$.")
-				? { kind: "path" as const, segs: r.slice(2).split(".").map(s => s.toLowerCase()) }
+				? {
+						kind: "path" as const,
+						segs: r
+							.slice(2)
+							.split(".")
+							.map(s => s.toLowerCase()),
+					}
 				: { kind: "name" as const, name: r.toLowerCase() }
 		);
 
@@ -91,7 +119,9 @@ export const redactFields = (value: unknown, rules: string[]) => {
 		Object.entries(v).forEach(([k, x]) => {
 			const t = [...trail, k.toLowerCase()];
 			const hit = parsed.some(r =>
-				r.kind === "name" ? r.name === k.toLowerCase() : r.segs.length === t.length && r.segs.every((s, i) => s === "*" || s === t[i])
+				r.kind === "name"
+					? r.name === k.toLowerCase()
+					: r.segs.length === t.length && r.segs.every((s, i) => s === "*" || s === t[i])
 			);
 			if (hit && x !== null && x !== undefined) {
 				count++;
@@ -113,7 +143,10 @@ export const redactJsonText = (text: string, rules: string[]) => {
 	}
 	const { value, count } = redactFields(parsed, rules);
 	if (!count) return { text, count: 0 };
-	return { text: text.includes("\n") ? `${JSON.stringify(value, null, 2)}\n` : JSON.stringify(value), count };
+	return {
+		text: text.includes("\n") ? `${JSON.stringify(value, null, 2)}\n` : JSON.stringify(value),
+		count,
+	};
 };
 
 /** 字段规则存于 __debug__/redact.json(提交到仓库); 不存在时用默认规则 */
@@ -123,9 +156,17 @@ export const createRedactRules = (debugRoot: string) => {
 		const { ok, value, text } = readJson(file);
 		if (text === null) return { fields: DEFAULT_FIELD_RULES, custom: false };
 		if (!ok || !isPlainObject(value) || !Array.isArray(value.fields)) {
-			throw new MockError("META_FILE_INVALID", 409, `${file} 不是合法的 { fields: [] } JSON, 请修复或删除`, { file });
+			throw new MockError(
+				"META_FILE_INVALID",
+				409,
+				`${file} 不是合法的 { fields: [] } JSON, 请修复或删除`,
+				{ file }
+			);
 		}
-		return { fields: value.fields.filter((f): f is string => typeof f === "string" && !!f.trim()), custom: true };
+		return {
+			fields: value.fields.filter((f): f is string => typeof f === "string" && !!f.trim()),
+			custom: true,
+		};
 	};
 	const put = (fields: unknown) => {
 		if (!Array.isArray(fields) || !fields.every(f => typeof f === "string")) {
@@ -133,7 +174,13 @@ export const createRedactRules = (debugRoot: string) => {
 		}
 		const clean = [...new Set(fields.map(f => f.trim()).filter(Boolean))];
 		const bad = clean.find(f => f.startsWith("$") && !/^\$(\.[^.]+)+$/.test(f));
-		if (bad) throw new MockError("BAD_REQUEST", 400, `路径规则必须形如 $.a.b 或 $.list.*.phone: ${bad}`, { field: "fields" });
+		if (bad)
+			throw new MockError(
+				"BAD_REQUEST",
+				400,
+				`路径规则必须形如 $.a.b 或 $.list.*.phone: ${bad}`,
+				{ field: "fields" }
+			);
 		writeJsonAtomic(file, { version: 1, fields: clean });
 		return get();
 	};

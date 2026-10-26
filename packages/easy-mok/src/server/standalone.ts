@@ -227,6 +227,8 @@ export const CLI_HELP = `用法: easy-mok [选项]
 
 选项:
   --folder <目录>     mock 目录, 相对当前目录, 默认 src/mocks      (环境变量 MOCK_FOLDER)
+  --debug-dir <目录>  调试页的存储目录(请求, 环境组, 快照, 历史),
+                      相对当前目录, 默认 <mock 目录>/__debug__      (MOCK_DEBUG_DIR)
   --port <端口>       监听端口, 默认 ${DEFAULT_PORT}, 0 为随机端口       (MOCK_PORT)
   --host <地址>       监听地址, 默认 ${DEFAULT_HOST}, 0.0.0.0 允许局域网访问 (MOCK_HOST)
   --builtin <文件>    先于 mock 文件加载的内置路由, 支持 js / ts / esm (MOCK_BUILTIN)
@@ -250,7 +252,15 @@ export type CliResult = {
 /** 解析命令行参数; 未给出的选项读环境变量, 都没有时留空交给 createMock 的默认值. 手写解析以兼容 Node 18.0(无 util.parseArgs) */
 export const parseCliArgs = (argv: string[], env: NodeJS.ProcessEnv = process.env): CliResult => {
 	const values: Record<string, string | boolean> = {};
-	const takesValue = new Set(["folder", "port", "host", "builtin", "hosts", "ignore"]);
+	const takesValue = new Set([
+		"folder",
+		"debug-dir",
+		"port",
+		"host",
+		"builtin",
+		"hosts",
+		"ignore",
+	]);
 	const flags = new Set(["no-ui", "no-float", "lan", "help", "version"]);
 	const alias: Record<string, string> = { h: "help", v: "version" };
 	for (let i = 0; i < argv.length; i++) {
@@ -292,6 +302,10 @@ export const parseCliArgs = (argv: string[], env: NodeJS.ProcessEnv = process.en
 	const folder = pick("folder", "MOCK_FOLDER");
 	if (folder) {
 		options.folder = folder;
+	}
+	const debugDir = pick("debug-dir", "MOCK_DEBUG_DIR");
+	if (debugDir) {
+		options.debugDir = debugDir;
 	}
 	const portText = pick("port", "MOCK_PORT");
 	if (portText !== undefined) {

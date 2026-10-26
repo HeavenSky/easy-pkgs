@@ -18,17 +18,20 @@ const fixture = () =>
 		"builtin.ts":
 			"import path from 'node:path';\nconst v: number = Number(path.basename('/x/1'));\nexport default { 'GET /builtin': { builtin: v } };\n",
 	});
+/** 在随机端口启动 standalone, 默认不监听文件 */
+const start = (dir, extra) =>
+	startMock({
+		cwd: dir,
+		folder: "mocks",
+		stateFile: "state.json",
+		port: 0,
+		watch: false,
+		...extra,
+	});
 
 describe("startMock", () => {
 	it("端口 0 启动, 命中 mock, 未命中返回 404 JSON, 跨域规则同挂载模式, close 后关闭", async () => {
-		const dir = fixture();
-		const started = await startMock({
-			cwd: dir,
-			folder: "mocks",
-			stateFile: "state.json",
-			port: 0,
-			watch: false,
-		});
+		const started = await start(fixture());
 		expect(started.port).toBeGreaterThan(0);
 		expect(started.url).toBe(`http://127.0.0.1:${started.port}`);
 		expect(await (await fetch(`${started.url}/api/hello`)).json()).toEqual({ hello: "world" });
@@ -59,12 +62,7 @@ describe("startMock", () => {
 			warns.push(a.map(String).join(" "));
 		});
 		try {
-			const started = await startMock({
-				cwd: dir,
-				folder: "later",
-				stateFile: "state.json",
-				port: 0,
-			});
+			const started = await start(dir, { folder: "later", watch: undefined });
 			const folder = path.join(dir, "later");
 			const hits = warns.filter(w => w.includes("mock 目录不存在"));
 			expect(hits.length).toBe(1);
@@ -82,12 +80,7 @@ describe("startMock", () => {
 			);
 			await started.close();
 			// 上级目录也不存在: 监听最近的已存在祖先, 多级目录稍后创建同样自动加载
-			const deep = await startMock({
-				cwd: dir,
-				folder: "x/y/mocks",
-				stateFile: "state.json",
-				port: 0,
-			});
+			const deep = await start(dir, { folder: "x/y/mocks", watch: undefined });
 			expect(warns.at(-1)).toMatch(/无需重启/);
 			fs.writeFileSync(
 				path.join(dir, "sibling.js"),
@@ -103,23 +96,11 @@ describe("startMock", () => {
 			await waitFor(async () => (await fetch(`${deep.url}/api/deep`)).status === 200, 5000);
 			expect((await fetch(`${deep.url}/api/sibling`)).status).toBe(404);
 			await deep.close();
-			const nested = await startMock({
-				cwd: dir,
-				folder: "no/such/mocks",
-				stateFile: "state.json",
-				port: 0,
-				watch: false,
-			});
+			const nested = await start(dir, { folder: "no/such/mocks" });
 			expect(warns.filter(w => w.includes("mock 目录不存在")).length).toBe(3);
 			expect(warns.at(-1)).toMatch(/重启/);
 			await nested.close();
-			const ok = await startMock({
-				cwd: dir,
-				folder: "mocks",
-				stateFile: "state.json",
-				port: 0,
-				watch: false,
-			});
+			const ok = await start(dir);
 			expect(warns.filter(w => w.includes("mock 目录不存在")).length).toBe(3);
 			await ok.close();
 		} finally {
@@ -139,19 +120,22 @@ describe("startMock", () => {
 	it("端口被占用时给出可读错误", async () => {
 		const blocker = http.createServer();
 		const port = await listen(blocker);
-		const dir = fixture();
-		await expect(
-			startMock({ cwd: dir, folder: "mocks", stateFile: "state.json", port, watch: false })
-		).rejects.toThrow(/端口 \d+ 已被占用/);
+		await expect(start(fixture(), { port })).rejects.toThrow(/端口 \d+ 已被占用/);
 		await new Promise(resolve => blocker.close(resolve));
 	});
 });
 
 describe("命令行参数", () => {
-	it("解析参数, 命令行优先于环境变量, 未给出的留空交给 createMock", () => {
-		expect(parseCliArgs([], {}).options).toEqual({});
-		expect(
-			parseCliArgs(
+	it("解析参数, 命令行优先于环境变量, 未给出的留空交给 createMock; 取值以 - 开头时报缺少取值, = 写法可显式传入, -- 结束选项解析", () => {
+		const env = {
+			MOCK_PORT: "5000",
+			MOCK_FOLDER: "envm",
+			MOCK_HOST: "0.0.0.0",
+			MOCK_BUILTIN: "x.js",
+		};
+		for (const [args, vars, options] of [
+			[[], {}, {}],
+			[
 				[
 					"--folder",
 					"m",
@@ -166,58 +150,50 @@ describe("命令行参数", () => {
 					"--hosts",
 					"a.test, b.test",
 				],
-				{}
-			).options
-		).toEqual({
-			folder: "m",
-			port: 0,
-			host: "0.0.0.0",
-			builtinFile: "b.ts",
-			ui: false,
-			float: false,
-			lan: true,
-			hosts: ["a.test", "b.test"],
-		});
-		const env = {
-			MOCK_PORT: "5000",
-			MOCK_FOLDER: "envm",
-			MOCK_HOST: "0.0.0.0",
-			MOCK_BUILTIN: "x.js",
-		};
-		expect(parseCliArgs([], env).options).toEqual({
-			port: 5000,
-			folder: "envm",
-			host: "0.0.0.0",
-			builtinFile: "x.js",
-		});
-		expect(parseCliArgs(["--port", "6000", "--folder", "cli"], env).options).toMatchObject({
-			port: 6000,
-			folder: "cli",
-			host: "0.0.0.0",
-		});
-		expect(parseCliArgs(["--ignore", "/health, GET /x/**"], {}).options.ignore).toEqual([
-			"/health",
-			"GET /x/**",
-		]);
-		expect(parseCliArgs([], { MOCK_IGNORE: "/a" }).options.ignore).toEqual(["/a"]);
-		expect(parseCliArgs(["--ignore", "/b"], { MOCK_IGNORE: "/a" }).options.ignore).toEqual([
-			"/b",
-		]);
+				{},
+				{
+					folder: "m",
+					port: 0,
+					host: "0.0.0.0",
+					builtinFile: "b.ts",
+					ui: false,
+					float: false,
+					lan: true,
+					hosts: ["a.test", "b.test"],
+				},
+			],
+			[[], env, { port: 5000, folder: "envm", host: "0.0.0.0", builtinFile: "x.js" }],
+			[
+				["--port", "6000", "--folder", "cli"],
+				env,
+				{ port: 6000, folder: "cli", host: "0.0.0.0", builtinFile: "x.js" },
+			],
+			[["--ignore", "/health, GET /x/**"], {}, { ignore: ["/health", "GET /x/**"] }],
+			[[], { MOCK_IGNORE: "/a" }, { ignore: ["/a"] }],
+			[["--ignore", "/b"], { MOCK_IGNORE: "/a" }, { ignore: ["/b"] }],
+			[["--folder=-v"], {}, { folder: "-v" }],
+			[["--lan", "--"], {}, { lan: true }],
+			[["--", "--port", "1"], {}, { port: 1 }], // pnpm run x -- --port 1 原样传入的 -- 被忽略
+		]) {
+			expect([args, vars, parseCliArgs(args, vars).options]).toEqual([args, vars, options]);
+		}
 		expect(parseCliArgs(["-h"]).help).toBe(true);
 		expect(parseCliArgs(["--version"]).version).toBe(true);
-		expect(parseCliArgs(["--port", "abc"]).error).toMatch(/端口/);
-		expect(parseCliArgs(["--nope"]).error).toMatch(/未知参数/);
-		expect(parseCliArgs(["--folder"]).error).toMatch(/缺少取值/);
-	});
-
-	it("取值以 - 开头时报缺少取值, = 写法可显式传入; -- 结束选项解析", () => {
-		expect(parseCliArgs(["--folder", "-v"], {}).error).toMatch(/参数 --folder 缺少取值/);
-		expect(parseCliArgs(["--port", "-1"], {}).error).toMatch(/参数 --port 缺少取值/);
-		expect(parseCliArgs(["--hosts", "--lan"], {}).error).toMatch(/参数 --hosts 缺少取值/);
-		expect(parseCliArgs(["--folder=-v"], {}).options).toEqual({ folder: "-v" });
-		expect(parseCliArgs(["--lan", "--"], {}).options).toEqual({ lan: true });
-		expect(parseCliArgs(["--", "--port", "1"], {}).options).toEqual({ port: 1 }); // pnpm run x -- --port 1 原样传入的 -- 被忽略
-		expect(parseCliArgs(["--", "extra"], {}).error).toMatch(/无法识别的参数: extra/);
+		for (const [args, error] of [
+			[["--port", "abc"], /端口/],
+			[["--nope"], /未知参数/],
+			[["--folder"], /缺少取值/],
+		]) {
+			expect(parseCliArgs(args).error).toMatch(error); // 不传 env 时读 process.env
+		}
+		for (const [args, error] of [
+			[["--folder", "-v"], /参数 --folder 缺少取值/],
+			[["--port", "-1"], /参数 --port 缺少取值/],
+			[["--hosts", "--lan"], /参数 --hosts 缺少取值/],
+			[["--", "extra"], /无法识别的参数: extra/],
+		]) {
+			expect(parseCliArgs(args, {}).error).toMatch(error);
+		}
 	});
 });
 

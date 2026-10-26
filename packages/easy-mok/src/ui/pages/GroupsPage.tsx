@@ -16,7 +16,8 @@ import {
 import { MethodBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog, Dialog } from "@/components/ui/dialog";
-import { FieldError, Input, Label, Select } from "@/components/ui/input";
+import { FieldError, Hint, Input, Label, Select } from "@/components/ui/input";
+import { EditActions, listItemClass, Panel, Toolbar } from "@/components/ui/panel";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/state";
 import { useUnsaved } from "@/lib/unsaved";
 import { cn } from "@/lib/utils";
@@ -56,9 +57,14 @@ export const GroupsPage = () => {
 	const current = selected ? decodeURIComponent(selected) : null;
 	const saved = current ? groups.data?.groups[current] : undefined;
 	const [draft, setDraft] = useState<Record<string, string>>({});
+	// 成员与覆盖默认只读, 点「编辑」才切到下拉框; 切换场景组时退出编辑
+	const [editing, setEditing] = useState(false);
 	useEffect(() => {
 		setDraft(saved || {});
 	}, [saved]);
+	useEffect(() => {
+		setEditing(false);
+	}, [current]);
 	const dirty = !!saved && JSON.stringify(draft) !== JSON.stringify(saved);
 	useUnsaved(dirty);
 
@@ -66,6 +72,10 @@ export const GroupsPage = () => {
 	const multiScene = useMemo(
 		() => (routes.data || []).filter(r => r.scenes.length > 1 || draft[r.id]),
 		[routes.data, draft]
+	);
+	const assigned = useMemo(
+		() => (routes.data || []).filter(r => saved?.[r.id]),
+		[routes.data, saved]
 	);
 	const fail = (err: unknown) => toast.error(errorMessage(err));
 	const nameError = !nameInput
@@ -135,10 +145,9 @@ export const GroupsPage = () => {
 
 	return (
 		<div className="flex h-full min-h-0">
-			<aside className="flex w-72 shrink-0 flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-				<div className="flex gap-2 border-b border-zinc-200 p-3 dark:border-zinc-800">
+			<aside className="flex w-56 shrink-0 flex-col border-r border-zinc-200 bg-white lg:w-64 dark:border-zinc-800 dark:bg-zinc-900">
+				<Toolbar>
 					<Button
-						size="sm"
 						variant="default"
 						onClick={() => {
 							setNameInput("");
@@ -149,7 +158,6 @@ export const GroupsPage = () => {
 						新建
 					</Button>
 					<Button
-						size="sm"
 						title="把各路由当前生效的非 default 场景保存为一个组"
 						onClick={() => {
 							setNameInput("");
@@ -159,7 +167,7 @@ export const GroupsPage = () => {
 						<Camera size={14} />
 						由当前选择生成
 					</Button>
-				</div>
+				</Toolbar>
 				{!names.length && (
 					<EmptyState title="还没有场景组">
 						场景组把多个路由的场景打包, 一次切换, 例如「未登录」, 「VIP 用户」.
@@ -180,56 +188,56 @@ export const GroupsPage = () => {
 									}
 								}}
 								className={cn(
-									"flex w-full items-center gap-2 border-b border-zinc-100 px-3 py-2 text-left text-sm dark:border-zinc-800/60",
-									current === n
-										? "bg-sky-50 dark:bg-sky-950/40"
-										: "hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
+									listItemClass(current === n),
+									"flex h-8 items-center gap-1.5 px-3"
 								)}
 							>
-								<span className="flex-1 truncate">{n}</span>
+								<span className="min-w-0 flex-1 truncate">{n}</span>
 								{groups.data.active === n && (
 									<span title="全局场景组">
-										<Globe size={14} className="text-emerald-600" />
+										<Globe size={12} className="text-emerald-600" />
 									</span>
 								)}
 								{browserGroup === n && (
 									<span title="本浏览器场景组">
-										<Cookie size={14} className="text-sky-600" />
+										<Cookie size={12} className="text-zinc-500" />
 									</span>
 								)}
-								<span className="text-xs text-zinc-500">
+								<span className="text-2xs font-normal text-zinc-400">
 									{Object.keys(groups.data.groups[n]).length}
 								</span>
 							</button>
 						</li>
 					))}
 				</ul>
-				<p className="border-t border-zinc-200 p-3 text-xs text-zinc-500 dark:border-zinc-800">
+				<Hint className="border-t border-zinc-200 p-3 dark:border-zinc-800">
 					优先级: 请求指定 &gt; 本浏览器场景组 &gt; 路由手动选择 &gt; 全局场景组 &gt;
 					default
-				</p>
+				</Hint>
 			</aside>
-			<section className="min-w-0 flex-1 overflow-auto p-5">
+			<section className="min-w-0 flex-1 space-y-4 overflow-auto bg-zinc-50 p-4 dark:bg-zinc-950">
 				{!current && <EmptyState title="选择或新建一个场景组" />}
 				{current && !saved && <EmptyState title={`场景组「${current}」不存在`} />}
 				{current && saved && (
-					<div className="mx-auto max-w-4xl space-y-4">
+					<>
 						<div className="flex flex-wrap items-center gap-2">
-							<h1 className="text-base font-semibold">{current}</h1>
-							<Button
-								size="icon"
-								variant="ghost"
-								aria-label="重命名"
-								onClick={() => {
-									setNameInput(current);
-									setDialog({ type: "rename", from: current });
-								}}
-							>
-								<Pencil size={14} />
-							</Button>
+							<div className="flex min-w-0 items-center gap-1">
+								<h1 className="truncate text-lg font-medium">{current}</h1>
+								<Button
+									size="icon-sm"
+									variant="ghost"
+									aria-label="重命名"
+									title="重命名"
+									onClick={() => {
+										setNameInput(current);
+										setDialog({ type: "rename", from: current });
+									}}
+								>
+									<Pencil size={12} />
+								</Button>
+							</div>
 							<div className="ml-auto flex flex-wrap gap-2">
 								<Button
-									size="sm"
 									variant={groups.data.active === current ? "default" : "outline"}
 									disabled={patchState.isPending}
 									onClick={() =>
@@ -254,7 +262,6 @@ export const GroupsPage = () => {
 									{groups.data.active === current ? "取消全局" : "设为全局"}
 								</Button>
 								<Button
-									size="sm"
 									variant={browserGroup === current ? "default" : "outline"}
 									title="写入 cookie, 只影响当前浏览器, 刷新业务页面后生效"
 									onClick={() => {
@@ -272,9 +279,8 @@ export const GroupsPage = () => {
 									{browserGroup === current ? "本浏览器停用" : "仅本浏览器启用"}
 								</Button>
 								<Button
-									size="sm"
 									variant="ghost"
-									className="text-rose-600"
+									className="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-950"
 									onClick={() => setDeleting(current)}
 								>
 									<Trash2 size={14} />
@@ -282,85 +288,129 @@ export const GroupsPage = () => {
 								</Button>
 							</div>
 						</div>
-						<table className="w-full text-sm">
-							<thead>
-								<tr className="border-b border-zinc-200 text-left text-xs text-zinc-500 dark:border-zinc-800">
-									<th className="py-1.5">路由</th>
-									<th className="w-56 py-1.5">场景</th>
-								</tr>
-							</thead>
-							<tbody>
-								{multiScene.map(r => (
-									<tr
-										key={r.id}
-										className="border-b border-zinc-100 dark:border-zinc-800/60"
-									>
-										<td className="py-1.5">
-											<span className="mr-1.5 inline-flex gap-1">
-												{r.methods.map(m => (
-													<MethodBadge key={m} method={m} />
-												))}
-											</span>
-											<span className="font-mono text-xs">{r.path}</span>
-										</td>
-										<td className="py-1.5">
-											<Select
-												aria-label={`${r.key} 的场景`}
-												className="w-full"
-												value={draft[r.id] || ""}
-												onChange={e =>
-													setDraft(prev => {
-														const next = { ...prev };
-														if (e.target.value)
-															next[r.id] = e.target.value;
-														else delete next[r.id];
-														return next;
-													})
-												}
+						<Panel
+							flush
+							title={
+								<>
+									成员与覆盖{" "}
+									<span className="text-2xs font-normal text-zinc-400">
+										{Object.keys(editing ? draft : saved).length}
+									</span>
+								</>
+							}
+							actions={
+								<EditActions
+									editing={editing}
+									onEdit={() => {
+										setDraft(saved);
+										setEditing(true);
+									}}
+									onCancel={() => {
+										setDraft(saved);
+										setEditing(false);
+									}}
+									canSave={dirty}
+									saving={put.isPending}
+									onSave={() =>
+										put.mutate(
+											{ name: current, map: draft },
+											{
+												onSuccess: () => {
+													toast.success("场景组已保存");
+													setEditing(false);
+												},
+												onError: fail,
+											}
+										)
+									}
+								/>
+							}
+						>
+							{(editing ? multiScene : assigned).length > 0 && (
+								<table className="w-full">
+									<thead>
+										<tr className="h-8 border-b border-zinc-200 bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/60">
+											<th className="px-3 font-medium">路由</th>
+											<th className="w-64 px-3 font-medium">场景</th>
+										</tr>
+									</thead>
+									<tbody>
+										{(editing ? multiScene : assigned).map(r => (
+											<tr
+												key={r.id}
+												className="h-8 border-b border-zinc-100 last:border-0 hover:bg-zinc-50 dark:border-zinc-800/60 dark:hover:bg-zinc-800/40"
 											>
-												<option value="">不指定</option>
-												{r.scenes.map(s => (
-													<option key={s} value={s}>
-														{s}
-													</option>
-												))}
-												{draft[r.id] && !r.scenes.includes(draft[r.id]) && (
-													<option value={draft[r.id]}>
-														{draft[r.id]}(已不存在)
-													</option>
-												)}
-											</Select>
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-						{!multiScene.length && (
-							<EmptyState title="没有包含多个场景的路由">
-								用 scenes() 声明多场景, 或在路由页新建 JSON 场景后再来配置.
-							</EmptyState>
-						)}
-						<div className="flex justify-end gap-2">
-							<Button disabled={!dirty} onClick={() => setDraft(saved)}>
-								重置
-							</Button>
-							<Button
-								variant="default"
-								disabled={!dirty || put.isPending}
-								onClick={() =>
-									put.mutate(
-										{ name: current, map: draft },
-										{
-											onSuccess: () => toast.success("场景组已保存"),
-											onError: fail,
-										}
-									)
-								}
-							>
-								保存
-							</Button>
-						</div>
-					</div>
+												<td className="px-3 py-0.5">
+													<span className="flex min-w-0 items-center gap-1.5">
+														<span className="inline-flex gap-0.5">
+															{r.methods.map(m => (
+																<MethodBadge key={m} method={m} />
+															))}
+														</span>
+														<span className="truncate font-mono text-xs">
+															{r.path}
+														</span>
+													</span>
+												</td>
+												<td className="px-3 py-0.5">
+													{editing ? (
+														<Select
+															aria-label={`${r.key} 的场景`}
+															className="w-full"
+															value={draft[r.id] || ""}
+															onChange={e =>
+																setDraft(prev => {
+																	const next = { ...prev };
+																	if (e.target.value)
+																		next[r.id] = e.target.value;
+																	else delete next[r.id];
+																	return next;
+																})
+															}
+														>
+															<option value="">不指定</option>
+															{r.scenes.map(s => (
+																<option key={s} value={s}>
+																	{s}
+																</option>
+															))}
+															{draft[r.id] &&
+																!r.scenes.includes(draft[r.id]) && (
+																	<option value={draft[r.id]}>
+																		{draft[r.id]}(已不存在)
+																	</option>
+																)}
+														</Select>
+													) : (
+														<span className="font-mono text-xs">
+															{saved[r.id]}
+															{!r.scenes.includes(saved[r.id]) && (
+																<span className="ml-1.5 font-sans text-amber-700">
+																	(已不存在)
+																</span>
+															)}
+														</span>
+													)}
+												</td>
+											</tr>
+										))}
+									</tbody>
+								</table>
+							)}
+							{editing && !multiScene.length && (
+								<EmptyState title="没有包含多个场景的路由">
+									用 scenes() 声明多场景, 或在路由页新建 JSON 场景后再来配置.
+								</EmptyState>
+							)}
+							{!editing && !assigned.length && (
+								<EmptyState title="暂无">
+									{multiScene.length
+										? "还没有为任何路由指定场景, 点「编辑」选择."
+										: "用 scenes() 声明多场景, 或在路由页新建 JSON 场景后再来配置."}
+								</EmptyState>
+							)}
+						</Panel>
+					</>
 				)}
 			</section>
 			<Dialog

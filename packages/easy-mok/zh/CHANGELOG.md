@@ -10,6 +10,8 @@
 - 调试数据可以放心提交：`environments/secret/` 与 `history/` 自动排除在 git 之外，敏感值写成 `<secret:id>`，敏感请求头写成 `***`；快照默认屏蔽 `set-cookie`，并按可配置的规则脱敏 JSON 字段；敏感值可以来自系统钥匙串、命令输出或发送时输入。
 - 调试请求按环境组保存 cookie 并在之后的请求中自动携带，发过登录请求就能保持登录；单个请求可以关闭，环境组面板可以查看和清除。
 - 请求日志的「转为调试请求」可以把抓到的请求生成调试请求，路径前加 `{{baseUrl}}`。
+- 调试页的分组和整个集合可以设置下层请求继承的请求头、认证与发送设置，请求可以逐项覆盖。见[让多个请求共用请求头、认证与发送设置](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/zh/docs/debug.md#让多个请求共用请求头认证与发送设置)。
+- `--debug-dir`（`MOCK_DEBUG_DIR`，或 `debugDir` 选项）可以把调试数据放到 mock 目录之外。
 - 调试页支持导入导出 cURL 命令与 OpenAPI 3.0 / 3.1 文档（YAML 或 JSON），响应示例可以生成快照。easy-mok 新增依赖 `yaml`。
 - 刷新调试快照时先展示与已保存快照的差异，确认后才覆盖；JSON 比较不受 key 顺序影响；也可以任选两条历史对比。
 - 场景可以引用调试快照，始终返回快照的最新响应，也可以一次性拷贝；改名和移动不会断开引用，删除被引用的快照前会先确认，失效的引用会降级到下一级场景。见[切换场景与响应方式](https://github.com/HeavenSky/easy-pkgs/blob/main/packages/easy-mok/zh/docs/scenes.md#用调试快照作为场景)。

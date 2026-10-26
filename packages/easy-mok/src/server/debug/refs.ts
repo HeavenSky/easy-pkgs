@@ -19,9 +19,11 @@ export type LoadedSnapshot = {
 
 /** 快照标识的形态; 合法时为 null */
 export const refProblem = (ref: unknown) => {
-	if (typeof ref !== "string" || !SNAPSHOT_ID_RE.test(ref)) return "ref 必须形如 <请求标识>#<快照名>";
+	if (typeof ref !== "string" || !SNAPSHOT_ID_RE.test(ref))
+		return "ref 必须形如 <请求标识>#<快照名>";
 	const [request, name] = ref.split("#");
-	if (!request.split("/").every(isDebugName) || !isDebugName(name)) return `ref 中有不合规的名字: ${ref}`;
+	if (!request.split("/").every(isDebugName) || !isDebugName(name))
+		return `ref 中有不合规的名字: ${ref}`;
 	return null;
 };
 
@@ -38,10 +40,11 @@ const childOf = (dir: string, name: string) => {
 };
 
 /** 快照目录; 不存在时为 null */
-export const snapshotDirOf = (folder: string, ref: string) => {
+/** debugDir 是调试存储目录(默认 <mock 目录>/__debug__) */
+export const snapshotDirOf = (debugDir: string, ref: string) => {
 	if (refProblem(ref)) return null;
 	const [request, name] = ref.split("#");
-	let dir: string | null = path.join(folder, DEBUG_DIR, "requests");
+	let dir: string | null = path.join(debugDir, "requests");
 	for (const seg of request.split("/")) {
 		dir = childOf(dir, seg);
 		if (!dir) return null;
@@ -53,8 +56,8 @@ export const snapshotDirOf = (folder: string, ref: string) => {
 const cache = new Map<string, { mtimeMs: number; size: number; meta: Record<string, any> }>();
 
 /** 读取快照(元数据按 mtime 缓存); 不存在, 无法解析, 发送失败或响应体文件缺失时为 null */
-export const loadSnapshot = (folder: string, ref: string): LoadedSnapshot | null => {
-	const dir = snapshotDirOf(folder, ref);
+export const loadSnapshot = (debugDir: string, ref: string): LoadedSnapshot | null => {
+	const dir = snapshotDirOf(debugDir, ref);
 	if (!dir) return null;
 	const metaFile = path.join(dir, META_FILE);
 	let stat: fs.Stats;
@@ -85,20 +88,28 @@ export const loadSnapshot = (folder: string, ref: string): LoadedSnapshot | null
 /** 回放时保留的响应头: 去掉传输层头与 x-mock 头, set-cookie 只在快照允许时保留 */
 export const replayHeaders = (meta: Record<string, any>): Array<[string, string]> => {
 	const keepCookie = !!(meta.replay && meta.replay.setCookie === true);
-	const list = Array.isArray(meta.response?.headers) ? (meta.response.headers as Array<[string, string]>) : [];
+	const list = Array.isArray(meta.response?.headers)
+		? (meta.response.headers as Array<[string, string]>)
+		: [];
 	return list.filter(
-		([k]) => !DROP_HEADERS.has(k) && !k.startsWith("x-mock") && (keepCookie || k !== "set-cookie")
+		([k]) =>
+			!DROP_HEADERS.has(k) && !k.startsWith("x-mock") && (keepCookie || k !== "set-cookie")
 	);
 };
 
 export const createRefs = (opt: {
 	folder: string;
+	debugDir?: string;
 	fileStore: ReturnType<typeof createFileStore>;
 	/** 改写场景文件后立即重载路由表 */
 	reload: () => void;
 }) => {
 	const { folder, fileStore } = opt;
-	const indexFile = path.join(folder, DEBUG_DIR, "requests", REFS_FILE);
+	const indexFile = path.join(
+		opt.debugDir || path.join(folder, DEBUG_DIR),
+		"requests",
+		REFS_FILE
+	);
 
 	/** 全部引用: 快照标识 → 场景列表 */
 	const collect = () => {
@@ -118,7 +129,9 @@ export const createRefs = (opt: {
 		Object.keys(refs)
 			.sort()
 			.forEach(k => {
-				sorted[k] = refs[k].sort((a, b) => (a.route === b.route ? (a.scene < b.scene ? -1 : 1) : a.route < b.route ? -1 : 1));
+				sorted[k] = refs[k].sort((a, b) =>
+					a.route === b.route ? (a.scene < b.scene ? -1 : 1) : a.route < b.route ? -1 : 1
+				);
 			});
 		return sorted;
 	};
@@ -164,7 +177,9 @@ export const createRefs = (opt: {
 		let count = 0;
 		fileStore.listSceneFiles().forEach(({ data }) => {
 			if (!data) return;
-			const hits = Object.entries(data.scenes).filter(([, env]) => env && typeof env.ref === "string" && map(env.ref) !== null);
+			const hits = Object.entries(data.scenes).filter(
+				([, env]) => env && typeof env.ref === "string" && map(env.ref) !== null
+			);
 			if (!hits.length) return;
 			fileStore.updateScenes(data.key, scenes => {
 				hits.forEach(([name, env]) => {
@@ -182,12 +197,24 @@ export const createRefs = (opt: {
 		const k = keyOf(from);
 		return rewrite(ref => {
 			const r = keyOf(ref);
-			return r.startsWith(`${k}#`) || r.startsWith(`${k}/`) ? to + ref.slice(from.length) : null;
+			return r.startsWith(`${k}#`) || r.startsWith(`${k}/`)
+				? to + ref.slice(from.length)
+				: null;
 		});
 	};
-	const renameSnapshot = (from: string, to: string) => rewrite(ref => (keyOf(ref) === keyOf(from) ? to : null));
+	const renameSnapshot = (from: string, to: string) =>
+		rewrite(ref => (keyOf(ref) === keyOf(from) ? to : null));
 
-	return { indexFile, collect, rebuild, forSnapshot, forNode, moveNode, renameSnapshot, reload: opt.reload };
+	return {
+		indexFile,
+		collect,
+		rebuild,
+		forSnapshot,
+		forNode,
+		moveNode,
+		renameSnapshot,
+		reload: opt.reload,
+	};
 };
 
 export type Refs = ReturnType<typeof createRefs>;

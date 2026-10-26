@@ -2,6 +2,7 @@ import { Plus, Trash2 } from "lucide-react";
 import type { Row } from "@/api/debug-contract";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import { KV_ROW, KV_ROW_CHECK } from "../ui/kv";
 
 /** [名, 值, 是否启用] 行表格; 用于 query, 请求头与表单字段 */
 export const RowsEditor = ({
@@ -18,11 +19,15 @@ export const RowsEditor = ({
 	valuePlaceholder?: string;
 }) => {
 	const set = (i: number, patch: Partial<{ 0: string; 1: string; 2: boolean }>) =>
-		onChange(rows.map((r, j) => (j === i ? ([patch[0] ?? r[0], patch[1] ?? r[1], patch[2] ?? r[2]] as Row) : r)));
+		onChange(
+			rows.map((r, j) =>
+				j === i ? ([patch[0] ?? r[0], patch[1] ?? r[1], patch[2] ?? r[2]] as Row) : r
+			)
+		);
 	return (
-		<div className="space-y-1" role="group" aria-label={label}>
+		<div className="space-y-1.5" role="group" aria-label={label}>
 			{rows.map((r, i) => (
-				<div key={i} className="flex items-center gap-1.5">
+				<div key={i} className={KV_ROW_CHECK}>
 					<input
 						type="checkbox"
 						aria-label={`启用第 ${i + 1} 项`}
@@ -31,25 +36,31 @@ export const RowsEditor = ({
 					/>
 					<Input
 						aria-label={`${label}名 ${i + 1}`}
-						className="w-48 font-mono text-xs"
+						className="font-mono text-xs"
 						placeholder={namePlaceholder}
 						value={r[0]}
 						onChange={e => set(i, { 0: e.target.value })}
 					/>
 					<Input
 						aria-label={`${label}值 ${i + 1}`}
-						className="flex-1 font-mono text-xs"
+						className="font-mono text-xs"
 						placeholder={valuePlaceholder}
 						value={r[1]}
 						onChange={e => set(i, { 1: e.target.value })}
 					/>
-					<Button size="icon" variant="ghost" aria-label={`删除第 ${i + 1} 项`} onClick={() => onChange(rows.filter((_, j) => j !== i))}>
-						<Trash2 size={14} />
+					<Button
+						size="icon-sm"
+						variant="ghost"
+						aria-label={`删除第 ${i + 1} 项`}
+						title="删除"
+						onClick={() => onChange(rows.filter((_, j) => j !== i))}
+					>
+						<Trash2 size={12} />
 					</Button>
 				</div>
 			))}
 			<Button size="sm" variant="ghost" onClick={() => onChange([...rows, ["", "", true]])}>
-				<Plus size={14} />
+				<Plus size={12} />
 				添加
 			</Button>
 		</div>
@@ -66,31 +77,41 @@ export const VarsEditor = ({
 	vars: Array<[string, string]>;
 	onChange: (vars: Array<[string, string]>) => void;
 }) => (
-	<div className="space-y-1" role="group" aria-label={label}>
+	<div className="space-y-1.5" role="group" aria-label={label}>
 		{vars.map(([k, v], i) => (
-			<div key={i} className="flex items-center gap-1.5">
+			<div key={i} className={KV_ROW}>
 				<Input
 					aria-label={`${label}名 ${i + 1}`}
-					className="w-2/5 max-w-48 min-w-20 font-mono text-xs"
+					className="font-mono text-xs"
 					placeholder="变量名"
 					value={k}
-					onChange={e => onChange(vars.map((x, j) => (j === i ? [e.target.value, x[1]] : x)))}
+					onChange={e =>
+						onChange(vars.map((x, j) => (j === i ? [e.target.value, x[1]] : x)))
+					}
 				/>
 				<Input
 					aria-label={`${label}值 ${i + 1}`}
-					className="min-w-0 flex-1 font-mono text-xs"
+					className="font-mono text-xs"
 					placeholder="值; 敏感值写 <secret:来源id>"
 					title={v}
 					value={v}
-					onChange={e => onChange(vars.map((x, j) => (j === i ? [x[0], e.target.value] : x)))}
+					onChange={e =>
+						onChange(vars.map((x, j) => (j === i ? [x[0], e.target.value] : x)))
+					}
 				/>
-				<Button size="icon" variant="ghost" aria-label={`删除变量 ${k || i + 1}`} onClick={() => onChange(vars.filter((_, j) => j !== i))}>
-					<Trash2 size={14} />
+				<Button
+					size="icon-sm"
+					variant="ghost"
+					aria-label={`删除变量 ${k || i + 1}`}
+					title="删除变量"
+					onClick={() => onChange(vars.filter((_, j) => j !== i))}
+				>
+					<Trash2 size={12} />
 				</Button>
 			</div>
 		))}
 		<Button size="sm" variant="ghost" onClick={() => onChange([...vars, ["", ""]])}>
-			<Plus size={14} />
+			<Plus size={12} />
 			添加变量
 		</Button>
 	</div>

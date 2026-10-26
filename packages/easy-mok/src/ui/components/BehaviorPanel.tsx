@@ -5,7 +5,7 @@ import type { RouteSummary } from "@/api/contract";
 import { usePatchRouteState } from "@/api/queries";
 import { useUnsaved } from "@/lib/unsaved";
 import { Button } from "./ui/button";
-import { FieldError, Input, Label } from "./ui/input";
+import { FieldError, Hint, Input, Label } from "./ui/input";
 
 const parseOptional = (text: string, min: number, max: number) => {
 	if (!text.trim()) {
@@ -41,7 +41,7 @@ export const BehaviorPanel = ({ route }: { route: RouteSummary }) => {
 		);
 	return (
 		<form
-			className="max-w-xl space-y-4"
+			className="max-w-xl space-y-3"
 			onSubmit={e => {
 				e.preventDefault();
 				if (!d.ok || !s.ok) {
@@ -50,7 +50,7 @@ export const BehaviorPanel = ({ route }: { route: RouteSummary }) => {
 				save({ mode, delay: d.value, status: s.value }, "已保存");
 			}}
 		>
-			<fieldset className="space-y-2">
+			<fieldset className="space-y-1.5">
 				<legend className="mb-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
 					处理方式
 				</legend>
@@ -60,9 +60,10 @@ export const BehaviorPanel = ({ route }: { route: RouteSummary }) => {
 						["pass", "放行到真实后端(交给 dev server 的代理或后续中间件)"],
 					] as const
 				).map(([value, text]) => (
-					<label key={value} className="flex items-center gap-2 text-sm">
+					<label key={value} className="flex cursor-pointer items-center gap-1.5">
 						<input
 							type="radio"
+							className="accent-zinc-900 dark:accent-zinc-100"
 							name="mode"
 							value={value}
 							checked={mode === value}
@@ -72,7 +73,7 @@ export const BehaviorPanel = ({ route }: { route: RouteSummary }) => {
 					</label>
 				))}
 			</fieldset>
-			<div className="grid grid-cols-2 gap-3">
+			<div className="grid grid-cols-2 items-start gap-2">
 				<Label>
 					延迟(毫秒, 0-60000, 留空不延迟)
 					<Input
@@ -96,9 +97,7 @@ export const BehaviorPanel = ({ route }: { route: RouteSummary }) => {
 					<FieldError>{!s.ok && "请输入 100-599 的整数"}</FieldError>
 				</Label>
 			</div>
-			<p className="text-xs text-zinc-500">
-				状态码覆盖对数据, 函数与代理场景都生效; 场景自带的延迟会被这里的设置覆盖.
-			</p>
+			<Hint>状态码覆盖对数据, 函数与代理场景都生效; 场景自带的延迟会被这里的设置覆盖.</Hint>
 			<div className="flex gap-2">
 				<Button
 					type="submit"

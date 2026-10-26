@@ -29,6 +29,17 @@ const CASES = [
 	["/x/", "/x", {}],
 	["/a.b", "/aXb", null],
 	["/:id", "/A%20B", { id: "A B" }],
+	// 同段多参数按 0.1.13 的 backtrack 取值
+	["/flights/:from-:to", "/flights/A-B-C", { from: "A-B", to: "C" }],
+	// 重复参数名: 后出现的 undefined 不覆盖已有值
+	["/:id/:id?", "/a", { id: "a" }],
+	["/:id/:id?", "/a/b", { id: "b" }],
+	// + 与 * 后缀, 参数正则内的 *
+	["/a/:id+", "/a/xxx", { id: "xxx" }],
+	["/a/:id*", "/a/xxx", { id: "xxx", 0: "" }],
+	["/a/:id(.*)", "/a/x/y", { id: "x/y", 0: "/y" }],
+	// 参数正则内的嵌套分组按 0.1.13 原样处理
+	["/:id((a|b)c)", "/ac", { id: "a", 0: "a" }],
 ];
 
 describe("compileRoute", () => {
@@ -36,69 +47,34 @@ describe("compileRoute", () => {
 		expect(execRoute(compileRoute(route), pathname)).toEqual(expected);
 	});
 
-	it("同段多参数按 0.1.13 的 backtrack 取值", () => {
-		expect(execRoute(compileRoute("/flights/:from-:to"), "/flights/A-B-C")).toEqual({
-			from: "A-B",
-			to: "C",
-		});
+	it.each(["/%E4", "/%zz"])("URL 解码失败同 express 4 抛 400: %s", pathname => {
+		const run = () => execRoute(compileRoute("/:id"), pathname);
+		expect(run).toThrow(ParamError);
+		expect(run).toThrow(expect.objectContaining({ status: 400 }));
 	});
 
-	it("URL 解码失败同 express 4 抛 400", () => {
-		expect(() => execRoute(compileRoute("/:id"), "/%E4")).toThrow(ParamError);
-		let error;
-		try {
-			execRoute(compileRoute("/:id"), "/%zz");
-		} catch (err) {
-			error = err;
-		}
-		expect(error?.status).toBe(400);
-	});
-
-	it("重复参数名: 后出现的 undefined 不覆盖已有值", () => {
-		expect(execRoute(compileRoute("/:id/:id?"), "/a")).toEqual({ id: "a" });
-		expect(execRoute(compileRoute("/:id/:id?"), "/a/b")).toEqual({ id: "b" });
-	});
-
-	it("+ 与 * 后缀, 参数正则内的 *", () => {
-		expect(execRoute(compileRoute("/a/:id+"), "/a/xxx")).toEqual({ id: "xxx" });
-		expect(execRoute(compileRoute("/a/:id*"), "/a/xxx")).toEqual({ id: "xxx", 0: "" });
-		expect(execRoute(compileRoute("/a/:id(.*)"), "/a/x/y")).toEqual({ id: "x/y", 0: "/y" });
+	it.each(["/a/(?<n>\\d+)", "/x("])("0.1.13 无法编译的写法同样抛错: %s", route => {
+		expect(() => compileRoute(route)).toThrow(SyntaxError);
 	});
 });
 
 describe("parseKey", () => {
-	it("解析方法, 权重与路径", () => {
-		expect(parseKey("get|POST:2 /a/:id")).toEqual({
-			methods: ["GET", "POST"],
-			weight: 2,
-			path: "/a/:id",
-		});
-		expect(parseKey("METHOD /x")).toEqual({ methods: ["ALL"], weight: 0, path: "/x" });
-		expect(parseKey("ALL:-1 /x/*")).toEqual({ methods: ["ALL"], weight: -1, path: "/x/*" });
-		expect(parseKey("GET:abc /x").weight).toBe(0);
+	it.each([
+		["get|POST:2 /a/:id", { methods: ["GET", "POST"], weight: 2, path: "/a/:id" }],
+		["METHOD /x", { methods: ["ALL"], weight: 0, path: "/x" }],
+		["ALL:-1 /x/*", { methods: ["ALL"], weight: -1, path: "/x/*" }],
+		["GET:abc /x", { methods: ["GET"], weight: 0, path: "/x" }],
+	])("解析方法, 权重与路径: %s", (key, expected) => {
+		expect(parseKey(key)).toEqual(expected);
 	});
 
-	it("非法 key 返回 null", () => {
-		expect(parseKey("MOCK")).toBeNull();
-		expect(parseKey("/x")).toBeNull();
-		expect(parseKey("G-T /x")).toBeNull();
-		expect(parseKey("BAD KEY")).toBeNull();
+	it.each(["MOCK", "/x", "G-T /x", "BAD KEY"])("非法 key 返回 null: %s", key => {
+		expect(parseKey(key)).toBeNull();
 	});
 
 	it("routeId 可逆", () => {
 		const key = "GET|POST:1 /中文/:id";
 		expect(keyOfRouteId(routeIdOf(key))).toBe(key);
 		expect(routeIdOf(key)).toMatch(/^[\w-]+$/);
-	});
-});
-
-describe("0.1.13 的边界写法", () => {
-	it("参数正则内的嵌套分组按 0.1.13 原样处理", () => {
-		expect(execRoute(compileRoute("/:id((a|b)c)"), "/ac")).toEqual({ id: "a", 0: "a" });
-	});
-
-	it("0.1.13 无法编译的写法同样抛错", () => {
-		expect(() => compileRoute("/a/(?<n>\\d+)")).toThrow(SyntaxError);
-		expect(() => compileRoute("/x(")).toThrow(SyntaxError);
 	});
 });

@@ -65,22 +65,24 @@ const STYLE = `
 :host { all: initial; }
 * { box-sizing: border-box; font-family: ui-sans-serif, system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
 .wrap { position: fixed; z-index: 2147483000; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
-.fab { width: 40px; height: 40px; border-radius: 20px; border: 0; background: #0284c7; color: #fff; font: 600 14px/40px sans-serif; cursor: grab; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
-.fab.off { background: #71717a; }
-.panel { width: 320px; max-height: 420px; overflow: auto; background: #fff; color: #18181b; border: 1px solid #e4e4e7; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.2); padding: 12px; font-size: 12px; }
+.fab { width: 36px; height: 36px; border-radius: 18px; border: 0; background: #18181b; color: #fff; font: 600 13px/36px sans-serif; cursor: grab; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
+.fab.off { background: #a1a1aa; }
+.panel { width: 320px; max-height: 420px; overflow: auto; background: #fff; color: #18181b; border: 1px solid #e4e4e7; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.16); padding: 12px; font-size: 12px; line-height: 1.33; }
 .row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-.title { font-weight: 600; font-size: 13px; flex: 1; }
-select, button.btn { height: 26px; border: 1px solid #d4d4d8; border-radius: 6px; background: #fff; color: inherit; font-size: 12px; padding: 0 6px; }
+.title { font-weight: 500; font-size: 14px; line-height: 1.43; flex: 1; }
+select, button.btn { height: 24px; border: 1px solid #d4d4d8; border-radius: 6px; background: #fff; color: inherit; font-size: 12px; padding: 0 6px; }
 button.btn { cursor: pointer; }
-.hint { color: #a16207; }
+.hint { color: #b45309; }
 ul { list-style: none; margin: 0; padding: 0; }
 li { display: flex; gap: 6px; padding: 4px 0; border-top: 1px solid #f4f4f5; }
-.m { font-family: ui-monospace, Menlo, monospace; color: #0369a1; min-width: 44px; }
+.m { font-family: ui-monospace, Menlo, monospace; font-weight: 500; min-width: 44px; }
 .u { flex: 1; font-family: ui-monospace, Menlo, monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .s { color: #71717a; }
+.fab:focus-visible, select:focus-visible, button.btn:focus-visible { outline: 2px solid #18181b; outline-offset: 1px; }
 .err { color: #be123c; }
 @media (prefers-color-scheme: dark) {
 	.panel { background: #18181b; color: #f4f4f5; border-color: #3f3f46; }
+	.fab { background: #f4f4f5; color: #18181b; }
 	select, button.btn { background: #27272a; border-color: #3f3f46; }
 	li { border-color: #27272a; }
 }

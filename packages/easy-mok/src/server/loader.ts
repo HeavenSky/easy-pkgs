@@ -265,6 +265,8 @@ const routeTableOf = (mod: unknown) => {
 
 export const createRegistry = (opt: {
 	folder: string;
+	/** 调试存储目录; 位于 mock 目录内时不监听 */
+	debugDir?: string;
 	builtin?: Record<string, unknown>;
 	fileStore: ReturnType<typeof createFileStore>;
 	watch?: boolean;
@@ -297,7 +299,7 @@ export const createRegistry = (opt: {
 
 	// mock 目录不存在时监听最近的已存在祖先目录, 只放行通向 mock 目录的路径, 目录稍后创建(含多级)也能自动加载
 	const root = nearestExisting(folder);
-	const debugDir = path.join(folder, DEBUG_DIR);
+	const debugDir = opt.debugDir || path.join(folder, DEBUG_DIR);
 	const outside = (p: string) =>
 		root !== folder && !watchedDeps.has(p) && !isWithin(folder, p) && !isWithin(p, folder);
 	const watcher =
@@ -608,7 +610,9 @@ export const createRegistry = (opt: {
 				if (env && env.ref !== undefined && env.ref !== null) {
 					const problem =
 						refProblem(env.ref) ||
-						(env.script !== undefined || env.bodyFile !== undefined || (env.body !== undefined && env.body !== null)
+						(env.script !== undefined ||
+						env.bodyFile !== undefined ||
+						(env.body !== undefined && env.body !== null)
 							? "ref 不能与 body, bodyFile 或 script 同时出现"
 							: null);
 					if (problem) {
@@ -622,7 +626,7 @@ export const createRegistry = (opt: {
 						return;
 					}
 					ref = env.ref as string;
-					if (!loadSnapshot(folder, ref)) {
+					if (!loadSnapshot(debugDir, ref)) {
 						diagnostics.push({
 							type: "broken-ref",
 							message: `场景 ${name} 引用的快照不存在, 无法解析或是一次失败的发送, 请求时会降级到下一级场景: ${ref}`,

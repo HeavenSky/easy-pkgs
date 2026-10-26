@@ -52,9 +52,7 @@ const user = require("./_data/user.json"); // 相对 mock 目录
 ```json
 {
 	"key": "GET /api/export",
-	"scenes": {
-		"csv": { "status": 200, "bodyFile": "GET_api_export.9f8e7d6c/export.raw.csv" }
-	}
+	"scenes": { "csv": { "status": 200, "bodyFile": "GET_api_export.9f8e7d6c/export.raw.csv" } }
 }
 ```
 

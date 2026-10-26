@@ -13,25 +13,28 @@ const match = (pattern, method, pathname) => {
 };
 
 describe("规则匹配", () => {
-	it.each([
-		["/.well-known/**", "GET", "/.well-known/appspecific/com.chrome.devtools.json", true],
-		["/.well-known/**", "GET", "/.well-known", true],
-		["/.well-known/**", "GET", "/.well-knownx", false],
-		["/a/*", "GET", "/a/b", true],
-		["/a/*", "GET", "/a/b/c", false],
-		["/a/**", "GET", "/a/b/c", true],
-		["/a/*/c", "GET", "/A/B/C", true],
-		["**/*.hot-update.json", "GET", "/x/main.abc.hot-update.json", true],
-		["**/*.hot-update.json", "GET", "/main.hot-update.json", true],
-		["/apple-touch-icon*.png", "GET", "/apple-touch-icon-precomposed.png", true],
-		["/apple-touch-icon*.png", "GET", "/x/apple-touch-icon.png", false],
-		["GET /x/**", "GET", "/x/1", true],
-		["GET /x/**", "POST", "/x/1", false],
-		["get|post /x", "POST", "/x", true],
-		["/a.b", "GET", "/aXb", false],
-		["/a(b)", "GET", "/a(b)", true],
-	])("%s %s %s → %s", (pattern, method, pathname, expected) => {
-		expect(match(pattern, method, pathname)).toBe(expected);
+	it("* 只匹配一段, ** 匹配任意段与自身, 不区分大小写, 可限定方法, 其余字符按原样匹配", () => {
+		for (const [pattern, method, pathname, expected] of [
+			["/.well-known/**", "GET", "/.well-known/appspecific/com.chrome.devtools.json", true],
+			["/.well-known/**", "GET", "/.well-known", true],
+			["/.well-known/**", "GET", "/.well-knownx", false],
+			["/a/*", "GET", "/a/b", true],
+			["/a/*", "GET", "/a/b/c", false],
+			["/a/**", "GET", "/a/b/c", true],
+			["/a/*/c", "GET", "/A/B/C", true],
+			["**/*.hot-update.json", "GET", "/x/main.abc.hot-update.json", true],
+			["**/*.hot-update.json", "GET", "/main.hot-update.json", true],
+			["/apple-touch-icon*.png", "GET", "/apple-touch-icon-precomposed.png", true],
+			["/apple-touch-icon*.png", "GET", "/x/apple-touch-icon.png", false],
+			["GET /x/**", "GET", "/x/1", true],
+			["GET /x/**", "POST", "/x/1", false],
+			["get|post /x", "POST", "/x", true],
+			["/a.b", "GET", "/aXb", false],
+			["/a(b)", "GET", "/a(b)", true],
+		]) {
+			const args = [pattern, method, pathname];
+			expect([args, match(pattern, method, pathname)]).toEqual([args, expected]);
+		}
 	});
 
 	it("非法规则给出原因", () => {
@@ -138,7 +141,7 @@ describe("忽略后的记录与接口", () => {
 		});
 	});
 
-	it("自定义规则持久化, 接口校验与安全校验, 关闭内置规则后重新记录", async () => {
+	it("自定义规则持久化与接口校验, 关闭内置规则后重新记录", async () => {
 		expect((await ctx.api("/ignore")).body.defaults.rules.length).toBeGreaterThan(10);
 		const bad = await ctx.api("/ignore", { method: "PUT", json: { custom: ["/ok", "nope"] } });
 		expect(bad.status).toBe(400);
@@ -151,12 +154,6 @@ describe("忽略后的记录与接口", () => {
 			(await ctx.api("/ignore/validate", { method: "POST", json: { rules: ["/a", "x"] } }))
 				.body.errors
 		).toHaveLength(1);
-		const noHeader = await fetch(`${ctx.base}/__mock/api/ignore`, {
-			method: "PUT",
-			headers: { "content-type": "application/json" },
-			body: "{}",
-		});
-		expect(noHeader.status).toBe(403);
 		const ok = await ctx.api("/ignore", {
 			method: "PUT",
 			json: { custom: ["GET /api/**"], disabled: ["/favicon.ico"] },

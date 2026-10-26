@@ -63,3 +63,11 @@ export const assertName = (name: unknown, what: string) => {
 	}
 	return name;
 };
+
+const pad2 = (n: number) => String(n).padStart(2, "0");
+/** 带时区偏移的本地时间, 如 2026-10-26T00:12:03+08:00 */
+export const localIso = (d: Date) => {
+	const off = -d.getTimezoneOffset();
+	const sign = off >= 0 ? "+" : "-";
+	return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}${sign}${pad2(Math.floor(Math.abs(off) / 60))}:${pad2(Math.abs(off) % 60)}`;
+};

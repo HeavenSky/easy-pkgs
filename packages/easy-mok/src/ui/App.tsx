@@ -5,7 +5,7 @@ import { useLiveEvents } from "./api/live";
 import { useMeta } from "./api/queries";
 import { Header } from "./components/Header";
 import { LanBanner } from "./components/LanControl";
-import { ErrorState, Spinner } from "./components/ui/state";
+import { ErrorState, Notice, Spinner } from "./components/ui/state";
 
 // 页面按路由拆包, 首屏只加载框架与当前页
 const loaders = {
@@ -48,18 +48,15 @@ export const App = () => {
 			<Header meta={meta.data} live={live} />
 			<LanBanner lan={meta.data.lan} />
 			{meta.data.debug.historyWarn && (
-				<div role="status" className="bg-amber-100 px-4 py-1.5 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-200">
-					调试历史已超过 1 GB({(meta.data.debug.historyBytes / 1024 ** 3).toFixed(2)} GB), 请到「调试 → 全部历史」按天删除不需要的记录.
-				</div>
+				<Notice>
+					调试历史已超过 1 GB({(meta.data.debug.historyBytes / 1024 ** 3).toFixed(2)} GB),
+					请到「调试 → 全部历史」按天删除不需要的记录.
+				</Notice>
 			)}
 			{live === "reconnecting" && (
-				<div
-					role="status"
-					className="flex items-center gap-2 bg-amber-100 px-4 py-1.5 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-200"
-				>
-					<WifiOff size={14} />与 dev server 的连接已中断, 正在重连;
-					期间显示的数据可能已过时.
-				</div>
+				<Notice icon={<WifiOff size={12} className="shrink-0" />}>
+					与 dev server 的连接已中断, 正在重连; 期间显示的数据可能已过时.
+				</Notice>
 			)}
 			<main className="min-h-0 flex-1">
 				<Suspense fallback={<Spinner label="加载页面" />}>
@@ -70,6 +67,8 @@ export const App = () => {
 						<Route path="/diagnostics" component={DiagnosticsPage} />
 						<Route path="/debug" component={DebugPage} />
 						<Route path="/debug/history" component={DebugHistoryPage} />
+						<Route path="/debug/collection" component={DebugPage} />
+						<Route path="/debug/group/:gid" component={DebugPage} />
 						<Route path="/debug/req/:id" component={DebugPage} />
 						<Route path="/debug/req/:id/snap/:snap" component={DebugPage} />
 						<Route path="/routes/:id" component={RoutesPage} />

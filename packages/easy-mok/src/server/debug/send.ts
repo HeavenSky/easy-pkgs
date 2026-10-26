@@ -20,7 +20,10 @@ export type SentRequest = {
 	method: string;
 	url: string;
 	headers: Array<[string, string]>;
-	body: { type: "none" } | { type: "text"; text: string } | { type: "binary"; file: string; size: number; sha256: string };
+	body:
+		| { type: "none" }
+		| { type: "text"; text: string }
+		| { type: "binary"; file: string; size: number; sha256: string };
 };
 export type ReceivedResponse = {
 	status: number;
@@ -60,9 +63,13 @@ const has = (headers: Array<[string, string]>, name: string) => headers.some(([k
 
 /** 相对 mock 目录的文件; 越界或不存在时抛 400 */
 const readLocalFile = (folder: string, rel: unknown) => {
-	if (typeof rel !== "string" || !rel.trim()) throw new MockError("BAD_REQUEST", 400, "请填写文件路径", { field: "body" });
+	if (typeof rel !== "string" || !rel.trim())
+		throw new MockError("BAD_REQUEST", 400, "请填写文件路径", { field: "body" });
 	const file = path.resolve(folder, rel);
-	if (!file.startsWith(folder + path.sep)) throw new MockError("BAD_REQUEST", 400, `文件必须位于 mock 目录内: ${rel}`, { field: "body" });
+	if (!file.startsWith(folder + path.sep))
+		throw new MockError("BAD_REQUEST", 400, `文件必须位于 mock 目录内: ${rel}`, {
+			field: "body",
+		});
 	try {
 		return { file, data: fs.readFileSync(file) };
 	} catch {
@@ -71,38 +78,62 @@ const readLocalFile = (folder: string, rel: unknown) => {
 };
 
 /** 按请求体类型生成字节与默认 content-type */
-export const buildBody = (body: Record<string, any>, folder: string): { data: Buffer | null; type: string | null } => {
+export const buildBody = (
+	body: Record<string, any>,
+	folder: string
+): { data: Buffer | null; type: string | null } => {
 	switch (body.type) {
 		case "json":
-			return { data: Buffer.from(JSON.stringify(body.content ?? null)), type: "application/json" };
+			return {
+				data: Buffer.from(JSON.stringify(body.content ?? null)),
+				type: "application/json",
+			};
 		case "text":
-			return { data: Buffer.from(String(body.content ?? "")), type: "text/plain; charset=utf-8" };
+			return {
+				data: Buffer.from(String(body.content ?? "")),
+				type: "text/plain; charset=utf-8",
+			};
 		case "form": {
 			const params = new URLSearchParams();
-			(body.fields || []).forEach((r: [string, string, boolean]) => r[2] !== false && r[0] && params.append(r[0], r[1]));
-			return { data: Buffer.from(params.toString()), type: "application/x-www-form-urlencoded" };
+			(body.fields || []).forEach(
+				(r: [string, string, boolean]) =>
+					r[2] !== false && r[0] && params.append(r[0], r[1])
+			);
+			return {
+				data: Buffer.from(params.toString()),
+				type: "application/x-www-form-urlencoded",
+			};
 		}
 		case "multipart": {
 			const boundary = `----easymok${crypto.randomBytes(12).toString("hex")}`;
 			const chunks: Buffer[] = [];
 			const quote = (s: string) => s.replace(/"/g, "%22").replace(/\r|\n/g, " ");
-			(body.parts || []).forEach((p: { name: string; value?: string; file?: string; enabled?: boolean }) => {
-				if (p.enabled === false || !p.name) return;
-				if (p.file !== undefined) {
-					const { file, data } = readLocalFile(folder, p.file);
-					chunks.push(
-						Buffer.from(
-							`--${boundary}\r\ncontent-disposition: form-data; name="${quote(p.name)}"; filename="${quote(path.basename(file))}"\r\ncontent-type: ${typeOfExt(extOfFile(file))}\r\n\r\n`
-						),
-						data,
-						Buffer.from("\r\n")
-					);
-				} else {
-					chunks.push(Buffer.from(`--${boundary}\r\ncontent-disposition: form-data; name="${quote(p.name)}"\r\n\r\n${p.value ?? ""}\r\n`));
+			(body.parts || []).forEach(
+				(p: { name: string; value?: string; file?: string; enabled?: boolean }) => {
+					if (p.enabled === false || !p.name) return;
+					if (p.file !== undefined) {
+						const { file, data } = readLocalFile(folder, p.file);
+						chunks.push(
+							Buffer.from(
+								`--${boundary}\r\ncontent-disposition: form-data; name="${quote(p.name)}"; filename="${quote(path.basename(file))}"\r\ncontent-type: ${typeOfExt(extOfFile(file))}\r\n\r\n`
+							),
+							data,
+							Buffer.from("\r\n")
+						);
+					} else {
+						chunks.push(
+							Buffer.from(
+								`--${boundary}\r\ncontent-disposition: form-data; name="${quote(p.name)}"\r\n\r\n${p.value ?? ""}\r\n`
+							)
+						);
+					}
 				}
-			});
+			);
 			chunks.push(Buffer.from(`--${boundary}--\r\n`));
-			return { data: Buffer.concat(chunks), type: `multipart/form-data; boundary=${boundary}` };
+			return {
+				data: Buffer.concat(chunks),
+				type: `multipart/form-data; boundary=${boundary}`,
+			};
 		}
 		case "binary": {
 			const { file, data } = readLocalFile(folder, body.file);
@@ -139,7 +170,9 @@ const requestOnce = (
 		const secure = target.protocol === "https:";
 		const port = Number(target.port) || (secure ? 443 : 80);
 		const hostHeader = target.host;
-		const headerList: Array<[string, string]> = has(headers, "host") ? headers : [["host", hostHeader], ...headers];
+		const headerList: Array<[string, string]> = has(headers, "host")
+			? headers
+			: [["host", hostHeader], ...headers];
 		const proxy = settings.proxy ? new URL(settings.proxy) : null;
 		const proxyAuth =
 			proxy && proxy.username
@@ -168,7 +201,17 @@ const requestOnce = (
 		};
 		const base = { method, headers: headerObject(headerList) };
 		if (!proxy) {
-			start({ ...base, host: target.hostname.replace(/^\[|\]$/g, ""), port, path: target.pathname + target.search, servername: target.hostname, rejectUnauthorized: !settings.insecureTLS } as https.RequestOptions, secure ? https : http);
+			start(
+				{
+					...base,
+					host: target.hostname.replace(/^\[|\]$/g, ""),
+					port,
+					path: target.pathname + target.search,
+					servername: target.hostname,
+					rejectUnauthorized: !settings.insecureTLS,
+				} as https.RequestOptions,
+				secure ? https : http
+			);
 			return;
 		}
 		const proxyHost = proxy.hostname.replace(/^\[|\]$/g, "");
@@ -180,7 +223,9 @@ const requestOnce = (
 					host: proxyHost,
 					port: proxyPort,
 					path: target.toString(),
-					headers: headerObject(proxyAuth ? [...headerList, ["proxy-authorization", proxyAuth]] : headerList),
+					headers: headerObject(
+						proxyAuth ? [...headerList, ["proxy-authorization", proxyAuth]] : headerList
+					),
 				},
 				http
 			);
@@ -191,7 +236,10 @@ const requestOnce = (
 			port: proxyPort,
 			method: "CONNECT",
 			path: `${target.hostname}:${port}`,
-			headers: { host: `${target.hostname}:${port}`, ...(proxyAuth ? { "proxy-authorization": proxyAuth } : {}) },
+			headers: {
+				host: `${target.hostname}:${port}`,
+				...(proxyAuth ? { "proxy-authorization": proxyAuth } : {}),
+			},
 		});
 		req = connect;
 		connect.once("connect", (res, socket) => {
@@ -206,7 +254,11 @@ const requestOnce = (
 					path: target.pathname + target.search,
 					agent: false,
 					createConnection: () =>
-						tls.connect({ socket, servername: target.hostname, rejectUnauthorized: !settings.insecureTLS }),
+						tls.connect({
+							socket,
+							servername: target.hostname,
+							rejectUnauthorized: !settings.insecureTLS,
+						}),
 				} as https.RequestOptions,
 				https
 			);
@@ -231,9 +283,14 @@ const decoderOf = (encoding: string): Transform | null => {
 /** 把响应体写进 dir/raw.<ext>; 解压失败时改存原始字节, 超过上限时截断 */
 const saveBody = (res: http.IncomingMessage, dir: string, signal: AbortSignal) =>
 	new Promise<ReceivedResponse["body"]>((resolve, reject) => {
-		const contentType = typeof res.headers["content-type"] === "string" ? res.headers["content-type"] : null;
-		const charset = contentType ? (/charset=([^;]+)/i.exec(contentType)?.[1] || "").trim().replace(/^"|"$/g, "") || null : null;
-		const encoding = String(res.headers["content-encoding"] || "").trim().toLowerCase();
+		const contentType =
+			typeof res.headers["content-type"] === "string" ? res.headers["content-type"] : null;
+		const charset = contentType
+			? (/charset=([^;]+)/i.exec(contentType)?.[1] || "").trim().replace(/^"|"$/g, "") || null
+			: null;
+		const encoding = String(res.headers["content-encoding"] || "")
+			.trim()
+			.toLowerCase();
 		const file = path.join(dir, `raw.${extOfType(contentType)}`);
 		const rawTmp = path.join(dir, "raw.encoded.tmp");
 		const decoder = encoding && encoding !== "identity" ? decoderOf(encoding) : null;
@@ -248,7 +305,8 @@ const saveBody = (res: http.IncomingMessage, dir: string, signal: AbortSignal) =
 		const finish = () => {
 			if (settled) return;
 			settled = true;
-			const close = (s: fs.WriteStream | null) => new Promise<void>(r => (s ? s.end(r) : r()));
+			const close = (s: fs.WriteStream | null) =>
+				new Promise<void>(r => (s ? s.end(r) : r()));
 			Promise.all([close(out), close(rawOut)]).then(() => {
 				if (!decoded && rawOut) {
 					fs.renameSync(rawTmp, file);
@@ -264,7 +322,9 @@ const saveBody = (res: http.IncomingMessage, dir: string, signal: AbortSignal) =
 					contentType: contentType ? baseType(contentType) : null,
 					charset,
 					size,
-					sha256: decoded ? hash.digest("hex") : sha256(fs.existsSync(file) ? fs.readFileSync(file) : ""),
+					sha256: decoded
+						? hash.digest("hex")
+						: sha256(fs.existsSync(file) ? fs.readFileSync(file) : ""),
 					originalEncoding: encoding && encoding !== "identity" ? encoding : null,
 					decoded,
 					truncated,
@@ -308,7 +368,11 @@ const saveBody = (res: http.IncomingMessage, dir: string, signal: AbortSignal) =
 		});
 		res.on("aborted", () => !truncated && reject(new SendError("ABORTED", "响应被中断")));
 		res.on("error", err => !truncated && !settled && reject(err));
-		signal.addEventListener("abort", () => res.destroy(new SendError("ABORTED", "请求已取消")), { once: true });
+		signal.addEventListener(
+			"abort",
+			() => res.destroy(new SendError("ABORTED", "请求已取消")),
+			{ once: true }
+		);
 		if (!decoder && encoding && encoding !== "identity") decoded = false;
 	});
 
@@ -325,17 +389,28 @@ const codeOf = (err: any) =>
  */
 export const performSend = async (opts: {
 	resolved: ResolvedRequest;
-	settings: { timeoutMs: number; followRedirects: boolean; insecureTLS: boolean; proxy: string | null };
+	settings: {
+		timeoutMs: number;
+		followRedirects: boolean;
+		insecureTLS: boolean;
+		proxy: string | null;
+	};
 	folder: string;
 	dir: string;
 	signal: AbortSignal;
 	/** 每一跳发送前取附加的 cookie 头, 收到响应后交回 set-cookie; Cookie jar 由调用方提供 */
-	cookies?: { header: (url: URL) => string | null; store: (url: URL, setCookies: string[]) => void };
+	cookies?: {
+		header: (url: URL) => string | null;
+		store: (url: URL, setCookies: string[]) => void;
+	};
 }): Promise<SendResult> => {
 	const { resolved, settings, dir } = opts;
 	const built = buildBody(resolved.body, opts.folder);
-	let headers = resolved.headers.filter(([k]) => k !== "content-length" && k !== "transfer-encoding");
-	if (built.data && !has(headers, "content-type")) headers.push(["content-type", built.type as string]);
+	let headers = resolved.headers.filter(
+		([k]) => k !== "content-length" && k !== "transfer-encoding"
+	);
+	if (built.data && !has(headers, "content-type"))
+		headers.push(["content-type", built.type as string]);
 	if (!has(headers, "accept-encoding")) headers.push(["accept-encoding", "gzip, deflate, br"]);
 	let body = built.data;
 	let method = resolved.method;
@@ -344,7 +419,10 @@ export const performSend = async (opts: {
 	const controller = new AbortController();
 	const abort = () => controller.abort();
 	opts.signal.addEventListener("abort", abort, { once: true });
-	const timer = setTimeout(() => controller.abort(new SendError("TIMEOUT", `请求超时(${settings.timeoutMs}ms)`)), settings.timeoutMs);
+	const timer = setTimeout(
+		() => controller.abort(new SendError("TIMEOUT", `请求超时(${settings.timeoutMs}ms)`)),
+		settings.timeoutMs
+	);
 	const withCookies = (url: URL) => {
 		const jar = opts.cookies?.header(url);
 		if (!jar) return headers;
@@ -353,11 +431,15 @@ export const performSend = async (opts: {
 		// 手写的同名 cookie 优先
 		const names = new Set(manual[1].split(";").map(p => p.split("=")[0].trim()));
 		const extra = jar.split("; ").filter(p => !names.has(p.split("=")[0].trim()));
-		return headers.map(h => (h === manual && extra.length ? ["cookie", `${manual[1]}; ${extra.join("; ")}`] : h)) as Array<[string, string]>;
+		return headers.map(h =>
+			h === manual && extra.length ? ["cookie", `${manual[1]}; ${extra.join("; ")}`] : h
+		) as Array<[string, string]>;
 	};
 	const sentHeaders = () => {
 		const list = withCookies(target);
-		const out: Array<[string, string]> = has(list, "host") ? [...list] : [["host", target.host], ...list];
+		const out: Array<[string, string]> = has(list, "host")
+			? [...list]
+			: [["host", target.host], ...list];
 		if (body) out.push(["content-length", String(body.length)]);
 		return out;
 	};
@@ -369,45 +451,71 @@ export const performSend = async (opts: {
 		body: { type: "none" },
 	};
 	if (body) {
-		const text = /^(text\/|application\/(json|x-www-form-urlencoded|xml|javascript))|\+json|\+xml/.test(baseType(String(headers.find(([k]) => k === "content-type")?.[1] || "")));
+		const text =
+			/^(text\/|application\/(json|x-www-form-urlencoded|xml|javascript))|\+json|\+xml/.test(
+				baseType(String(headers.find(([k]) => k === "content-type")?.[1] || ""))
+			);
 		if (text && body.length <= REQ_INLINE_LIMIT) {
 			request.body = { type: "text", text: body.toString("utf8") };
 		} else {
 			fs.writeFileSync(path.join(dir, "req.bin"), body);
-			request.body = { type: "binary", file: "req.bin", size: body.length, sha256: sha256(body) };
+			request.body = {
+				type: "binary",
+				file: "req.bin",
+				size: body.length,
+				sha256: sha256(body),
+			};
 		}
 	}
 	const redirects: ReceivedResponse["redirects"] = [];
 	try {
 		for (let hop = 0; ; hop++) {
-			const { res, ttfbMs } = await requestOnce(target, method, firstHeaders, body, settings, started, controller.signal).catch(err => {
-				throw controller.signal.reason instanceof SendError ? controller.signal.reason : err;
+			const { res, ttfbMs } = await requestOnce(
+				target,
+				method,
+				firstHeaders,
+				body,
+				settings,
+				started,
+				controller.signal
+			).catch(err => {
+				throw controller.signal.reason instanceof SendError
+					? controller.signal.reason
+					: err;
 			});
 			const setCookies = res.headers["set-cookie"];
 			if (setCookies && opts.cookies) opts.cookies.store(target, setCookies);
 			const location = res.headers.location;
 			if (settings.followRedirects && REDIRECTS.has(res.statusCode || 0) && location) {
-				if (hop >= MAX_REDIRECTS) throw new SendError("TOO_MANY_REDIRECTS", `重定向超过 ${MAX_REDIRECTS} 次`);
+				if (hop >= MAX_REDIRECTS)
+					throw new SendError("TOO_MANY_REDIRECTS", `重定向超过 ${MAX_REDIRECTS} 次`);
 				res.resume();
 				const next = new URL(location, target);
 				redirects.push({ status: res.statusCode as number, location: next.toString() });
 				const status = res.statusCode as number;
-				if (status === 303 || ((status === 301 || status === 302) && method !== "GET" && method !== "HEAD")) {
+				if (
+					status === 303 ||
+					((status === 301 || status === 302) && method !== "GET" && method !== "HEAD")
+				) {
 					method = status === 303 && method === "HEAD" ? "HEAD" : "GET";
 					body = null;
 					headers = headers.filter(([k]) => k !== "content-type");
 				}
 				// 跨源重定向不携带认证头与手写 cookie, 与浏览器一致
-				if (next.origin !== target.origin) headers = headers.filter(([k]) => k !== "authorization" && k !== "cookie");
+				if (next.origin !== target.origin)
+					headers = headers.filter(([k]) => k !== "authorization" && k !== "cookie");
 				target = next;
 				firstHeaders = sentHeaders();
 				continue;
 			}
 			const raw = res.rawHeaders;
 			const responseHeaders: Array<[string, string]> = [];
-			for (let i = 0; i < raw.length; i += 2) responseHeaders.push([raw[i].toLowerCase(), raw[i + 1]]);
+			for (let i = 0; i < raw.length; i += 2)
+				responseHeaders.push([raw[i].toLowerCase(), raw[i + 1]]);
 			const saved = await saveBody(res, dir, controller.signal).catch(err => {
-				throw controller.signal.reason instanceof SendError ? controller.signal.reason : err;
+				throw controller.signal.reason instanceof SendError
+					? controller.signal.reason
+					: err;
 			});
 			return {
 				request,

@@ -40,6 +40,8 @@ export const main = async (
 				lines.push("[easy-mok] 局域网访问管理页需加 --lan");
 		}
 		lines.push(`[easy-mok] mock 目录: ${started.mock.mock.options.folder}`);
+		if (started.mock.mock.options.ui)
+			lines.push(`[easy-mok] 调试存储: ${started.mock.mock.options.debugDir}`);
 		let closing = false;
 		const stop = (signal: string) => {
 			if (closing) {

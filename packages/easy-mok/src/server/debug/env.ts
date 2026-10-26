@@ -7,7 +7,13 @@ import { SRC_ID_RE, assertDebugName, isDebugName, nameKey } from "./names";
 import { byWeight, etagOfText, normalizeVars, readJson, weightOf } from "./store";
 import { ensureIgnoredDir } from "./redact";
 
-export type EnvGroup = { name: string; title: string; weight: number; vars: Record<string, string>; etag: string };
+export type EnvGroup = {
+	name: string;
+	title: string;
+	weight: number;
+	vars: Record<string, string>;
+	etag: string;
+};
 export type SecretSource =
 	| { from: "value"; value: string }
 	| { from: "env"; name: string }
@@ -21,12 +27,29 @@ const SOURCE_TIMEOUT_MS = 15000;
 /** 校验并规范化一个来源配置; 不合法时为 null */
 export const normalizeSource = (raw: unknown): SecretSource | null => {
 	if (!isPlainObject(raw)) return null;
-	if (raw.from === "value" && typeof raw.value === "string") return { from: "value", value: raw.value };
-	if (raw.from === "env" && typeof raw.name === "string" && /^[A-Za-z_][A-Za-z0-9_]*$/.test(raw.name)) return { from: "env", name: raw.name };
-	if (raw.from === "keychain" && typeof raw.service === "string" && raw.service && typeof raw.account === "string") {
+	if (raw.from === "value" && typeof raw.value === "string")
+		return { from: "value", value: raw.value };
+	if (
+		raw.from === "env" &&
+		typeof raw.name === "string" &&
+		/^[A-Za-z_][A-Za-z0-9_]*$/.test(raw.name)
+	)
+		return { from: "env", name: raw.name };
+	if (
+		raw.from === "keychain" &&
+		typeof raw.service === "string" &&
+		raw.service &&
+		typeof raw.account === "string"
+	) {
 		return { from: "keychain", service: raw.service, account: raw.account };
 	}
-	if (raw.from === "command" && Array.isArray(raw.argv) && raw.argv.length && raw.argv.every(a => typeof a === "string") && raw.argv[0]) {
+	if (
+		raw.from === "command" &&
+		Array.isArray(raw.argv) &&
+		raw.argv.length &&
+		raw.argv.every(a => typeof a === "string") &&
+		raw.argv[0]
+	) {
 		return { from: "command", argv: raw.argv as string[] };
 	}
 	if (raw.from === "prompt") return { from: "prompt" };
@@ -35,24 +58,46 @@ export const normalizeSource = (raw: unknown): SecretSource | null => {
 
 const exec = (file: string, args: string[]) =>
 	new Promise<string>((resolve, reject) => {
-		execFile(file, args, { timeout: SOURCE_TIMEOUT_MS, maxBuffer: 1024 * 1024, windowsHide: true }, (err, stdout, stderr) => {
-			if (err) {
-				const code = (err as NodeJS.ErrnoException).code;
-				reject(new Error(code === "ENOENT" ? `找不到命令 ${file}` : String(stderr || err.message).trim().split("\n")[0]));
-				return;
+		execFile(
+			file,
+			args,
+			{ timeout: SOURCE_TIMEOUT_MS, maxBuffer: 1024 * 1024, windowsHide: true },
+			(err, stdout, stderr) => {
+				if (err) {
+					const code = (err as NodeJS.ErrnoException).code;
+					reject(
+						new Error(
+							code === "ENOENT"
+								? `找不到命令 ${file}`
+								: String(stderr || err.message)
+										.trim()
+										.split("\n")[0]
+						)
+					);
+					return;
+				}
+				const value = String(stdout).replace(/\r?\n$/, "");
+				if (!value) reject(new Error("输出为空"));
+				else resolve(value);
 			}
-			const value = String(stdout).replace(/\r?\n$/, "");
-			if (!value) reject(new Error("输出为空"));
-			else resolve(value);
-		});
+		);
 	});
 
 /** 运行 keychain 或 command 来源: 不经 shell, 带超时; macOS 用 security, Linux 用 secret-tool */
 const runSource = (s: SecretSource) => {
 	if (s.from === "command") return exec(s.argv[0], s.argv.slice(1));
 	if (s.from === "keychain") {
-		if (process.platform === "darwin") return exec("security", ["find-generic-password", "-s", s.service, "-a", s.account, "-w"]);
-		if (process.platform === "linux") return exec("secret-tool", ["lookup", "service", s.service, "account", s.account]);
+		if (process.platform === "darwin")
+			return exec("security", [
+				"find-generic-password",
+				"-s",
+				s.service,
+				"-a",
+				s.account,
+				"-w",
+			]);
+		if (process.platform === "linux")
+			return exec("secret-tool", ["lookup", "service", s.service, "account", s.account]);
 		return Promise.reject(new Error(`当前系统(${process.platform})不支持 keychain 来源`));
 	}
 	return Promise.reject(new Error("不是外部来源"));
@@ -87,7 +132,12 @@ export const createEnvStore = (debugRoot: string) => {
 		const { ok, value, text } = readJson(fileOf(name));
 		if (text === null) return null;
 		if (!ok || !isPlainObject(value)) {
-			throw new MockError("META_FILE_INVALID", 409, `${fileOf(name)} 不是合法的 JSON 对象, 为免覆盖已拒绝写入; 请先修复或删除该文件`, { file: fileOf(name) });
+			throw new MockError(
+				"META_FILE_INVALID",
+				409,
+				`${fileOf(name)} 不是合法的 JSON 对象, 为免覆盖已拒绝写入; 请先修复或删除该文件`,
+				{ file: fileOf(name) }
+			);
 		}
 		return {
 			name,
@@ -102,21 +152,32 @@ export const createEnvStore = (debugRoot: string) => {
 		const problems: Array<{ type: string; message: string; file?: string }> = [];
 		let names: string[] = [];
 		try {
-			names = fs.readdirSync(dir).filter(n => n.endsWith(".json")).map(n => n.slice(0, -5));
+			names = fs
+				.readdirSync(dir)
+				.filter(n => n.endsWith(".json"))
+				.map(n => n.slice(0, -5));
 		} catch {
 			return { groups: [] as EnvGroup[], problems };
 		}
 		const groups: EnvGroup[] = [];
 		names.sort().forEach(n => {
 			if (!isDebugName(n)) {
-				problems.push({ type: "invalid-name", message: `环境组名不合规, 已忽略: ${n}`, file: fileOf(n) });
+				problems.push({
+					type: "invalid-name",
+					message: `环境组名不合规, 已忽略: ${n}`,
+					file: fileOf(n),
+				});
 				return;
 			}
 			try {
 				const g = read(n);
 				if (g) groups.push(g);
 			} catch (err) {
-				problems.push({ type: "env-invalid", message: (err as Error).message, file: fileOf(n) });
+				problems.push({
+					type: "env-invalid",
+					message: (err as Error).message,
+					file: fileOf(n),
+				});
 			}
 		});
 		return { groups: groups.sort(byWeight), problems };
@@ -128,26 +189,41 @@ export const createEnvStore = (debugRoot: string) => {
 		return g;
 	};
 
-	const put = (rawName: unknown, patch: { title?: unknown; weight?: unknown; vars?: unknown }, ifMatch?: string | null) => {
+	const put = (
+		rawName: unknown,
+		patch: { title?: unknown; weight?: unknown; vars?: unknown },
+		ifMatch?: string | null
+	) => {
 		const name = assertDebugName(rawName, "环境组名");
 		const clash = existingName(name);
-		if (clash && clash !== name) throw new MockError("CONFLICT", 409, `已有仅大小写不同的环境组: ${clash}`);
+		if (clash && clash !== name)
+			throw new MockError("CONFLICT", 409, `已有仅大小写不同的环境组: ${clash}`);
 		const file = fileOf(name);
 		const current = readJson(file);
 		if (!current.ok || (current.text !== null && !isPlainObject(current.value))) {
-			throw new MockError("META_FILE_INVALID", 409, `${file} 不是合法的 JSON 对象, 为免覆盖已拒绝写入; 请先修复或删除该文件`, { file });
+			throw new MockError(
+				"META_FILE_INVALID",
+				409,
+				`${file} 不是合法的 JSON 对象, 为免覆盖已拒绝写入; 请先修复或删除该文件`,
+				{ file }
+			);
 		}
 		if (ifMatch && ifMatch !== etagOfText(current.text)) {
 			throw new MockError("CONFLICT", 409, "环境组已被其他人修改");
 		}
-		const next: Record<string, unknown> = { ...(isPlainObject(current.value) ? current.value : {}), version: 1 };
+		const next: Record<string, unknown> = {
+			...(isPlainObject(current.value) ? current.value : {}),
+			version: 1,
+		};
 		if (patch.title !== undefined) {
 			if (patch.title === null || patch.title === "") delete next.name;
-			else if (typeof patch.title !== "string") throw new MockError("BAD_REQUEST", 400, "title 必须是字符串", { field: "title" });
+			else if (typeof patch.title !== "string")
+				throw new MockError("BAD_REQUEST", 400, "title 必须是字符串", { field: "title" });
 			else next.name = patch.title;
 		}
 		if (patch.weight !== undefined) {
-			if (patch.weight !== null && !Number.isSafeInteger(patch.weight)) throw new MockError("BAD_REQUEST", 400, "weight 必须是整数", { field: "weight" });
+			if (patch.weight !== null && !Number.isSafeInteger(patch.weight))
+				throw new MockError("BAD_REQUEST", 400, "weight 必须是整数", { field: "weight" });
 			next.weight = patch.weight ?? 0;
 		}
 		if (patch.vars !== undefined) next.vars = normalizeVars(patch.vars, true);
@@ -166,7 +242,8 @@ export const createEnvStore = (debugRoot: string) => {
 		const name = get(String(rawName)).name;
 		const to = assertDebugName(rawTo, "环境组名");
 		const clash = existingName(to);
-		if (clash && nameKey(clash) !== nameKey(name)) throw new MockError("CONFLICT", 409, `环境组已存在: ${clash}`);
+		if (clash && nameKey(clash) !== nameKey(name))
+			throw new MockError("CONFLICT", 409, `环境组已存在: ${clash}`);
 		moveIfExists(fileOf(name), fileOf(to));
 		moveIfExists(secretFileOf(name), secretFileOf(to));
 		moveIfExists(cookiesFileOf(name), cookiesFileOf(to));
@@ -175,7 +252,9 @@ export const createEnvStore = (debugRoot: string) => {
 
 	const remove = (rawName: unknown) => {
 		const name = get(String(rawName)).name;
-		[fileOf(name), secretFileOf(name), cookiesFileOf(name)].forEach(f => fs.rmSync(f, { force: true }));
+		[fileOf(name), secretFileOf(name), cookiesFileOf(name)].forEach(f =>
+			fs.rmSync(f, { force: true })
+		);
 		return name;
 	};
 
@@ -222,14 +301,22 @@ export const createEnvStore = (debugRoot: string) => {
 				from: s ? s.from : null,
 				configured: !!s,
 				...(s ? describe(s) : {}),
-				...(s && s.from === "prompt" ? { entered: prompted.has(`${group.name}#${id}`) } : {}),
+				...(s && s.from === "prompt"
+					? { entered: prompted.has(`${group.name}#${id}`) }
+					: {}),
 			};
 		});
 	};
 
 	const putSecret = (rawName: unknown, id: string, raw: unknown) => {
 		const group = get(String(rawName));
-		if (!SRC_ID_RE.test(id)) throw new MockError("INVALID_NAME", 400, "来源 id 只能包含字母, 数字与下划线, 长度 1-64", { id });
+		if (!SRC_ID_RE.test(id))
+			throw new MockError(
+				"INVALID_NAME",
+				400,
+				"来源 id 只能包含字母, 数字与下划线, 长度 1-64",
+				{ id }
+			);
 		const source = normalizeSource(raw);
 		if (!source) {
 			throw new MockError(
@@ -264,7 +351,11 @@ export const createEnvStore = (debugRoot: string) => {
 	};
 
 	const fail = (group: string, id: string, why: string, extra: Record<string, unknown> = {}) =>
-		new MockError("SECRET_UNAVAILABLE", 400, `敏感值来源 ${id} 不可用: ${why}`, { srcId: id, env: group, ...extra });
+		new MockError("SECRET_UNAVAILABLE", 400, `敏感值来源 ${id} 不可用: ${why}`, {
+			srcId: id,
+			env: group,
+			...extra,
+		});
 
 	/** 预取需要外部进程的来源(keychain, command), 供随后的同步解析使用 */
 	const prefetchSecrets = async (group: string) => {
@@ -308,8 +399,10 @@ export const createEnvStore = (debugRoot: string) => {
 	const enterPrompt = (rawName: unknown, id: string, value: unknown) => {
 		const group = get(String(rawName));
 		const source = readSources(group.name)[id];
-		if (!source || source.from !== "prompt") throw new MockError("BAD_REQUEST", 400, `来源 ${id} 不是发送时输入的来源`);
-		if (typeof value !== "string" || !value) throw new MockError("BAD_REQUEST", 400, "请输入值", { field: "value" });
+		if (!source || source.from !== "prompt")
+			throw new MockError("BAD_REQUEST", 400, `来源 ${id} 不是发送时输入的来源`);
+		if (typeof value !== "string" || !value)
+			throw new MockError("BAD_REQUEST", 400, "请输入值", { field: "value" });
 		prompted.set(`${group.name}#${id}`, value);
 	};
 

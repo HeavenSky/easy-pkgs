@@ -1,10 +1,11 @@
 import type { HTMLAttributes } from "react";
 import { cn, methodColor } from "@/lib/utils";
 
+/** 默认是中性灰; 语义色只用 emerald(成功), amber(警告), rose(错误) */
 export const Badge = ({ className, ...props }: HTMLAttributes<HTMLSpanElement>) => (
 	<span
 		className={cn(
-			"inline-flex items-center rounded px-1.5 py-0.5 text-[11px] leading-none font-medium whitespace-nowrap",
+			"inline-flex h-4.5 shrink-0 items-center rounded bg-zinc-100 px-1.5 text-2xs leading-none font-medium whitespace-nowrap text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
 			className
 		)}
 		{...props}

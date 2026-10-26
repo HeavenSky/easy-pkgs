@@ -52,9 +52,7 @@ To answer with a CSV, HTML page, image, or any other file, point the scene's `bo
 ```json
 {
 	"key": "GET /api/export",
-	"scenes": {
-		"csv": { "status": 200, "bodyFile": "GET_api_export.9f8e7d6c/export.raw.csv" }
-	}
+	"scenes": { "csv": { "status": 200, "bodyFile": "GET_api_export.9f8e7d6c/export.raw.csv" } }
 }
 ```
 

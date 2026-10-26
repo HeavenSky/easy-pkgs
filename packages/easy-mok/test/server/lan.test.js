@@ -13,12 +13,26 @@ const withPrivateIp = PRIVATE_IP ? it : it.skip;
 const PING = { "mocks/a.js": "module.exports = { 'GET /api/ping': { ok: true } };" };
 
 const putLan = (api, access) => api("/lan", { method: "PUT", json: { access } });
+/** 以 standalone 方式在随机端口启动 */
+const standalone = extra =>
+	startMock({
+		cwd: makeFixture({ "state.json": "{}", ...PING }),
+		folder: "mocks",
+		stateFile: "state.json",
+		port: 0,
+		watch: false,
+		...extra,
+	});
 
 describe("局域网开关", () => {
-	it("运行时切换后管理接口守卫与 mock 的跨域回显立即生效", async () => {
+	it("运行时切换后管理接口守卫与 mock 的跨域回显立即生效; lan 选项是初始值", async () => {
 		let on = false;
 		const guard = createGuard({ lan: () => on, hosts: [] });
-		const fake = { socket: { remoteAddress: "192.168.1.5" }, headers: { host: "192.168.1.2:3000" }, method: "GET" };
+		const fake = {
+			socket: { remoteAddress: "192.168.1.5" },
+			headers: { host: "192.168.1.2:3000" },
+			method: "GET",
+		};
 		expect(() => guard(fake)).toThrow(/允许局域网访问/);
 		on = true;
 		expect(() => guard(fake)).not.toThrow();
@@ -46,20 +60,26 @@ describe("局域网开关", () => {
 		} finally {
 			await ctx.close();
 		}
-	});
-
-	it("lan 选项是初始值", async () => {
-		const ctx = await startHost({ files: PING, options: { lan: true } });
+		const initial = await startHost({ files: PING, options: { lan: true } });
 		try {
-			expect((await ctx.api("/meta")).body.lan).toMatchObject({ access: true, initial: true });
+			expect((await initial.api("/meta")).body.lan).toMatchObject({
+				access: true,
+				initial: true,
+			});
 		} finally {
-			await ctx.close();
+			await initial.close();
 		}
 	});
 
 	withPrivateIp("局域网来源可以访问管理页, 但不能切换开关", async () => {
 		const dir = makeFixture({ "state.json": "{}", ...PING });
-		const mock = createMock({ cwd: dir, folder: "mocks", stateFile: "state.json", lan: true, watch: false });
+		const mock = createMock({
+			cwd: dir,
+			folder: "mocks",
+			stateFile: "state.json",
+			lan: true,
+			watch: false,
+		});
 		const server = http.createServer(mock);
 		await new Promise(resolve => server.listen(0, PRIVATE_IP, resolve));
 		const base = `http://${PRIVATE_IP}:${server.address().port}/__mock/api`;
@@ -81,8 +101,7 @@ describe("局域网开关", () => {
 	});
 
 	withPrivateIp("standalone 监听回环地址时, 开关打开期间额外监听私有网段地址", async () => {
-		const dir = makeFixture({ "state.json": "{}", ...PING });
-		const started = await startMock({ cwd: dir, folder: "mocks", stateFile: "state.json", port: 0, watch: false });
+		const started = await standalone();
 		const lanUrl = `http://${PRIVATE_IP}:${started.port}/api/ping`;
 		const api = async (url, init = {}) => {
 			const res = await fetch(`${started.url}/__mock/api${url}`, {
@@ -109,8 +128,7 @@ describe("局域网开关", () => {
 	});
 
 	withPrivateIp("standalone 以 lan: true 启动时直接额外监听, close 后关闭", async () => {
-		const dir = makeFixture({ "state.json": "{}", ...PING });
-		const started = await startMock({ cwd: dir, folder: "mocks", stateFile: "state.json", port: 0, watch: false, lan: true });
+		const started = await standalone({ lan: true });
 		const lanUrl = `http://${PRIVATE_IP}:${started.port}/api/ping`;
 		await waitFor(async () => started.mock.mock.lan.listening.addresses.length > 0);
 		expect((await fetch(lanUrl)).status).toBe(200);
@@ -119,8 +137,7 @@ describe("局域网开关", () => {
 	});
 
 	it("主监听不是回环地址时不额外监听", async () => {
-		const dir = makeFixture({ "state.json": "{}", ...PING });
-		const started = await startMock({ cwd: dir, folder: "mocks", stateFile: "state.json", port: 0, host: "0.0.0.0", watch: false, lan: true });
+		const started = await standalone({ host: "0.0.0.0", lan: true });
 		try {
 			expect(started.mock.mock.lan.listening.addresses).toEqual([]);
 			expect((await fetch(`http://127.0.0.1:${started.port}/api/ping`)).status).toBe(200);

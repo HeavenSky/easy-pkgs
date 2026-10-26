@@ -3,11 +3,11 @@ import { toast } from "sonner";
 import { errorMessage } from "@/api/client";
 import type { TreeNode } from "@/api/debug-contract";
 import { useEnvs, useImportCurl, useImportOpenApi } from "@/api/debug-queries";
-import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Dialog } from "../ui/dialog";
 import { Input, Label, Select, Textarea } from "../ui/input";
-import { groupIds } from "./NodeDialog";
+import { Tabs } from "../ui/tabs";
+import { groupOptions } from "./NodeDialog";
 
 /** 导入 cURL 命令或 OpenAPI 文档到指定分组 */
 export const ImportDialog = ({
@@ -23,7 +23,10 @@ export const ImportDialog = ({
 }) => {
 	const [kind, setKind] = useState<"curl" | "openapi">("curl");
 	const [text, setText] = useState("");
-	const [parent, setParent] = useState<string | null>(initialParent);
+	const [picked, setParent] = useState<string | null>(initialParent);
+	const groups = groupOptions(tree);
+	// cURL 导入的是单个请求, 只能放进分组: 未选择分组时默认第一个分组
+	const parent = kind === "curl" && !picked ? (groups[0]?.id ?? null) : picked;
 	const [name, setName] = useState("");
 	const [env, setEnv] = useState("");
 	const [snapshots, setSnapshots] = useState(true);
@@ -76,34 +79,36 @@ export const ImportDialog = ({
 				</>
 			}
 		>
-			<div className="space-y-3">
-				<div role="tablist" className="flex gap-2">
-					{(["curl", "openapi"] as const).map(k => (
-						<button
-							key={k}
-							type="button"
-							role="tab"
-							aria-selected={kind === k}
-							className={cn("rounded px-2 py-1 text-sm", kind === k ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900" : "text-zinc-600")}
-							onClick={() => {
-								setKind(k);
-								setWarnings(null);
-							}}
-						>
-							{k === "curl" ? "cURL 命令" : "OpenAPI 3.0 / 3.1"}
-						</button>
-					))}
-				</div>
+			<div className="grid gap-2">
+				<Tabs
+					label="导入格式"
+					items={[
+						{ id: "curl", label: "cURL 命令" },
+						{ id: "openapi", label: "OpenAPI 3.0 / 3.1" },
+					]}
+					value={kind}
+					onChange={k => {
+						setKind(k);
+						setWarnings(null);
+					}}
+				/>
 				<Label>
-					{kind === "curl" ? "粘贴 cURL 命令(如浏览器的 Copy as cURL (bash))" : "粘贴 YAML 或 JSON, 或选择文件"}
-					<Textarea aria-label="导入内容" rows={10} value={text} onChange={e => setText(e.target.value)} />
+					{kind === "curl"
+						? "粘贴 cURL 命令(如浏览器的 Copy as cURL (bash))"
+						: "粘贴 YAML 或 JSON, 或选择文件"}
+					<Textarea
+						aria-label="导入内容"
+						rows={10}
+						value={text}
+						onChange={e => setText(e.target.value)}
+					/>
 				</Label>
 				{kind === "openapi" && (
 					<input
 						type="file"
 						accept=".yaml,.yml,.json"
 						aria-label="选择 OpenAPI 文件"
-						className="text-xs"
+						className="text-xs text-zinc-600 file:mr-2 file:h-7 file:rounded-md file:border file:border-zinc-300 file:bg-white file:px-2.5 file:text-sm file:font-medium file:text-zinc-800 hover:file:bg-zinc-50 dark:text-zinc-400 dark:file:border-zinc-700 dark:file:bg-zinc-900 dark:file:text-zinc-200"
 						onChange={async e => {
 							const file = e.target.files?.[0];
 							if (file) setText(await file.text());
@@ -113,17 +118,27 @@ export const ImportDialog = ({
 				<div className="flex flex-wrap gap-2">
 					<Label className="min-w-48 flex-1">
 						导入到分组
-						<Select value={parent || ""} onChange={e => setParent(e.target.value || null)}>
-							<option value="">(根)</option>
-							{groupIds(tree).map(id => (
-								<option key={id}>{id}</option>
+						<Select
+							value={parent || ""}
+							onChange={e => setParent(e.target.value || null)}
+						>
+							{/* cURL 导入的是单个请求, 只能放进分组; 没有分组时才允许放在根下 */}
+							{(kind !== "curl" || !groups.length) && <option value="">(根)</option>}
+							{groups.map(g => (
+								<option key={g.id} value={g.id}>
+									{g.label}
+								</option>
 							))}
 						</Select>
 					</Label>
 					{kind === "curl" ? (
 						<Label className="w-48">
 							请求名(可选)
-							<Input className="font-mono" value={name} onChange={e => setName(e.target.value)} />
+							<Input
+								className="font-mono text-xs"
+								value={name}
+								onChange={e => setName(e.target.value)}
+							/>
 						</Label>
 					) : (
 						<Label className="w-48">
@@ -140,13 +155,20 @@ export const ImportDialog = ({
 					)}
 				</div>
 				{kind === "openapi" && (
-					<label className="flex items-center gap-2 text-sm">
-						<input type="checkbox" checked={snapshots} onChange={e => setSnapshots(e.target.checked)} />
+					<label className="flex items-center gap-1.5 text-sm">
+						<input
+							type="checkbox"
+							checked={snapshots}
+							onChange={e => setSnapshots(e.target.checked)}
+						/>
 						把响应示例生成为快照
 					</label>
 				)}
 				{warnings && warnings.length > 0 && (
-					<ul className="list-disc space-y-0.5 pl-5 text-xs text-amber-700" aria-label="导入提示">
+					<ul
+						className="list-disc space-y-0.5 pl-5 text-xs text-amber-700 dark:text-amber-400"
+						aria-label="导入提示"
+					>
 						{warnings.map((w, i) => (
 							<li key={i}>{w}</li>
 						))}

@@ -10,15 +10,30 @@ import { normalizeVars, readJson, weightOf } from "./store";
 import { MASK, maskSetCookie, redactJsonText } from "./redact";
 import { extOfFile } from "../mime";
 
-export type SnapshotSummary = { id: string; request: string; name: string; title: string; weight: number };
+export type SnapshotSummary = {
+	id: string;
+	request: string;
+	name: string;
+	title: string;
+	weight: number;
+};
 
-export type Redaction = { fields: number; setCookie: "kept" | "masked" | "none"; binaryRequest: boolean };
+export type Redaction = {
+	fields: number;
+	setCookie: "kept" | "masked" | "none";
+	binaryRequest: boolean;
+};
 
 /** rules 返回当前的字段脱敏规则; 快照会被提交, 写入时按规则脱敏 */
-export const createSnapshotStore = (deps: { store: DebugStore; history: HistoryStore; rules?: () => string[] }) => {
+export const createSnapshotStore = (deps: {
+	store: DebugStore;
+	history: HistoryStore;
+	rules?: () => string[];
+}) => {
 	const { store } = deps;
 
-	const resDirOf = (request: string) => path.join(store.nodeDir(request, "request").dir, SNAPSHOTS_DIR);
+	const resDirOf = (request: string) =>
+		path.join(store.nodeDir(request, "request").dir, SNAPSHOTS_DIR);
 
 	/** 已存在的快照目录名(不区分大小写比较) */
 	const existing = (resDir: string, name: string) => {
@@ -34,18 +49,32 @@ export const createSnapshotStore = (deps: { store: DebugStore; history: HistoryS
 		const resDir = resDirOf(request);
 		const actual = existing(resDir, name);
 		if (!actual) throw new MockError("NOT_FOUND", 404, `快照不存在: ${sid}`);
-		return { request, name: actual, dir: path.join(resDir, actual), id: `${request}#${actual}` };
+		return {
+			request,
+			name: actual,
+			dir: path.join(resDir, actual),
+			id: `${request}#${actual}`,
+		};
 	};
 
 	const readMeta = (dir: string) => {
 		const { ok, value } = readJson(path.join(dir, META_FILE));
 		if (!ok || !isPlainObject(value)) {
-			throw new MockError("META_FILE_INVALID", 409, `${path.join(dir, META_FILE)} 不是合法的 JSON 对象`, { file: path.join(dir, META_FILE) });
+			throw new MockError(
+				"META_FILE_INVALID",
+				409,
+				`${path.join(dir, META_FILE)} 不是合法的 JSON 对象`,
+				{ file: path.join(dir, META_FILE) }
+			);
 		}
 		return value as Record<string, any>;
 	};
 
-	const summary = (request: string, name: string, meta: Record<string, any>): SnapshotSummary => ({
+	const summary = (
+		request: string,
+		name: string,
+		meta: Record<string, any>
+	): SnapshotSummary => ({
 		id: `${request}#${name}`,
 		request,
 		name,
@@ -61,7 +90,14 @@ export const createSnapshotStore = (deps: { store: DebugStore; history: HistoryS
 	/** 历史条目另存为快照; 重名时需 overwrite, 先写临时目录再替换, 中途失败不留半个快照 */
 	const saveFromHistory = (
 		hid: string,
-		input: { request?: unknown; name?: unknown; title?: unknown; weight?: unknown; overwrite?: unknown; keepSetCookie?: unknown }
+		input: {
+			request?: unknown;
+			name?: unknown;
+			title?: unknown;
+			weight?: unknown;
+			overwrite?: unknown;
+			keepSetCookie?: unknown;
+		}
 	) => {
 		const entry = deps.history.get(hid);
 		if (typeof input.request !== "string" || !input.request) {
@@ -69,7 +105,11 @@ export const createSnapshotStore = (deps: { store: DebugStore; history: HistoryS
 		}
 		const request = store.nodeDir(input.request, "request").segments.join("/");
 		const name = assertDebugName(input.name, "快照名");
-		if (input.weight !== undefined && input.weight !== null && !Number.isSafeInteger(input.weight)) {
+		if (
+			input.weight !== undefined &&
+			input.weight !== null &&
+			!Number.isSafeInteger(input.weight)
+		) {
 			throw new MockError("BAD_REQUEST", 400, "weight 必须是整数", { field: "weight" });
 		}
 		const resDir = resDirOf(request);
@@ -88,17 +128,29 @@ export const createSnapshotStore = (deps: { store: DebugStore; history: HistoryS
 			const previous = clash ? readJson(path.join(resDir, clash, META_FILE)).value : null;
 			const keep = isPlainObject(previous) ? previous : {};
 			const keepCookie =
-				typeof input.keepSetCookie === "boolean" ? input.keepSetCookie : isPlainObject(keep.replay) && keep.replay.setCookie === true;
+				typeof input.keepSetCookie === "boolean"
+					? input.keepSetCookie
+					: isPlainObject(keep.replay) && keep.replay.setCookie === true;
 			const rules = deps.rules ? deps.rules() : [];
 			let fields = 0;
 			let response = entry.meta.response;
 			let request = entry.meta.request;
 			if (response) {
-				const hasCookie = (response.headers || []).some(([k]: [string, string]) => k === "set-cookie");
-				response = { ...response, headers: keepCookie ? response.headers : maskSetCookie(response.headers || []) };
+				const hasCookie = (response.headers || []).some(
+					([k]: [string, string]) => k === "set-cookie"
+				);
+				response = {
+					...response,
+					headers: keepCookie ? response.headers : maskSetCookie(response.headers || []),
+				};
 				const body = response.body || {};
 				// 快照会被提交: JSON 响应体按字段规则脱敏, 没有命中时保留原字节
-				if (body.file && body.decoded !== false && extOfFile(body.file) === "json" && rules.length) {
+				if (
+					body.file &&
+					body.decoded !== false &&
+					extOfFile(body.file) === "json" &&
+					rules.length
+				) {
 					const file = path.join(tmp, body.file);
 					const out = redactJsonText(fs.readFileSync(file, "utf8"), rules);
 					if (out.count) {
@@ -106,11 +158,20 @@ export const createSnapshotStore = (deps: { store: DebugStore; history: HistoryS
 						fields += out.count;
 						response = {
 							...response,
-							body: { ...body, size: Buffer.byteLength(out.text), sha256: crypto.createHash("sha256").update(out.text).digest("hex"), redacted: true },
+							body: {
+								...body,
+								size: Buffer.byteLength(out.text),
+								sha256: crypto.createHash("sha256").update(out.text).digest("hex"),
+								redacted: true,
+							},
 						};
 					}
 				}
-				redaction = { fields: 0, setCookie: hasCookie ? (keepCookie ? "kept" : "masked") : "none", binaryRequest: false };
+				redaction = {
+					fields: 0,
+					setCookie: hasCookie ? (keepCookie ? "kept" : "masked") : "none",
+					binaryRequest: false,
+				};
 			} else {
 				redaction = { fields: 0, setCookie: "none", binaryRequest: false };
 			}
@@ -133,7 +194,7 @@ export const createSnapshotStore = (deps: { store: DebugStore; history: HistoryS
 				vars: normalizeVars(keep.vars, false),
 				replay: { setCookie: keepCookie },
 				redaction,
-				origin: { ...(entry.meta.origin || {}), kind: "debug", historyId: hid },
+				origin: { ...entry.meta.origin, kind: "debug", historyId: hid },
 			};
 			if (!meta.name) delete meta.name;
 			writeJsonAtomic(path.join(tmp, META_FILE), meta);
@@ -141,40 +202,59 @@ export const createSnapshotStore = (deps: { store: DebugStore; history: HistoryS
 			fs.renameSync(tmp, path.join(resDir, name));
 		} catch (err) {
 			fs.rmSync(tmp, { recursive: true, force: true });
-			throw err instanceof MockError ? err : new MockError("IO_ERROR", 500, "保存快照失败", undefined, { cause: err });
+			throw err instanceof MockError
+				? err
+				: new MockError("IO_ERROR", 500, "保存快照失败", undefined, { cause: err });
 		}
 		return { ...summary(request, name, readMeta(path.join(resDir, name))), redaction };
 	};
 
 	/** 改名与元数据; 返回新旧标识 */
-	const update = (sid: string, patch: { name?: unknown; title?: unknown; weight?: unknown; vars?: unknown; replay?: unknown }) => {
+	const update = (
+		sid: string,
+		patch: {
+			name?: unknown;
+			title?: unknown;
+			weight?: unknown;
+			vars?: unknown;
+			replay?: unknown;
+		}
+	) => {
 		const loc = locate(sid);
 		let dir = loc.dir;
 		let name = loc.name;
+		let renameTo: string | null = null;
 		if (patch.name !== undefined && patch.name !== loc.name) {
 			name = assertDebugName(patch.name, "快照名");
 			const resDir = path.dirname(loc.dir);
 			const clash = existing(resDir, name);
-			if (clash && nameKey(clash) !== nameKey(loc.name)) throw new MockError("CONFLICT", 409, `快照已存在: ${clash}`);
-			dir = path.join(resDir, name);
-			fs.renameSync(loc.dir, dir);
+			if (clash && nameKey(clash) !== nameKey(loc.name))
+				throw new MockError("CONFLICT", 409, `快照已存在: ${clash}`);
+			renameTo = path.join(resDir, name);
 		}
+		// 先读元数据并校验全部字段, 都通过后才改名: 元数据损坏或字段非法时目录保持原样
 		const meta = readMeta(dir);
 		if (patch.title !== undefined) {
 			if (patch.title === null || patch.title === "") delete meta.name;
-			else if (typeof patch.title !== "string") throw new MockError("BAD_REQUEST", 400, "title 必须是字符串", { field: "title" });
+			else if (typeof patch.title !== "string")
+				throw new MockError("BAD_REQUEST", 400, "title 必须是字符串", { field: "title" });
 			else meta.name = patch.title;
 		}
 		if (patch.weight !== undefined) {
-			if (!Number.isSafeInteger(patch.weight)) throw new MockError("BAD_REQUEST", 400, "weight 必须是整数", { field: "weight" });
+			if (!Number.isSafeInteger(patch.weight))
+				throw new MockError("BAD_REQUEST", 400, "weight 必须是整数", { field: "weight" });
 			meta.weight = patch.weight;
 		}
 		if (patch.vars !== undefined) meta.vars = normalizeVars(patch.vars, true);
 		if (patch.replay !== undefined) {
 			if (!isPlainObject(patch.replay) || typeof patch.replay.setCookie !== "boolean") {
-				throw new MockError("BAD_REQUEST", 400, "replay 必须是 { setCookie: boolean }", { field: "replay" });
+				throw new MockError("BAD_REQUEST", 400, "replay 必须是 { setCookie: boolean }", {
+					field: "replay",
+				});
 			}
-			const masked = (meta.response?.headers || []).some(([k, v]: [string, string]) => k === "set-cookie" && v === MASK);
+			const masked = (meta.response?.headers || []).some(
+				([k, v]: [string, string]) => k === "set-cookie" && v === MASK
+			);
 			if (patch.replay.setCookie && masked) {
 				throw new MockError(
 					"CONFLICT",
@@ -185,8 +265,16 @@ export const createSnapshotStore = (deps: { store: DebugStore; history: HistoryS
 			}
 			meta.replay = { setCookie: patch.replay.setCookie };
 		}
+		if (renameTo) {
+			fs.renameSync(loc.dir, renameTo);
+			dir = renameTo;
+		}
 		writeJsonAtomic(path.join(dir, META_FILE), meta);
-		return { snapshot: summary(loc.request, name, meta), from: loc.id, to: `${loc.request}#${name}` };
+		return {
+			snapshot: summary(loc.request, name, meta),
+			from: loc.id,
+			to: `${loc.request}#${name}`,
+		};
 	};
 
 	const remove = (sid: string) => {

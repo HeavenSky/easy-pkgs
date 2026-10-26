@@ -6,6 +6,7 @@ import { useMeta, useRoutes } from "@/api/queries";
 import { MethodBadge, Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
+import { listItemClass, Toolbar } from "@/components/ui/panel";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/state";
 import { confirmLeave } from "@/lib/unsaved";
 import { cn, relativeTime } from "@/lib/utils";
@@ -117,10 +118,13 @@ export const RoutesPage = () => {
 
 	return (
 		<div className="flex h-full min-h-0">
-			<aside className="flex w-[380px] shrink-0 flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-				<div className="space-y-2 border-b border-zinc-200 p-3 dark:border-zinc-800">
-					<div className="relative">
-						<Search size={14} className="absolute top-2.5 left-2 text-zinc-400" />
+			<aside className="flex w-56 shrink-0 flex-col border-r border-zinc-200 bg-white lg:w-64 dark:border-zinc-800 dark:bg-zinc-900">
+				<Toolbar>
+					<div className="relative w-full">
+						<Search
+							size={14}
+							className="pointer-events-none absolute top-1/2 left-2 -translate-y-1/2 text-zinc-400"
+						/>
 						<Input
 							aria-label="搜索路由"
 							placeholder="搜索方法或路径"
@@ -129,39 +133,34 @@ export const RoutesPage = () => {
 							onChange={e => setParam("q", e.target.value)}
 						/>
 					</div>
-					<div className="flex items-center gap-2">
-						<Select
-							aria-label="按方法筛选"
-							value={method}
-							onChange={e => setParam("method", e.target.value)}
-						>
-							<option value="">全部方法</option>
-							{METHODS.map(m => (
-								<option key={m} value={m}>
-									{m}
-								</option>
-							))}
-						</Select>
-						<Button
-							size="sm"
-							variant={grouped ? "default" : "outline"}
-							aria-pressed={grouped}
-							onClick={() => setParam("view", grouped ? "" : "file")}
-						>
-							<FileCode2 size={14} />
-							按文件分组
-						</Button>
-						<Button
-							size="sm"
-							variant="default"
-							className="ml-auto"
-							onClick={() => setCreating(true)}
-						>
-							<Plus size={14} />
-							新建
-						</Button>
-					</div>
-				</div>
+					<Select
+						aria-label="按方法筛选"
+						className="flex-1"
+						value={method}
+						onChange={e => setParam("method", e.target.value)}
+					>
+						<option value="">全部方法</option>
+						{METHODS.map(m => (
+							<option key={m} value={m}>
+								{m}
+							</option>
+						))}
+					</Select>
+					<Button
+						size="icon"
+						variant={grouped ? "default" : "outline"}
+						aria-pressed={grouped}
+						aria-label="按文件分组"
+						title="按文件分组"
+						onClick={() => setParam("view", grouped ? "" : "file")}
+					>
+						<FileCode2 size={14} />
+					</Button>
+					<Button variant="default" onClick={() => setCreating(true)}>
+						<Plus size={14} />
+						新建
+					</Button>
+				</Toolbar>
 				<div className="min-h-0 flex-1 overflow-auto">
 					{routes.isPending && <Skeleton />}
 					{routes.isError && (
@@ -173,8 +172,8 @@ export const RoutesPage = () => {
 								在 <code className="font-mono">{folder}</code> 下新建 js 或 json
 								文件, 例如:
 							</p>
-							<pre className="rounded bg-zinc-100 p-2 text-left font-mono text-xs dark:bg-zinc-800">{`module.exports = {\n  "GET /api/user/:id": { id: 1 },\n};`}</pre>
-							<p>或点击右上角「新建」直接创建.</p>
+							<pre className="rounded-md border border-zinc-200 bg-zinc-50 p-2 text-left font-mono text-xs dark:border-zinc-800 dark:bg-zinc-800">{`module.exports = {\n  "GET /api/user/:id": { id: 1 },\n};`}</pre>
+							<p>或点击上方「新建」直接创建.</p>
 						</EmptyState>
 					)}
 					{routes.data && routes.data.length > 0 && !filtered.length && (
@@ -197,7 +196,8 @@ export const RoutesPage = () => {
 								{section.title && (
 									<div
 										aria-hidden="true"
-										className="sticky top-0 bg-zinc-100 px-3 py-1 font-mono text-[11px] text-zinc-500 dark:bg-zinc-800"
+										title={section.title}
+										className="sticky top-0 z-10 flex h-6 items-center truncate border-b border-zinc-200 bg-zinc-50 px-3 font-mono text-xs text-zinc-500 dark:border-zinc-800 dark:bg-zinc-800"
 									>
 										{section.title}
 									</div>
@@ -211,45 +211,51 @@ export const RoutesPage = () => {
 											aria-selected={r.id === id}
 											onClick={() => select(r.id)}
 											className={cn(
-												"cursor-pointer border-b border-zinc-100 px-3 py-2 dark:border-zinc-800/60",
-												r.id === id
-													? "bg-sky-50 dark:bg-sky-950/40"
-													: "hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
+												listItemClass(r.id === id),
+												"cursor-pointer border-b border-zinc-100 px-3 py-1.5 dark:border-zinc-800/60"
 											)}
 										>
-											<div className="flex items-center gap-1.5">
-												{r.methods.map(m => (
-													<MethodBadge key={m} method={m} />
-												))}
+											<div className="flex min-w-0 items-center gap-1.5">
+												<span className="flex shrink-0 gap-0.5">
+													{r.methods.map(m => (
+														<MethodBadge key={m} method={m} />
+													))}
+												</span>
 												<span
-													className="truncate font-mono text-xs"
+													className="min-w-0 truncate font-mono text-xs"
 													title={r.path}
 												>
 													{r.path}
 												</span>
-												{r.weight !== 0 && (
-													<Badge className="bg-zinc-100 dark:bg-zinc-800">
-														权重 {r.weight}
-													</Badge>
-												)}
+												{r.weight !== 0 && <Badge>权重 {r.weight}</Badge>}
 											</div>
-											<div className="mt-1 flex items-center gap-2 text-[11px] text-zinc-500">
-												{r.mode === "pass" ? (
-													<Badge className="bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-														放行
-													</Badge>
-												) : (
-													<span>
-														场景{" "}
-														<b className="font-medium text-zinc-700 dark:text-zinc-300">
-															{r.active.name}
-														</b>
-													</span>
-												)}
-												{r.delay ? <span>延迟 {r.delay}ms</span> : null}
-												{r.status ? <span>状态码 {r.status}</span> : null}
+											<div className="mt-0.5 flex min-w-0 items-center gap-2 text-xs font-normal text-zinc-500">
+												<span className="flex min-w-0 items-center gap-2 truncate">
+													{r.mode === "pass" ? (
+														<Badge className="bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+															放行
+														</Badge>
+													) : (
+														<span className="truncate">
+															场景{" "}
+															<b className="font-medium text-zinc-700 dark:text-zinc-300">
+																{r.active.name}
+															</b>
+														</span>
+													)}
+													{r.delay ? (
+														<span className="shrink-0">
+															延迟 {r.delay}ms
+														</span>
+													) : null}
+													{r.status ? (
+														<span className="shrink-0">
+															状态码 {r.status}
+														</span>
+													) : null}
+												</span>
 												<span
-													className="ml-auto"
+													className="ml-auto shrink-0 text-zinc-400"
 													title={
 														r.lastHit
 															? new Date(r.lastHit).toLocaleString()
@@ -267,7 +273,7 @@ export const RoutesPage = () => {
 					</ul>
 				</div>
 			</aside>
-			<section className="min-w-0 flex-1 overflow-auto">
+			<section className="min-w-0 flex-1 overflow-auto bg-zinc-50 dark:bg-zinc-950">
 				{id && routes.data?.some(r => r.id === id) ? (
 					<Suspense fallback={<Skeleton rows={8} />}>
 						<RouteDetail key={id} id={id} />

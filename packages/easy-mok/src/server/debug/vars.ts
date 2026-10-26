@@ -39,12 +39,20 @@ export const resolveRequest = (
 	const { definition: def, env, mode } = input;
 	const raw: Record<string, ResolvedValue> = {};
 	if (env) {
-		Object.entries(deps.envs.get(env).vars).forEach(([k, v]) => (raw[k] = { value: v, from: `env:${env}` }));
+		Object.entries(deps.envs.get(env).vars).forEach(
+			([k, v]) => (raw[k] = { value: v, from: `env:${env}` })
+		);
 	}
-	deps.store.varLayers(input.requestId).forEach(layer =>
-		Object.entries(layer.vars).forEach(([k, v]) => (raw[k] = { value: v, from: layer.from }))
+	deps.store
+		.varLayers(input.requestId)
+		.forEach(layer =>
+			Object.entries(layer.vars).forEach(
+				([k, v]) => (raw[k] = { value: v, from: layer.from })
+			)
+		);
+	Object.entries(input.snapshotVars || {}).forEach(
+		([k, v]) => (raw[k] = { value: v, from: "snapshot" })
 	);
-	Object.entries(input.snapshotVars || {}).forEach(([k, v]) => (raw[k] = { value: v, from: "snapshot" }));
 
 	const values: Record<string, ResolvedValue> = {};
 	const unresolved = new Set<string>();
@@ -64,7 +72,12 @@ export const resolveRequest = (
 		let value = `<secret:${m[1]}>`;
 		if (mode === "send") {
 			if (!env) {
-				throw new MockError("SECRET_UNAVAILABLE", 400, `变量 ${name} 引用了敏感值来源 ${m[1]}, 需要先激活环境组`, { srcId: m[1] });
+				throw new MockError(
+					"SECRET_UNAVAILABLE",
+					400,
+					`变量 ${name} 引用了敏感值来源 ${m[1]}, 需要先激活环境组`,
+					{ srcId: m[1] }
+				);
 			}
 			value = deps.envs.resolveSecret(env, m[1]);
 			secrets.push(value);
@@ -96,19 +109,23 @@ export const resolveRequest = (
 			urlError = `只支持 http 与 https: ${parsed.protocol}`;
 		}
 		((def.params && def.params.query) || []).forEach((row: [string, string, boolean]) => {
-			if (row[2] !== false && row[0]) parsed.searchParams.append(String(sub(row[0])), String(sub(row[1])));
+			if (row[2] !== false && row[0])
+				parsed.searchParams.append(String(sub(row[0])), String(sub(row[1])));
 		});
 		url = parsed.toString();
 	} catch {
 		urlError = url ? `URL 无效: ${url}` : "URL 不能为空";
 	}
 
-	const headers: Array<[string, string]> = ((def.headers || []) as Array<[string, string, boolean]>)
+	const headers: Array<[string, string]> = (
+		(def.headers || []) as Array<[string, string, boolean]>
+	)
 		.filter(row => row[2] !== false && row[0])
 		.map(row => [row[0].toLowerCase(), String(sub(row[1]))]);
 	const auth = def.auth || {};
 	if (!headers.some(([k]) => k === "authorization")) {
-		if (auth.type === "bearer") headers.push(["authorization", `Bearer ${sub(auth.token || "")}`]);
+		if (auth.type === "bearer")
+			headers.push(["authorization", `Bearer ${sub(auth.token || "")}`]);
 		if (auth.type === "basic") {
 			const pair = `${sub(auth.username || "")}:${sub(auth.password || "")}`;
 			headers.push(["authorization", `Basic ${Buffer.from(pair).toString("base64")}`]);

@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Link, useLocation, useParams } from "wouter";
 import { ApiError, errorMessage } from "@/api/client";
 import { encodeId, type TreeNode } from "@/api/debug-contract";
-import { historyRawUrl, useDebugTree, useDeleteNode, useDiff, useHistoryEntry, useSend } from "@/api/debug-queries";
+import { historyRawUrl, useDebugTree, useDeleteNode, useDiff, useEnvs, useHistoryEntry, useSend } from "@/api/debug-queries";
 import { DiffView } from "@/components/debug/DiffView";
 import { HistoryList } from "@/components/debug/HistoryList";
 import { ExportDialog } from "@/components/debug/ExportDialog";
@@ -14,10 +14,10 @@ import { SnapshotPanel } from "@/components/debug/SnapshotPanel";
 import { ResponseViewer } from "@/components/debug/ResponseViewer";
 import { Button } from "@/components/ui/button";
 import { DebugTree } from "@/components/debug/DebugTree";
-import { EnvPanel, PromptSecretDialog } from "@/components/debug/EnvPanel";
+import { ActiveEnvSelect, EnvPanel, PanelSection, PromptSecretDialog } from "@/components/debug/EnvPanel";
 import { RedactRulesPanel } from "@/components/debug/RedactRulesPanel";
 import { NodeDialog, type NodeDialogState } from "@/components/debug/NodeDialog";
-import { RequestEditor, definitionOf } from "@/components/debug/RequestEditor";
+import { MOD_KEY, RequestEditor, definitionOf, type Draft } from "@/components/debug/RequestEditor";
 import { ConfirmDialog } from "@/components/ui/dialog";
 import { EmptyState, ErrorState, Spinner } from "@/components/ui/state";
 import { cn } from "@/lib/utils";
@@ -41,6 +41,7 @@ export const snapshotPath = (sid: string) => {
 const Workbench = ({ id, snapshot, tree }: { id: string; snapshot: string | null; tree: TreeNode[] }) => {
 	const [, navigate] = useLocation();
 	const send = useSend();
+	const envs = useEnvs();
 	const [viewing, setViewing] = useState<string | null>(null);
 	const [saving, setSaving] = useState<string | null>(null);
 	const [compare, setCompare] = useState<string[]>([]);
@@ -60,9 +61,17 @@ const Workbench = ({ id, snapshot, tree }: { id: string; snapshot: string | null
 				const d = err instanceof ApiError ? (err.details as { prompt?: boolean; srcId?: string; env?: string } | undefined) : undefined;
 				if (err instanceof ApiError && err.code === "SECRET_UNAVAILABLE" && d?.prompt && d.srcId && d.env) {
 					setPrompt({ env: d.env, srcId: d.srcId, retry: () => sendWith(input) });
+				} else if (err instanceof ApiError && err.code === "UNRESOLVED_VARS" && !envs.data?.active) {
+					toast.error(`${errorMessage(err)}; 还没有激活环境组, 在发送按钮左侧选择`);
 				} else fail(err);
 			},
 		});
+	const sendDraft = (draft: Draft) => {
+		if (send.isPending) return;
+		const d = definitionOf(draft);
+		if (!d.ok) return void toast.error(d.error);
+		sendWith({ request: id, definition: d.def });
+	};
 	const saveButton = (hid: string) => (
 		<Button size="sm" onClick={() => setSaving(hid)}>
 			<Camera size={14} />
@@ -71,18 +80,11 @@ const Workbench = ({ id, snapshot, tree }: { id: string; snapshot: string | null
 	);
 	return (
 		<div className="space-y-4">
-			<RequestEditor id={id}>
+			<RequestEditor id={id} onSend={sendDraft}>
 				{draft => (
 					<>
-						<Button
-							variant="default"
-							disabled={send.isPending}
-							onClick={() => {
-								const d = definitionOf(draft);
-								if (!d.ok) return toast.error(d.error);
-								sendWith({ request: id, definition: d.def });
-							}}
-						>
+						<ActiveEnvSelect label="发送使用的环境组" className="w-32" />
+						<Button variant="default" disabled={send.isPending} title={`发送 (${MOD_KEY}Enter)`} onClick={() => sendDraft(draft)}>
 							<Send size={14} />
 							{send.isPending ? "发送中" : "发送"}
 						</Button>
@@ -104,10 +106,22 @@ const Workbench = ({ id, snapshot, tree }: { id: string; snapshot: string | null
 					onResend={sid => sendWith({ request: id, snapshot: sid })}
 				/>
 			) : (
-				current && <ResponseViewer meta={current.meta} rawUrl={historyRawUrl(current.id)} actions={saveButton(current.id)} />
+				current && (
+					<section aria-label="响应" className="rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
+						<ResponseViewer meta={current.meta} rawUrl={historyRawUrl(current.id)} actions={saveButton(current.id)} />
+					</section>
+				)
+			)}
+			{!snapshot && !viewing && !send.data && !send.isPending && (
+				<p className="rounded-lg border border-dashed border-zinc-300 p-6 text-center text-xs text-zinc-500 dark:border-zinc-700">
+					点击发送或按 {MOD_KEY}Enter 查看响应; 也可以从下方历史中选一条
+				</p>
 			)}
 			<section className="space-y-1">
-				<h3 className="text-xs font-medium text-zinc-500">该请求的发送历史(勾选两条可对比)</h3>
+				<h3 className="flex items-baseline gap-2 text-xs font-medium text-zinc-600 dark:text-zinc-400">
+					发送历史
+					<span className="font-normal text-zinc-400">勾选两条可对比</span>
+				</h3>
 				{compare.length === 2 && diff.data && (
 					<div className="space-y-1 rounded-md border border-zinc-200 p-2 dark:border-zinc-800">
 						<div className="flex items-center text-xs font-medium">
@@ -177,15 +191,17 @@ export const DebugPage = () => {
 
 	return (
 		<div className="flex h-full min-h-0 flex-col">
-			<div role="note" className="flex items-center gap-2 bg-amber-50 px-4 py-1.5 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-200">
-				<ShieldAlert size={14} />
-				<code>environments/secret/</code> 与 <code>history/</code> 已用目录内的 <code>.gitignore</code> 排除在版本库外; 请求, 环境组与快照会提交, 敏感值写成 <code>{"<secret:id>"}</code>, 另存快照时按脱敏规则处理响应字段.
-				<Link href="/debug/history" className="ml-auto inline-flex items-center gap-1 text-sky-700 hover:underline">
+			<div role="note" className="flex items-center gap-2 border-b border-amber-200/70 bg-amber-50 px-4 py-1.5 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+				<ShieldAlert size={14} className="shrink-0" />
+				<span className="min-w-0 truncate" title="environments/secret/ 与 history/ 已用目录内的 .gitignore 排除在版本库外; 请求, 环境组与快照会提交, 敏感值写成 <secret:id>, 另存快照时按脱敏规则处理响应字段.">
+					敏感值来源, cookie 与发送历史不进版本库(目录内 <code>.gitignore</code>); 请求, 环境组与快照会提交, 敏感值写成 <code>{"<secret:id>"}</code>, 快照按脱敏规则处理.
+				</span>
+				<Link href="/debug/history" className="ml-auto inline-flex shrink-0 items-center gap-1 text-sky-700 hover:underline">
 					<History size={14} />
 					全部历史
 				</Link>
 			</div>
-			<div className="grid min-h-0 flex-1 grid-cols-[260px_minmax(0,1fr)_340px] divide-x divide-zinc-200 dark:divide-zinc-800">
+			<div className="grid min-h-0 flex-1 grid-cols-[240px_minmax(0,1fr)_320px] 2xl:grid-cols-[260px_minmax(0,1fr)_360px] divide-x divide-zinc-200 dark:divide-zinc-800">
 				<aside className="min-h-0 overflow-auto p-3">
 					{tree.isPending ? (
 						<Spinner label="加载请求集合" />
@@ -244,11 +260,11 @@ export const DebugPage = () => {
 						<EmptyState title="选择或新建一个请求">在左侧请求集合中选择请求, 或新建分组与请求.</EmptyState>
 					)}
 				</section>
-				<aside className="min-h-0 overflow-auto p-3">
-					<div className="mb-2 text-xs font-medium text-zinc-500">环境组</div>
+				<aside aria-label="环境与脱敏设置" className="min-h-0 overflow-auto bg-zinc-50/60 dark:bg-zinc-950">
 					<EnvPanel />
-					<div className="mt-4 mb-2 text-xs font-medium text-zinc-500">快照脱敏规则</div>
-					<RedactRulesPanel />
+					<PanelSection title="快照脱敏规则" defaultOpen={false}>
+						<RedactRulesPanel />
+					</PanelSection>
 				</aside>
 			</div>
 			{dialog && (

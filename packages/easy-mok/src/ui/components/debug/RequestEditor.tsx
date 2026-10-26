@@ -309,8 +309,19 @@ export const RequestFields = ({
 	);
 };
 
-/** 已保存请求的编辑器; 保存带 If-Match, 冲突时提示重新加载 */
-export const RequestEditor = ({ id, children }: { id: string; children?: (draft: Draft, dirty: boolean) => ReactNode }) => {
+/** 快捷键提示里的修饰键 */
+export const MOD_KEY = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl+";
+
+/** 已保存请求的编辑器; 保存带 If-Match, 冲突时提示重新加载; 焦点在编辑器内时 ⌘S 保存, ⌘Enter 调用 onSend */
+export const RequestEditor = ({
+	id,
+	children,
+	onSend,
+}: {
+	id: string;
+	children?: (draft: Draft, dirty: boolean) => ReactNode;
+	onSend?: (draft: Draft) => void;
+}) => {
 	const query = useDebugRequest(id);
 	const save = useSaveRequest();
 	const [draft, setDraft] = useState<Draft | null>(null);
@@ -321,10 +332,13 @@ export const RequestEditor = ({ id, children }: { id: string; children?: (draft:
 			setEtag(query.data.etag);
 		}
 	}, [query.data, etag, draft]);
-	useEffect(() => {
+	// 换请求时在渲染中重置; 用挂载后的 effect 重置会在请求已缓存时清掉刚载入的草稿, 页面停在加载中
+	const [loadedId, setLoadedId] = useState(id);
+	if (loadedId !== id) {
+		setLoadedId(id);
 		setDraft(null);
 		setEtag(null);
-	}, [id]);
+	}
 	const dirty = useMemo(() => {
 		if (!draft || !query.data) return false;
 		const d = definitionOf(draft);
@@ -366,7 +380,19 @@ export const RequestEditor = ({ id, children }: { id: string; children?: (draft:
 		);
 	};
 	return (
-		<div className="space-y-3">
+		<div
+			className="space-y-3"
+			onKeyDown={e => {
+				if (!(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey) return;
+				if (e.key === "s") {
+					e.preventDefault();
+					if (dirty && !save.isPending) doSave();
+				} else if (e.key === "Enter" && onSend) {
+					e.preventDefault();
+					onSend(current);
+				}
+			}}
+		>
 			<form
 				className="flex flex-wrap items-center gap-2"
 				onSubmit={e => {
@@ -381,16 +407,16 @@ export const RequestEditor = ({ id, children }: { id: string; children?: (draft:
 				</Select>
 				<Input
 					aria-label="请求地址"
-					className="min-w-64 flex-1 font-mono"
+					className="min-w-48 flex-1 font-mono"
 					placeholder="{{baseUrl}}/api/user/:id"
 					value={current.def.url}
 					onChange={e => setDraft({ ...current, def: { ...current.def, url: e.target.value } })}
 				/>
-				<Button type="submit" disabled={!dirty || save.isPending}>
+				{children?.(current, dirty)}
+				<Button type="submit" disabled={!dirty || save.isPending} title={`保存 (${MOD_KEY}S)`}>
 					<Save size={14} />
 					{dirty ? "保存" : "已保存"}
 				</Button>
-				{children?.(current, dirty)}
 			</form>
 			<RequestFields draft={current} setDraft={setDraft} requestId={id} />
 		</div>

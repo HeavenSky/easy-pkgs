@@ -71,15 +71,16 @@ export const VarsEditor = ({
 			<div key={i} className="flex items-center gap-1.5">
 				<Input
 					aria-label={`${label}名 ${i + 1}`}
-					className="w-40 font-mono text-xs"
+					className="w-2/5 max-w-48 min-w-20 font-mono text-xs"
 					placeholder="变量名"
 					value={k}
 					onChange={e => onChange(vars.map((x, j) => (j === i ? [e.target.value, x[1]] : x)))}
 				/>
 				<Input
 					aria-label={`${label}值 ${i + 1}`}
-					className="flex-1 font-mono text-xs"
+					className="min-w-0 flex-1 font-mono text-xs"
 					placeholder="值; 敏感值写 <secret:来源id>"
+					title={v}
 					value={v}
 					onChange={e => onChange(vars.map((x, j) => (j === i ? [x[0], e.target.value] : x)))}
 				/>

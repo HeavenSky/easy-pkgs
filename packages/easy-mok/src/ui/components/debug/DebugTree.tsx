@@ -26,8 +26,8 @@ const Node = ({ node, depth, actions }: { node: TreeNode; depth: number; actions
 		<li>
 			<div
 				className={cn(
-					"group flex items-center gap-1 rounded px-1 py-0.5 text-sm",
-					actions.selected === node.id ? "bg-sky-100 dark:bg-sky-950" : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+					"group relative flex items-center gap-1 rounded px-1 py-0.5 text-sm",
+					actions.selected === node.id ? "bg-sky-100 dark:bg-sky-950" : "hover:bg-zinc-100 focus-within:bg-zinc-100 dark:hover:bg-zinc-800 dark:focus-within:bg-zinc-800"
 				)}
 				style={{ paddingLeft: depth * 12 + 4 }}
 			>
@@ -46,7 +46,8 @@ const Node = ({ node, depth, actions }: { node: TreeNode; depth: number; actions
 				>
 					{node.title}
 				</button>
-				<span className="flex shrink-0 items-center opacity-0 group-focus-within:opacity-100 group-hover:opacity-100">
+				{/* 操作按钮悬停时浮在行右侧, 不常驻占位, 窄侧栏里名称不被截断 */}
+				<span className="pointer-events-none absolute inset-y-0 right-0 flex items-center rounded-r bg-inherit pl-1 opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100">
 					{group && (
 						<>
 							<Button size="icon" variant="ghost" aria-label={`在 ${node.title} 下新建请求`} onClick={() => actions.onCreate("request", node.id)}>
@@ -89,13 +90,13 @@ const Node = ({ node, depth, actions }: { node: TreeNode; depth: number; actions
 
 export const DebugTree = ({ nodes, actions }: { nodes: TreeNode[]; actions: TreeActions }) => (
 	<div className="space-y-2">
-		<div className="flex items-center gap-1">
-			<span className="text-xs font-medium text-zinc-500">请求集合</span>
-			<Button size="sm" variant="ghost" className="ml-auto" onClick={() => actions.onCreate("request", null)}>
+		<div className="flex items-center gap-0.5">
+			<span className="text-xs font-semibold whitespace-nowrap text-zinc-700 dark:text-zinc-300">请求集合</span>
+			<Button size="sm" variant="ghost" className="ml-auto px-1.5" onClick={() => actions.onCreate("request", null)}>
 				<FilePlus size={14} />
 				请求
 			</Button>
-			<Button size="sm" variant="ghost" onClick={() => actions.onCreate("group", null)}>
+			<Button size="sm" variant="ghost" className="px-1.5" onClick={() => actions.onCreate("group", null)}>
 				<FolderPlus size={14} />
 				分组
 			</Button>

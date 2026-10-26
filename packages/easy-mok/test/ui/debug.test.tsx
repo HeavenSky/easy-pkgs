@@ -71,4 +71,32 @@ describe("调试页", () => {
 		expect((saved!.body as { definition: typeof definition }).definition.url).toBe("http://x/a");
 		expect(await screen.findByRole("button", { name: "已保存" })).toBeDisabled();
 	});
+
+	it("再次打开已缓存的请求时载入编辑器; 编辑器内 ⌘S 保存", async () => {
+		const node = (name: string) => ({ id: name, kind: "request", name, title: name, weight: 0, vars: {}, method: "GET", url: "", snapshots: [] });
+		let saved: string | null = null;
+		server.use(
+			http.get("*/__mock/api/debug/tree", () => HttpResponse.json({ nodes: [node("a"), node("b")], problems: [] })),
+			http.get("*/__mock/api/debug/envs", () => HttpResponse.json({ active: null, groups: [], problems: [] })),
+			http.get("*/__mock/api/debug/requests/:id", ({ params }) =>
+				HttpResponse.json({ id: params.id, definition: { ...definition, url: `http://x/${atob(String(params.id))}` }, meta: { title: null, weight: 0, vars: {} }, etag: "e1", metaEtag: "" })
+			),
+			http.put("*/__mock/api/debug/requests/:id", async ({ request, params }) => {
+				const body = (await request.json()) as { definition: typeof definition };
+				saved = body.definition.url;
+				return HttpResponse.json({ id: params.id, definition: body.definition, meta: { title: null, weight: 0, vars: {} }, etag: "e2", metaEtag: "" });
+			})
+		);
+		const user = userEvent.setup();
+		page("/debug/req/YQ");
+		expect(await screen.findByRole("textbox", { name: "请求地址" })).toHaveValue("http://x/a");
+		await user.click(screen.getByRole("button", { name: "b" }));
+		await waitFor(() => expect(screen.getByRole("textbox", { name: "请求地址" })).toHaveValue("http://x/b"));
+		await user.click(screen.getByRole("button", { name: "a" }));
+		const url = await screen.findByRole("textbox", { name: "请求地址" });
+		await waitFor(() => expect(url).toHaveValue("http://x/a"));
+		await user.type(url, "1");
+		await user.keyboard("{Meta>}s{/Meta}");
+		await waitFor(() => expect(saved).toBe("http://x/a1"));
+	});
 });

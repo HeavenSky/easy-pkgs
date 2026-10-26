@@ -14,7 +14,7 @@ The left column lists groups and requests. Use **Request** (`请求`) and **Grou
 
 ## Write a request
 
-Pick a request to edit its method, URL, query and path parameters, headers, authentication, body, and settings, then click **Save** (`保存`).
+Pick a request to edit its method, URL, query and path parameters, headers, authentication, body, and settings, then click **Save** (`保存`) or press ⌘S (Ctrl+S).
 
 ```text
 {{baseUrl}}/api/user/:id
@@ -30,7 +30,7 @@ If someone else saved the same request first, saving fails and offers to reload 
 
 ## Send a request and read the response
 
-Click **Send** (`发送`) to send the request as it is in the editor, saved or not; **Cancel** (`取消`) stops it. easy-mok sends it from the mock server, so there are no CORS limits and real `cookie` and `authorization` headers go out.
+Click **Send** (`发送`), or press ⌘Enter (Ctrl+Enter on Windows and Linux) while editing, to send the request as it is in the editor, saved or not; **Cancel** (`取消`) stops it. The environment picker next to **Send** switches the active environment. easy-mok sends it from the mock server, so there are no CORS limits and real `cookie` and `authorization` headers go out.
 
 - A variable that cannot be resolved blocks the request; fix it in the environment or the request first.
 - Compressed responses (gzip, deflate, br, and zstd where Node supports it) are stored decoded. Bodies stop at 50 MB and are marked as truncated.

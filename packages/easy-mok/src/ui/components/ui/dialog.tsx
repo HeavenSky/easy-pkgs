@@ -23,6 +23,8 @@ export const Dialog = ({ open, onClose, title, children, footer, className }: Di
 		if (open && !el.open) {
 			el.showModal?.();
 			el.setAttribute("open", "");
+			// showModal 把焦点给首个可聚焦元素(标题栏的关闭按钮); 有输入框时改为聚焦内容区的第一个输入框
+			el.querySelector<HTMLElement>("[data-dialog-body] :is(input:not([type=checkbox],[type=radio],[type=hidden]),textarea):not(:disabled)")?.focus();
 		}
 		if (!open && el.open) {
 			el.close?.();
@@ -51,7 +53,7 @@ export const Dialog = ({ open, onClose, title, children, footer, className }: Di
 					<X size={16} />
 				</Button>
 			</div>
-			<div className="max-h-[70vh] overflow-auto px-4 py-3">{children}</div>
+			<div data-dialog-body className="max-h-[70vh] overflow-auto px-4 py-3">{children}</div>
 			{footer && (
 				<div className="flex justify-end gap-2 border-t border-zinc-200 px-4 py-2.5 dark:border-zinc-800">
 					{footer}

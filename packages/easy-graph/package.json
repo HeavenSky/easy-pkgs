@@ -1,0 +1,1616 @@
+{
+	"name": "easy-graph",
+	"displayName": "Easy Graph",
+	"version": "0.0.1",
+	"description": "%extension.description%",
+	"categories": [
+		"Other"
+	],
+	"keywords": [
+		"action",
+		"diff",
+		"git",
+		"graph",
+		"visualise"
+	],
+	"homepage": "https://github.com/HeavenSky/easy-pkgs/tree/main/packages/easy-graph#readme",
+	"bugs": {
+		"url": "https://github.com/HeavenSky/easy-pkgs/issues"
+	},
+	"license": "MIT",
+	"author": "calla <aurora.calla@outlook.com>",
+	"contributors": [
+		"Michael Hutchison <mhutchie@16right.com>",
+		"hansu (https://github.com/hansu)"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/HeavenSky/easy-pkgs.git",
+		"directory": "packages/easy-graph"
+	},
+	"publisher": "heavensky",
+	"files": [
+		"out/extension.js",
+		"out/askpass/askpassMain.js",
+		"out/askpass/askpass.sh",
+		"out/askpass/askpass-empty.sh",
+		"out/askpass/ssh-askpass.sh",
+		"out/web/out.min.js",
+		"out/web/out.min.css",
+		"media/icon.png",
+		"l10n",
+		"package.nls.json",
+		"package.nls.zh-cn.json",
+		"LICENSE.txt",
+		"CHANGELOG.md"
+	],
+	"main": "./out/extension.js",
+	"scripts": {
+		"compile": "node build.mjs",
+		"build": "node build.mjs --production",
+		"watch": "node build.mjs --watch",
+		"typecheck": "tsc --noEmit && tsc -p web --noEmit",
+		"test": "vitest run",
+		"lint": "oxlint --fix",
+		"lint:check": "oxlint --deny-warnings",
+		"fmt": "oxfmt --write",
+		"fmt:check": "oxfmt --check",
+		"check": "node scripts/check.mjs",
+		"gen:icon": "node scripts/gen-icon.mjs",
+		"package": "node scripts/package.mjs",
+		"vscode:prepublish": "npm run build"
+	},
+	"dependencies": {
+		"iconv-lite": "^0.7.3"
+	},
+	"devDependencies": {
+		"@types/node": "^26.6.5",
+		"@vscode/vsce": "^4.0.0",
+		"esbuild": "^0.28.2",
+		"oxfmt": "^0.75.0",
+		"oxlint": "^1.90.0",
+		"typescript": "^7.0.2",
+		"vitest": "^5.0.5",
+		"vscode-types": "npm:@types/vscode"
+	},
+	"l10n": "./l10n",
+	"contributes": {
+		"commands": [
+			{
+				"category": "%category%",
+				"command": "easy-graph.view",
+				"title": "%command.view%",
+				"icon": "$(git-branch)"
+			},
+			{
+				"category": "%category%",
+				"command": "easy-graph.addGitRepository",
+				"title": "%command.addGitRepository%"
+			},
+			{
+				"category": "%category%",
+				"command": "easy-graph.clearAvatarCache",
+				"title": "%command.clearAvatarCache%"
+			},
+			{
+				"category": "%category%",
+				"command": "easy-graph.endAllWorkspaceCodeReviews",
+				"title": "%command.endAllWorkspaceCodeReviews%"
+			},
+			{
+				"category": "%category%",
+				"command": "easy-graph.endSpecificWorkspaceCodeReview",
+				"title": "%command.endSpecificWorkspaceCodeReview%"
+			},
+			{
+				"category": "%category%",
+				"command": "easy-graph.fetch",
+				"title": "%command.fetch%"
+			},
+			{
+				"category": "%category%",
+				"command": "easy-graph.goToRef",
+				"title": "%command.goToRef%"
+			},
+			{
+				"category": "%category%",
+				"command": "easy-graph.refresh",
+				"title": "%command.refresh%"
+			},
+			{
+				"category": "%category%",
+				"command": "easy-graph.removeGitRepository",
+				"title": "%command.removeGitRepository%"
+			},
+			{
+				"category": "%category%",
+				"command": "easy-graph.resumeWorkspaceCodeReview",
+				"title": "%command.resumeWorkspaceCodeReview%"
+			},
+			{
+				"category": "%category%",
+				"command": "easy-graph.switchRepository",
+				"title": "%command.switchRepository%"
+			},
+			{
+				"category": "%category%",
+				"command": "easy-graph.version",
+				"title": "%command.version%"
+			},
+			{
+				"category": "%category%",
+				"command": "easy-graph.openFile",
+				"title": "%command.openFile%",
+				"icon": "$(go-to-file)",
+				"enablement": "isInDiffEditor && resourceScheme == easy-graph && easy-graph:codiconsSupported"
+			},
+			{
+				"category": "%category%",
+				"command": "easy-graph.openWithPathFilter",
+				"title": "%command.openWithPathFilter%"
+			},
+			{
+				"category": "%category%",
+				"command": "easy-graph.goToCommit",
+				"title": "%command.goToCommit%",
+				"icon": "$(git-commit)"
+			},
+			{
+				"category": "%category%",
+				"command": "easy-graph.showReflog",
+				"title": "%command.showReflog%"
+			},
+			{
+				"category": "%category%",
+				"command": "easy-graph.manageBackups",
+				"title": "%command.manageBackups%"
+			},
+			{
+				"category": "%category%",
+				"command": "easy-graph.resetRememberedDialogChoices",
+				"title": "%command.resetRememberedDialogChoices%"
+			},
+			{
+				"category": "%category%",
+				"command": "easy-graph.viewInEditor",
+				"title": "%command.viewInEditor%"
+			},
+			{
+				"category": "%category%",
+				"command": "easy-graph.viewInPanel",
+				"title": "%command.viewInPanel%"
+			}
+		],
+		"configuration": {
+			"type": "object",
+			"title": "%config.title%",
+			"properties": {
+				"easy-graph.commitDetailsView.autoCenter": {
+					"type": "boolean",
+					"default": true,
+					"description": "%config.commitDetailsView.autoCenter%"
+				},
+				"easy-graph.commitDetailsView.autoScroll": {
+					"type": "boolean",
+					"default": true,
+					"description": "%config.commitDetailsView.autoScroll%"
+				},
+				"easy-graph.commitDetailsView.fileView.fileTree.compactFolders": {
+					"type": "boolean",
+					"default": true,
+					"description": "%config.commitDetailsView.fileView.fileTree.compactFolders%"
+				},
+				"easy-graph.commitDetailsView.fileView.type": {
+					"type": "string",
+					"enum": [
+						"File Tree",
+						"File List"
+					],
+					"enumDescriptions": [
+						"%config.commitDetailsView.fileView.type.enum.FileTree%",
+						"%config.commitDetailsView.fileView.type.enum.FileList%"
+					],
+					"default": "File Tree",
+					"description": "%config.commitDetailsView.fileView.type%"
+				},
+				"easy-graph.commitDetailsView.hiddenFields": {
+					"type": "array",
+					"items": {
+						"type": "string",
+						"enum": [
+							"parents",
+							"branches",
+							"tags",
+							"containedInBranches",
+							"author",
+							"committer",
+							"date",
+							"changes",
+							"notes"
+						]
+					},
+					"uniqueItems": true,
+					"default": [],
+					"description": "%config.commitDetailsView.hiddenFields%"
+				},
+				"easy-graph.commitDetailsView.location": {
+					"type": "string",
+					"enum": [
+						"Inline",
+						"Docked to Bottom"
+					],
+					"enumDescriptions": [
+						"%config.commitDetailsView.location.enum.Inline%",
+						"%config.commitDetailsView.location.enum.DockedtoBottom%"
+					],
+					"default": "Inline",
+					"description": "%config.commitDetailsView.location%"
+				},
+				"easy-graph.builtin": {
+					"type": "object",
+					"default": {
+						"core.abbrev": 7,
+						"log.mailmap": false,
+						"merge.ff": false,
+						"push.autoSetupRemote": true,
+						"status.showUntrackedFiles": "all"
+					},
+					"markdownDescription": "%config.builtin%",
+					"properties": {
+						"commit.gpgSign": {
+							"type": [
+								"boolean",
+								"null"
+							],
+							"description": "%config.builtin.commit.gpgSign%"
+						},
+						"core.abbrev": {
+							"type": [
+								"integer",
+								"null"
+							],
+							"minimum": 4,
+							"maximum": 40,
+							"description": "%config.builtin.core.abbrev%"
+						},
+						"fetch.prune": {
+							"type": [
+								"boolean",
+								"null"
+							],
+							"description": "%config.builtin.fetch.prune%"
+						},
+						"fetch.pruneTags": {
+							"type": [
+								"boolean",
+								"null"
+							],
+							"description": "%config.builtin.fetch.pruneTags%"
+						},
+						"fetch.tags": {
+							"type": [
+								"boolean",
+								"null"
+							],
+							"description": "%config.builtin.fetch.tags%"
+						},
+						"log.mailmap": {
+							"type": [
+								"boolean",
+								"null"
+							],
+							"description": "%config.builtin.log.mailmap%"
+						},
+						"merge.ff": {
+							"enum": [
+								true,
+								false,
+								"only",
+								null
+							],
+							"description": "%config.builtin.merge.ff%"
+						},
+						"pull.ff": {
+							"enum": [
+								true,
+								false,
+								"only",
+								null
+							],
+							"description": "%config.builtin.pull.ff%"
+						},
+						"push.autoSetupRemote": {
+							"type": [
+								"boolean",
+								"null"
+							],
+							"description": "%config.builtin.push.autoSetupRemote%"
+						},
+						"status.showUntrackedFiles": {
+							"enum": [
+								"no",
+								"normal",
+								"all",
+								null
+							],
+							"description": "%config.builtin.status.showUntrackedFiles%"
+						},
+						"tag.gpgSign": {
+							"type": [
+								"boolean",
+								"null"
+							],
+							"description": "%config.builtin.tag.gpgSign%"
+						}
+					},
+					"additionalProperties": false
+				},
+				"easy-graph.contextMenuActionsVisibility": {
+					"type": "object",
+					"default": {},
+					"properties": {
+						"branch": {
+							"type": "object",
+							"properties": {
+								"checkout": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.branch.checkout.title%"
+								},
+								"rename": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.branch.rename.title%"
+								},
+								"createBranch": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.branch.createBranch.title%"
+								},
+								"delete": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.branch.delete.title%"
+								},
+								"deleteMultiple": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.branch.deleteMultiple.title%"
+								},
+								"merge": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.branch.merge.title%"
+								},
+								"rebase": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.branch.rebase.title%"
+								},
+								"push": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.branch.push.title%"
+								},
+								"pull": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.branch.pull.title%"
+								},
+								"viewIssue": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.branch.viewIssue.title%"
+								},
+								"createPullRequest": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.branch.createPullRequest.title%"
+								},
+								"createArchive": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.branch.createArchive.title%"
+								},
+								"selectInBranchesDropdown": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.branch.selectInBranchesDropdown.title%"
+								},
+								"unselectInBranchesDropdown": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.branch.unselectInBranchesDropdown.title%"
+								},
+								"hide": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.branch.hide.title%"
+								},
+								"copyName": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.branch.copyName.title%"
+								}
+							}
+						},
+						"commit": {
+							"type": "object",
+							"properties": {
+								"addTag": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.addTag.title%"
+								},
+								"createBranch": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.createBranch.title%"
+								},
+								"checkout": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.checkout.title%"
+								},
+								"compareWithWorkingTree": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.compareWithWorkingTree.title%"
+								},
+								"cherrypick": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.cherrypick.title%"
+								},
+								"revert": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.revert.title%"
+								},
+								"undo": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.undo.title%"
+								},
+								"drop": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.drop.title%"
+								},
+								"squash": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.squash.title%"
+								},
+								"merge": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.merge.title%"
+								},
+								"rebase": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.rebase.title%"
+								},
+								"rebaseOnto": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.rebaseOnto.title%"
+								},
+								"reset": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.reset.title%"
+								},
+								"editMessage": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.editMessage.title%"
+								},
+								"createFixup": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.createFixup.title%"
+								},
+								"pushToCommit": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.pushToCommit.title%"
+								},
+								"savePatch": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.savePatch.title%"
+								},
+								"applyPatch": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.applyPatch.title%"
+								},
+								"viewPatch": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.viewPatch.title%"
+								},
+								"viewAllChanges": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.viewAllChanges.title%"
+								},
+								"browseFiles": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.browseFiles.title%"
+								},
+								"editNotes": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.editNotes.title%"
+								},
+								"viewChangesFromParent": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.viewChangesFromParent.title%"
+								},
+								"selectMergeBase": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.selectMergeBase.title%"
+								},
+								"copyHash": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.copyHash.title%"
+								},
+								"copySubject": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.copySubject.title%"
+								},
+								"copySubjectsBetween": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.copySubjectsBetween.title%"
+								},
+								"copyPatch": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commit.copyPatch.title%"
+								}
+							}
+						},
+						"commitDetailsViewFile": {
+							"type": "object",
+							"properties": {
+								"viewDiff": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.viewDiff.title%"
+								},
+								"viewAllChanges": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.viewAllChanges.title%"
+								},
+								"viewFileAtThisRevision": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.viewFileAtThisRevision.title%"
+								},
+								"viewDiffWithWorkingFile": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.viewDiffWithWorkingFile.title%"
+								},
+								"openFile": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.openFile.title%"
+								},
+								"openInExternalDiffTool": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.openInExternalDiffTool.title%"
+								},
+								"markAsReviewed": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.markAsReviewed.title%"
+								},
+								"markAsNotReviewed": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.markAsNotReviewed.title%"
+								},
+								"resetFileToThisRevision": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.resetFileToThisRevision.title%"
+								},
+								"copyAbsoluteFilePath": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.copyAbsoluteFilePath.title%"
+								},
+								"copyRelativeFilePath": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.copyRelativeFilePath.title%"
+								},
+								"copyAllRelativeFilePaths": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.copyAllRelativeFilePaths.title%"
+								}
+							}
+						},
+						"remoteBranch": {
+							"type": "object",
+							"properties": {
+								"checkout": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.checkout.title%"
+								},
+								"delete": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.delete.title%"
+								},
+								"fetch": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.fetch.title%"
+								},
+								"merge": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.merge.title%"
+								},
+								"pull": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.pull.title%"
+								},
+								"createBranch": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.createBranch.title%"
+								},
+								"viewIssue": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.viewIssue.title%"
+								},
+								"createPullRequest": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.createPullRequest.title%"
+								},
+								"createArchive": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.createArchive.title%"
+								},
+								"selectInBranchesDropdown": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.selectInBranchesDropdown.title%"
+								},
+								"unselectInBranchesDropdown": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.unselectInBranchesDropdown.title%"
+								},
+								"hide": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.hide.title%"
+								},
+								"hideRemote": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.hideRemote.title%"
+								},
+								"copyName": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.copyName.title%"
+								}
+							}
+						},
+						"stash": {
+							"type": "object",
+							"properties": {
+								"apply": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.stash.apply.title%"
+								},
+								"createBranch": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.stash.createBranch.title%"
+								},
+								"pop": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.stash.pop.title%"
+								},
+								"drop": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.stash.drop.title%"
+								},
+								"copyName": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.stash.copyName.title%"
+								},
+								"copyHash": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.stash.copyHash.title%"
+								},
+								"viewAllChanges": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.stash.viewAllChanges.title%"
+								}
+							}
+						},
+						"tag": {
+							"type": "object",
+							"properties": {
+								"viewDetails": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.tag.viewDetails.title%"
+								},
+								"checkout": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.tag.checkout.title%"
+								},
+								"delete": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.tag.delete.title%"
+								},
+								"push": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.tag.push.title%"
+								},
+								"createArchive": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.tag.createArchive.title%"
+								},
+								"copyName": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.tag.copyName.title%"
+								}
+							}
+						},
+						"uncommittedChanges": {
+							"type": "object",
+							"properties": {
+								"stash": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.uncommittedChanges.stash.title%"
+								},
+								"applyPatch": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.uncommittedChanges.applyPatch.title%"
+								},
+								"reset": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.uncommittedChanges.reset.title%"
+								},
+								"clean": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.uncommittedChanges.clean.title%"
+								},
+								"viewAllChanges": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.uncommittedChanges.viewAllChanges.title%"
+								},
+								"openSourceControlView": {
+									"type": "boolean",
+									"title": "%config.contextMenuActionsVisibility.uncommittedChanges.openSourceControlView.title%"
+								}
+							}
+						}
+					},
+					"markdownDescription": "%config.contextMenuActionsVisibility%"
+				},
+				"easy-graph.customBranchGlobPatterns": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"title": "%config.customBranchGlobPatterns.items.title%",
+						"required": [
+							"name",
+							"glob"
+						],
+						"properties": {
+							"name": {
+								"type": "string",
+								"title": "%config.customBranchGlobPatterns.items.name.title%",
+								"description": "%config.customBranchGlobPatterns.items.name.description%"
+							},
+							"glob": {
+								"type": "string",
+								"title": "%config.customBranchGlobPatterns.items.glob.title%",
+								"description": "%config.customBranchGlobPatterns.items.glob.description%"
+							}
+						}
+					},
+					"default": [],
+					"description": "%config.customBranchGlobPatterns%"
+				},
+				"easy-graph.customEmojiShortcodeMappings": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"title": "%config.customEmojiShortcodeMappings.items.title%",
+						"required": [
+							"shortcode",
+							"emoji"
+						],
+						"properties": {
+							"shortcode": {
+								"type": "string",
+								"title": "%config.customEmojiShortcodeMappings.items.shortcode.title%",
+								"description": "%config.customEmojiShortcodeMappings.items.shortcode.description%"
+							},
+							"emoji": {
+								"type": "string",
+								"title": "%config.customEmojiShortcodeMappings.items.emoji.title%",
+								"description": "%config.customEmojiShortcodeMappings.items.emoji.description%"
+							}
+						}
+					},
+					"default": [],
+					"description": "%config.customEmojiShortcodeMappings%"
+				},
+				"easy-graph.customPullRequestProviders": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"title": "%config.customPullRequestProviders.items.title%",
+						"required": [
+							"name",
+							"templateUrl"
+						],
+						"properties": {
+							"name": {
+								"type": "string",
+								"title": "%config.customPullRequestProviders.items.name.title%",
+								"description": "%config.customPullRequestProviders.items.name.description%"
+							},
+							"templateUrl": {
+								"type": "string",
+								"title": "%config.customPullRequestProviders.items.templateUrl.title%",
+								"markdownDescription": "%config.customPullRequestProviders.items.templateUrl.markdownDescription%"
+							}
+						}
+					},
+					"default": [],
+					"markdownDescription": "%config.customPullRequestProviders%"
+				},
+				"easy-graph.date.format": {
+					"type": "string",
+					"enum": [
+						"Date & Time",
+						"Date Only",
+						"ISO Date & Time",
+						"ISO Date Only",
+						"Relative",
+						"Custom"
+					],
+					"enumDescriptions": [
+						"%config.date.format.enum.DateTime%",
+						"%config.date.format.enum.DateOnly%",
+						"%config.date.format.enum.ISODateTime%",
+						"%config.date.format.enum.ISODateOnly%",
+						"%config.date.format.enum.Relative%",
+						"%config.date.format.enum.Custom%"
+					],
+					"default": "Date & Time",
+					"description": "%config.date.format%"
+				},
+				"easy-graph.date.customFormat": {
+					"type": "string",
+					"default": "YYYY-MM-DD HH:mm",
+					"markdownDescription": "%config.date.customFormat%"
+				},
+				"easy-graph.date.type": {
+					"type": "string",
+					"enum": [
+						"Author Date",
+						"Commit Date"
+					],
+					"enumDescriptions": [
+						"%config.date.type.enum.AuthorDate%",
+						"%config.date.type.enum.CommitDate%"
+					],
+					"default": "Author Date",
+					"description": "%config.date.type%"
+				},
+				"easy-graph.defaultColumnVisibility": {
+					"type": "object",
+					"properties": {
+						"Date": {
+							"type": "boolean",
+							"title": "%config.defaultColumnVisibility.Date.title%"
+						},
+						"Author": {
+							"type": "boolean",
+							"title": "%config.defaultColumnVisibility.Author.title%"
+						},
+						"Commit": {
+							"type": "boolean",
+							"title": "%config.defaultColumnVisibility.Commit.title%"
+						}
+					},
+					"default": {
+						"Date": true,
+						"Author": true,
+						"Commit": true
+					},
+					"description": "%config.defaultColumnVisibility%"
+				},
+				"easy-graph.toolbarButtonVisibility": {
+					"type": "object",
+					"properties": {
+						"Display": {
+							"type": "boolean",
+							"title": "%config.toolbarButtonVisibility.Display.title%"
+						},
+						"Scope": {
+							"type": "boolean",
+							"title": "%config.toolbarButtonVisibility.Scope.title%"
+						},
+						"Paths": {
+							"type": "boolean",
+							"title": "%config.toolbarButtonVisibility.Paths.title%"
+						},
+						"Remotes": {
+							"type": "boolean",
+							"title": "%config.toolbarButtonVisibility.Remotes.title%"
+						},
+						"Simplify": {
+							"type": "boolean",
+							"title": "%config.toolbarButtonVisibility.Simplify.title%"
+						}
+					},
+					"default": {
+						"Display": true,
+						"Scope": true,
+						"Paths": true
+					},
+					"description": "%config.toolbarButtonVisibility%"
+				},
+				"easy-graph.dialog.addTag.pushToRemote": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.dialog.addTag.pushToRemote%"
+				},
+				"easy-graph.dialog.addTag.type": {
+					"type": "string",
+					"enum": [
+						"Annotated",
+						"Lightweight"
+					],
+					"default": "Annotated",
+					"description": "%config.dialog.addTag.type%"
+				},
+				"easy-graph.dialog.applyStash.reinstateIndex": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.dialog.applyStash.reinstateIndex%"
+				},
+				"easy-graph.dialog.cherryPick.noCommit": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.dialog.cherryPick.noCommit%"
+				},
+				"easy-graph.dialog.cherryPick.recordOrigin": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.dialog.cherryPick.recordOrigin%"
+				},
+				"easy-graph.dialog.createBranch.checkOut": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.dialog.createBranch.checkOut%"
+				},
+				"easy-graph.dialog.deleteBranch.forceDelete": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.dialog.deleteBranch.forceDelete%"
+				},
+				"easy-graph.dialog.deleteBranch.deleteOnRemote": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.dialog.deleteBranch.deleteOnRemote%"
+				},
+				"easy-graph.dialog.fetchIntoLocalBranch.forceFetch": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.dialog.fetchIntoLocalBranch.forceFetch%"
+				},
+				"easy-graph.dialog.general.referenceInputSpaceSubstitution": {
+					"type": "string",
+					"enum": [
+						"None",
+						"Hyphen",
+						"Underscore"
+					],
+					"enumDescriptions": [
+						"%config.dialog.general.referenceInputSpaceSubstitution.enum.None%",
+						"%config.dialog.general.referenceInputSpaceSubstitution.enum.Hyphen%",
+						"%config.dialog.general.referenceInputSpaceSubstitution.enum.Underscore%"
+					],
+					"default": "None",
+					"description": "%config.dialog.general.referenceInputSpaceSubstitution%"
+				},
+				"easy-graph.dialog.merge.noCommit": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.dialog.merge.noCommit%"
+				},
+				"easy-graph.dialog.merge.allowUnrelatedHistories": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.dialog.merge.allowUnrelatedHistories%"
+				},
+				"easy-graph.dialog.merge.squashCommits": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.dialog.merge.squashCommits%"
+				},
+				"easy-graph.dialog.merge.squashMessageFormat": {
+					"type": "string",
+					"enum": [
+						"Default",
+						"Git SQUASH_MSG",
+						"Branch Name & Commit Subjects"
+					],
+					"enumDescriptions": [
+						"%config.dialog.merge.squashMessageFormat.enum.Default%",
+						"%config.dialog.merge.squashMessageFormat.enum.GitSQUASH_MSG%",
+						"%config.dialog.merge.squashMessageFormat.enum.BranchNameAndCommitSubjects%"
+					],
+					"default": "Default",
+					"description": "%config.dialog.merge.squashMessageFormat%"
+				},
+				"easy-graph.dialog.popStash.reinstateIndex": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.dialog.popStash.reinstateIndex%"
+				},
+				"easy-graph.dialog.pullBranch.squashCommits": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.dialog.pullBranch.squashCommits%"
+				},
+				"easy-graph.dialog.pullBranch.squashMessageFormat": {
+					"type": "string",
+					"enum": [
+						"Default",
+						"Git SQUASH_MSG",
+						"Branch Name & Commit Subjects"
+					],
+					"enumDescriptions": [
+						"%config.dialog.pullBranch.squashMessageFormat.enum.Default%",
+						"%config.dialog.pullBranch.squashMessageFormat.enum.GitSQUASH_MSG%",
+						"%config.dialog.pullBranch.squashMessageFormat.enum.BranchNameAndCommitSubjects%"
+					],
+					"default": "Default",
+					"description": "%config.dialog.pullBranch.squashMessageFormat%"
+				},
+				"easy-graph.dialog.pushBranch.mode": {
+					"type": "string",
+					"enum": [
+						"Normal",
+						"Force With Lease",
+						"Force"
+					],
+					"default": "Normal",
+					"description": "%config.dialog.pushBranch.mode%"
+				},
+				"easy-graph.dialog.rebase.ignoreDate": {
+					"type": "boolean",
+					"default": true,
+					"description": "%config.dialog.rebase.ignoreDate%"
+				},
+				"easy-graph.dialog.rebase.launchInteractiveRebase": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.dialog.rebase.launchInteractiveRebase%"
+				},
+				"easy-graph.dialog.resetCurrentBranchToCommit.mode": {
+					"type": "string",
+					"enum": [
+						"Soft",
+						"Mixed",
+						"Hard"
+					],
+					"enumDescriptions": [
+						"%config.dialog.resetCurrentBranchToCommit.mode.enum.Soft%",
+						"%config.dialog.resetCurrentBranchToCommit.mode.enum.Mixed%",
+						"%config.dialog.resetCurrentBranchToCommit.mode.enum.Hard%"
+					],
+					"default": "Mixed",
+					"description": "%config.dialog.resetCurrentBranchToCommit.mode%"
+				},
+				"easy-graph.dialog.resetUncommittedChanges.mode": {
+					"type": "string",
+					"enum": [
+						"Mixed",
+						"Hard"
+					],
+					"enumDescriptions": [
+						"%config.dialog.resetUncommittedChanges.mode.enum.Mixed%",
+						"%config.dialog.resetUncommittedChanges.mode.enum.Hard%"
+					],
+					"default": "Mixed",
+					"description": "%config.dialog.resetUncommittedChanges.mode%"
+				},
+				"easy-graph.dialog.stashUncommittedChanges.includeUntracked": {
+					"type": "boolean",
+					"default": true,
+					"description": "%config.dialog.stashUncommittedChanges.includeUntracked%"
+				},
+				"easy-graph.disableRefreshWhenShown": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.disableRefreshWhenShown%"
+				},
+				"easy-graph.enhancedAccessibility": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.enhancedAccessibility%"
+				},
+				"easy-graph.excludeBranchGlobPatterns": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [],
+					"markdownDescription": "%config.excludeBranchGlobPatterns%"
+				},
+				"easy-graph.externalDiffToolArgs": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [],
+					"markdownDescription": "%config.externalDiffToolArgs%"
+				},
+				"easy-graph.fileEncoding": {
+					"type": "string",
+					"default": "utf8",
+					"markdownDescription": "%config.fileEncoding%",
+					"scope": "resource"
+				},
+				"easy-graph.findMatchHighlightColour": {
+					"type": "string",
+					"default": "",
+					"markdownDescription": "%config.findMatchHighlightColour%"
+				},
+				"easy-graph.flashColour": {
+					"type": "string",
+					"default": "",
+					"markdownDescription": "%config.flashColour%"
+				},
+				"easy-graph.fontFamily": {
+					"type": "string",
+					"default": "",
+					"markdownDescription": "%config.fontFamily%"
+				},
+				"easy-graph.findWidget.searchColumns": {
+					"type": "array",
+					"items": {
+						"type": "string",
+						"enum": [
+							"Description",
+							"Date",
+							"Author",
+							"Commit"
+						]
+					},
+					"default": [
+						"Description",
+						"Date",
+						"Author",
+						"Commit"
+					],
+					"markdownDescription": "%config.findWidget.searchColumns%"
+				},
+				"easy-graph.graph.colours": {
+					"type": "array",
+					"items": {
+						"type": "string",
+						"description": "%config.graph.colours.items.description%",
+						"pattern": "^\\s*(#[0-9a-fA-F]{6}|#[0-9a-fA-F]{8}|rgb[a]?\\s*\\(\\d{1,3},\\s*\\d{1,3},\\s*\\d{1,3}\\))\\s*$"
+					},
+					"default": [
+						"#0085d9",
+						"#d9008f",
+						"#00d90a",
+						"#d98500",
+						"#a300d9",
+						"#ff0000",
+						"#00d9cc",
+						"#e138e8",
+						"#85d900",
+						"#dc5b23",
+						"#6f24d6",
+						"#ffcc00"
+					],
+					"description": "%config.graph.colours%"
+				},
+				"easy-graph.graph.showBranchColourOnRows": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.graph.showBranchColourOnRows%"
+				},
+				"easy-graph.graph.style": {
+					"type": "string",
+					"enum": [
+						"rounded",
+						"angular"
+					],
+					"enumDescriptions": [
+						"%config.graph.style.enum.rounded%",
+						"%config.graph.style.enum.angular%"
+					],
+					"default": "rounded",
+					"description": "%config.graph.style%"
+				},
+				"easy-graph.graph.uncommittedChanges": {
+					"type": "string",
+					"enum": [
+						"Open Circle at the Uncommitted Changes",
+						"Open Circle at the Checked Out Commit"
+					],
+					"enumDescriptions": [
+						"%config.graph.uncommittedChanges.enum.OpenCircleattheUncommittedChanges%",
+						"%config.graph.uncommittedChanges.enum.OpenCircleattheCheckedOutCommit%"
+					],
+					"default": "Open Circle at the Uncommitted Changes",
+					"description": "%config.graph.uncommittedChanges%"
+				},
+				"easy-graph.integratedTerminalShell": {
+					"type": "string",
+					"default": "",
+					"description": "%config.integratedTerminalShell%",
+					"scope": "machine"
+				},
+				"easy-graph.keyboardShortcut.modifier": {
+					"type": "string",
+					"enum": [
+						"CTRL/CMD",
+						"CTRL",
+						"CMD"
+					],
+					"enumDescriptions": [
+						"%config.keyboardShortcut.modifier.enum.ctrlOrCmd%",
+						"%config.keyboardShortcut.modifier.enum.ctrl%",
+						"%config.keyboardShortcut.modifier.enum.cmd%"
+					],
+					"default": "CTRL/CMD",
+					"description": "%config.keyboardShortcut.modifier%"
+				},
+				"easy-graph.logGitCommandOutput": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.logGitCommandOutput%"
+				},
+				"easy-graph.markdown": {
+					"type": "boolean",
+					"default": true,
+					"description": "%config.markdown%"
+				},
+				"easy-graph.maxDepthOfRepoSearch": {
+					"type": "number",
+					"default": 0,
+					"description": "%config.maxDepthOfRepoSearch%"
+				},
+				"easy-graph.openNewTabEditorGroup": {
+					"type": "string",
+					"enum": [
+						"Active",
+						"Beside",
+						"One",
+						"Two",
+						"Three",
+						"Four",
+						"Five",
+						"Six",
+						"Seven",
+						"Eight",
+						"Nine"
+					],
+					"enumDescriptions": [
+						"%config.openNewTabEditorGroup.enum.Active%",
+						"%config.openNewTabEditorGroup.enum.Beside%",
+						"%config.openNewTabEditorGroup.enum.One%",
+						"%config.openNewTabEditorGroup.enum.Two%",
+						"%config.openNewTabEditorGroup.enum.Three%",
+						"%config.openNewTabEditorGroup.enum.Four%",
+						"%config.openNewTabEditorGroup.enum.Five%",
+						"%config.openNewTabEditorGroup.enum.Six%",
+						"%config.openNewTabEditorGroup.enum.Seven%",
+						"%config.openNewTabEditorGroup.enum.Eight%",
+						"%config.openNewTabEditorGroup.enum.Nine%"
+					],
+					"default": "Active",
+					"description": "%config.openNewTabEditorGroup%"
+				},
+				"easy-graph.openToTheRepoOfTheActiveTextEditorDocument": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.openToTheRepoOfTheActiveTextEditorDocument%"
+				},
+				"easy-graph.referenceLabels.alignment": {
+					"type": "string",
+					"enum": [
+						"Normal",
+						"Branches (on the left) & Tags (on the right)",
+						"Branches (aligned to the graph) & Tags (on the right)"
+					],
+					"enumDescriptions": [
+						"%config.referenceLabels.alignment.enum.Normal%",
+						"%config.referenceLabels.alignment.enum.BranchesontheleftTagsontheright%",
+						"%config.referenceLabels.alignment.enum.BranchesalignedtothegraphTagsontheright%"
+					],
+					"default": "Normal",
+					"description": "%config.referenceLabels.alignment%"
+				},
+				"easy-graph.referenceLabels.combineLocalAndRemoteBranchLabels": {
+					"type": "boolean",
+					"default": true,
+					"description": "%config.referenceLabels.combineLocalAndRemoteBranchLabels%"
+				},
+				"easy-graph.repository.backupBeforeDangerousActions": {
+					"type": "boolean",
+					"default": false,
+					"markdownDescription": "%config.repository.backupBeforeDangerousActions%"
+				},
+				"easy-graph.repository.commits.fetchAvatars": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.repository.commits.fetchAvatars%"
+				},
+				"easy-graph.repository.commits.initialLoad": {
+					"type": "number",
+					"default": 300,
+					"description": "%config.repository.commits.initialLoad%"
+				},
+				"easy-graph.repository.commits.loadMore": {
+					"type": "number",
+					"default": 100,
+					"description": "%config.repository.commits.loadMore%"
+				},
+				"easy-graph.repository.commits.loadMoreAutomatically": {
+					"type": "boolean",
+					"default": true,
+					"description": "%config.repository.commits.loadMoreAutomatically%"
+				},
+				"easy-graph.repository.commits.mute.commitsThatAreNotAncestorsOfHead": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.repository.commits.mute.commitsThatAreNotAncestorsOfHead%"
+				},
+				"easy-graph.repository.commits.mute.mergeCommits": {
+					"type": "boolean",
+					"default": true,
+					"description": "%config.repository.commits.mute.mergeCommits%"
+				},
+				"easy-graph.repository.commits.order": {
+					"type": "string",
+					"enum": [
+						"date",
+						"author-date",
+						"topo"
+					],
+					"enumDescriptions": [
+						"%config.repository.commits.order.enum.date%",
+						"%config.repository.commits.order.enum.author-date%",
+						"%config.repository.commits.order.enum.topo%"
+					],
+					"default": "date",
+					"markdownDescription": "%config.repository.commits.order%"
+				},
+				"easy-graph.repository.commits.showSignatureStatus": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.repository.commits.showSignatureStatus%"
+				},
+				"easy-graph.repository.fetchOnLoad": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.repository.fetchOnLoad%"
+				},
+				"easy-graph.repository.includeCommitsMentionedByReflogs": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.repository.includeCommitsMentionedByReflogs%"
+				},
+				"easy-graph.repository.onLoad.scrollToHead": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.repository.onLoad.scrollToHead%"
+				},
+				"easy-graph.repository.onLoad.showCheckedOutBranch": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.repository.onLoad.showCheckedOutBranch%"
+				},
+				"easy-graph.repository.onLoad.showSpecificBranches": {
+					"type": "array",
+					"items": {
+						"type": "string",
+						"description": "%config.repository.onLoad.showSpecificBranches.items.description%"
+					},
+					"default": [],
+					"markdownDescription": "%config.repository.onLoad.showSpecificBranches%"
+				},
+				"easy-graph.repository.onlyFollowFirstParent": {
+					"type": "boolean",
+					"default": false,
+					"markdownDescription": "%config.repository.onlyFollowFirstParent%"
+				},
+				"easy-graph.repository.onlyShowRemoteBranchesWithLocalBranches": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.repository.onlyShowRemoteBranchesWithLocalBranches%"
+				},
+				"easy-graph.repository.singleAuthorSelect": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.repository.singleAuthorSelect%"
+				},
+				"easy-graph.repository.singleBranchSelect": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.repository.singleBranchSelect%"
+				},
+				"easy-graph.repository.showCommitsOnlyReferencedByTags": {
+					"type": "boolean",
+					"default": true,
+					"description": "%config.repository.showCommitsOnlyReferencedByTags%"
+				},
+				"easy-graph.repository.showRemoteBranches": {
+					"type": "boolean",
+					"default": true,
+					"description": "%config.repository.showRemoteBranches%"
+				},
+				"easy-graph.repository.simplifyByDecoration": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.repository.simplifyByDecoration%"
+				},
+				"easy-graph.repository.showRemoteHeads": {
+					"type": "boolean",
+					"default": true,
+					"description": "%config.repository.showRemoteHeads%"
+				},
+				"easy-graph.repository.showStashes": {
+					"type": "boolean",
+					"default": true,
+					"description": "%config.repository.showStashes%"
+				},
+				"easy-graph.repository.showTags": {
+					"type": "boolean",
+					"default": true,
+					"description": "%config.repository.showTags%"
+				},
+				"easy-graph.repository.showUncommittedChanges": {
+					"type": "boolean",
+					"default": true,
+					"description": "%config.repository.showUncommittedChanges%"
+				},
+				"easy-graph.repositories": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [],
+					"markdownDescription": "%config.repositories%"
+				},
+				"easy-graph.repoSearchExclude": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"**/node_modules"
+					],
+					"markdownDescription": "%config.repoSearchExclude%"
+				},
+				"easy-graph.repositoryDropdownOrder": {
+					"type": "string",
+					"enum": [
+						"Full Path",
+						"Name",
+						"Workspace Full Path"
+					],
+					"enumDescriptions": [
+						"%config.repositoryDropdownOrder.enum.FullPath%",
+						"%config.repositoryDropdownOrder.enum.Name%",
+						"%config.repositoryDropdownOrder.enum.WorkspaceFullPath%"
+					],
+					"default": "Workspace Full Path",
+					"description": "%config.repositoryDropdownOrder%"
+				},
+				"easy-graph.retainContextWhenHidden": {
+					"type": "boolean",
+					"default": true,
+					"description": "%config.retainContextWhenHidden%"
+				},
+				"easy-graph.showStatusBarItem": {
+					"type": "boolean",
+					"default": true,
+					"description": "%config.showStatusBarItem%"
+				},
+				"easy-graph.sourceCodeProviderIntegrationLocation": {
+					"type": "string",
+					"enum": [
+						"Inline",
+						"More Actions"
+					],
+					"enumDescriptions": [
+						"%config.sourceCodeProviderIntegrationLocation.enum.Inline%",
+						"%config.sourceCodeProviderIntegrationLocation.enum.MoreActions%"
+					],
+					"default": "Inline",
+					"description": "%config.sourceCodeProviderIntegrationLocation%"
+				},
+				"easy-graph.stickyHeader": {
+					"type": "boolean",
+					"default": true,
+					"description": "%config.stickyHeader%"
+				},
+				"easy-graph.toggleViewOnCommand": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.toggleViewOnCommand%"
+				},
+				"easy-graph.viewLocation": {
+					"type": "string",
+					"enum": [
+						"editor",
+						"panel",
+						"both"
+					],
+					"enumDescriptions": [
+						"%config.viewLocation.enum.editor%",
+						"%config.viewLocation.enum.panel%",
+						"%config.viewLocation.enum.both%"
+					],
+					"default": "editor",
+					"description": "%config.viewLocation%"
+				}
+			}
+		},
+		"menus": {
+			"commandPalette": [
+				{
+					"command": "easy-graph.openFile",
+					"when": "isInDiffEditor && resourceScheme == easy-graph && easy-graph:codiconsSupported"
+				},
+				{
+					"command": "easy-graph.openWithPathFilter",
+					"when": "false"
+				},
+				{
+					"command": "easy-graph.goToCommit",
+					"when": "resourceScheme == easy-graph || resourceScheme == git"
+				}
+			],
+			"editor/context": [
+				{
+					"command": "easy-graph.goToCommit",
+					"group": "navigation@100",
+					"when": "resourceScheme == easy-graph || resourceScheme == git"
+				}
+			],
+			"explorer/context": [
+				{
+					"command": "easy-graph.openWithPathFilter",
+					"group": "4_search"
+				}
+			],
+			"editor/title": [
+				{
+					"command": "easy-graph.openFile",
+					"group": "navigation",
+					"when": "isInDiffEditor && resourceScheme == easy-graph && easy-graph:codiconsSupported"
+				},
+				{
+					"command": "easy-graph.goToCommit",
+					"group": "navigation",
+					"when": "isInDiffEditor && (resourceScheme == easy-graph || resourceScheme == git)"
+				}
+			],
+			"scm/title": [
+				{
+					"when": "scmProvider == git && config.easy-graph.sourceCodeProviderIntegrationLocation == 'Inline'",
+					"command": "easy-graph.view",
+					"group": "navigation"
+				},
+				{
+					"when": "scmProvider == git && config.easy-graph.sourceCodeProviderIntegrationLocation == 'More Actions'",
+					"command": "easy-graph.view",
+					"group": "inline"
+				}
+			],
+			"scm/repository": [
+				{
+					"when": "scmProvider == git && config.easy-graph.sourceCodeProviderIntegrationLocation == 'Inline'",
+					"command": "easy-graph.view",
+					"group": "inline"
+				},
+				{
+					"when": "scmProvider == git && config.easy-graph.sourceCodeProviderIntegrationLocation == 'More Actions'",
+					"command": "easy-graph.view",
+					"group": "navigation"
+				}
+			]
+		},
+		"viewsContainers": {
+			"panel": [
+				{
+					"id": "easy-graph-panel",
+					"title": "%view.easy-graph-panel%",
+					"icon": "$(git-branch)"
+				}
+			]
+		},
+		"views": {
+			"easy-graph-panel": [
+				{
+					"type": "webview",
+					"id": "easy-graph.panel",
+					"name": "%view.easy-graph.panel%"
+				}
+			]
+		}
+	},
+	"activationEvents": [
+		"onStartupFinished",
+		"onWebviewPanel:easy-graph"
+	],
+	"extensionKind": [
+		"workspace"
+	],
+	"icon": "media/icon.png",
+	"engines": {
+		"node": ">=22.15.1",
+		"vscode": "^1.101.0"
+	}
+}

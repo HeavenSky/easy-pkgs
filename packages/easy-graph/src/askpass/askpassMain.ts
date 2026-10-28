@@ -1,0 +1,71 @@
+/*---------------------------------------------------------------------------------------------
+ *  This code is based on the askpass implementation in the Microsoft Visual Studio Code Git Extension
+ *  https://github.com/microsoft/vscode/blob/473af338e1bd9ad4d9853933da1cd9d5d9e07dc9/extensions/git/src/askpass-main.ts,
+ *  which has the following copyright notice & license:
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License.
+ *--------------------------------------------------------------------------------------------*/
+
+import * as fs from 'fs';
+import * as http from 'http';
+import type { AskpassRequest, AskpassType } from './askpassManager';
+
+function fatal(err: any): void {
+	console.error('Missing or invalid credentials.');
+	console.error(err);
+	process.exit(1);
+}
+
+export function createAskpassRequest(argv: string[], askpassType: AskpassType): AskpassRequest {
+	if (argv.length < 3) throw new Error('Wrong number of arguments');
+	// The prompt may be passed as a single argument, or split across multiple arguments by older scripts.
+	const prompt = argv.slice(2).join(' ');
+
+	if (askpassType === 'https') {
+		// Git prompts are of the form: "Username for 'https://example.com': " or "Password for 'https://user@example.com': "
+		const match = /^([\s\S]*?) for '([\s\S]*)':\s*$/.exec(prompt);
+		if (match === null) throw new Error('Unrecognised prompt');
+		return { askpassType, request: match[1], host: match[2] };
+	}
+
+	return { askpassType, request: prompt };
+}
+
+function main(argv: string[]): void {
+	if (!process.env['VSCODE_GIT_GRAPH_ASKPASS_HANDLE']) return fatal('Missing handle');
+	if (!process.env['VSCODE_GIT_GRAPH_ASKPASS_PIPE']) return fatal('Missing pipe');
+	const askpassType = process.env['VSCODE_GIT_GRAPH_ASKPASS_TYPE'];
+	if (askpassType !== 'https' && askpassType !== 'ssh') return fatal('Missing or invalid type');
+
+	const output = process.env['VSCODE_GIT_GRAPH_ASKPASS_PIPE']!;
+	const socketPath = process.env['VSCODE_GIT_GRAPH_ASKPASS_HANDLE']!;
+	let request: AskpassRequest;
+	try {
+		request = createAskpassRequest(argv, askpassType);
+	} catch (err) {
+		return fatal(err);
+	}
+
+	const req = http.request({ socketPath, path: '/', method: 'POST' }, res => {
+		if (res.statusCode !== 200) return fatal('Bad status code: ' + res.statusCode);
+
+		let resData = '';
+		res.setEncoding('utf8');
+		res.on('data', (d) => resData += d);
+		res.on('end', () => {
+			try {
+				let response = JSON.parse(resData);
+				fs.writeFileSync(output, response + '\n');
+			} catch {
+				return fatal('Error parsing response');
+			}
+			setTimeout(() => process.exit(0), 0);
+		});
+	});
+
+	req.on('error', () => fatal('Error in request'));
+	req.write(JSON.stringify(request));
+	req.end();
+}
+
+if (require.main === module) main(process.argv);

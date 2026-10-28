@@ -1,14 +1,27 @@
 # easy-pkgs
 
-本仓库接手并持续维护停更或偏离方向的开源 npm 包: 每个包放在 `packages/<名称>/`, 各自安装依赖, 测试, 版本与发布, 不共享代码. 新接手一个项目, 或要在本仓库开发时读本页; 各包的用法见其 README, 上游来源以 [`upstreams.json`](./upstreams.json) 为准.
+本仓库接手停更或偏离方向的开源 npm 包与 VS Code 插件, 在原项目基础上修复问题并扩充功能后持续维护: 每个包放在 `packages/<名称>/`, 各自安装依赖, 测试, 版本与发布, 不共享代码. 新接手一个项目, 或要在本仓库开发时读本页; 各包的用法见其 README, 上游仓库与接手时的提交以 [`upstreams.json`](./upstreams.json) 为准.
 
-| 包                                            | 用途                                                               |
-| --------------------------------------------- | ------------------------------------------------------------------ |
-| [`easy-np`](./packages/easy-np/README.md)     | npm 包安装工具(`np`, `np-x`), `.np` 布局, 支持 npm workspaces      |
-| [`easy-npd`](./packages/easy-npd/README.md)   | npm 包安装工具(`npd`, `npd-x`), `.npd/_name@version@name` 扁平布局 |
-| [`easy-comb`](./packages/easy-comb/README.md) | CSS / Less / Sass / SCSS 代码风格格式化与属性排序(csscomb)         |
-| [`easy-gonz`](./packages/easy-gonz/README.md) | CSS / Less / Sass / SCSS 解析器(gonzales-pe), easy-comb 依赖它     |
-| [`easy-mok`](./packages/easy-mok/README.md)   | 开发期 mock 中间件与图形化管理页(自研, 非接手项目)                 |
+### npm 包
+
+| 包                                            | 用途                                                               | npm 源包                                                         |
+| --------------------------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------- |
+| [`easy-np`](./packages/easy-np/README.md)     | npm 包安装工具(`np`, `np-x`), `.np` 布局, 支持 npm workspaces      | [`npminstall`](https://www.npmjs.com/package/npminstall) 8.0.1   |
+| [`easy-npd`](./packages/easy-npd/README.md)   | npm 包安装工具(`npd`, `npd-x`), `.npd/_name@version@name` 扁平布局 | [`npminstall`](https://www.npmjs.com/package/npminstall) 6.8.0   |
+| [`easy-comb`](./packages/easy-comb/README.md) | CSS / Less / Sass / SCSS 代码风格格式化与属性排序                  | [`csscomb`](https://www.npmjs.com/package/csscomb) 4.3.0         |
+| [`easy-gonz`](./packages/easy-gonz/README.md) | CSS / Less / Sass / SCSS 解析器, easy-comb 依赖它                  | [`gonzales-pe`](https://www.npmjs.com/package/gonzales-pe) 4.3.0 |
+| [`easy-mok`](./packages/easy-mok/README.md)   | 开发期 mock 中间件与图形化管理页                                   | 无, 自研                                                         |
+
+### VS Code 插件
+
+| 插件                                            | 用途                                                                         | VS Code 源插件                                                                              |
+| ----------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| [`easy-graph`](./packages/easy-graph/README.md) | Git 提交图: 查看全部分支, 标签与暂存, 并在图上 rebase, merge, cherry-pick 等 | [Git Graph 2](https://marketplace.visualstudio.com/items?itemName=hansu.git-graph-2) 1.31.8 |
+
+VS Code 插件与 npm 包的差异:
+
+- 构建与安装: 在包目录执行 `npm run package` 打出 `artifacts/<名称>-<版本>.vsix`, 用 `code --install-extension <vsix> --force` 安装; 工程结构, 门禁与打包断言沿用 `~/.ai-rules/patterns/vsc-ext/` 骨架.
+- 发布: 同样推送 `<包目录名>@<版本>` tag, 由 `release.yml` 打包 vsix 并发布到 VS Code Marketplace 与 Open VSX, 见「发布」一节; 版本号不能带 `-` 后缀, 预发布版改用 vsce 的 `--pre-release`.
 
 ## 接手流程
 
@@ -16,7 +29,7 @@
 2. 导入: 在 dev 分支执行 `npm run adopt -- <名称> <来源> [--ref <分支, tag 或提交>] [--upstream <owner/repo>]`. 来源可以是 GitHub 的 `owner/repo`, git 地址或本地仓库路径(只导入已提交的内容); 来源不是 GitHub 上游时用 `--upstream` 指明, 供第 6 步跟踪. 只导入该提交的文件快照, 上游提交历史留在上游仓库, 确切的提交号登记在 `upstreams.json` 的 `base`. 名称取简短的项目名, 去掉 `.js`, `-pe` 这类后缀.
 3. 筛选: 逐个看上游开放的 issue 与 PR, 以及各 fork 领先上游的提交; 有价值且改动小的直接修复并补用例, 其余记入 `.ai-ctx/TODO.md`(只在本地, 不入库; 条目以 `[包名]` 开头).
 4. 现代化: 移除过时的依赖, polyfill 与构建链, 补测试; 破坏性变更写进包内 `CHANGELOG.md`.
-5. 发布: 沿用原包名需要原维护者转让 npm 所有权, 否则改用自己 scope 下的包名; 存在破坏性变更时从上游最后版本升主版本. 首次发布前按「发布」一节登记 Trusted Publisher.
+5. 发布: 先核对上游许可证是否允许分发衍生作品, 不允许时只在本机使用(见「VS Code 插件」的发布说明); 沿用原包名需要原维护者转让 npm 所有权, 否则改用自己 scope 下的包名; 存在破坏性变更时从上游最后版本升主版本. 首次发布前按「发布」一节登记 Trusted Publisher.
 6. 跟踪: 定期执行 `npm run upstream -- --mark`, 查看上游自上次检查以来的新提交, 发布, PR 与 issue(依赖升级机器人的 PR 只计数); 上游的修复按需移植.
 
 ## 开发
@@ -64,6 +77,10 @@ npm run build
 ## 发布
 
 推送 `<包目录名>@<版本>` 形式的 tag 后, `.github/workflows/release.yml` 校验 tag 与 `packages/<包目录名>/package.json` 的 `version` 一致, 等待同一提交在 main 上的 CI 通过(不重复跑 lint 与单测, CI 未通过或该提交没推到 main 时不发布); 包有 `build` 脚本时先安装依赖并构建; 打包用 `npm pack --ignore-scripts`, 不执行任何生命周期脚本; `files` 中声明了 `npm-shrinkwrap.json` 的包(easy-np, easy-npd)由 `scripts/shrinkwrap.mjs` 从 lockfile 去掉开发依赖后生成并打进包, 用户用 npm 安装时整棵依赖树按已测版本解析; 再发布到 npm, 并以 CHANGELOG 中该版本的段落创建 GitHub Release; 带 `-` 的预发布版本发布到 dist-tag `next`.
+
+VS Code 插件(`package.json` 有 `engines.vscode`)走另一条路: 同样先等 CI, 再在包目录 `npm ci`, `npm run check`, `npm run package` 打出 vsix(内容按允许清单断言), 用仓库 Secrets 的 `VSCE_PAT` 发布到 VS Code Marketplace(必需), 配了 `OVSX_PAT` 时同时发布到 Open VSX, 两边发布同一个 vsix 并附到 GitHub Release; 两个市场都先查询该版本是否已存在, 已存在就跳过, 重跑安全. 包内任何文件含 `RELEASE-BLOCKER` 时, npm 包与插件都拒绝发布.
+
+- 首次发布插件前在 [Marketplace 管理页](https://marketplace.visualstudio.com/manage) 建好与 `package.json` 的 `publisher` 相同的发布者, 用 Azure DevOps 生成 Marketplace (Manage) 权限的 PAT 存为仓库 Secret `VSCE_PAT`; 发布 Open VSX 时在 open-vsx.org 生成 token 存为 `OVSX_PAT`, 并先用 `npx ovsx create-namespace <publisher>` 建命名空间.
 
 ```bash
 # 先改好 version 与 CHANGELOG 并提交

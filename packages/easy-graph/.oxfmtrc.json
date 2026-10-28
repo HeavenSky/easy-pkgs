@@ -1,0 +1,11 @@
+{
+	"$schema": "https://unpkg.com/oxfmt/configuration_schema.json",
+	"arrowParens": "avoid",
+	"ignorePatterns": ["*.min.*", "src/**/*.ts", "web/**", "test/**/*.ts", "resources/**"],
+	"jsxSingleQuote": false,
+	"objectWrap": "collapse",
+	"singleQuote": false,
+	"tabWidth": 4,
+	"trailingComma": "es5",
+	"useTabs": true
+}

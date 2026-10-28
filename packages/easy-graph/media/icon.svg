@@ -1,0 +1,30 @@
+<!-- 由 scripts/gen-icon.mjs 从 devkit/icon-spec.mjs 生成, 请勿手工编辑。 -->
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Easy Graph">
+  <defs>
+    <linearGradient id="g0" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2E3547" />
+      <stop offset="1" stop-color="#171B26" />
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="256" height="256" rx="56" fill="url(#g0)" />
+  <rect x="3" y="3" width="250" height="250" rx="53" fill="none" stroke="#3C4459" stroke-width="3" />
+  <path d="M76 204 L76.3 201.6 L77.1 199.4 L78.4 197.4 L80.1 195.5 L82.3 193.7 L84.8 192.1 L87.5 190.6 L90.5 189.2 L93.7 187.8 L97.1 186.5 L100.5 185.3 L104 184 L107.5 182.7 L110.9 181.5 L114.3 180.2 L117.5 178.8 L120.5 177.4 L123.3 175.9 L125.7 174.3 L127.9 172.5 L129.6 170.6 L130.9 168.6 L131.7 166.4 L132 164 L132 92 L131.7 89.6 L130.9 87.4 L129.6 85.4 L127.9 83.5 L125.7 81.7 L123.3 80.1 L120.5 78.6 L117.5 77.2 L114.3 75.8 L110.9 74.5 L107.5 73.3 L104 72 L100.5 70.7 L97.1 69.5 L93.7 68.2 L90.5 66.8 L87.5 65.4 L84.8 63.9 L82.3 62.3 L80.1 60.5 L78.4 58.6 L77.1 56.6 L76.3 54.4 L76 52" fill="none" stroke="#FF7EB6" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M132 164 L132.3 161.6 L133.1 159.4 L134.3 157.4 L136 155.5 L138.1 153.7 L140.4 152.1 L143.1 150.6 L146 149.2 L149.1 147.8 L152.3 146.5 L155.6 145.3 L159 144 L162.4 142.7 L165.7 141.5 L168.9 140.2 L172 138.8 L174.9 137.4 L177.6 135.9 L179.9 134.3 L182 132.5 L183.7 130.6 L184.9 128.6 L185.7 126.4 L186 124 L186 92" fill="none" stroke="#FFC145" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M76 52 L76 204" fill="none" stroke="#6FD6FF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="76" cy="52" r="8" fill="#232937" />
+  <circle cx="76" cy="128" r="8" fill="#232937" />
+  <circle cx="76" cy="204" r="8" fill="#232937" />
+  <circle cx="132" cy="164" r="8" fill="#232937" />
+  <circle cx="132" cy="92" r="8" fill="#232937" />
+  <circle cx="186" cy="92" r="8" fill="#232937" />
+  <path d="M61 52 a15 15 0 1 0 30 0 a15 15 0 1 0 -30 0 Z M69 52 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0 Z" fill-rule="evenodd" fill="#6FD6FF" />
+  <path d="M61 128 a15 15 0 1 0 30 0 a15 15 0 1 0 -30 0 Z M69 128 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0 Z" fill-rule="evenodd" fill="#6FD6FF" />
+  <path d="M61 204 a15 15 0 1 0 30 0 a15 15 0 1 0 -30 0 Z M69 204 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0 Z" fill-rule="evenodd" fill="#6FD6FF" />
+  <path d="M117 164 a15 15 0 1 0 30 0 a15 15 0 1 0 -30 0 Z M125 164 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0 Z" fill-rule="evenodd" fill="#FF7EB6" />
+  <path d="M117 92 a15 15 0 1 0 30 0 a15 15 0 1 0 -30 0 Z M125 92 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0 Z" fill-rule="evenodd" fill="#FF7EB6" />
+  <path d="M171 92 a15 15 0 1 0 30 0 a15 15 0 1 0 -30 0 Z M179 92 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0 Z" fill-rule="evenodd" fill="#FFC145" />
+  <path d="M200 40 L200 60" fill="none" stroke="#FFC145" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M190 50 L210 50" fill="none" stroke="#FFC145" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="208" cy="176" r="6" fill="#4EDD6E" />
+  <circle cx="176" cy="210" r="5" fill="#C792EA" />
+</svg>

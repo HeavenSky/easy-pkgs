@@ -1,0 +1,12 @@
+node_modules/
+artifacts/
+vendor/
+out/
+.*/
+!.vscode/
+!.github/
+!package-lock.json
+l10n/*
+!l10n/bundle.*.json
+# 由生成链写出, 不进版本库的中间产物(如主题仓库补全段的中间主题)
+full-theme/

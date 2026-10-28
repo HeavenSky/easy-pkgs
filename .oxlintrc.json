@@ -1,4 +1,7 @@
 {
 	"$schema": "./node_modules/oxlint/configuration_schema.json",
-	"ignorePatterns": ["packages/*/test/fixtures/**"]
+	"ignorePatterns": ["packages/*/test/fixtures/**"],
+	"overrides": [
+		{ "files": ["packages/easy-graph/web/*.ts"], "rules": { "no-unused-vars": "off" } }
+	]
 }

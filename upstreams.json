@@ -26,5 +26,11 @@
   "easy-mok": {
     "repo": null,
     "note": "自研包, 没有上游"
+  },
+  "easy-graph": {
+    "repo": "hansu/vscode-git-graph",
+    "base": "640cba6244698197655d7e154ec0121ff820b036",
+    "adopted": "2026-10-28",
+    "checked": "2026-10-28"
   }
 }

@@ -1,6 +1,9 @@
 # 推送 <包目录名>@<版本> 形式的 tag 时发布 packages/<包目录名>, 例: easy-np@0.0.5
-# npm 登录走 Trusted Publishing(OIDC), 不需要 NPM_TOKEN; 需先在 npmjs.com 的包设置里登记本仓库与 release.yml
-# 三个 job 各拿最小权限: build 执行依赖代码但只有只读权限, publish 只拿 OIDC 且不执行依赖代码, release 只写 GitHub Release
+# npm 包: 登录走 Trusted Publishing(OIDC), 不需要 NPM_TOKEN; 需先在 npmjs.com 的包设置里登记本仓库与 release.yml
+# VS Code 插件(package.json 有 engines.vscode): 打包 vsix, 用仓库 Secrets 的 VSCE_PAT 发布到 VS Code Marketplace(必需),
+# 配了 OVSX_PAT 时同时发布到 Open VSX, 两个市场发布的是同一个 vsix, 并附到 GitHub Release
+# 各 job 拿最小权限: build 执行依赖代码但只有只读权限, 发布 job 不执行依赖代码, release 只写 GitHub Release
+# 包内任何文件含 RELEASE-BLOCKER 标记时拒绝发布(例: 许可证文件在取得发布授权前留着该标记)
 # 已发布的版本或已存在的 Release 会跳过, 因此补推已手动发布版本的 tag 或重跑失败的运行都安全
 name: Release
 run-name: Release ${{ github.ref_name }}
@@ -28,6 +31,8 @@ jobs:
             version: ${{ steps.pkg.outputs.version }}
             dist_tag: ${{ steps.pkg.outputs.dist_tag }}
             prerelease: ${{ steps.pkg.outputs.prerelease }}
+            kind: ${{ steps.pkg.outputs.kind }}
+            ext_id: ${{ steps.pkg.outputs.ext_id }}
         env:
             TAG: ${{ github.ref_name }}
         steps:
@@ -59,12 +64,33 @@ jobs:
                     *-*) dist_tag=next; prerelease=true ;;
                     *) dist_tag=latest; prerelease=false ;;
                   esac
+                  # VS Code 插件: 市场不接受带 - 后缀的版本号, 预发布版改用 vsce 的 --pre-release(见包内 scripts/package.mjs)
+                  kind=npm
+                  ext_id=
+                  if [ "$(node -p "Boolean(require('./packages/$name/package.json').engines?.vscode)")" = true ]; then
+                    kind=vscode
+                    ext_id="$(node -p "const p = require('./packages/$name/package.json'); p.publisher + '.' + p.name")"
+                    if [ "$prerelease" = true ]; then
+                      echo "::error::VS Code 市场不支持带 - 后缀的版本号 $version"
+                      exit 1
+                    fi
+                  fi
                   {
                     echo "name=$name"
                     echo "version=$version"
                     echo "dist_tag=$dist_tag"
                     echo "prerelease=$prerelease"
+                    echo "kind=$kind"
+                    echo "ext_id=$ext_id"
                   } >> "$GITHUB_OUTPUT"
+
+            # 发布前必须处理的事项用 RELEASE-BLOCKER 标记写在包内文件里, 标记还在就不发布
+            - name: Check release blockers
+              run: |
+                  if grep -rIn --exclude-dir=node_modules RELEASE-BLOCKER "packages/${{ steps.pkg.outputs.name }}"; then
+                    echo "::error::packages/${{ steps.pkg.outputs.name }} 中仍有 RELEASE-BLOCKER 标记, 处理后再发布"
+                    exit 1
+                  fi
 
             # 不重复跑 lint 与单测: 等待同一提交在 main 上的 CI 结束, 通过才发布
             - name: Wait for CI
@@ -97,6 +123,7 @@ jobs:
             # 有 build 脚本的包(例如产物在 dist/ 的 TypeScript 包)先安装依赖并构建; 打包跳过 prepack 等生命周期脚本
             # files 中声明了 npm-shrinkwrap.json 的包, 打包前由仓库脚本从 lockfile 生成(不执行依赖代码), 并确认已打进包
             - name: Build and pack
+              if: steps.pkg.outputs.kind == 'npm'
               working-directory: packages/${{ steps.pkg.outputs.name }}
               run: |
                   if node -e "process.exit(require('./package.json').scripts?.build ? 0 : 1)"; then
@@ -116,15 +143,33 @@ jobs:
                   fi
                   ls -l "$RUNNER_TEMP/pack"
 
+            # VS Code 插件: package 脚本做生产构建并按允许清单断言 vsix 内容; check 校验图标产物, 清单占位符与本地化
+            - name: Package extension
+              if: steps.pkg.outputs.kind == 'vscode'
+              working-directory: packages/${{ steps.pkg.outputs.name }}
+              env:
+                  NAME: ${{ steps.pkg.outputs.name }}
+                  VERSION: ${{ steps.pkg.outputs.version }}
+              run: |
+                  npm ci
+                  npm run check
+                  npm run package
+                  mkdir -p "$RUNNER_TEMP/pack"
+                  cp "artifacts/$(node -p "require('./package.json').name")-$VERSION.vsix" "$RUNNER_TEMP/pack/"
+                  ls -l "$RUNNER_TEMP/pack"
+
             - uses: actions/upload-artifact@v7
               with:
                   name: package
-                  path: ${{ runner.temp }}/pack/*.tgz
+                  path: |
+                      ${{ runner.temp }}/pack/*.tgz
+                      ${{ runner.temp }}/pack/*.vsix
                   if-no-files-found: error
                   retention-days: 7
 
     publish:
         needs: build
+        if: needs.build.outputs.kind == 'npm'
         runs-on: ubuntu-latest
         timeout-minutes: 15
         permissions:
@@ -154,8 +199,81 @@ jobs:
                   # 必须带 ./: 写成 pack/x.tgz 会被 npm 当成 GitHub 简写 <用户>/<仓库> 去 git 拉取
                   npm publish ./pack/*.tgz --provenance --access public --tag "${{ needs.build.outputs.dist_tag }}"
 
+    # 只发布 build 产出的 vsix, 不安装依赖也不执行任何脚本; vsce 与 ovsx 钉死版本, 升级时改这里
+    # 两个市场都先查询是否已有该版本, 已有就跳过: 两个工具对已存在的版本都直接报错, 不查就无法重跑只失败了一半的发布
+    marketplace:
+        needs: build
+        if: needs.build.outputs.kind == 'vscode'
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        env:
+            EXT_ID: ${{ needs.build.outputs.ext_id }}
+            VERSION: ${{ needs.build.outputs.version }}
+            VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        steps:
+            - uses: actions/download-artifact@v8
+              with:
+                  name: package
+                  path: pack
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 24.x
+                  package-manager-cache: false
+            # 扩展从未发布过时 vsce show 失败, 按未发布处理
+            - name: Publish to VS Code Marketplace
+              run: |
+                  if [ -z "$VSCE_PAT" ]; then
+                    echo "::error::仓库 Secrets 缺少 VSCE_PAT, 无法发布到 VS Code Marketplace"
+                    exit 1
+                  fi
+                  versions="$(npx --yes @vscode/vsce@4.0.0 show "$EXT_ID" --json 2>/dev/null | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{console.log(JSON.parse(s).versions.map(v=>v.version).join("\n"))}catch{}})' || true)"
+                  if printf '%s\n' "$versions" | grep -qxF "$VERSION"; then
+                    echo "$EXT_ID@$VERSION 已在 Marketplace 上, 跳过发布"
+                    exit 0
+                  fi
+                  npx --yes @vscode/vsce@4.0.0 publish --packagePath pack/*.vsix
+
+    # Open VSX(VSCodium, Cursor 等使用的市场)可选: 没配 OVSX_PAT 时跳过; 只有 404 按未发布处理, 查询失败让 job 失败
+    open-vsx:
+        needs: build
+        if: needs.build.outputs.kind == 'vscode'
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        env:
+            EXT_ID: ${{ needs.build.outputs.ext_id }}
+            VERSION: ${{ needs.build.outputs.version }}
+            OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        steps:
+            - uses: actions/download-artifact@v8
+              with:
+                  name: package
+                  path: pack
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 24.x
+                  package-manager-cache: false
+            - name: Publish to Open VSX
+              run: |
+                  if [ -z "$OVSX_PAT" ]; then
+                    echo "::notice::没有配置 OVSX_PAT, 跳过 Open VSX"
+                    exit 0
+                  fi
+                  path="${EXT_ID/./\/}"
+                  if ! status="$(curl -sS --retry 3 -o /dev/null -w '%{http_code}' "https://open-vsx.org/api/$path/$VERSION")"; then
+                    echo "::error::查询 Open VSX 失败, 无法判断 $EXT_ID@$VERSION 是否已发布"
+                    exit 1
+                  fi
+                  case "$status" in
+                    200) echo "$EXT_ID@$VERSION 已在 Open VSX 上, 跳过发布"; exit 0 ;;
+                    404) ;;
+                    *) echo "::error::查询 Open VSX 返回 HTTP $status"; exit 1 ;;
+                  esac
+                  npx --yes ovsx@1.3.0 publish pack/*.vsix
+
+    # npm 包只等 publish, VS Code 插件只等两个市场; 不相关的 job 是 skipped, 不能让它们拖住 Release
     release:
-        needs: [build, publish]
+        needs: [build, publish, marketplace, open-vsx]
+        if: ${{ !cancelled() && needs.build.result == 'success' && !contains(needs.*.result, 'failure') }}
         runs-on: ubuntu-latest
         timeout-minutes: 10
         permissions:
@@ -165,6 +283,7 @@ jobs:
             NAME: ${{ needs.build.outputs.name }}
             VERSION: ${{ needs.build.outputs.version }}
             PRERELEASE: ${{ needs.build.outputs.prerelease }}
+            KIND: ${{ needs.build.outputs.kind }}
             GH_TOKEN: ${{ github.token }}
         steps:
             - uses: actions/checkout@v7
@@ -172,7 +291,12 @@ jobs:
                   persist-credentials: false
                   sparse-checkout: packages/${{ needs.build.outputs.name }}/CHANGELOG.md
                   sparse-checkout-cone-mode: false
-            # 取 CHANGELOG 中「## <版本>」到下一个二级标题之间的内容作为 Release 说明
+            - uses: actions/download-artifact@v8
+              if: needs.build.outputs.kind == 'vscode'
+              with:
+                  name: package
+                  path: pack
+            # 取 CHANGELOG 中「## <版本>」或「## v<版本>」到下一个二级标题之间的内容作为 Release 说明; VS Code 插件附上 vsix
             - name: GitHub Release
               run: |
                   if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
@@ -180,7 +304,7 @@ jobs:
                     exit 0
                   fi
                   awk -v v="$VERSION" '
-                    /^## / { if (found) exit; if ($0 == "## " v || index($0, "## " v " ") == 1) { found = 1; next } }
+                    /^## / { if (found) exit; if ($0 == "## " v || index($0, "## " v " ") == 1 || $0 == "## v" v || index($0, "## v" v " ") == 1) { found = 1; next } }
                     found { print }
                   ' "packages/$NAME/CHANGELOG.md" > release-notes.md
                   if [ ! -s release-notes.md ]; then
@@ -188,4 +312,6 @@ jobs:
                   fi
                   flags=()
                   if [ "$PRERELEASE" = true ]; then flags+=(--prerelease); fi
-                  gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --notes-file release-notes.md --verify-tag "${flags[@]}"
+                  files=()
+                  if [ "$KIND" = vscode ]; then files=(pack/*.vsix); fi
+                  gh release create "$TAG" "${files[@]}" --repo "$GITHUB_REPOSITORY" --title "$TAG" --notes-file release-notes.md --verify-tag "${flags[@]}"

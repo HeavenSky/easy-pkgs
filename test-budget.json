@@ -6,14 +6,17 @@
 		"easy-gonz": { "files": 137, "bytes": 976896 },
 		"easy-np": { "files": 277, "bytes": 1445888 },
 		"easy-npd": { "files": 237, "bytes": 1347584 },
-		"easy-mok": { "files": 32, "bytes": 225280 }
+		"easy-mok": { "files": 32, "bytes": 225280 },
+		"easy-graph": { "files": 28, "bytes": 1228800 }
 	},
 	"allow": {
 		"packages/easy-np/test/fixtures/registry-snapshot.json": 1030144,
-		"packages/easy-npd/test/fixtures/registry-snapshot.json": 977920
+		"packages/easy-npd/test/fixtures/registry-snapshot.json": 977920,
+		"packages/easy-graph/test/dataSource.test.ts": 425984
 	},
 	"reasons": {
 		"packages/easy-np/test/fixtures/registry-snapshot.json": "录制的公共源版本冻结表, 无法由脚本推导或按版本下载; 已改为每包一行, 版本列表按 major.minor 分组编码",
-		"packages/easy-npd/test/fixtures/registry-snapshot.json": "同 easy-np"
+		"packages/easy-npd/test/fixtures/registry-snapshot.json": "同 easy-np",
+		"packages/easy-graph/test/dataSource.test.ts": "沿用上游 Git Graph 的 DataSource 单测, 逐条断言每个 Git 命令的参数; 拆文件不减体积, 只会让合并上游时多出冲突"
 	}
 }

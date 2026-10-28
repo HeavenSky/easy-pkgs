@@ -1,7 +1,6 @@
 "use strict";
 const path = require("path");
 const fs = require("fs");
-const os = require("os");
 const config = {};
 
 function createConfigs() {
@@ -15,7 +14,7 @@ function createConfigs() {
 	const userConfig = path.join(root, ".nprc");
 	if (!fs.existsSync(userConfig)) return;
 	const userConfigContent = fs.readFileSync(userConfig).toString();
-	const configs = typeof userConfigContent === "string" && userConfigContent.split(os.EOL);
+	const configs = typeof userConfigContent === "string" && userConfigContent.split(/\r?\n/); // A file written on another platform can have other line endings than os.EOL
 	configs.reduce((pre, next) => {
 		if (typeof next === "string") {
 			const map = next.split("=");

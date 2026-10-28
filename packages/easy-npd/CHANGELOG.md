@@ -6,6 +6,12 @@ easy-npd starts from [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.8.0
 
 0.0.0 lists every change relative to npminstall 6.8.0; later versions list changes relative to the previous version.
 
+## Unreleased
+
+### Fixed
+
+- On Windows, the registry, token and other settings in `~/.nprc` are read when the file has LF line endings, e.g. when it was written by a script or copied from macOS or Linux.
+
 ## 0.0.8 (2026-10-23)
 
 ### Added

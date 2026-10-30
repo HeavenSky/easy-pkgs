@@ -33,8 +33,7 @@ class Dropdown {
 	private lastClickedIndex: number = -1;
 	private doubleClickTimeout: ReturnType<typeof setTimeout> | null = null;
 
-	// Keyboard navigation: the option highlighted by Up / Down, and whether the user moved the highlight since
-	// the filter text last changed (if not, the highlight is just the first visible option).
+	// 首个可见项默认作为 Enter 的目标, 只有使用方向键后才显示焦点高亮.
 	private focusIndex: number | null = null;
 	private focusMovedByKeys: boolean = false;
 
@@ -469,7 +468,7 @@ class Dropdown {
 	private renderFocus(scroll: boolean) {
 		const optionElems = this.getOptionElems();
 		for (let i = 0; i < optionElems.length; i++) {
-			alterClass(optionElems[i], CLASS_DROPDOWN_KEYBOARD_FOCUS, i === this.focusIndex);
+			alterClass(optionElems[i], CLASS_DROPDOWN_KEYBOARD_FOCUS, this.focusMovedByKeys && i === this.focusIndex);
 		}
 		if (scroll && this.focusIndex !== null && this.focusIndex < optionElems.length) {
 			optionElems[this.focusIndex].scrollIntoView({ block: 'nearest' });

@@ -37,6 +37,37 @@ const CONNECTION_ERROR_RE = new RegExp(
 	].join("|")
 );
 const PATHSPEC_ERROR_RE = /pathspec .* did not match any file\(s\) known to git/;
+// URL 中的 userinfo 只经环境变量交给 credential helper, 不进 git 子进程的 argv(ps 可见)
+const GIT_USER_ENV = "_NP_GIT_USER_";
+const GIT_PASS_ENV = "_NP_GIT_PASS_";
+const GIT_ORIGIN_ENV = "_NP_GIT_ORIGIN_";
+// 凭据 helper: 认证目标的协议与主机和原始 URL 一致时才返回凭据, 其他主机(例: 子模块所在主机)
+// 继承该 helper 也取不到凭据; git 经 sh -c 调用, 脚本内避免 $ 与反引号等 sh 展开字符
+const GIT_CREDENTIAL_HELPER =
+	`node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{` +
+	`const kv={};for(const line of d.split('\\n')){const i=line.indexOf('=');if(i>0)kv[line.slice(0,i)]=line.slice(i+1);}` +
+	`if(kv.protocol+'://'+kv.host===process.env.${GIT_ORIGIN_ENV}){` +
+	`process.stdout.write('username='+(process.env.${GIT_USER_ENV}||'')+'\\npassword='+(process.env.${GIT_PASS_ENV}||'')+'\\n')}})"`;
+
+// 分离 https URL 中的 userinfo, 返回剥离后的 URL 与明文用户名/密码; 无 userinfo 时返回 null
+function splitAuth(url) {
+	const match = /^(https?:\/\/)([^/@]+)@(.*)$/.exec(url);
+	if (!match) return null;
+	const userinfo = match[2];
+	const sep = userinfo.indexOf(":");
+	const decode = value => {
+		try {
+			return decodeURIComponent(value);
+		} catch {
+			return value;
+		}
+	};
+	return {
+		url: match[1] + match[3],
+		user: decode(sep === -1 ? userinfo : userinfo.slice(0, sep)),
+		password: decode(sep === -1 ? "" : userinfo.slice(sep + 1)),
+	};
+}
 
 module.exports = async (pkg, options) => {
 	const { name, raw, displayName } = pkg;
@@ -137,18 +168,26 @@ async function cloneSpec(spec, dir) {
 
 // 检出到 spec 指定的提交, 返回完整 commit sha
 async function cloneRepo(repo, spec, dir) {
+	// 带凭据的 URL 先剥离, 后续对同一仓库的网络调用都经 credential helper 认证, 见 git()
+	const stripped = splitAuth(repo);
+	const auth = stripped && {
+		user: stripped.user,
+		password: stripped.password,
+		origin: originOf(stripped.url),
+	};
+	if (stripped) repo = stripped.url;
 	await utils.rimraf(dir);
 	await utils.mkdirp(dir);
 	const ref = spec.gitCommittish || "HEAD";
 	// 完整 sha(含 np-lock.json 锁定的 commit)不需要 ls-remote, 直接按 sha 拉取
-	const revs = FULL_SHA_RE.test(ref) ? null : await lsRemote(repo);
+	const revs = FULL_SHA_RE.test(ref) ? null : await lsRemote(repo, auth);
 	const revDoc = revs && pickRev(revs, spec);
 	const shallow = SHALLOW_HOSTS.has(hostOf(repo));
 	if (!revDoc) {
 		// HEAD~3, 缩写 sha 等未公布的 ref 只能完整克隆; 完整 sha 在支持按 sha 拉取的主机上先尝试浅拉取
 		if (shallow && FULL_SHA_RE.test(ref)) {
 			try {
-				await fetchCommit(repo, ref, dir, true);
+				await fetchCommit(repo, ref, dir, true, ref, auth);
 				return await headSha(dir);
 			} catch {
 				await utils.rimraf(dir);
@@ -158,16 +197,18 @@ async function cloneRepo(repo, spec, dir) {
 		await git(
 			["clone", "--mirror", "-q", repo, path.join(dir, ".git")],
 			dir,
-			GIT_FETCH_TIMEOUT
+			GIT_FETCH_TIMEOUT,
+			auth
 		);
 		await git(["init"], dir, GIT_SHORT_TIMEOUT);
 		await git(["checkout", ref], dir, GIT_SHORT_TIMEOUT);
-		await updateSubmodules(dir);
+		await updateSubmodules(dir, auth);
 	} else if (revs.refs.HEAD && revDoc.sha === revs.refs.HEAD.sha) {
 		await git(
 			["clone", repo, dir, "--recurse-submodules", ...(shallow ? ["--depth=1"] : [])],
 			dir,
-			GIT_FETCH_TIMEOUT
+			GIT_FETCH_TIMEOUT,
+			auth
 		);
 	} else if (revDoc.type === "tag" || revDoc.type === "branch") {
 		await git(
@@ -181,25 +222,37 @@ async function cloneRepo(repo, spec, dir) {
 				...(shallow ? ["--depth=1"] : []),
 			],
 			dir,
-			GIT_FETCH_TIMEOUT
+			GIT_FETCH_TIMEOUT,
+			auth
 		);
 	} else {
-		await fetchCommit(repo, revDoc.rawRef, dir, shallow, revDoc.sha);
+		await fetchCommit(repo, revDoc.rawRef, dir, shallow, revDoc.sha, auth);
 	}
 	return await headSha(dir);
 }
 
-async function fetchCommit(repo, ref, dir, shallow, sha = ref) {
+async function fetchCommit(repo, ref, dir, shallow, sha = ref, auth) {
 	await git(["init"], dir, GIT_SHORT_TIMEOUT);
-	await git(["remote", "add", "origin", repo], dir, GIT_SHORT_TIMEOUT);
-	await git(["fetch", "origin", ref, ...(shallow ? ["--depth=1"] : [])], dir, GIT_FETCH_TIMEOUT);
+	await git(["remote", "add", "origin", repo], dir, GIT_SHORT_TIMEOUT, auth);
+	await git(
+		["fetch", "origin", ref, ...(shallow ? ["--depth=1"] : [])],
+		dir,
+		GIT_FETCH_TIMEOUT,
+		auth
+	);
 	await git(["checkout", sha], dir, GIT_SHORT_TIMEOUT);
-	await updateSubmodules(dir);
+	await updateSubmodules(dir, auth);
 }
 
-async function updateSubmodules(dir) {
+// 子模块 URL 可能是相对地址, 认证上下文与其保持一致; 绝对地址指向其他主机时凭据会被 helper 拦下
+async function updateSubmodules(dir, auth) {
 	if (await utils.exists(path.join(dir, ".gitmodules"))) {
-		await git(["submodule", "update", "-q", "--init", "--recursive"], dir, GIT_FETCH_TIMEOUT);
+		await git(
+			["submodule", "update", "-q", "--init", "--recursive"],
+			dir,
+			GIT_FETCH_TIMEOUT,
+			auth
+		);
 	}
 }
 
@@ -211,6 +264,18 @@ async function headSha(dir) {
 function hostOf(repo) {
 	try {
 		return new URL(repo).host;
+	} catch {
+		return "";
+	}
+}
+
+// 原始 URL 的协议与主机(不含默认端口), 供 credential helper 判定认证目标
+function originOf(url) {
+	try {
+		const u = new URL(url);
+		const defaultPort = u.protocol === "https:" ? "443" : "80";
+		const host = u.port && u.port !== defaultPort ? u.host : u.hostname;
+		return u.protocol + "//" + host;
 	} catch {
 		return "";
 	}
@@ -247,17 +312,17 @@ function pickRev(revs, spec) {
 // 把 git ls-remote 的输出整理成 refs, 按 sha 反查的 refs, 以及从 tag 名解析出的版本
 // 同一仓库在一次安装中可能被多个依赖引用, 结果按仓库地址缓存到进程结束; 失败不缓存, 下次引用时重试
 const lsRemoteCache = new Map();
-function lsRemote(repo) {
+function lsRemote(repo, auth) {
 	if (!lsRemoteCache.has(repo)) {
-		const pending = _lsRemote(repo);
+		const pending = _lsRemote(repo, auth);
 		lsRemoteCache.set(repo, pending);
 		pending.catch(() => lsRemoteCache.delete(repo));
 	}
 	return lsRemoteCache.get(repo);
 }
 
-async function _lsRemote(repo) {
-	const { stdout } = await git(["ls-remote", repo], undefined, GIT_SHORT_TIMEOUT);
+async function _lsRemote(repo, auth) {
+	const { stdout } = await git(["ls-remote", repo], undefined, GIT_SHORT_TIMEOUT, auth);
 	const revs = { versions: {}, latest: null, refs: {}, shas: {} };
 	for (const line of stdout.trim().split("\n")) {
 		const doc = lineToRevDoc(line);
@@ -402,20 +467,42 @@ async function prepareRepo(dir, resolved, options) {
 	}
 }
 
-async function git(args, cwd, timeout) {
-	// 未配置凭据时 git 会等待终端输入, 没有 tty 的子进程会一直挂起到超时
+async function git(args, cwd, timeout, auth) {
+	// 未配置凭据时 git 会等待终端输入, 没有 tty 的子进程会一直挂起到超时;
+	// 这两项覆盖继承的环境变量(例: VS Code 终端的 GIT_ASKPASS), 保证行为确定
 	const env = {
+		...process.env,
 		GIT_ASKPASS: "echo",
 		GIT_SSH_COMMAND: "ssh -oStrictHostKeyChecking=accept-new",
-		...process.env,
 	};
+	// argv 中带 userinfo 的 URL 剥离成无凭据地址; 凭据经环境变量与 credential helper 提供给 git
+	let origin = auth && auth.origin;
+	const stripped = args.map(arg => {
+		const s = splitAuth(arg);
+		if (!s) return arg;
+		auth = auth || { user: s.user, password: s.password };
+		origin = origin || originOf(s.url);
+		return s.url;
+	});
 	const prefix = ["--no-replace-objects"];
 	if (process.platform === "win32") {
 		prefix.push("-c", "core.longpaths=true");
 	}
+	if (auth) {
+		env[GIT_USER_ENV] = auth.user;
+		env[GIT_PASS_ENV] = auth.password;
+		env[GIT_ORIGIN_ENV] = origin;
+		// credential 配置走 GIT_CONFIG_* 环境变量, 不进 argv 也不改变参数形状; 先用空 helper
+		// 清掉全局与仓库配置的 helper, 保证凭据只来自这里
+		env.GIT_CONFIG_COUNT = "2";
+		env.GIT_CONFIG_KEY_0 = "credential.helper";
+		env.GIT_CONFIG_VALUE_0 = "";
+		env.GIT_CONFIG_KEY_1 = "credential.helper";
+		env.GIT_CONFIG_VALUE_1 = GIT_CREDENTIAL_HELPER;
+	}
 	for (let attempt = 0; ; attempt++) {
 		try {
-			return await utils.spawnWithTimeout("git", [...prefix, ...args], {
+			return await utils.spawnWithTimeout("git", [...prefix, ...stripped], {
 				cwd,
 				env,
 				timeout,

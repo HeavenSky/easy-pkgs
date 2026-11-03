@@ -3,6 +3,7 @@ import crypto from "crypto";
 import fs from "fs";
 import http from "http";
 import https from "https";
+import net from "net";
 import path from "path";
 import tls from "tls";
 import zlib from "zlib";
@@ -66,12 +67,20 @@ const readLocalFile = (folder: string, rel: unknown) => {
 	if (typeof rel !== "string" || !rel.trim())
 		throw new MockError("BAD_REQUEST", 400, "请填写文件路径", { field: "body" });
 	const file = path.resolve(folder, rel);
-	if (!file.startsWith(folder + path.sep))
+	// 目录归属在 realpath 之后校验: 符号链接指向目录外时, 前缀检查会被绕过
+	const root = fs.realpathSync(folder) + path.sep;
+	let realFile: string;
+	try {
+		realFile = fs.realpathSync(file);
+	} catch {
+		throw new MockError("BAD_REQUEST", 400, `文件不存在: ${rel}`, { field: "body" });
+	}
+	if (!realFile.startsWith(root))
 		throw new MockError("BAD_REQUEST", 400, `文件必须位于 mock 目录内: ${rel}`, {
 			field: "body",
 		});
 	try {
-		return { file, data: fs.readFileSync(file) };
+		return { file: realFile, data: fs.readFileSync(realFile) };
 	} catch {
 		throw new MockError("BAD_REQUEST", 400, `文件不存在: ${rel}`, { field: "body" });
 	}
@@ -187,13 +196,20 @@ const requestOnce = (
 		if (signal.aborted) return onAbort();
 		signal.addEventListener("abort", onAbort, { once: true });
 		const done = () => signal.removeEventListener("abort", onAbort);
-		const start = (options: http.RequestOptions, mod: typeof http | typeof https) => {
+		const start = (
+			options: http.RequestOptions,
+			mod: typeof http | typeof https,
+			cleanup?: () => void
+		) => {
 			req = mod.request(options, res => {
 				done();
+				// 响应体读完后释放代理隧道
+				if (cleanup) res.on("close", cleanup);
 				resolve({ res, ttfbMs: Date.now() - started });
 			});
 			req.on("error", err => {
 				done();
+				cleanup?.();
 				fail(err);
 			});
 			if (body) req.end(body);
@@ -248,19 +264,33 @@ const requestOnce = (
 				done();
 				return fail(new SendError("PROXY_FAILED", `代理拒绝建立隧道: ${res.statusCode}`));
 			}
+			// agent:false 创建的临时 Agent 不调用请求选项上的 createConnection,
+			// 改用显式 Agent 把 TLS 建立在已建立的 CONNECT 隧道上
+			const agent = new https.Agent({ keepAlive: false });
+			agent.createConnection = () =>
+				tls.connect({
+					socket,
+					// host 参与证书主机名校验, 缺省时按隧道对端(代理)地址校验, IP 目标会误报
+					// ALTNAME_INVALID; SNI 不能是 IP 地址
+					host: target.hostname.replace(/^\[|\]$/g, ""),
+					servername: net.isIP(target.hostname) ? undefined : target.hostname,
+					rejectUnauthorized: !settings.insecureTLS,
+				});
+			const cleanup = () => {
+				agent.destroy();
+				socket.destroy();
+			};
 			start(
 				{
 					...base,
+					host: target.hostname.replace(/^\[|\]$/g, ""),
+					port,
 					path: target.pathname + target.search,
-					agent: false,
-					createConnection: () =>
-						tls.connect({
-							socket,
-							servername: target.hostname,
-							rejectUnauthorized: !settings.insecureTLS,
-						}),
+					servername: target.hostname,
+					agent,
 				} as https.RequestOptions,
-				https
+				https,
+				cleanup
 			);
 		});
 		connect.on("error", err => {

@@ -2,8 +2,11 @@
 "use strict";
 const fs = require("fs");
 const http = require("http");
+const https = require("https");
+const net = require("net");
 const path = require("path");
 const zlib = require("zlib");
+const { execFileSync } = require("node:child_process");
 const { listen, startHost, waitFor } = require("../helpers/server");
 const { loadSrc } = require("../helpers/src");
 
@@ -100,6 +103,11 @@ describe("调试请求发送与历史", () => {
 	let upUrl;
 	let proxy;
 	let proxied = 0;
+	let tlsUp;
+	let tunnel;
+	let connects = 0;
+	// CONNECT 升级后的 socket 脱离 server 追踪, closeAllConnections 对它无效, 只能自行销毁
+	let tunnelSockets = new Set();
 	const api = (url, init) => ctx.api(`/debug${url}`, init);
 	const send = (definition, extra = {}) =>
 		api("/send", { method: "POST", json: { request: null, definition, ...extra } });
@@ -136,6 +144,62 @@ describe("调试请求发送与历史", () => {
 			req.pipe(fwd);
 		});
 		await listen(proxy);
+		// 自签证书的 HTTPS 目标 + CONNECT 代理, 复现 https 经代理的隧道链路; 生成失败时跳过对应用例
+		let cert = null;
+		try {
+			const dir = path.join(fs.realpathSync(__dirname), "..", ".tls");
+			fs.mkdirSync(dir, { recursive: true });
+			execFileSync(
+				"openssl",
+				[
+					"req",
+					"-x509",
+					"-newkey",
+					"rsa:2048",
+					"-keyout",
+					path.join(dir, "key.pem"),
+					"-out",
+					path.join(dir, "cert.pem"),
+					"-days",
+					"2",
+					"-nodes",
+					"-subj",
+					"/CN=127.0.0.1",
+					"-addext",
+					"subjectAltName=IP:127.0.0.1",
+				],
+				{ stdio: "ignore" }
+			);
+			cert = {
+				key: fs.readFileSync(path.join(dir, "key.pem")),
+				cert: fs.readFileSync(path.join(dir, "cert.pem")),
+			};
+		} catch (err) {
+			console.warn("tls cert generation failed:", err.message);
+			cert = null;
+		}
+		if (cert) {
+			tlsUp = https.createServer(cert, (req, res) => {
+				res.setHeader("content-type", "text/plain");
+				res.end(`tls:${req.method}:${req.url}`);
+			});
+			await listen(tlsUp);
+			tunnel = http.createServer();
+			tunnel.on("connect", (req, client, head) => {
+				connects++;
+				const upstream = net.connect(tlsUp.address().port, "127.0.0.1", () => {
+					client.write("HTTP/1.1 200 Connection Established\r\n\r\n");
+					if (head.length) upstream.write(head);
+					client.pipe(upstream);
+					upstream.pipe(client);
+				});
+				tunnelSockets.add(client);
+				tunnelSockets.add(upstream);
+				client.on("error", () => {});
+				upstream.on("error", () => {});
+			});
+			await listen(tunnel);
+		}
 		ctx = await startHost({
 			files: { "mocks/a.js": "module.exports = {};", "mocks/_data/up.txt": "file-body" },
 		});
@@ -154,6 +218,15 @@ describe("调试请求发送与历史", () => {
 		up.closeAllConnections();
 		up.close();
 		proxy.close();
+		if (tlsUp) {
+			tlsUp.closeAllConnections();
+			await new Promise(resolve => tlsUp.close(resolve));
+		}
+		if (tunnel) {
+			// CONNECT 升级的 socket 不在 server 追踪里, close 等不到它们退出
+			tunnelSockets.forEach(s => s.destroy());
+			await new Promise(resolve => tunnel.close(resolve));
+		}
 	});
 
 	it("替换变量与敏感值, 记录实际请求与模板, 未解析变量被拒", async () => {
@@ -278,6 +351,91 @@ describe("调试请求发送与历史", () => {
 			`Basic ${Buffer.from("u:p").toString("base64")}`
 		);
 	});
+
+	it("HTTPS 目标经代理的 CONNECT 隧道请求", async test => {
+		// 证书生成失败时无隧道可测
+		if (!tunnel) return test.skip();
+		const before = connects;
+		const url = `https://127.0.0.1:${tlsUp.address().port}/echo`;
+		const r = (
+			await send(
+				def(url, {
+					method: "POST",
+					body: { type: "text", content: "x" },
+					settings: {
+						...SETTINGS,
+						timeoutMs: 8000,
+						insecureTLS: true,
+						proxy: `http://127.0.0.1:${tunnel.address().port}`,
+					},
+				})
+			)
+		).body;
+		expect(r.meta.error).toBeNull();
+		expect(r.meta.response.status).toBe(200);
+		expect(connects).toBe(before + 1);
+		expect((await raw(r.id)).buf.toString()).toBe("tls:POST:/echo");
+	});
+
+	it("HTTPS 经代理的隧道开启证书校验: 自签证书被拒绝", async test => {
+		if (!tunnel) return test.skip();
+		const url = `https://127.0.0.1:${tlsUp.address().port}/echo`;
+		const r = (
+			await send(
+				def(url, {
+					settings: {
+						...SETTINGS,
+						timeoutMs: 8000,
+						proxy: `http://127.0.0.1:${tunnel.address().port}`,
+					},
+				})
+			)
+		).body;
+		// 证书主机名(127.0.0.1)匹配后失败在自签校验, 证书校验是开启的
+		expect(r.meta.error).not.toBeNull();
+		expect(r.meta.error.code).toBe("DEPTH_ZERO_SELF_SIGNED_CERT");
+	});
+
+	it("HTTPS 经代理的隧道开启证书校验: IP 目标按目标主机校验证书", async test => {
+		const certPath = path.join(fs.realpathSync(__dirname), "..", ".tls", "cert.pem");
+		if (!tunnel || !fs.existsSync(certPath)) return test.skip();
+		// 自签证书在链校验即失败, 观察不到主机名校验; 让子进程信任该证书后必须请求成功,
+		// 主机名按 localhost 校验(缺 host 时)会报 ERR_TLS_CERT_ALTNAME_INVALID
+		const out = execFileSync(
+			process.execPath,
+			[path.join(__dirname, "debug-send-tls-child.cjs")],
+			{
+				cwd: path.join(__dirname, "../.."),
+				env: {
+					...process.env,
+					NODE_EXTRA_CA_CERTS: certPath,
+					_TLS_KEY_: path.join(fs.realpathSync(__dirname), "..", ".tls", "key.pem"),
+					_TLS_CERT_: certPath,
+				},
+				encoding: "utf8",
+			}
+		);
+		const { code, status } = JSON.parse(out.trim().split("\n").pop());
+		expect(code).toBeNull();
+		expect(status).toBe(200);
+	});
+
+	(process.platform === "win32" ? it.skip : it)(
+		"上传文件的符号链接越界被拒: 文件链接与父目录链接",
+		async () => {
+			fs.writeFileSync(path.join(ctx.dir, "outside.txt"), "outside-marker");
+			fs.symlinkSync(path.join(ctx.dir, "outside.txt"), path.join(ctx.dir, "mocks", "link"));
+			fs.symlinkSync(ctx.dir, path.join(ctx.dir, "mocks", "dirlink"));
+			const file = await post("{{base}}/echo", { type: "binary", file: "link" });
+			expect(file.status).toBe(400);
+			expect(file.body.error.details).toMatchObject({ field: "body" });
+			const dir = await post("{{base}}/echo", {
+				type: "multipart",
+				parts: [{ name: "f", file: "dirlink/outside.txt" }],
+			});
+			expect(dir.status).toBe(400);
+		}
+	);
 
 	it("超过 50MB 截断; 历史分页, 当天超过 50MB 后按小时存放, 按天删除", async () => {
 		const slowBig = { settings: { ...SETTINGS, timeoutMs: 30000 } };

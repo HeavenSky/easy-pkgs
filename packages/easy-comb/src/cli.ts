@@ -211,7 +211,8 @@ function applyTemplate(config: Config, base: string): void {
 	const templateConfig = detectInFile(template) as Record<string, unknown>;
 	const target = config as Record<string, unknown>;
 	for (const name in templateConfig) {
-		if (Object.hasOwn(templateConfig, name) && !target[name]) {
+		// 配置里显式设置的键(含 false/0/空字符串)不被模板覆盖, 模板只补配置没有的键
+		if (Object.hasOwn(templateConfig, name) && !Object.hasOwn(target, name)) {
 			target[name] = templateConfig[name];
 		}
 	}
@@ -254,4 +255,6 @@ async function processSTDIN(): Promise<void> {
 		fail((e as Error).message);
 	}
 	process.stdout.write(output);
+	// 与文件分支一致: lint 模式下输入与格式化结果有差异时退出 1
+	process.exitCode = options.lint && output !== input ? 1 : 0;
 }

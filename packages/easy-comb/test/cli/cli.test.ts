@@ -99,6 +99,17 @@ describe("cli", function () {
 			assert.equal(result.code, 1);
 			assert.match(result.stdout + result.stderr, /SYNOPSIS/);
 		});
+
+		it("--lint exits with 1 when piped input needs changes", async function () {
+			const result = await run(["--lint", "-"], "a{color:#FFF}");
+			assert.equal(result.code, 1);
+			assert.equal(result.stdout, "a{color: #fff}");
+		});
+
+		it("--lint exits with 0 for compliant piped input", async function () {
+			const result = await run(["--lint", "-"], "a{color: #fff}");
+			assert.deepEqual(result, { code: 0, stdout: "a{color: #fff}", stderr: "" });
+		});
 	});
 
 	describe("--syntax", function () {
@@ -188,6 +199,33 @@ describe("cli", function () {
 				result.stdout,
 				["! x.css", "1 file processed", "0 files fixed", ""].join(os.EOL)
 			);
+		});
+
+		it("fills unset options but does not override options the config sets itself", async function () {
+			const dir = path.join(import.meta.dirname, "template", "override");
+			const file = path.join(dir, "unformatted.css");
+			const original = readFileSync(file, "utf8");
+			try {
+				const result = await run(
+					["--config", path.join(dir, ".csscomb.json"), file],
+					undefined,
+					undefined,
+					import.meta.dirname
+				);
+				assert.equal(result.code, 0, result.stderr);
+				// 期望 = 模板检测出的选项填充缺省, 但显式的 leading-zero/eof-newline false 保留
+				const templateConfig = Comb.detectInFile(path.join(dir, "tpl.css"));
+				const expected = await new Comb({
+					...templateConfig,
+					"leading-zero": false,
+					"eof-newline": false,
+				} as never).processString(original);
+				assert.equal(readFileSync(file, "utf8"), expected);
+				assert.match(expected, /\.5/); // 未被模板重新打开为 0.5
+				assert.doesNotMatch(expected, /\n$/); // 未被加上结尾换行
+			} finally {
+				writeFileSync(file, original);
+			}
 		});
 	});
 

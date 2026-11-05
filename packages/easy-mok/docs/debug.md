@@ -31,7 +31,7 @@ Pick a request to edit its method, URL, query and path parameters, headers, auth
 
 - `{{name}}` is replaced by a variable; `:id` in the URL gets its value from the path parameter of the same name.
 - **Bearer Token** and **Basic** authentication add an `authorization` header unless you wrote one yourself.
-- Bodies can be JSON, text, URL-encoded form fields, multipart fields, or a file; files are paths relative to the mock folder.
+- Bodies can be JSON, text, URL-encoded form fields, multipart fields, or a file; files are paths relative to the mock folder, and symbolic links must resolve inside it.
 - **Settings** (`设置`) hold the timeout, whether to follow redirects, whether to skip HTTPS certificate checks, an HTTP proxy, and the mock route this request belongs to.
 - **Resolved preview** (`解析预览`) shows the final URL, the headers, where each variable came from, and any variable that could not be resolved.
 

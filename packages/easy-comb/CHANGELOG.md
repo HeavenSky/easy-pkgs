@@ -6,6 +6,13 @@ easy-comb is based on [csscomb/csscomb.js](https://github.com/csscomb/csscomb.js
 
 0.0.1 lists all changes relative to csscomb 4.3.0; later versions list only the changes since the previous version.
 
+## 0.0.5 (2026-11-05)
+
+### Fixed
+
+- Explicit config values such as `false`, `0` and empty strings take precedence over options detected from a `template` stylesheet.
+- `csscomb --lint -` exits with `1` when standard input needs formatting and `0` when it already matches the config; the formatted result is still written to standard output.
+
 ## 0.0.4 (2026-10-21)
 
 ### Changed

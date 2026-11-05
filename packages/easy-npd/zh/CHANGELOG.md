@@ -6,10 +6,12 @@ easy-npd 起步于 [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.8.0�
 
 0.0.0 列出相对 npminstall 6.8.0 的全部改动，之后每个版本列出相对上一版的改动。
 
-## Unreleased
+## 0.0.9 (2026-11-05)
 
 ### 修复
 
+- HTTP(S) Git 依赖的凭据不再出现在 Git 进程参数中，且仅用于原始协议、主机和端口，递归拉取子模块时也遵循这一限制；显式写出 `:443` 等默认端口时仍能正常认证。
+- Git 下载保留你设置的 `GIT_SSH_COMMAND`，包括自定义私钥和代理参数。
 - 在 Windows 上，`~/.nprc` 使用 LF 换行时（例如由脚本生成或从 macOS、Linux 复制过来），其中的 registry、token 等设置也能读取。
 
 ## 0.0.8 (2026-10-23)

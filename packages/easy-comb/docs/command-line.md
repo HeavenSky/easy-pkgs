@@ -39,6 +39,7 @@ $ csscomb -lv assets/css
 ```
 
 `--lint` (`-l`) leaves every file untouched and exits with `1` if any file would change, `0` otherwise.
+When reading standard input, `--lint` uses the same exit codes and still writes the formatted result to standard output.
 With `--verbose` (`-v`), each processed file is printed: `!` marks a file that needs changes, `✓` a file that was fixed, and no mark means the file was already formatted.
 
 ## Look up command-line options

@@ -28,6 +28,7 @@ csscomb -c example.css assets/css
 ```
 
 设置 `template` 后，凡是配置里没写的选项，都取该样式表中检测到的值；这样配置里只需写你想改的几项。
+显式设置的值（包括 `false`、`0` 和空字符串）会保留，不会被模板检测出的值覆盖。
 `template` 路径相对配置文件所在目录，无论在哪个目录运行 `csscomb`，指向的都是同一个文件。
 `template` 指向的文件不存在时报 `Template configuration file <path> was not found.` 并停止。
 只有 `csscomb` 命令读取 `template`，[Node.js API](node-api.md#静态方法) 会忽略它。

@@ -2,6 +2,13 @@
 
 **English** · [简体中文](./zh/CHANGELOG.md)
 
+## 0.0.7 (2026-11-05)
+
+### Fixed
+
+- HTTPS debug requests now use the configured HTTP proxy's CONNECT tunnel and validate certificates against the target host, including IP addresses.
+- Debug file uploads reject symbolic links that resolve outside the mock folder, including links in parent directories.
+
 ## 0.0.6 (2026-10-26)
 
 ### Added

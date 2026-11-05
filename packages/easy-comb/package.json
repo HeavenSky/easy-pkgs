@@ -1,6 +1,6 @@
 {
 	"name": "easy-comb",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"description": "Sort properties and unify the code style of CSS, Less, SCSS and Sass files, with the csscomb command and config files you already use",
 	"keywords": [
 		"css",

@@ -6,10 +6,12 @@ easy-npd starts from [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.8.0
 
 0.0.0 lists every change relative to npminstall 6.8.0; later versions list changes relative to the previous version.
 
-## Unreleased
+## 0.0.9 (2026-11-05)
 
 ### Fixed
 
+- HTTP(S) Git dependency credentials are kept out of Git process arguments and restricted to the original protocol, host and port, including recursive submodule fetches; explicit default ports such as `:443` authenticate correctly.
+- Git downloads preserve your `GIT_SSH_COMMAND`, including custom private-key and proxy options.
 - On Windows, the registry, token and other settings in `~/.nprc` are read when the file has LF line endings, e.g. when it was written by a script or copied from macOS or Linux.
 
 ## 0.0.8 (2026-10-23)

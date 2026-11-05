@@ -4,6 +4,12 @@
 
 Each release lists the changes you notice when you upgrade.
 
+## v0.0.2 2026-11-05
+
+### Fixed
+
+- Dropdowns show the keyboard focus highlight only after you use the arrow keys, so opening or filtering a dropdown no longer highlights an option as if you had navigated to it; Enter selection keeps working.
+
 ## v0.0.1 2026-10-29
 
 The first release of Easy Graph, building on version 1.31.8 of Git Graph 2. It lists every difference you notice compared with Git Graph 1.30.0, the [last release](https://github.com/mhutchie/vscode-git-graph/releases/tag/v1.30.0) of Git Graph (April 2021).

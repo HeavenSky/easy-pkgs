@@ -1,6 +1,6 @@
 // 含 userinfo 的 https git 地址: 凭据不进 git 子进程 argv, 改经 credential helper 提供, 且只对原始
 // URL 的协议与主机生效; 地址用不可解析的 example.invalid, 不真正联网
-const { execFileSync } = require("node:child_process");
+const { spawnSync } = require("node:child_process");
 const mm = require("mm");
 const assert = require("node:assert");
 const helper = require("../support/helper");
@@ -103,21 +103,56 @@ describe("test/sources/git-auth.test.js", () => {
 		assert.strictEqual(sub.env.GIT_ASKPASS, "echo");
 	});
 
-	it("credential helper 只对原始主机返回凭据", async () => {
-		const calls = mockGit(`${SHA}\trefs/pull/1/head\n`);
-		await assert.rejects(
-			run("git+https://user:secret@example.invalid/a/b.git#pull/1"),
-			/package\.json/
-		);
-		const fetch = calls.find(({ args }) => args.includes("fetch"));
-		const helper = fetch.env.GIT_CONFIG_VALUE_1;
-		// 与 git 一致的方式执行 helper: sh -c '<helper> "$@"' <helper> get
-		const runHelper = host =>
-			execFileSync("sh", ["-c", `${helper} "$@"`, helper, "get"], {
-				env: fetch.env,
-				input: `protocol=https\nhost=${host}\n\n`,
-			}).toString();
-		assert.strictEqual(runHelper("evil.example"), "");
-		assert.strictEqual(runHelper("example.invalid"), "username=user\npassword=secret\n");
+	for (const [protocol, host, matchingHosts] of [
+		["https", "example.invalid", ["example.invalid", "example.invalid:443"]],
+		["https", "example.invalid:443", ["example.invalid", "example.invalid:443"]],
+		["http", "example.invalid:80", ["example.invalid", "example.invalid:80"]],
+		["https", "example.invalid:8443", ["example.invalid:8443"]],
+	]) {
+		it(`git credential fill 限定凭据作用域: ${protocol}://${host}`, async () => {
+			const calls = mockGit("");
+			await assert.rejects(
+				run(`git+${protocol}://user:secret@${host}/a/b.git#${SHA}`),
+				/package\.json/
+			);
+			const mirror = calls.find(({ args }) => args.includes("--mirror"));
+			const fill = (scheme, hostname) =>
+				spawnSync("git", ["credential", "fill"], {
+					env: {
+						...mirror.env,
+						GIT_ASKPASS: "",
+						SSH_ASKPASS: "",
+						GIT_TERMINAL_PROMPT: "0",
+					},
+					input: `url=${scheme}://${hostname}/a/b.git\n\n`,
+					encoding: "utf8",
+					timeout: 5000,
+				});
+			for (const matchingHost of matchingHosts) {
+				const result = fill(protocol, matchingHost);
+				assert.ifError(result.error);
+				assert.strictEqual(result.status, 0, result.stderr);
+				assert.match(result.stdout, /\nusername=user\npassword=secret\n/);
+			}
+			for (const [scheme, hostname] of [
+				[protocol, "evil.example"],
+				[protocol, "example.invalid:9443"],
+				[protocol === "https" ? "http" : "https", host],
+			]) {
+				const result = fill(scheme, hostname);
+				assert.ifError(result.error);
+				assert.notStrictEqual(result.status, 0);
+				assert.strictEqual(result.stdout, "");
+			}
+		});
+	}
+
+	it("SSH 下载保留调用方的 GIT_SSH_COMMAND", async () => {
+		const command = "ssh -i /example/deploy-key -o IdentitiesOnly=yes";
+		mm(process.env, "GIT_SSH_COMMAND", command);
+		const calls = mockGit("");
+		await assert.rejects(run(`git+ssh://git@example.invalid/a/b.git#${SHA}`), /package\.json/);
+		const mirror = calls.find(({ args }) => args.includes("--mirror"));
+		assert.strictEqual(mirror.env.GIT_SSH_COMMAND, command);
 	});
 });

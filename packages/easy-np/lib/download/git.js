@@ -44,9 +44,10 @@ const GIT_ORIGIN_ENV = "_NP_GIT_ORIGIN_";
 // 凭据 helper: 认证目标的协议与主机和原始 URL 一致时才返回凭据, 其他主机(例: 子模块所在主机)
 // 继承该 helper 也取不到凭据; git 经 sh -c 调用, 脚本内避免 $ 与反引号等 sh 展开字符
 const GIT_CREDENTIAL_HELPER =
-	`node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{` +
+	`!node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{` +
 	`const kv={};for(const line of d.split('\\n')){const i=line.indexOf('=');if(i>0)kv[line.slice(0,i)]=line.slice(i+1);}` +
-	`if(kv.protocol+'://'+kv.host===process.env.${GIT_ORIGIN_ENV}){` +
+	`let origin;try{origin=new URL(kv.protocol+'://'+kv.host).origin}catch{return;}` +
+	`if(origin===process.env.${GIT_ORIGIN_ENV}){` +
 	`process.stdout.write('username='+(process.env.${GIT_USER_ENV}||'')+'\\npassword='+(process.env.${GIT_PASS_ENV}||'')+'\\n')}})"`;
 
 // 分离 https URL 中的 userinfo, 返回剥离后的 URL 与明文用户名/密码; 无 userinfo 时返回 null
@@ -272,10 +273,7 @@ function hostOf(repo) {
 // 原始 URL 的协议与主机(不含默认端口), 供 credential helper 判定认证目标
 function originOf(url) {
 	try {
-		const u = new URL(url);
-		const defaultPort = u.protocol === "https:" ? "443" : "80";
-		const host = u.port && u.port !== defaultPort ? u.host : u.hostname;
-		return u.protocol + "//" + host;
+		return new URL(url).origin;
 	} catch {
 		return "";
 	}
@@ -469,11 +467,11 @@ async function prepareRepo(dir, resolved, options) {
 
 async function git(args, cwd, timeout, auth) {
 	// 未配置凭据时 git 会等待终端输入, 没有 tty 的子进程会一直挂起到超时;
-	// 这两项覆盖继承的环境变量(例: VS Code 终端的 GIT_ASKPASS), 保证行为确定
+	// 禁用交互式 askpass; SSH 命令保留调用方配置的私钥与代理参数
 	const env = {
 		...process.env,
 		GIT_ASKPASS: "echo",
-		GIT_SSH_COMMAND: "ssh -oStrictHostKeyChecking=accept-new",
+		GIT_SSH_COMMAND: process.env.GIT_SSH_COMMAND ?? "ssh -oStrictHostKeyChecking=accept-new",
 	};
 	// argv 中带 userinfo 的 URL 剥离成无凭据地址; 凭据经环境变量与 credential helper 提供给 git
 	let origin = auth && auth.origin;

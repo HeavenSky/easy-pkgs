@@ -4,6 +4,8 @@ const assert = require("assert");
 const path = require("path");
 const util = require("util");
 const fs = require("fs/promises");
+const mm = require("mm");
+const utils = require("../../lib/utils");
 const npminstall = require("../support/npminstall");
 const helper = require("../support/helper");
 const { realpathSync } = require("fs");
@@ -287,10 +289,37 @@ describe("test/scripts/resume.test.js", () => {
 			})
 		);
 		await fs.writeFile(flagFile, "");
-		await npminstall({ root, env: { RESUME_LOG: logFile, RESUME_FLAG: flagFile } });
-		await assert.rejects(fs.lstat(path.join(root, "node_modules/optional-partial")), /ENOENT/);
-		// 同一可选依赖下的 resume-scripts 已排队, 但所在可选依赖因兄弟依赖下载失败被跳过, 它的脚本不再运行
-		await assert.rejects(fs.stat(logFile), /ENOENT/);
+		const copyPackFiles = utils.copyPackFiles;
+		const spawnWithTimeout = utils.spawnWithTimeout;
+		// 固定走旧 npm 使用的复制路径, 新版 npm 的打包路径也在失败时回退到这里
+		mm(utils, "spawnWithTimeout", (cmd, ...args) => {
+			if (cmd.startsWith("npm pack ")) return Promise.reject(new Error("模拟 npm pack 失败"));
+			return spawnWithTimeout(cmd, ...args);
+		});
+		let copyPending;
+		let copyFinished = false;
+		mm(utils, "copyPackFiles", (src, dest) => {
+			if (src !== helper.fixtures("resume-scripts")) return copyPackFiles(src, dest);
+			copyPending = (async () => {
+				await new Promise(resolve => setTimeout(resolve, 200));
+				await copyPackFiles(src, dest);
+				copyFinished = true;
+			})();
+			return copyPending;
+		});
+		try {
+			await npminstall({ root, env: { RESUME_LOG: logFile, RESUME_FLAG: flagFile } });
+			assert(copyFinished, "安装返回前必须等待失败子树中的兄弟下载结束");
+			await assert.rejects(
+				fs.lstat(path.join(root, "node_modules/optional-partial")),
+				/ENOENT/
+			);
+			// 同一可选依赖下的 resume-scripts 已排队, 但所在可选依赖因兄弟依赖下载失败被跳过, 它的脚本不再运行
+			await assert.rejects(fs.stat(logFile), /ENOENT/);
+		} finally {
+			await copyPending;
+			mm.restore();
+		}
 	});
 
 	it("should fail when the failed package is also a required dependency", async () => {

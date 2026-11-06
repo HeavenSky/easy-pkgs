@@ -330,7 +330,17 @@ async function _install(parentDir, pkg, ancestors, options, context, state) {
 			);
 			if (res && res.dir) childDirs.push(res.dir);
 		};
-		await pMap(needPkgs, mapper, 10);
+		// 失败子树的兄弟下载也要结束后才能返回, 否则后续脚本或下一次安装会与后台写入争用目录
+		let installError;
+		await pMap(
+			needPkgs,
+			childPkg =>
+				mapper(childPkg).catch(err => {
+					installError = installError || err;
+				}),
+			10
+		);
+		if (installError) throw installError;
 	}
 
 	await linkModule(pkg, parentDir, realPkg, realPkgDir, options, displayName, ancestors);

@@ -19,9 +19,9 @@ describe("test/sources/git-auth.test.js", () => {
 		const calls = [];
 		mm(utils, "spawnWithTimeout", async (cmd, args, opts) => {
 			calls.push({ args, env: (opts && opts.env) || {} });
-			const sub = args[1];
-			if (sub === "ls-remote") return { stdout: lsRemoteStdout, stderr: "" };
-			if (sub === "rev-parse") return { stdout: `${SHA}\n`, stderr: "" };
+			const sub = opts.name;
+			if (sub === "git ls-remote") return { stdout: lsRemoteStdout, stderr: "" };
+			if (sub === "git rev-parse") return { stdout: `${SHA}\n`, stderr: "" };
 			return { stdout: "", stderr: "" };
 		});
 		return calls;

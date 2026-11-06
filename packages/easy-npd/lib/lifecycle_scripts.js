@@ -145,7 +145,9 @@ function requiredDir(options, dir, seen = new Set()) {
 	if (seen.has(dir)) return false;
 	seen.add(dir);
 	const need = options.scriptNeeds.get(dir);
-	if (!need || need.required) return true;
+	// 下载失败的可选祖先还没链接, 因而可能没有 scriptNeeds 记录
+	if (!need) return !options.skippedOptionalDirs.has(dir);
+	if (need.required) return true;
 	for (const root of need.roots.keys()) {
 		if (root !== dir && requiredDir(options, root, seen)) return true;
 	}

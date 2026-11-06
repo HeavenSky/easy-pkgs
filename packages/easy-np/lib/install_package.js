@@ -391,7 +391,17 @@ async function _install(parentDir, pkg, ancestors, options, context, state) {
 		};
 		// NOTE: any chance that the installation will speed up slightly if we use
 		// a global queue?
-		await pMap(needPkgs, mapper, 10);
+		// 失败子树的兄弟下载也要结束后才能返回, 否则后续脚本或下一次安装会与后台写入争用目录
+		let installError;
+		await pMap(
+			needPkgs,
+			childPkg =>
+				mapper(childPkg).catch(err => {
+					installError = installError || err;
+				}),
+			10
+		);
+		if (installError) throw installError;
 	}
 	if (needLinkPeerDependencies.length > 0) {
 		for (const peer of needLinkPeerDependencies) {

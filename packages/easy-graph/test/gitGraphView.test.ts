@@ -258,8 +258,9 @@ describe('GitGraphView', () => {
 				expect(GitGraphView.currentPanel!['isPanelVisible']).toBe(false);
 			});
 
-			it('Should transition from not-visible to visible correctly', () => {
+			it('Should transition from not-visible to visible correctly when the view isn\'t loaded yet', () => {
 				// Setup
+				spyOnGetRepos.mockReturnValueOnce({});
 				GitGraphView.createOrShow('/path/to/extension', dataSource, extensionState, avatarManager, repoManager, logger, null);
 				const mockedWebviewPanel = vscode.getMockedWebviewPanel(0);
 				mockedWebviewPanel.mocks.panel.setVisibility(false);
@@ -270,6 +271,22 @@ describe('GitGraphView', () => {
 
 				// Assert
 				expect(mockedWebviewPanel.panel.webview.html).not.toBe('');
+				expect(GitGraphView.currentPanel!['isPanelVisible']).toBe(true);
+			});
+
+			it('Should refresh the loaded view in place when it is shown again', () => {
+				// Setup
+				GitGraphView.createOrShow('/path/to/extension', dataSource, extensionState, avatarManager, repoManager, logger, null);
+				const mockedWebviewPanel = vscode.getMockedWebviewPanel(0);
+				mockedWebviewPanel.mocks.panel.setVisibility(false);
+				GitGraphView.currentPanel!['panel']['webview'].html = '';
+
+				// Run
+				mockedWebviewPanel.mocks.panel.setVisibility(true);
+
+				// Assert
+				expect(mockedWebviewPanel.panel.webview.html).toBe('');
+				expect(mockedWebviewPanel.panel.webview.postMessage).toHaveBeenCalledWith({ command: 'refresh' });
 				expect(GitGraphView.currentPanel!['isPanelVisible']).toBe(true);
 			});
 
@@ -4160,6 +4177,8 @@ describe('GitGraphView', () => {
 
 			// Assert
 			const mockedWebviewPanel = vscode.getMockedWebviewPanel(0);
+			expect(mockedWebviewPanel.panel.webview.html).toContain('<body class="preload" data-vscode-context=');
+			expect(mockedWebviewPanel.panel.webview.html).toContain('<div id="bootLoader">Loading ...</div>');
 			expect(mockedWebviewPanel.panel.webview.html).toContain('<div id="view" tabindex="-1">');
 			expect(mockedWebviewPanel.panel.webview.html).toContain('<script nonce="1a2b3c4d5e6f1a2b3c4d5e6f1a2b3c4d">');
 			expect(mockedWebviewPanel.panel.webview.html).toContain('<script nonce="1a2b3c4d5e6f1a2b3c4d5e6f1a2b3c4d" src="vscode-webview-resource://file///path/to/extension/out/web/out.min.js"></script>');

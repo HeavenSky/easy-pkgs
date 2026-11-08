@@ -8,7 +8,8 @@
  * 2. package.nls 中英 key 集一致, 且与清单占位符一一对应;
  * 3. l10n bundle 之间 key 集一致;
  * 4. src 内联的 l10n.t 字面量与中文 bundle 一一对应;
- * 5. `devkit/check-extra.mjs` 存在时执行它默认导出的 `checks(root)`。
+ * 5. 配置默认值自洽 (checkConfigDefaults);
+ * 6. `devkit/check-extra.mjs` 存在时执行它默认导出的 `checks(root)`。
  *
  * 用法: node scripts/check.mjs
  */
@@ -17,6 +18,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+	checkConfigDefaults,
 	checkInlineRuntimeStrings,
 	checkL10nBundleParity,
 	checkNlsParity,
@@ -73,6 +75,7 @@ run("icon 产物与 spec 一致", () => {
 run("package.nls 与清单占位符一致", () => checkNlsParity(ROOT));
 run("l10n bundle key 集一致", () => checkL10nBundleParity(ROOT));
 run("内联运行时文案与中文 bundle 一致", () => checkInlineRuntimeStrings(ROOT));
+run("配置默认值自洽", () => checkConfigDefaults(ROOT));
 
 const extraPath = join(ROOT, "devkit/check-extra.mjs");
 if (existsSync(extraPath)) {

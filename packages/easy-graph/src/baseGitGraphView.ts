@@ -1,3 +1,4 @@
+import { readFileSync } from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { AvatarManager } from './avatarManager';
@@ -10,6 +11,9 @@ import { RepoManager } from './repoManager';
 import { ErrorInfo, GitConfigLocation, GitGraphViewInitialState, GitPushBranchMode, GitRepoSet, LoadGitGraphViewTo, RequestMessage, ResponseMessage } from './types';
 import { UNABLE_TO_FIND_GIT_MSG, UNCOMMITTED, applyPatch, archive, browseFilesAtCommit, copyFilePathToClipboard, copyToClipboard, createPullRequest, getNonce, getPathFromUri, openExtensionSettings, openExternalUrl, openFile, pathWithTrailingSlash, savePatch, showErrorMessage, viewAllChanges, viewCommitPatch, viewDiff, viewDiffWithWorkingFile, viewFileAtRevision, viewScm } from './utils';
 import { Disposable, toDisposable } from './utils/disposable';
+
+/** The contents of the built webview stylesheet, read once per extension host session (shared by all views). */
+let webviewCss: string | null = null;
 
 /**
  * The behaviour shared by the Easy Graph View in the editor (`GitGraphView`) and in the panel (`GitGraphPanelView`).
@@ -195,7 +199,14 @@ export abstract class BaseGitGraphView extends Disposable {
 				this.repoFileWatcher.stop();
 			}
 		} else if (!keepContent) {
-			this.update();
+			if (this.isGraphViewLoaded && this.loadViewTo === null) {
+				// The loaded webview is kept and its data is refreshed in place, avoiding a full reload (and the flash of
+				// unstyled, re-flowed content it causes) every time the view is shown. Configuration changes that are only
+				// read when the view is loaded are applied the next time it is reloaded instead.
+				this.sendMessage({ command: 'refresh' });
+			} else {
+				this.update();
+			}
 		} else if (this.loadViewTo !== null) {
 			// The kept view isn't rendered again, so deliver what was requested while it was hidden (e.g. a repository to show)
 			const loadViewTo = this.loadViewTo;
@@ -1049,7 +1060,10 @@ export abstract class BaseGitGraphView extends Disposable {
 			const hideDisplay = config.toolbarButtonVisibility.display ? '' : 'style="display: none"';
 			const hideScope = config.toolbarButtonVisibility.scope ? '' : 'style="display: none"';
 			const hidePathFilter = config.toolbarButtonVisibility.pathFilter ? '' : 'style="display: none"';
-			body = `<body data-vscode-context='{"preventDefaultContextMenuItems":true}'>
+			// The view starts hidden (`preload`) and is revealed by the front-end once the repository data has rendered, so
+			// the skeleton is never shown in an intermediate, re-flowing layout
+			body = `<body class="preload" data-vscode-context='{"preventDefaultContextMenuItems":true}'>
+			<div id="bootLoader">Loading ...</div>
 			<div id="view" tabindex="-1">
 				<div id="controls"${stickyClassAttr}>
 					<div id="filterControls">
@@ -1097,12 +1111,30 @@ export abstract class BaseGitGraphView extends Disposable {
 				<meta charset="UTF-8">
 				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${standardiseCspSource(this.webview.cspSource)} 'unsafe-inline'; script-src 'nonce-${nonce}'; img-src data:;">
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<link rel="stylesheet" type="text/css" href="${this.getWebUri('out.min.css')}">
+				${this.getStylesheetHtml()}
 				<title>Easy Graph</title>
 				<style>body{${colorVars}} ${colorParams}</style>
 			</head>
 			${body}
 		</html>`;
+	}
+
+	/**
+	 * Get the HTML that loads the webview styles. The built stylesheet is inlined into a `<style>` element so it applies
+	 * with the first paint instead of arriving on a separate request; it falls back to a `<link>` element when the file
+	 * can't be read (e.g. in tests, where the extension path doesn't exist on disk).
+	 */
+	private getStylesheetHtml() {
+		if (webviewCss === null) {
+			try {
+				webviewCss = readFileSync(path.join(this.extensionPath, 'out', 'web', 'out.min.css'), 'utf8');
+			} catch {
+				webviewCss = '';
+			}
+		}
+		return webviewCss !== ''
+			? `<style>${webviewCss}</style>`
+			: `<link rel="stylesheet" type="text/css" href="${this.getWebUri('out.min.css')}">`;
 	}
 
 	/**

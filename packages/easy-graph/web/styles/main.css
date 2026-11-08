@@ -947,6 +947,33 @@ body.tagLabelsRightAligned .gitRef.tag{
 
 /* Loader */
 
+/* While the body has the `preload` class (set by the back-end, removed once data has rendered), the view is hidden and
+   only the boot loader is shown, so the skeleton is never seen in an intermediate, re-flowing layout */
+body.preload #view{
+	visibility:hidden;
+}
+#bootLoader{
+	align-items:center;
+	color:var(--vscode-editor-foreground);
+	display:flex;
+	font-size:13px;
+	gap:10px;
+	height:100%;
+	justify-content:center;
+}
+#bootLoader::before{
+	animation:loadingIconAnimation 2s linear infinite;
+	border:2px solid var(--vscode-editor-foreground);
+	border-radius:50%;
+	border-right-color:transparent;
+	content:'';
+	height:14px;
+	width:14px;
+}
+body:not(.preload) #bootLoader{
+	display:none;
+}
+
 #loadingHeader{
 	text-align:center;
 	line-height:32px;

@@ -1,7 +1,7 @@
 {
 	"name": "easy-graph",
 	"displayName": "Easy Graph",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"description": "%extension.description%",
 	"categories": [
 		"Other"
@@ -57,6 +57,7 @@
 		"fmt:check": "oxfmt --check",
 		"check": "node scripts/check.mjs",
 		"gen:icon": "node scripts/gen-icon.mjs",
+		"gen:config": "node scripts/gen-config-defaults.mjs",
 		"package": "node scripts/package.mjs",
 		"vscode:prepublish": "npm run build"
 	},
@@ -249,11 +250,17 @@
 				"easy-graph.builtin": {
 					"type": "object",
 					"default": {
+						"commit.gpgSign": null,
 						"core.abbrev": 7,
+						"fetch.prune": null,
+						"fetch.pruneTags": null,
+						"fetch.tags": null,
 						"log.mailmap": false,
 						"merge.ff": false,
+						"pull.ff": null,
 						"push.autoSetupRemote": true,
-						"status.showUntrackedFiles": "all"
+						"status.showUntrackedFiles": "all",
+						"tag.gpgSign": null
 					},
 					"markdownDescription": "%config.builtin%",
 					"properties": {
@@ -262,7 +269,8 @@
 								"boolean",
 								"null"
 							],
-							"description": "%config.builtin.commit.gpgSign%"
+							"description": "%config.builtin.commit.gpgSign%",
+							"default": null
 						},
 						"core.abbrev": {
 							"type": [
@@ -271,35 +279,40 @@
 							],
 							"minimum": 4,
 							"maximum": 40,
-							"description": "%config.builtin.core.abbrev%"
+							"description": "%config.builtin.core.abbrev%",
+							"default": 7
 						},
 						"fetch.prune": {
 							"type": [
 								"boolean",
 								"null"
 							],
-							"description": "%config.builtin.fetch.prune%"
+							"description": "%config.builtin.fetch.prune%",
+							"default": null
 						},
 						"fetch.pruneTags": {
 							"type": [
 								"boolean",
 								"null"
 							],
-							"description": "%config.builtin.fetch.pruneTags%"
+							"description": "%config.builtin.fetch.pruneTags%",
+							"default": null
 						},
 						"fetch.tags": {
 							"type": [
 								"boolean",
 								"null"
 							],
-							"description": "%config.builtin.fetch.tags%"
+							"description": "%config.builtin.fetch.tags%",
+							"default": null
 						},
 						"log.mailmap": {
 							"type": [
 								"boolean",
 								"null"
 							],
-							"description": "%config.builtin.log.mailmap%"
+							"description": "%config.builtin.log.mailmap%",
+							"default": false
 						},
 						"merge.ff": {
 							"enum": [
@@ -308,7 +321,8 @@
 								"only",
 								null
 							],
-							"description": "%config.builtin.merge.ff%"
+							"description": "%config.builtin.merge.ff%",
+							"default": false
 						},
 						"pull.ff": {
 							"enum": [
@@ -317,14 +331,16 @@
 								"only",
 								null
 							],
-							"description": "%config.builtin.pull.ff%"
+							"description": "%config.builtin.pull.ff%",
+							"default": null
 						},
 						"push.autoSetupRemote": {
 							"type": [
 								"boolean",
 								"null"
 							],
-							"description": "%config.builtin.push.autoSetupRemote%"
+							"description": "%config.builtin.push.autoSetupRemote%",
+							"default": true
 						},
 						"status.showUntrackedFiles": {
 							"enum": [
@@ -333,89 +349,229 @@
 								"all",
 								null
 							],
-							"description": "%config.builtin.status.showUntrackedFiles%"
+							"description": "%config.builtin.status.showUntrackedFiles%",
+							"default": "all"
 						},
 						"tag.gpgSign": {
 							"type": [
 								"boolean",
 								"null"
 							],
-							"description": "%config.builtin.tag.gpgSign%"
+							"description": "%config.builtin.tag.gpgSign%",
+							"default": null
 						}
 					},
 					"additionalProperties": false
 				},
 				"easy-graph.contextMenuActionsVisibility": {
 					"type": "object",
-					"default": {},
+					"default": {
+						"branch": {
+							"checkout": true,
+							"rename": true,
+							"createBranch": true,
+							"delete": true,
+							"deleteMultiple": true,
+							"merge": true,
+							"rebase": true,
+							"push": true,
+							"pull": true,
+							"viewIssue": true,
+							"createPullRequest": true,
+							"createArchive": true,
+							"selectInBranchesDropdown": true,
+							"unselectInBranchesDropdown": true,
+							"hide": true,
+							"copyName": true
+						},
+						"commit": {
+							"addTag": true,
+							"createBranch": true,
+							"checkout": true,
+							"compareWithWorkingTree": true,
+							"cherrypick": true,
+							"revert": true,
+							"undo": true,
+							"drop": true,
+							"squash": true,
+							"merge": true,
+							"rebase": true,
+							"rebaseOnto": true,
+							"reset": true,
+							"editMessage": true,
+							"createFixup": true,
+							"pushToCommit": true,
+							"savePatch": true,
+							"applyPatch": true,
+							"viewPatch": true,
+							"viewAllChanges": true,
+							"browseFiles": true,
+							"editNotes": true,
+							"viewChangesFromParent": true,
+							"selectMergeBase": true,
+							"copyHash": true,
+							"copySubject": true,
+							"copySubjectsBetween": true,
+							"copyPatch": true
+						},
+						"commitDetailsViewFile": {
+							"viewDiff": true,
+							"viewAllChanges": true,
+							"viewFileAtThisRevision": true,
+							"viewDiffWithWorkingFile": true,
+							"openFile": true,
+							"openInExternalDiffTool": true,
+							"markAsReviewed": true,
+							"markAsNotReviewed": true,
+							"resetFileToThisRevision": true,
+							"copyAbsoluteFilePath": true,
+							"copyRelativeFilePath": true,
+							"copyAllRelativeFilePaths": true
+						},
+						"remoteBranch": {
+							"checkout": true,
+							"delete": true,
+							"fetch": true,
+							"merge": true,
+							"pull": true,
+							"createBranch": true,
+							"viewIssue": true,
+							"createPullRequest": true,
+							"createArchive": true,
+							"selectInBranchesDropdown": true,
+							"unselectInBranchesDropdown": true,
+							"hide": true,
+							"hideRemote": true,
+							"copyName": true
+						},
+						"stash": {
+							"apply": true,
+							"createBranch": true,
+							"pop": true,
+							"drop": true,
+							"copyName": true,
+							"copyHash": true,
+							"viewAllChanges": true
+						},
+						"tag": {
+							"viewDetails": true,
+							"checkout": true,
+							"delete": true,
+							"push": true,
+							"createArchive": true,
+							"copyName": true
+						},
+						"uncommittedChanges": {
+							"stash": true,
+							"applyPatch": true,
+							"reset": true,
+							"clean": true,
+							"viewAllChanges": true,
+							"openSourceControlView": true
+						}
+					},
 					"properties": {
 						"branch": {
 							"type": "object",
 							"properties": {
 								"checkout": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.branch.checkout.title%"
+									"title": "%config.contextMenuActionsVisibility.branch.checkout.title%",
+									"default": true
 								},
 								"rename": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.branch.rename.title%"
+									"title": "%config.contextMenuActionsVisibility.branch.rename.title%",
+									"default": true
 								},
 								"createBranch": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.branch.createBranch.title%"
+									"title": "%config.contextMenuActionsVisibility.branch.createBranch.title%",
+									"default": true
 								},
 								"delete": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.branch.delete.title%"
+									"title": "%config.contextMenuActionsVisibility.branch.delete.title%",
+									"default": true
 								},
 								"deleteMultiple": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.branch.deleteMultiple.title%"
+									"title": "%config.contextMenuActionsVisibility.branch.deleteMultiple.title%",
+									"default": true
 								},
 								"merge": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.branch.merge.title%"
+									"title": "%config.contextMenuActionsVisibility.branch.merge.title%",
+									"default": true
 								},
 								"rebase": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.branch.rebase.title%"
+									"title": "%config.contextMenuActionsVisibility.branch.rebase.title%",
+									"default": true
 								},
 								"push": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.branch.push.title%"
+									"title": "%config.contextMenuActionsVisibility.branch.push.title%",
+									"default": true
 								},
 								"pull": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.branch.pull.title%"
+									"title": "%config.contextMenuActionsVisibility.branch.pull.title%",
+									"default": true
 								},
 								"viewIssue": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.branch.viewIssue.title%"
+									"title": "%config.contextMenuActionsVisibility.branch.viewIssue.title%",
+									"default": true
 								},
 								"createPullRequest": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.branch.createPullRequest.title%"
+									"title": "%config.contextMenuActionsVisibility.branch.createPullRequest.title%",
+									"default": true
 								},
 								"createArchive": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.branch.createArchive.title%"
+									"title": "%config.contextMenuActionsVisibility.branch.createArchive.title%",
+									"default": true
 								},
 								"selectInBranchesDropdown": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.branch.selectInBranchesDropdown.title%"
+									"title": "%config.contextMenuActionsVisibility.branch.selectInBranchesDropdown.title%",
+									"default": true
 								},
 								"unselectInBranchesDropdown": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.branch.unselectInBranchesDropdown.title%"
+									"title": "%config.contextMenuActionsVisibility.branch.unselectInBranchesDropdown.title%",
+									"default": true
 								},
 								"hide": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.branch.hide.title%"
+									"title": "%config.contextMenuActionsVisibility.branch.hide.title%",
+									"default": true
 								},
 								"copyName": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.branch.copyName.title%"
+									"title": "%config.contextMenuActionsVisibility.branch.copyName.title%",
+									"default": true
 								}
+							},
+							"default": {
+								"checkout": true,
+								"rename": true,
+								"createBranch": true,
+								"delete": true,
+								"deleteMultiple": true,
+								"merge": true,
+								"rebase": true,
+								"push": true,
+								"pull": true,
+								"viewIssue": true,
+								"createPullRequest": true,
+								"createArchive": true,
+								"selectInBranchesDropdown": true,
+								"unselectInBranchesDropdown": true,
+								"hide": true,
+								"copyName": true
 							}
 						},
 						"commit": {
@@ -423,116 +579,174 @@
 							"properties": {
 								"addTag": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.addTag.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.addTag.title%",
+									"default": true
 								},
 								"createBranch": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.createBranch.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.createBranch.title%",
+									"default": true
 								},
 								"checkout": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.checkout.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.checkout.title%",
+									"default": true
 								},
 								"compareWithWorkingTree": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.compareWithWorkingTree.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.compareWithWorkingTree.title%",
+									"default": true
 								},
 								"cherrypick": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.cherrypick.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.cherrypick.title%",
+									"default": true
 								},
 								"revert": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.revert.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.revert.title%",
+									"default": true
 								},
 								"undo": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.undo.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.undo.title%",
+									"default": true
 								},
 								"drop": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.drop.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.drop.title%",
+									"default": true
 								},
 								"squash": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.squash.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.squash.title%",
+									"default": true
 								},
 								"merge": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.merge.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.merge.title%",
+									"default": true
 								},
 								"rebase": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.rebase.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.rebase.title%",
+									"default": true
 								},
 								"rebaseOnto": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.rebaseOnto.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.rebaseOnto.title%",
+									"default": true
 								},
 								"reset": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.reset.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.reset.title%",
+									"default": true
 								},
 								"editMessage": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.editMessage.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.editMessage.title%",
+									"default": true
 								},
 								"createFixup": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.createFixup.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.createFixup.title%",
+									"default": true
 								},
 								"pushToCommit": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.pushToCommit.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.pushToCommit.title%",
+									"default": true
 								},
 								"savePatch": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.savePatch.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.savePatch.title%",
+									"default": true
 								},
 								"applyPatch": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.applyPatch.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.applyPatch.title%",
+									"default": true
 								},
 								"viewPatch": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.viewPatch.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.viewPatch.title%",
+									"default": true
 								},
 								"viewAllChanges": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.viewAllChanges.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.viewAllChanges.title%",
+									"default": true
 								},
 								"browseFiles": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.browseFiles.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.browseFiles.title%",
+									"default": true
 								},
 								"editNotes": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.editNotes.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.editNotes.title%",
+									"default": true
 								},
 								"viewChangesFromParent": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.viewChangesFromParent.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.viewChangesFromParent.title%",
+									"default": true
 								},
 								"selectMergeBase": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.selectMergeBase.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.selectMergeBase.title%",
+									"default": true
 								},
 								"copyHash": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.copyHash.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.copyHash.title%",
+									"default": true
 								},
 								"copySubject": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.copySubject.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.copySubject.title%",
+									"default": true
 								},
 								"copySubjectsBetween": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.copySubjectsBetween.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.copySubjectsBetween.title%",
+									"default": true
 								},
 								"copyPatch": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commit.copyPatch.title%"
+									"title": "%config.contextMenuActionsVisibility.commit.copyPatch.title%",
+									"default": true
 								}
+							},
+							"default": {
+								"addTag": true,
+								"createBranch": true,
+								"checkout": true,
+								"compareWithWorkingTree": true,
+								"cherrypick": true,
+								"revert": true,
+								"undo": true,
+								"drop": true,
+								"squash": true,
+								"merge": true,
+								"rebase": true,
+								"rebaseOnto": true,
+								"reset": true,
+								"editMessage": true,
+								"createFixup": true,
+								"pushToCommit": true,
+								"savePatch": true,
+								"applyPatch": true,
+								"viewPatch": true,
+								"viewAllChanges": true,
+								"browseFiles": true,
+								"editNotes": true,
+								"viewChangesFromParent": true,
+								"selectMergeBase": true,
+								"copyHash": true,
+								"copySubject": true,
+								"copySubjectsBetween": true,
+								"copyPatch": true
 							}
 						},
 						"commitDetailsViewFile": {
@@ -540,52 +754,78 @@
 							"properties": {
 								"viewDiff": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.viewDiff.title%"
+									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.viewDiff.title%",
+									"default": true
 								},
 								"viewAllChanges": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.viewAllChanges.title%"
+									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.viewAllChanges.title%",
+									"default": true
 								},
 								"viewFileAtThisRevision": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.viewFileAtThisRevision.title%"
+									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.viewFileAtThisRevision.title%",
+									"default": true
 								},
 								"viewDiffWithWorkingFile": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.viewDiffWithWorkingFile.title%"
+									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.viewDiffWithWorkingFile.title%",
+									"default": true
 								},
 								"openFile": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.openFile.title%"
+									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.openFile.title%",
+									"default": true
 								},
 								"openInExternalDiffTool": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.openInExternalDiffTool.title%"
+									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.openInExternalDiffTool.title%",
+									"default": true
 								},
 								"markAsReviewed": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.markAsReviewed.title%"
+									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.markAsReviewed.title%",
+									"default": true
 								},
 								"markAsNotReviewed": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.markAsNotReviewed.title%"
+									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.markAsNotReviewed.title%",
+									"default": true
 								},
 								"resetFileToThisRevision": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.resetFileToThisRevision.title%"
+									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.resetFileToThisRevision.title%",
+									"default": true
 								},
 								"copyAbsoluteFilePath": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.copyAbsoluteFilePath.title%"
+									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.copyAbsoluteFilePath.title%",
+									"default": true
 								},
 								"copyRelativeFilePath": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.copyRelativeFilePath.title%"
+									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.copyRelativeFilePath.title%",
+									"default": true
 								},
 								"copyAllRelativeFilePaths": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.copyAllRelativeFilePaths.title%"
+									"title": "%config.contextMenuActionsVisibility.commitDetailsViewFile.copyAllRelativeFilePaths.title%",
+									"default": true
 								}
+							},
+							"default": {
+								"viewDiff": true,
+								"viewAllChanges": true,
+								"viewFileAtThisRevision": true,
+								"viewDiffWithWorkingFile": true,
+								"openFile": true,
+								"openInExternalDiffTool": true,
+								"markAsReviewed": true,
+								"markAsNotReviewed": true,
+								"resetFileToThisRevision": true,
+								"copyAbsoluteFilePath": true,
+								"copyRelativeFilePath": true,
+								"copyAllRelativeFilePaths": true
 							}
 						},
 						"remoteBranch": {
@@ -593,60 +833,90 @@
 							"properties": {
 								"checkout": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.remoteBranch.checkout.title%"
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.checkout.title%",
+									"default": true
 								},
 								"delete": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.remoteBranch.delete.title%"
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.delete.title%",
+									"default": true
 								},
 								"fetch": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.remoteBranch.fetch.title%"
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.fetch.title%",
+									"default": true
 								},
 								"merge": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.remoteBranch.merge.title%"
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.merge.title%",
+									"default": true
 								},
 								"pull": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.remoteBranch.pull.title%"
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.pull.title%",
+									"default": true
 								},
 								"createBranch": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.remoteBranch.createBranch.title%"
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.createBranch.title%",
+									"default": true
 								},
 								"viewIssue": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.remoteBranch.viewIssue.title%"
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.viewIssue.title%",
+									"default": true
 								},
 								"createPullRequest": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.remoteBranch.createPullRequest.title%"
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.createPullRequest.title%",
+									"default": true
 								},
 								"createArchive": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.remoteBranch.createArchive.title%"
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.createArchive.title%",
+									"default": true
 								},
 								"selectInBranchesDropdown": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.remoteBranch.selectInBranchesDropdown.title%"
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.selectInBranchesDropdown.title%",
+									"default": true
 								},
 								"unselectInBranchesDropdown": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.remoteBranch.unselectInBranchesDropdown.title%"
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.unselectInBranchesDropdown.title%",
+									"default": true
 								},
 								"hide": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.remoteBranch.hide.title%"
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.hide.title%",
+									"default": true
 								},
 								"hideRemote": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.remoteBranch.hideRemote.title%"
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.hideRemote.title%",
+									"default": true
 								},
 								"copyName": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.remoteBranch.copyName.title%"
+									"title": "%config.contextMenuActionsVisibility.remoteBranch.copyName.title%",
+									"default": true
 								}
+							},
+							"default": {
+								"checkout": true,
+								"delete": true,
+								"fetch": true,
+								"merge": true,
+								"pull": true,
+								"createBranch": true,
+								"viewIssue": true,
+								"createPullRequest": true,
+								"createArchive": true,
+								"selectInBranchesDropdown": true,
+								"unselectInBranchesDropdown": true,
+								"hide": true,
+								"hideRemote": true,
+								"copyName": true
 							}
 						},
 						"stash": {
@@ -654,32 +924,48 @@
 							"properties": {
 								"apply": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.stash.apply.title%"
+									"title": "%config.contextMenuActionsVisibility.stash.apply.title%",
+									"default": true
 								},
 								"createBranch": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.stash.createBranch.title%"
+									"title": "%config.contextMenuActionsVisibility.stash.createBranch.title%",
+									"default": true
 								},
 								"pop": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.stash.pop.title%"
+									"title": "%config.contextMenuActionsVisibility.stash.pop.title%",
+									"default": true
 								},
 								"drop": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.stash.drop.title%"
+									"title": "%config.contextMenuActionsVisibility.stash.drop.title%",
+									"default": true
 								},
 								"copyName": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.stash.copyName.title%"
+									"title": "%config.contextMenuActionsVisibility.stash.copyName.title%",
+									"default": true
 								},
 								"copyHash": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.stash.copyHash.title%"
+									"title": "%config.contextMenuActionsVisibility.stash.copyHash.title%",
+									"default": true
 								},
 								"viewAllChanges": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.stash.viewAllChanges.title%"
+									"title": "%config.contextMenuActionsVisibility.stash.viewAllChanges.title%",
+									"default": true
 								}
+							},
+							"default": {
+								"apply": true,
+								"createBranch": true,
+								"pop": true,
+								"drop": true,
+								"copyName": true,
+								"copyHash": true,
+								"viewAllChanges": true
 							}
 						},
 						"tag": {
@@ -687,28 +973,42 @@
 							"properties": {
 								"viewDetails": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.tag.viewDetails.title%"
+									"title": "%config.contextMenuActionsVisibility.tag.viewDetails.title%",
+									"default": true
 								},
 								"checkout": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.tag.checkout.title%"
+									"title": "%config.contextMenuActionsVisibility.tag.checkout.title%",
+									"default": true
 								},
 								"delete": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.tag.delete.title%"
+									"title": "%config.contextMenuActionsVisibility.tag.delete.title%",
+									"default": true
 								},
 								"push": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.tag.push.title%"
+									"title": "%config.contextMenuActionsVisibility.tag.push.title%",
+									"default": true
 								},
 								"createArchive": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.tag.createArchive.title%"
+									"title": "%config.contextMenuActionsVisibility.tag.createArchive.title%",
+									"default": true
 								},
 								"copyName": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.tag.copyName.title%"
+									"title": "%config.contextMenuActionsVisibility.tag.copyName.title%",
+									"default": true
 								}
+							},
+							"default": {
+								"viewDetails": true,
+								"checkout": true,
+								"delete": true,
+								"push": true,
+								"createArchive": true,
+								"copyName": true
 							}
 						},
 						"uncommittedChanges": {
@@ -716,32 +1016,47 @@
 							"properties": {
 								"stash": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.uncommittedChanges.stash.title%"
+									"title": "%config.contextMenuActionsVisibility.uncommittedChanges.stash.title%",
+									"default": true
 								},
 								"applyPatch": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.uncommittedChanges.applyPatch.title%"
+									"title": "%config.contextMenuActionsVisibility.uncommittedChanges.applyPatch.title%",
+									"default": true
 								},
 								"reset": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.uncommittedChanges.reset.title%"
+									"title": "%config.contextMenuActionsVisibility.uncommittedChanges.reset.title%",
+									"default": true
 								},
 								"clean": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.uncommittedChanges.clean.title%"
+									"title": "%config.contextMenuActionsVisibility.uncommittedChanges.clean.title%",
+									"default": true
 								},
 								"viewAllChanges": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.uncommittedChanges.viewAllChanges.title%"
+									"title": "%config.contextMenuActionsVisibility.uncommittedChanges.viewAllChanges.title%",
+									"default": true
 								},
 								"openSourceControlView": {
 									"type": "boolean",
-									"title": "%config.contextMenuActionsVisibility.uncommittedChanges.openSourceControlView.title%"
+									"title": "%config.contextMenuActionsVisibility.uncommittedChanges.openSourceControlView.title%",
+									"default": true
 								}
+							},
+							"default": {
+								"stash": true,
+								"applyPatch": true,
+								"reset": true,
+								"clean": true,
+								"viewAllChanges": true,
+								"openSourceControlView": true
 							}
 						}
 					},
-					"markdownDescription": "%config.contextMenuActionsVisibility%"
+					"markdownDescription": "%config.contextMenuActionsVisibility%",
+					"additionalProperties": false
 				},
 				"easy-graph.customBranchGlobPatterns": {
 					"type": "array",
@@ -862,15 +1177,18 @@
 					"properties": {
 						"Date": {
 							"type": "boolean",
-							"title": "%config.defaultColumnVisibility.Date.title%"
+							"title": "%config.defaultColumnVisibility.Date.title%",
+							"default": true
 						},
 						"Author": {
 							"type": "boolean",
-							"title": "%config.defaultColumnVisibility.Author.title%"
+							"title": "%config.defaultColumnVisibility.Author.title%",
+							"default": true
 						},
 						"Commit": {
 							"type": "boolean",
-							"title": "%config.defaultColumnVisibility.Commit.title%"
+							"title": "%config.defaultColumnVisibility.Commit.title%",
+							"default": true
 						}
 					},
 					"default": {
@@ -878,38 +1196,47 @@
 						"Author": true,
 						"Commit": true
 					},
-					"description": "%config.defaultColumnVisibility%"
+					"description": "%config.defaultColumnVisibility%",
+					"additionalProperties": false
 				},
 				"easy-graph.toolbarButtonVisibility": {
 					"type": "object",
 					"properties": {
 						"Display": {
 							"type": "boolean",
-							"title": "%config.toolbarButtonVisibility.Display.title%"
+							"title": "%config.toolbarButtonVisibility.Display.title%",
+							"default": true
 						},
 						"Scope": {
 							"type": "boolean",
-							"title": "%config.toolbarButtonVisibility.Scope.title%"
+							"title": "%config.toolbarButtonVisibility.Scope.title%",
+							"default": true
 						},
 						"Paths": {
 							"type": "boolean",
-							"title": "%config.toolbarButtonVisibility.Paths.title%"
+							"title": "%config.toolbarButtonVisibility.Paths.title%",
+							"default": true
 						},
 						"Remotes": {
 							"type": "boolean",
-							"title": "%config.toolbarButtonVisibility.Remotes.title%"
+							"title": "%config.toolbarButtonVisibility.Remotes.title%",
+							"default": true
 						},
 						"Simplify": {
 							"type": "boolean",
-							"title": "%config.toolbarButtonVisibility.Simplify.title%"
+							"title": "%config.toolbarButtonVisibility.Simplify.title%",
+							"default": true
 						}
 					},
 					"default": {
 						"Display": true,
 						"Scope": true,
-						"Paths": true
+						"Paths": true,
+						"Remotes": true,
+						"Simplify": true
 					},
-					"description": "%config.toolbarButtonVisibility%"
+					"description": "%config.toolbarButtonVisibility%",
+					"additionalProperties": false
 				},
 				"easy-graph.dialog.addTag.pushToRemote": {
 					"type": "boolean",

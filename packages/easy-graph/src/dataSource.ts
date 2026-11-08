@@ -225,20 +225,23 @@ export class DataSource extends Disposable {
 	 */
 	public async getBuiltinGitState(repo: string): Promise<GitBuiltinState> {
 		const overrides = getConfig(repo).builtin;
-		// `git config` exits with 1 when none of the keys are set
-		const gitConfig = await this._spawnGit(['config', '-z', '--get-regexp', '^(fetch\\.prune|fetch\\.prunetags|log\\.mailmap|merge\\.ff|pull\\.ff|push\\.autosetupremote)$'], repo, (stdout) => {
-			const values: { [key: string]: string } = {};
-			stdout.toString().split('\0').forEach((entry) => {
-				// A key without a value (e.g. `[fetch] prune`) is a boolean TRUE
-				const separator = entry.indexOf('\n');
-				if (separator > -1) values[entry.substring(0, separator).toLowerCase()] = entry.substring(separator + 1);
-				else if (entry !== '') values[entry.toLowerCase()] = '';
-			});
-			return values;
-		}, true).catch(() => <{ [key: string]: string }>{});
 		const abbrevArgs = overrides['core.abbrev'] === null ? [] : ['-c', 'core.abbrev=' + overrides['core.abbrev']];
-		const abbrevLength = await this.spawnGit([...abbrevArgs, 'rev-parse', '--short', 'HEAD'], repo, (stdout) => stdout.trim().length)
-			.catch(() => overrides['core.abbrev'] === null ? DEFAULT_ABBREV_LENGTH : overrides['core.abbrev']);
+		// The two spawned commands are independent, run them concurrently
+		const [gitConfig, abbrevLength] = await Promise.all([
+			// `git config` exits with 1 when none of the keys are set
+			this._spawnGit(['config', '-z', '--get-regexp', '^(fetch\\.prune|fetch\\.prunetags|log\\.mailmap|merge\\.ff|pull\\.ff|push\\.autosetupremote)$'], repo, (stdout) => {
+				const values: { [key: string]: string } = {};
+				stdout.toString().split('\0').forEach((entry) => {
+					// A key without a value (e.g. `[fetch] prune`) is a boolean TRUE
+					const separator = entry.indexOf('\n');
+					if (separator > -1) values[entry.substring(0, separator).toLowerCase()] = entry.substring(separator + 1);
+					else if (entry !== '') values[entry.toLowerCase()] = '';
+				});
+				return values;
+			}, true).catch(() => <{ [key: string]: string }>{}),
+			this.spawnGit([...abbrevArgs, 'rev-parse', '--short', 'HEAD'], repo, (stdout) => stdout.trim().length)
+				.catch(() => overrides['core.abbrev'] === null ? DEFAULT_ABBREV_LENGTH : overrides['core.abbrev'])
+		]);
 
 		const mailmap = overrides['log.mailmap'] ?? parseGitBoolean(gitConfig['log.mailmap']) ?? true;
 		this.mailmapOfRepo.set(repo, mailmap);

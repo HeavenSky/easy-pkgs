@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { configDefaults } from './generated/configDefaults';
 import {
 	BooleanOverride,
 	BuiltinGitConfig,
@@ -83,16 +84,16 @@ class Config {
 	 * Get the Commit Details View configuration from the Extension Settings.
 	 */
 	get commitDetailsView(): CommitDetailsViewConfig {
-		const hiddenFields = this.config.get<unknown>('commitDetailsView.hiddenFields', []);
+		const hiddenFields = this.config.get<unknown>('commitDetailsView.hiddenFields', configDefaults['commitDetailsView.hiddenFields']);
 		return {
-			autoCenter: !!this.config.get('commitDetailsView.autoCenter', true),
-			autoScroll: !!this.config.get<boolean>('commitDetailsView.autoScroll', true),
-			fileTreeCompactFolders: !!this.config.get('commitDetailsView.fileView.fileTree.compactFolders', true),
-			fileViewType: this.config.get<string>('commitDetailsView.fileView.type', 'File Tree') === 'File List'
+			autoCenter: !!this.config.get('commitDetailsView.autoCenter', configDefaults['commitDetailsView.autoCenter']),
+			autoScroll: !!this.config.get<boolean>('commitDetailsView.autoScroll', configDefaults['commitDetailsView.autoScroll']),
+			fileTreeCompactFolders: !!this.config.get('commitDetailsView.fileView.fileTree.compactFolders', configDefaults['commitDetailsView.fileView.fileTree.compactFolders']),
+			fileViewType: this.config.get<string>('commitDetailsView.fileView.type', configDefaults['commitDetailsView.fileView.type']) === 'File List'
 				? FileViewType.List
 				: FileViewType.Tree,
 			hiddenFields: Array.isArray(hiddenFields) ? hiddenFields.filter((field): field is string => typeof field === 'string') : [],
-			location: this.config.get<string>('commitDetailsView.location', 'Inline') === 'Docked to Bottom'
+			location: this.config.get<string>('commitDetailsView.location', configDefaults['commitDetailsView.location']) === 'Docked to Bottom'
 				? CommitDetailsViewLocation.DockedToBottom
 				: CommitDetailsViewLocation.Inline
 		};
@@ -104,7 +105,7 @@ class Config {
 	 */
 	get builtin(): BuiltinGitConfig {
 		const defaults = this.config.inspect<{ [key: string]: unknown }>('builtin')?.defaultValue;
-		const configured = this.config.get<{ [key: string]: unknown }>('builtin', {});
+		const configured = this.config.get<{ [key: string]: unknown }>('builtin', configDefaults['builtin']);
 		const values: { [key: string]: unknown } = Object.assign({}, typeof defaults === 'object' && defaults !== null ? defaults : {}, typeof configured === 'object' && configured !== null ? configured : {});
 		const bool = (key: string) => typeof values[key] === 'boolean' ? <boolean>values[key] : null;
 		const ff = (key: string) => typeof values[key] === 'boolean' || values[key] === 'only' ? <boolean | 'only'>values[key] : null;
@@ -129,16 +130,9 @@ class Config {
 	 * Get the value of the `easy-graph.contextMenuActionsVisibility` Extension Setting.
 	 */
 	get contextMenuActionsVisibility(): ContextMenuActionsVisibility {
-		const userConfig = this.config.get('contextMenuActionsVisibility', {});
-		const config: ContextMenuActionsVisibility = {
-			branch: { checkout: true, rename: true, delete: true, deleteMultiple: true, merge: true, rebase: true, push: true, pull: true, createBranch: true, viewIssue: true, createPullRequest: true, createArchive: true, selectInBranchesDropdown: true, unselectInBranchesDropdown: true, hide: true, copyName: true },
-			commit: { addTag: true, createBranch: true, checkout: true, compareWithWorkingTree: true, cherrypick: true, revert: true, drop: true, squash: true, merge: true, rebase: true, rebaseOnto: true, reset: true, undo: true, editMessage: true, createFixup: true, pushToCommit: true, savePatch: true, applyPatch: true, viewPatch: true, viewAllChanges: true, browseFiles: true, editNotes: true, viewChangesFromParent: true, selectMergeBase: true, copyHash: true, copySubject: true, copySubjectsBetween: true, copyPatch: true },
-			commitDetailsViewFile: { viewDiff: true, viewAllChanges: true, viewFileAtThisRevision: true, viewDiffWithWorkingFile: true, openFile: true, openInExternalDiffTool: true, markAsReviewed: true, markAsNotReviewed: true, resetFileToThisRevision: true, copyAbsoluteFilePath: true, copyRelativeFilePath: true, copyAllRelativeFilePaths: true },
-			remoteBranch: { checkout: true, delete: true, fetch: true, merge: true, pull: true, createBranch: true, viewIssue: true, createPullRequest: true, createArchive: true, selectInBranchesDropdown: true, unselectInBranchesDropdown: true, hide: true, hideRemote: true, copyName: true },
-			stash: { apply: true, createBranch: true, pop: true, drop: true, copyName: true, copyHash: true, viewAllChanges: true },
-			tag: { viewDetails: true, checkout: true, delete: true, push: true, createArchive: true, copyName: true },
-			uncommittedChanges: { stash: true, applyPatch: true, reset: true, clean: true, viewAllChanges: true, openSourceControlView: true }
-		};
+		const userConfig = this.config.get('contextMenuActionsVisibility', configDefaults['contextMenuActionsVisibility']);
+		// 默认值来自生成模块 (真源 package.json); mergeConfigObjects 会就地写入 base, 先深拷贝避免改到共享的生成物
+		const config: ContextMenuActionsVisibility = JSON.parse(JSON.stringify(configDefaults['contextMenuActionsVisibility']));
 		mergeConfigObjects(config, userConfig);
 		return config;
 	}
@@ -187,7 +181,7 @@ class Config {
 	 * Get the value of the `easy-graph.date.format` Extension Setting.
 	 */
 	get dateFormat(): DateFormat {
-		let configValue = this.config.get<string>('date.format', 'Date & Time'), type = DateFormatType.DateAndTime, iso = false;
+		let configValue = this.config.get<string>('date.format', configDefaults['date.format']), type = DateFormatType.DateAndTime, iso = false;
 		if (configValue === 'Relative') {
 			type = DateFormatType.Relative;
 		} else if (configValue === 'Custom') {
@@ -203,15 +197,15 @@ class Config {
 	 * Get the value of the `easy-graph.date.customFormat` Extension Setting.
 	 */
 	get customDateFormat() {
-		const format = this.config.get<string>('date.customFormat', 'YYYY-MM-DD HH:mm');
-		return typeof format === 'string' && format.trim() !== '' ? format : 'YYYY-MM-DD HH:mm';
+		const format = this.config.get<string>('date.customFormat', configDefaults['date.customFormat']);
+		return typeof format === 'string' && format.trim() !== '' ? format : configDefaults['date.customFormat'];
 	}
 
 	/**
 	 * Get the value of the `easy-graph.date.type` Extension Setting.
 	 */
 	get dateType() {
-		return this.config.get<string>('date.type', 'Author Date') === 'Commit Date'
+		return this.config.get<string>('date.type', configDefaults['date.type']) === 'Commit Date'
 			? DateType.Commit
 			: DateType.Author;
 	}
@@ -220,11 +214,12 @@ class Config {
 	 * Get the value of the `easy-graph.defaultColumnVisibility` Extension Setting.
 	 */
 	get defaultColumnVisibility(): DefaultColumnVisibility {
-		let obj: any = this.config.get('defaultColumnVisibility', {});
+		const defaults = configDefaults['defaultColumnVisibility'];
+		let obj: any = this.config.get('defaultColumnVisibility', defaults);
 		if (typeof obj === 'object' && obj !== null && typeof obj['Date'] === 'boolean' && typeof obj['Author'] === 'boolean' && typeof obj['Commit'] === 'boolean') {
 			return { author: obj['Author'], commit: obj['Commit'], date: obj['Date'] };
 		} else {
-			return { author: true, commit: true, date: true };
+			return { author: defaults.Author, commit: defaults.Commit, date: defaults.Date };
 		}
 	}
 
@@ -232,7 +227,7 @@ class Config {
 	 * Get the value of the `easy-graph.toolbarButtonVisibility` Extension Setting.
 	 */
 	get toolbarButtonVisibility(): ToolbarButtonVisibility {
-		const obj: any = this.config.get('toolbarButtonVisibility', {});
+		const obj: any = this.config.get('toolbarButtonVisibility', configDefaults['toolbarButtonVisibility']);
 		const isHidden = (key: string) => typeof obj === 'object' && obj !== null && obj[key] === false;
 		// The Display & Scope dropdowns replaced the Simplify & Remotes checkboxes, hiding either the new or the legacy key hides the dropdown
 		return {
@@ -246,46 +241,46 @@ class Config {
 	 * Get the value of the `easy-graph.dialog.*` Extension Settings.
 	 */
 	get dialogDefaults(): DialogDefaults {
-		let resetCommitMode = this.config.get<string>('dialog.resetCurrentBranchToCommit.mode', 'Mixed');
-		let resetUncommittedMode = this.config.get<string>('dialog.resetUncommittedChanges.mode', 'Mixed');
-		let refInputSpaceSubstitution = this.config.get<string>('dialog.general.referenceInputSpaceSubstitution', 'None');
-		const pushBranchMode = this.config.get<string>('dialog.pushBranch.mode', 'Normal');
+		let resetCommitMode = this.config.get<string>('dialog.resetCurrentBranchToCommit.mode', configDefaults['dialog.resetCurrentBranchToCommit.mode']);
+		let resetUncommittedMode = this.config.get<string>('dialog.resetUncommittedChanges.mode', configDefaults['dialog.resetUncommittedChanges.mode']);
+		let refInputSpaceSubstitution = this.config.get<string>('dialog.general.referenceInputSpaceSubstitution', configDefaults['dialog.general.referenceInputSpaceSubstitution']);
+		const pushBranchMode = this.config.get<string>('dialog.pushBranch.mode', configDefaults['dialog.pushBranch.mode']);
 
 		return {
 			addTag: {
-				pushToRemote: !!this.config.get('dialog.addTag.pushToRemote', false),
-				type: this.config.get<string>('dialog.addTag.type', 'Annotated') === 'Lightweight' ? TagType.Lightweight : TagType.Annotated
+				pushToRemote: !!this.config.get('dialog.addTag.pushToRemote', configDefaults['dialog.addTag.pushToRemote']),
+				type: this.config.get<string>('dialog.addTag.type', configDefaults['dialog.addTag.type']) === 'Lightweight' ? TagType.Lightweight : TagType.Annotated
 			},
 			applyStash: {
-				reinstateIndex: !!this.config.get('dialog.applyStash.reinstateIndex', false)
+				reinstateIndex: !!this.config.get('dialog.applyStash.reinstateIndex', configDefaults['dialog.applyStash.reinstateIndex'])
 			},
 			cherryPick: {
-				noCommit: !!this.config.get('dialog.cherryPick.noCommit', false),
-				recordOrigin: !!this.config.get('dialog.cherryPick.recordOrigin', false)
+				noCommit: !!this.config.get('dialog.cherryPick.noCommit', configDefaults['dialog.cherryPick.noCommit']),
+				recordOrigin: !!this.config.get('dialog.cherryPick.recordOrigin', configDefaults['dialog.cherryPick.recordOrigin'])
 			},
 			createBranch: {
-				checkout: !!this.config.get('dialog.createBranch.checkOut', false)
+				checkout: !!this.config.get('dialog.createBranch.checkOut', configDefaults['dialog.createBranch.checkOut'])
 			},
 			deleteBranch: {
-				forceDelete: !!this.config.get('dialog.deleteBranch.forceDelete', false),
-				deleteOnRemote: !!this.config.get('dialog.deleteBranch.deleteOnRemote', false)
+				forceDelete: !!this.config.get('dialog.deleteBranch.forceDelete', configDefaults['dialog.deleteBranch.forceDelete']),
+				deleteOnRemote: !!this.config.get('dialog.deleteBranch.deleteOnRemote', configDefaults['dialog.deleteBranch.deleteOnRemote'])
 			},
 			fetchIntoLocalBranch: {
-				forceFetch: !!this.config.get('dialog.fetchIntoLocalBranch.forceFetch', false)
+				forceFetch: !!this.config.get('dialog.fetchIntoLocalBranch.forceFetch', configDefaults['dialog.fetchIntoLocalBranch.forceFetch'])
 			},
 			general: {
 				referenceInputSpaceSubstitution: refInputSpaceSubstitution === 'Hyphen' ? '-' : refInputSpaceSubstitution === 'Underscore' ? '_' : null
 			},
 			merge: {
-				noCommit: !!this.config.get('dialog.merge.noCommit', false),
-				allowUnrelatedHistories: !!this.config.get('dialog.merge.allowUnrelatedHistories', false),
-				squash: !!this.config.get('dialog.merge.squashCommits', false)
+				noCommit: !!this.config.get('dialog.merge.noCommit', configDefaults['dialog.merge.noCommit']),
+				allowUnrelatedHistories: !!this.config.get('dialog.merge.allowUnrelatedHistories', configDefaults['dialog.merge.allowUnrelatedHistories']),
+				squash: !!this.config.get('dialog.merge.squashCommits', configDefaults['dialog.merge.squashCommits'])
 			},
 			popStash: {
-				reinstateIndex: !!this.config.get('dialog.popStash.reinstateIndex', false)
+				reinstateIndex: !!this.config.get('dialog.popStash.reinstateIndex', configDefaults['dialog.popStash.reinstateIndex'])
 			},
 			pullBranch: {
-				squash: !!this.config.get('dialog.pullBranch.squashCommits', false)
+				squash: !!this.config.get('dialog.pullBranch.squashCommits', configDefaults['dialog.pullBranch.squashCommits'])
 			},
 			pushBranch: {
 				mode: pushBranchMode === 'Force With Lease'
@@ -295,8 +290,8 @@ class Config {
 						: GitPushBranchMode.Normal
 			},
 			rebase: {
-				ignoreDate: !!this.config.get('dialog.rebase.ignoreDate', true),
-				interactive: !!this.config.get('dialog.rebase.launchInteractiveRebase', false)
+				ignoreDate: !!this.config.get('dialog.rebase.ignoreDate', configDefaults['dialog.rebase.ignoreDate']),
+				interactive: !!this.config.get('dialog.rebase.launchInteractiveRebase', configDefaults['dialog.rebase.launchInteractiveRebase'])
 			},
 			resetCommit: {
 				mode: resetCommitMode === 'Soft' ? GitResetMode.Soft : (resetCommitMode === 'Hard' ? GitResetMode.Hard : GitResetMode.Mixed)
@@ -305,7 +300,7 @@ class Config {
 				mode: resetUncommittedMode === 'Hard' ? GitResetMode.Hard : GitResetMode.Mixed
 			},
 			stashUncommittedChanges: {
-				includeUntracked: !!this.config.get('dialog.stashUncommittedChanges.includeUntracked', true)
+				includeUntracked: !!this.config.get('dialog.stashUncommittedChanges.includeUntracked', configDefaults['dialog.stashUncommittedChanges.includeUntracked'])
 			}
 		};
 	}
@@ -314,14 +309,14 @@ class Config {
 	 * Get the value of the `easy-graph.dialog.merge.squashMessageFormat` Extension Setting.
 	 */
 	get squashMergeMessageFormat() {
-		return parseSquashMessageFormat(this.config.get<string>('dialog.merge.squashMessageFormat', 'Default'));
+		return parseSquashMessageFormat(this.config.get<string>('dialog.merge.squashMessageFormat', configDefaults['dialog.merge.squashMessageFormat']));
 	}
 
 	/**
 	 * Get the value of the `easy-graph.dialog.pullBranch.squashMessageFormat` Extension Setting.
 	 */
 	get squashPullMessageFormat() {
-		return parseSquashMessageFormat(this.config.get<string>('dialog.pullBranch.squashMessageFormat', 'Default'));
+		return parseSquashMessageFormat(this.config.get<string>('dialog.pullBranch.squashMessageFormat', configDefaults['dialog.pullBranch.squashMessageFormat']));
 	}
 
 	/**
@@ -338,7 +333,7 @@ class Config {
 	 * Get the value of the `easy-graph.findWidget.searchColumns` Extension Setting.
 	 */
 	get findWidgetSearchColumns(): FindSearchColumn[] {
-		const allColumns: FindSearchColumn[] = ['Description', 'Date', 'Author', 'Commit'];
+		const allColumns: FindSearchColumn[] = configDefaults['findWidget.searchColumns'] as FindSearchColumn[];
 		const columns = this.config.get('findWidget.searchColumns', <any[]>allColumns);
 		return Array.isArray(columns)
 			? allColumns.filter((column) => columns.includes(column))
@@ -359,21 +354,21 @@ class Config {
 	 * Get the value of the `easy-graph.logGitCommandOutput` Extension Setting.
 	 */
 	get logGitCommandOutput() {
-		return !!this.config.get('logGitCommandOutput', false);
+		return !!this.config.get('logGitCommandOutput', configDefaults['logGitCommandOutput']);
 	}
 
 	/**
 	 * Get the value of the `easy-graph.enhancedAccessibility` Extension Setting.
 	 */
 	get enhancedAccessibility() {
-		return !!this.config.get('enhancedAccessibility', false);
+		return !!this.config.get('enhancedAccessibility', configDefaults['enhancedAccessibility']);
 	}
 
 	/**
 	 * Get the value of the `easy-graph.fileEncoding` Extension Setting.
 	 */
 	get fileEncoding() {
-		const value = this.config.get<string>('fileEncoding', 'utf8');
+		const value = this.config.get<string>('fileEncoding', configDefaults['fileEncoding']);
 		const values = this.config.inspect<string>('fileEncoding');
 		if (typeof values !== 'undefined' && (typeof values.globalValue !== 'undefined' || typeof values.workspaceValue !== 'undefined' || typeof values.workspaceFolderValue !== 'undefined')) {
 			return value;
@@ -389,7 +384,7 @@ class Config {
 	 * Get the value of the `easy-graph.findMatchHighlightColour` Extension Setting.
 	 */
 	get findMatchHighlightColour() {
-		return getColourSetting(this.config.get<string>('findMatchHighlightColour', ''));
+		return getColourSetting(this.config.get<string>('findMatchHighlightColour', configDefaults['findMatchHighlightColour']));
 	}
 
 	/**
@@ -398,7 +393,7 @@ class Config {
 	 * @returns The colour, or `""` (use the find match highlight colour) if the setting isn't a valid HEX or RGB colour.
 	 */
 	get flashColour() {
-		const rgba = parseHexOrRgbColour(this.config.get<string>('flashColour', ''));
+		const rgba = parseHexOrRgbColour(this.config.get<string>('flashColour', configDefaults['flashColour']));
 		return rgba !== null ? 'rgba(' + rgba.join(',') + ')' : '';
 	}
 
@@ -406,7 +401,7 @@ class Config {
 	 * Get the value of the `easy-graph.fontFamily` Extension Setting.
 	 */
 	get fontFamily() {
-		const value = this.config.get<string>('fontFamily', '');
+		const value = this.config.get<string>('fontFamily', configDefaults['fontFamily']);
 		return typeof value === 'string' ? value.replace(/[<>{};\\]/g, '').trim() : '';
 	}
 
@@ -414,16 +409,16 @@ class Config {
 	 * Get the graph configuration from the Extension Settings.
 	 */
 	get graph(): GraphConfig {
-		const colours = this.config.get<string[]>('graph.colours', []);
+		const colours = this.config.get<string[]>('graph.colours', configDefaults['graph.colours']);
 		return {
 			colours: Array.isArray(colours) && colours.length > 0
 				? colours.filter((v) => v.match(/^\s*(#[0-9a-fA-F]{6}|#[0-9a-fA-F]{8}|rgb[a]?\s*\(\d{1,3},\s*\d{1,3},\s*\d{1,3}\))\s*$/) !== null)
-				: ['#0085d9', '#d9008f', '#00d90a', '#d98500', '#a300d9', '#ff0000', '#00d9cc', '#e138e8', '#85d900', '#dc5b23', '#6f24d6', '#ffcc00'],
-			style: this.config.get<string>('graph.style', 'rounded') === 'angular'
+				: configDefaults['graph.colours'],
+			style: this.config.get<string>('graph.style', configDefaults['graph.style']) === 'angular'
 				? GraphStyle.Angular
 				: GraphStyle.Rounded,
 			grid: { x: 16, y: 24, offsetX: 16, offsetY: 12, expandY: 250 },
-			uncommittedChanges: this.config.get<string>('graph.uncommittedChanges', 'Open Circle at the Uncommitted Changes') === 'Open Circle at the Checked Out Commit'
+			uncommittedChanges: this.config.get<string>('graph.uncommittedChanges', configDefaults['graph.uncommittedChanges']) === 'Open Circle at the Checked Out Commit'
 				? GraphUncommittedChangesStyle.OpenCircleAtTheCheckedOutCommit
 				: GraphUncommittedChangesStyle.OpenCircleAtTheUncommittedChanges
 		};
@@ -433,14 +428,14 @@ class Config {
 	 * Get the value of the `easy-graph.integratedTerminalShell` Extension Setting.
 	 */
 	get integratedTerminalShell() {
-		return this.config.get('integratedTerminalShell', '');
+		return this.config.get('integratedTerminalShell', configDefaults['integratedTerminalShell']);
 	}
 
 	/**
 	 * Get the keybinding configuration from the `easy-graph.keyboardShortcut.modifier` Extension Setting.
 	 */
 	get keybindings(): KeybindingConfig {
-		const modifier = this.config.get<string>('keyboardShortcut.modifier', 'CTRL/CMD');
+		const modifier = this.config.get<string>('keyboardShortcut.modifier', configDefaults['keyboardShortcut.modifier']);
 		return {
 			modifier: modifier === 'CTRL' ? KeybindingModifier.Ctrl : modifier === 'CMD' ? KeybindingModifier.Cmd : KeybindingModifier.CtrlOrCmd
 		};
@@ -450,21 +445,21 @@ class Config {
 	 * Get the value of the `easy-graph.maxDepthOfRepoSearch` Extension Setting.
 	 */
 	get maxDepthOfRepoSearch() {
-		return this.config.get('maxDepthOfRepoSearch', 0);
+		return this.config.get('maxDepthOfRepoSearch', configDefaults['maxDepthOfRepoSearch']);
 	}
 
 	/**
 	 * Get the value of the `easy-graph.markdown` Extension Setting.
 	 */
 	get markdown() {
-		return !!this.config.get('markdown', true);
+		return !!this.config.get('markdown', configDefaults['markdown']);
 	}
 
 	/**
 	 * Get the value of the `easy-graph.openNewTabEditorGroup` Extension Setting.
 	 */
 	get openNewTabEditorGroup(): vscode.ViewColumn {
-		const location = this.config.get<string>('openNewTabEditorGroup', 'Active');
+		const location = this.config.get<string>('openNewTabEditorGroup', configDefaults['openNewTabEditorGroup']);
 		const column = typeof location === 'string' && typeof VIEW_COLUMN_MAPPING[location] !== 'undefined'
 			? VIEW_COLUMN_MAPPING[location]
 			: vscode.ViewColumn.Active;
@@ -478,14 +473,14 @@ class Config {
 	 * Get the value of the `easy-graph.openToTheRepoOfTheActiveTextEditorDocument` Extension Setting.
 	 */
 	get openToTheRepoOfTheActiveTextEditorDocument() {
-		return !!this.config.get('openToTheRepoOfTheActiveTextEditorDocument', false);
+		return !!this.config.get('openToTheRepoOfTheActiveTextEditorDocument', configDefaults['openToTheRepoOfTheActiveTextEditorDocument']);
 	}
 
 	/**
 	 * Get the reference label configuration from the Extension Settings.
 	 */
 	get referenceLabels(): ReferenceLabelsConfig {
-		const alignmentConfigValue = this.config.get<string>('referenceLabels.alignment', 'Normal');
+		const alignmentConfigValue = this.config.get<string>('referenceLabels.alignment', configDefaults['referenceLabels.alignment']);
 		const alignment = alignmentConfigValue === 'Branches (on the left) & Tags (on the right)'
 			? RefLabelAlignment.BranchesOnLeftAndTagsOnRight
 			: alignmentConfigValue === 'Branches (aligned to the graph) & Tags (on the right)'
@@ -493,7 +488,7 @@ class Config {
 				: RefLabelAlignment.Normal;
 		return {
 			branchLabelsAlignedToGraph: alignment === RefLabelAlignment.BranchesAlignedToGraphAndTagsOnRight,
-			combineLocalAndRemoteBranchLabels: !!this.config.get('referenceLabels.combineLocalAndRemoteBranchLabels', true),
+			combineLocalAndRemoteBranchLabels: !!this.config.get('referenceLabels.combineLocalAndRemoteBranchLabels', configDefaults['referenceLabels.combineLocalAndRemoteBranchLabels']),
 			tagLabelsOnRight: alignment !== RefLabelAlignment.Normal
 		};
 	}
@@ -502,14 +497,14 @@ class Config {
 	 * Get the value of the `easy-graph.repository.commits.fetchAvatars` Extension Setting.
 	 */
 	get fetchAvatars() {
-		return !!this.config.get('repository.commits.fetchAvatars', false);
+		return !!this.config.get('repository.commits.fetchAvatars', configDefaults['repository.commits.fetchAvatars']);
 	}
 
 	/**
 	 * Get the value of the `easy-graph.repository.commits.initialLoad` Extension Setting.
 	 */
 	get initialLoadCommits() {
-		return this.config.get('repository.commits.initialLoad', 300);
+		return this.config.get('repository.commits.initialLoad', configDefaults['repository.commits.initialLoad']);
 	}
 
 
@@ -517,21 +512,21 @@ class Config {
 	 * Get the value of the `easy-graph.repository.backupBeforeDangerousActions` Extension Setting.
 	 */
 	get backupBeforeDangerousActions() {
-		return !!this.config.get('repository.backupBeforeDangerousActions', false);
+		return !!this.config.get('repository.backupBeforeDangerousActions', configDefaults['repository.backupBeforeDangerousActions']);
 	}
 
 	/**
 	 * Get the value of the `easy-graph.repository.commits.loadMore` Extension Setting.
 	 */
 	get loadMoreCommits() {
-		return this.config.get('repository.commits.loadMore', 100);
+		return this.config.get('repository.commits.loadMore', configDefaults['repository.commits.loadMore']);
 	}
 
 	/**
 	 * Get the value of the `easy-graph.repository.commits.loadMoreAutomatically` Extension Setting.
 	 */
 	get loadMoreCommitsAutomatically() {
-		return !!this.config.get('repository.commits.loadMoreAutomatically', true);
+		return !!this.config.get('repository.commits.loadMoreAutomatically', configDefaults['repository.commits.loadMoreAutomatically']);
 	}
 
 	/**
@@ -539,8 +534,8 @@ class Config {
 	 */
 	get muteCommits(): MuteCommitsConfig {
 		return {
-			commitsNotAncestorsOfHead: !!this.config.get('repository.commits.mute.commitsThatAreNotAncestorsOfHead', false),
-			mergeCommits: !!this.config.get('repository.commits.mute.mergeCommits', true)
+			commitsNotAncestorsOfHead: !!this.config.get('repository.commits.mute.commitsThatAreNotAncestorsOfHead', configDefaults['repository.commits.mute.commitsThatAreNotAncestorsOfHead']),
+			mergeCommits: !!this.config.get('repository.commits.mute.mergeCommits', configDefaults['repository.commits.mute.mergeCommits'])
 		};
 	}
 
@@ -548,7 +543,7 @@ class Config {
 	 * Get the value of the `easy-graph.repository.commits.order` Extension Setting.
 	 */
 	get commitOrder() {
-		const ordering = this.config.get<string>('repository.commits.order', 'date');
+		const ordering = this.config.get<string>('repository.commits.order', configDefaults['repository.commits.order']);
 		return ordering === 'author-date'
 			? CommitOrdering.AuthorDate
 			: ordering === 'topo'
@@ -560,14 +555,14 @@ class Config {
 	 * Get the value of the `easy-graph.repository.commits.showSignatureStatus` Extension Setting.
 	 */
 	get showSignatureStatus() {
-		return !!this.config.get('repository.commits.showSignatureStatus', false);
+		return !!this.config.get('repository.commits.showSignatureStatus', configDefaults['repository.commits.showSignatureStatus']);
 	}
 
 	/**
 	 * Get the value of the `easy-graph.repository.fetchOnLoad` Extension Setting.
 	 */
 	get fetchOnLoad() {
-		return !!this.config.get('repository.fetchOnLoad', false);
+		return !!this.config.get('repository.fetchOnLoad', configDefaults['repository.fetchOnLoad']);
 	}
 
 	/**
@@ -575,17 +570,17 @@ class Config {
 	 * Scope of repositories.
 	 */
 	get includeCommitsMentionedByReflogs() {
-		return !!this.config.get('repository.includeCommitsMentionedByReflogs', false);
+		return !!this.config.get('repository.includeCommitsMentionedByReflogs', configDefaults['repository.includeCommitsMentionedByReflogs']);
 	}
 
 	/**
 	 * Get the On Repo Load configuration from the Extension Settings.
 	 */
 	get onRepoLoad(): OnRepoLoadConfig {
-		const branches = this.config.get('repository.onLoad.showSpecificBranches', []);
+		const branches = this.config.get('repository.onLoad.showSpecificBranches', configDefaults['repository.onLoad.showSpecificBranches']);
 		return {
-			scrollToHead: !!this.config.get('repository.onLoad.scrollToHead', false),
-			showCheckedOutBranch: !!this.config.get('repository.onLoad.showCheckedOutBranch', false),
+			scrollToHead: !!this.config.get('repository.onLoad.scrollToHead', configDefaults['repository.onLoad.scrollToHead']),
+			showCheckedOutBranch: !!this.config.get('repository.onLoad.showCheckedOutBranch', configDefaults['repository.onLoad.showCheckedOutBranch']),
 			showSpecificBranches: Array.isArray(branches)
 				? branches.filter((branch) => typeof branch === 'string')
 				: []
@@ -597,7 +592,7 @@ class Config {
 	 * Display dropdown.
 	 */
 	get onlyFollowFirstParent() {
-		return !!this.config.get('repository.onlyFollowFirstParent', false);
+		return !!this.config.get('repository.onlyFollowFirstParent', configDefaults['repository.onlyFollowFirstParent']);
 	}
 
 	/**
@@ -605,7 +600,7 @@ class Config {
 	 * Authors dropdown selects only that author, and Ctrl / Cmd + click adds or removes an author.
 	 */
 	get singleAuthorSelect() {
-		return !!this.config.get('repository.singleAuthorSelect', true);
+		return !!this.config.get('repository.singleAuthorSelect', configDefaults['repository.singleAuthorSelect']);
 	}
 
 	/**
@@ -613,21 +608,21 @@ class Config {
 	 * Branches dropdown selects only that branch, and Ctrl / Cmd + click adds or removes a branch.
 	 */
 	get singleBranchSelect() {
-		return !!this.config.get('repository.singleBranchSelect', true);
+		return !!this.config.get('repository.singleBranchSelect', configDefaults['repository.singleBranchSelect']);
 	}
 
 	/**
 	 * Get the value of the `easy-graph.graph.showBranchColourOnRows` Extension Setting.
 	 */
 	get showBranchColourOnRows() {
-		return !!this.config.get('graph.showBranchColourOnRows', false);
+		return !!this.config.get('graph.showBranchColourOnRows', configDefaults['graph.showBranchColourOnRows']);
 	}
 
 	/**
 	 * Get the value of the `easy-graph.repository.showCommitsOnlyReferencedByTags` Extension Setting.
 	 */
 	get showCommitsOnlyReferencedByTags() {
-		return !!this.config.get('repository.showCommitsOnlyReferencedByTags', true);
+		return !!this.config.get('repository.showCommitsOnlyReferencedByTags', configDefaults['repository.showCommitsOnlyReferencedByTags']);
 	}
 
 	/**
@@ -635,7 +630,7 @@ class Config {
 	 * repositories.
 	 */
 	get showRemoteBranches() {
-		return !!this.config.get('repository.showRemoteBranches', true);
+		return !!this.config.get('repository.showRemoteBranches', configDefaults['repository.showRemoteBranches']);
 	}
 
 	/**
@@ -643,49 +638,49 @@ class Config {
 	 * dropdown, which only shows the commits referenced by branches or tags.
 	 */
 	get simplifyByDecoration() {
-		return !!this.config.get('repository.simplifyByDecoration', false);
+		return !!this.config.get('repository.simplifyByDecoration', configDefaults['repository.simplifyByDecoration']);
 	}
 
 	/**
 	 * Get the value of the `easy-graph.repository.onlyShowRemoteBranchesWithLocalBranches` Extension Setting.
 	 */
 	get onlyShowRemoteBranchesWithLocalBranches() {
-		return !!this.config.get('repository.onlyShowRemoteBranchesWithLocalBranches', false);
+		return !!this.config.get('repository.onlyShowRemoteBranchesWithLocalBranches', configDefaults['repository.onlyShowRemoteBranchesWithLocalBranches']);
 	}
 
 	/**
 	 * Get the value of the `easy-graph.repository.showRemoteHeads` Extension Setting.
 	 */
 	get showRemoteHeads() {
-		return !!this.config.get('repository.showRemoteHeads', true);
+		return !!this.config.get('repository.showRemoteHeads', configDefaults['repository.showRemoteHeads']);
 	}
 
 	/**
 	 * Get the value of the `easy-graph.repository.showStashes` Extension Setting.
 	 */
 	get showStashes() {
-		return !!this.config.get('repository.showStashes', true);
+		return !!this.config.get('repository.showStashes', configDefaults['repository.showStashes']);
 	}
 
 	/**
 	 * Get the value of the `easy-graph.repository.showTags` Extension Setting.
 	 */
 	get showTags() {
-		return !!this.config.get('repository.showTags', true);
+		return !!this.config.get('repository.showTags', configDefaults['repository.showTags']);
 	}
 
 	/**
 	 * Get the value of the `easy-graph.repository.showUncommittedChanges` Extension Setting.
 	 */
 	get showUncommittedChanges() {
-		return !!this.config.get('repository.showUncommittedChanges', true);
+		return !!this.config.get('repository.showUncommittedChanges', configDefaults['repository.showUncommittedChanges']);
 	}
 
 	/**
 	 * Get the value of the `easy-graph.repositoryDropdownOrder` Extension Setting.
 	 */
 	get repoDropdownOrder(): RepoDropdownOrder {
-		const order = this.config.get<string>('repositoryDropdownOrder', 'Workspace Full Path');
+		const order = this.config.get<string>('repositoryDropdownOrder', configDefaults['repositoryDropdownOrder']);
 		return order === 'Full Path'
 			? RepoDropdownOrder.FullPath
 			: order === 'Name'
@@ -707,7 +702,7 @@ class Config {
 	 * Get the glob patterns of the folders to skip when searching for repositories, combining `easy-graph.repoSearchExclude` with the enabled patterns of Visual Studio Code's `files.exclude`.
 	 */
 	get repoSearchExclude(): string[] {
-		const patterns = this.config.get('repoSearchExclude', <any[]>['**/node_modules']);
+		const patterns = this.config.get('repoSearchExclude', <any[]>configDefaults['repoSearchExclude']);
 		const result = Array.isArray(patterns)
 			? patterns.filter((pattern) => typeof pattern === 'string' && pattern !== '')
 			: [];
@@ -724,42 +719,42 @@ class Config {
 	 * Get the value of the `easy-graph.retainContextWhenHidden` Extension Setting.
 	 */
 	get retainContextWhenHidden() {
-		return !!this.config.get('retainContextWhenHidden', true);
+		return !!this.config.get('retainContextWhenHidden', configDefaults['retainContextWhenHidden']);
 	}
 
 	/**
 	 * Get the value of the `easy-graph.disableRefreshWhenShown` Extension Setting.
 	 */
 	get disableRefreshWhenShown() {
-		return !!this.config.get('disableRefreshWhenShown', false);
+		return !!this.config.get('disableRefreshWhenShown', configDefaults['disableRefreshWhenShown']);
 	}
 
 	/**
 	 * Get the value of the `easy-graph.showStatusBarItem` Extension Setting.
 	 */
 	get showStatusBarItem() {
-		return !!this.config.get('showStatusBarItem', true);
+		return !!this.config.get('showStatusBarItem', configDefaults['showStatusBarItem']);
 	}
 
 	/**
 	 * Get the value of the `easy-graph.stickyHeader` Extension Setting.
 	 */
 	get stickyHeader() {
-		return !!this.config.get('stickyHeader', true);
+		return !!this.config.get('stickyHeader', configDefaults['stickyHeader']);
 	}
 
 	/**
 	 * Get the value of the `easy-graph.toggleViewOnCommand` Extension Setting.
 	 */
 	get toggleViewOnCommand() {
-		return !!this.config.get('toggleViewOnCommand', false);
+		return !!this.config.get('toggleViewOnCommand', configDefaults['toggleViewOnCommand']);
 	}
 
 	/**
 	 * Get the value of the `easy-graph.viewLocation` Extension Setting.
 	 */
 	get viewLocation(): 'editor' | 'panel' | 'both' {
-		switch (this.config.get<string>('viewLocation', 'editor')) {
+		switch (this.config.get<string>('viewLocation', configDefaults['viewLocation'])) {
 			case 'panel':
 				return 'panel';
 			case 'both':

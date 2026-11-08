@@ -74,6 +74,94 @@ export function checkL10nBundleParity(root, l10nDir = "l10n") {
 }
 
 /**
+ * `contributes.configuration` 的默认值自洽检查。编号即稳定地址, 废弃时保留编号不复用:
+ * 1. 每个配置项 MUST 声明 `default`, 且 `default` 必须是合法 JSON Schema default (占位符
+ *    字符串 `%...%` 视为未声明)。用户未设置时行为依赖该值, 用 `{}` / `[]` 占位而实际
+ *    另有非空默认值的设置, Settings UI 会显示错误的信息, 且运行时与 schema 静默漂移。
+ * 2. `type: "object"` 的配置 MUST 声明 `additionalProperties` (boolean 或子 schema);
+ *    缺了它 VS Code 会拒绝该设置写入 `settings.json`。
+ * 3. object 配置同时声明 nested `properties` 时, 父对象 `default` MUST 覆盖全部 nested 键,
+ *    且每个 nested 子键的 `default` 与父对象 `default` 中的对应值深度相等。VS Code 不会为
+ *    含嵌套对象或 nullable 值的 object 渲染子项默认值, 父 default 是唯一可见的默认值来源。
+ * 4. `defaultSnippets` 中 body 覆盖全部 nested 键 (即"写出全部默认值"的全量 snippet) 时,
+ *    其 body MUST 与父对象 `default` 深度相等。全量 snippet 复制默认值, 会形成第二来源,
+ *    两处不一致时用户从 snippet 写出的值与实际默认行为不同。
+ *
+ * 兼容用的覆盖容器例外: `default: {}` 但说明中明确标注只是"无覆盖"状态的 open object
+ * (additionalProperties 为 true 或子 schema 且无 nested properties) 不算违规 —— 空对象
+ * 就是它的实际默认值。这类容器的判定靠"无 nested properties", 因此不需要人工白名单。
+ *
+ * `markdownDescription` / `description` / `docs/` 是否复述默认值不在本函数判定:
+ * 文案与文档的归口是 `../readme-rule.md` 的「内容不重复」, 抄了不会报错, 也不会有第二
+ * 个可执行的门; 这里只管 schema 自身的一致性。
+ */
+export function checkConfigDefaults(root) {
+	const problems = [];
+	const manifest = readJson(join(root, "package.json"));
+	const configurations = manifest.contributes?.configuration ?? [];
+	const entries = Array.isArray(configurations) ? configurations : [configurations];
+
+	const isPlaceholder = value => typeof value === "string" && /^%.+%$/.test(value);
+	const hasDefault = (key, prop) => {
+		if (!("default" in prop) || isPlaceholder(prop.default)) {
+			problems.push(`${key} 缺少 default`);
+			return false;
+		}
+		return true;
+	};
+
+	for (const configuration of entries) {
+		for (const [key, prop] of Object.entries(configuration.properties ?? {})) {
+			if (!hasDefault(key, prop)) continue;
+
+			if (prop.type === "object") {
+				if (!("additionalProperties" in prop)) {
+					problems.push(`${key} 是 object 配置但缺少 additionalProperties`);
+				}
+				const nested = prop.properties;
+				if (!nested) continue;
+
+				for (const [name, child] of Object.entries(nested)) {
+					if (!("default" in child)) {
+						problems.push(`${key}.properties.${name} 缺少 default`);
+					}
+				}
+				// 父 default 只覆盖部分 nested 键时, 缺的键既出现在设置界面又无默认值,
+				// 与第 3 条是同一类静默漂移, 一并报出。
+				const parent = prop.default;
+				for (const name of Object.keys(nested)) {
+					if (!Object.hasOwn(parent, name)) {
+						problems.push(`${key} 的 default 缺少 nested 键: ${name}`);
+					} else if (nested[name] && "default" in nested[name]) {
+						if (JSON.stringify(nested[name].default) !== JSON.stringify(parent[name])) {
+							problems.push(`${key} 的 nested default 与父 default 不一致: ${name}`);
+						}
+					}
+				}
+				for (const name of Object.keys(parent)) {
+					if (!Object.hasOwn(nested, name)) {
+						problems.push(`${key} 的 default 含有 schema 未声明的键: ${name}`);
+					}
+				}
+
+				for (const [index, snippet] of (prop.defaultSnippets ?? []).entries()) {
+					const body = snippet.body;
+					if (!body || typeof body !== "object") continue;
+					const nestedKeys = Object.keys(nested);
+					const bodyKeys = Object.keys(body);
+					const coversAll = nestedKeys.every(k => bodyKeys.includes(k));
+					if (!coversAll) continue;
+					if (JSON.stringify(body) !== JSON.stringify(parent)) {
+						problems.push(`${key} 的全量 defaultSnippets[${index}] 与 default 不一致`);
+					}
+				}
+			}
+		}
+	}
+	return problems;
+}
+
+/**
  * `src/` 里内联的 `l10n.t('字面量')` 必须都在中文 bundle 里有对应条目。
  *
  * `vscode.l10n.t` 的 key 就是源码里的英文原文, 所以英语 bundle 是恒等映射, 不需要存在;

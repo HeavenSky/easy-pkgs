@@ -4,6 +4,15 @@
 
 Each release lists the changes you notice when you upgrade.
 
+## v0.0.3 2026-11-08
+
+### Fixed
+
+- Showing the view again (e.g. switching back to its tab) refreshes its data in place instead of reloading it from scratch, so it appears immediately instead of replaying the loading layout. Settings that are only read when the view loads, such as the font family, take effect the next time it is reloaded.
+- While a repository loads, only a loading indicator is shown; the toolbar, graph and table are drawn in one step once the data has rendered, instead of appearing progressively and reflowing (e.g. the toolbar wrapping from one row onto two).
+- The view is ready a little sooner: the webview stylesheet is inlined into the document, and two Git commands that ran one after another when a repository was loaded now run in parallel.
+- Object settings such as `easy-graph.toolbarButtonVisibility`, `easy-graph.defaultColumnVisibility`, `easy-graph.contextMenuActionsVisibility` and `easy-graph.builtin` now declare their full default value, so the Settings editor shows their defaults and they can be written to `settings.json`.
+
 ## v0.0.2 2026-11-05
 
 ### Fixed

@@ -4,6 +4,15 @@
 
 每个版本列出升级后能察觉到的变化。
 
+## v0.0.3 2026-11-08
+
+### 修复
+
+- 再次显示视图（例如切回它的标签页）时改为原地刷新数据，不再从头重载，视图立即出现，不会重放加载中的布局。只在视图加载时读取的设置（如字体）在下次重载时生效。
+- 仓库加载期间只显示 loading 指示；数据渲染完成后工具栏、图表和表格一次成型，不再渐进出现并重排（例如工具栏从一行跳成两行）。
+- 视图更早就绪：webview 样式表内联进文档，仓库加载时原本先后执行的两条 Git 命令改为并行。
+- `easy-graph.toolbarButtonVisibility`、`easy-graph.defaultColumnVisibility`、`easy-graph.contextMenuActionsVisibility`、`easy-graph.builtin` 等对象设置现在声明了完整默认值：设置界面能显示它们的默认值，也能写入 settings.json。
+
 ## v0.0.2 2026-11-05
 
 ### 修复

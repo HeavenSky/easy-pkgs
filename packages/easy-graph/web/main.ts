@@ -604,6 +604,7 @@ class GitGraphView {
 
 		this.graph.loadCommits(this.commits, this.commitHead, this.commitLookup, this.onlyFollowFirstParent, pathFilterActive);
 		this.render();
+		if (currentRepoLoading) this.revealView();
 
 		if (currentRepoLoading && this.config.onRepoLoad.scrollToHead && this.commitHead !== null) {
 			if (typeof this.commitLookup[this.commitHead] === 'number') {
@@ -742,6 +743,7 @@ class GitGraphView {
 	}
 
 	private displayLoadDataError(message: string, reason: string) {
+		this.revealView();
 		this.clearCommits();
 		this.currentRepoRefreshState.inProgress = false;
 		this.loadViewTo = null;
@@ -749,6 +751,13 @@ class GitGraphView {
 		dialog.showError(message, reason, 'Retry', () => {
 			this.refresh(true);
 		});
+	}
+
+	/**
+	 * Reveal the view once it has been rendered with data (see the `preload` class set on the body by the back-end).
+	 */
+	private revealView() {
+		document.body.classList.remove('preload');
 	}
 
 	public loadAvatar(email: string, image: string) {

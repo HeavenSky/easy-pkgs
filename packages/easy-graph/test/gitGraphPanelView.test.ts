@@ -298,7 +298,7 @@ describe('GitGraphPanelView', () => {
 	});
 
 	describe('Visibility', () => {
-		it('Should stop watching the repository when hidden, and render the view again when shown', () => {
+		it('Should stop watching the repository when hidden, and refresh the loaded view in place when shown', () => {
 			// Setup
 			const webviewView = new FakeWebviewView();
 			panelView.resolveWebviewView(<any>webviewView);
@@ -316,7 +316,8 @@ describe('GitGraphPanelView', () => {
 			webviewView.setVisible(true);
 
 			// Assert
-			expect(webviewView.webview.html).not.toBe('');
+			expect(webviewView.webview.html).toBe('');
+			expect(webviewView.webview.postMessage).toHaveBeenCalledWith({ command: 'refresh' });
 			expect(panelView['isPanelVisible']).toBe(true);
 		});
 

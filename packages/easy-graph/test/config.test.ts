@@ -3,6 +3,7 @@ import * as vscode from './mocks/vscode';
 vi.mock('vscode', () => import('./mocks/vscode'));
 
 import { getConfig, getRepoScopeFromLegacyOverrides, setGraphViewColumn } from '../src/config';
+import { configDefaults } from '../src/generated/configDefaults';
 import { BooleanOverride, CommitDetailsViewLocation, CommitOrdering, DateFormatType, DateType, FileViewType, GitPushBranchMode, GitResetMode, GraphStyle, GraphUncommittedChangesStyle, KeybindingModifier, RepoDropdownOrder, SquashMessageFormat, TagType } from '../src/types';
 
 import { expectExtensionSettingToHaveBeenCalled } from './helpers/expectations';
@@ -318,7 +319,7 @@ describe('Config', () => {
 			const value = config.contextMenuActionsVisibility;
 
 			// Assert
-			expect(workspaceConfiguration.get).toBeCalledWith('contextMenuActionsVisibility', {});
+			expect(workspaceConfiguration.get).toBeCalledWith('contextMenuActionsVisibility', configDefaults['contextMenuActionsVisibility']);
 			expect(value).toStrictEqual({
 				branch: {
 					checkout: true,
@@ -431,7 +432,7 @@ describe('Config', () => {
 			const value = config.contextMenuActionsVisibility;
 
 			// Assert
-			expect(workspaceConfiguration.get).toBeCalledWith('contextMenuActionsVisibility', {});
+			expect(workspaceConfiguration.get).toBeCalledWith('contextMenuActionsVisibility', configDefaults['contextMenuActionsVisibility']);
 			expect(value).toStrictEqual({
 				branch: {
 					checkout: true,
@@ -562,7 +563,7 @@ describe('Config', () => {
 			const value = config.contextMenuActionsVisibility;
 
 			// Assert
-			expect(workspaceConfiguration.get).toBeCalledWith('contextMenuActionsVisibility', {});
+			expect(workspaceConfiguration.get).toBeCalledWith('contextMenuActionsVisibility', configDefaults['contextMenuActionsVisibility']);
 			expect(value).toStrictEqual({
 				branch: {
 					checkout: true,
@@ -950,13 +951,13 @@ describe('Config', () => {
 	describe('toolbarButtonVisibility', () => {
 		it('Should show every item by default', () => {
 			// Setup
-			vscode.mockExtensionSettingReturnValue('toolbarButtonVisibility', {});
+			vscode.mockExtensionSettingReturnValue('toolbarButtonVisibility', configDefaults['toolbarButtonVisibility']);
 
 			// Run
 			const value = config.toolbarButtonVisibility;
 
 			// Assert
-			expect(workspaceConfiguration.get).toBeCalledWith('toolbarButtonVisibility', {});
+			expect(workspaceConfiguration.get).toBeCalledWith('toolbarButtonVisibility', configDefaults['toolbarButtonVisibility']);
 			expect(value).toStrictEqual({ display: true, scope: true, pathFilter: true });
 		});
 
@@ -1023,7 +1024,7 @@ describe('Config', () => {
 			const value = config.defaultColumnVisibility;
 
 			// Assert
-			expect(workspaceConfiguration.get).toBeCalledWith('defaultColumnVisibility', {});
+			expect(workspaceConfiguration.get).toBeCalledWith('defaultColumnVisibility', configDefaults['defaultColumnVisibility']);
 			expect(value).toStrictEqual({ date: false, author: true, commit: true });
 		});
 
@@ -1035,7 +1036,7 @@ describe('Config', () => {
 			const value = config.defaultColumnVisibility;
 
 			// Assert
-			expect(workspaceConfiguration.get).toBeCalledWith('defaultColumnVisibility', {});
+			expect(workspaceConfiguration.get).toBeCalledWith('defaultColumnVisibility', configDefaults['defaultColumnVisibility']);
 			expect(value).toStrictEqual({ date: true, author: false, commit: true });
 		});
 
@@ -1047,7 +1048,7 @@ describe('Config', () => {
 			const value = config.defaultColumnVisibility;
 
 			// Assert
-			expect(workspaceConfiguration.get).toBeCalledWith('defaultColumnVisibility', {});
+			expect(workspaceConfiguration.get).toBeCalledWith('defaultColumnVisibility', configDefaults['defaultColumnVisibility']);
 			expect(value).toStrictEqual({ date: true, author: true, commit: false });
 		});
 
@@ -1059,7 +1060,7 @@ describe('Config', () => {
 			const value = config.defaultColumnVisibility;
 
 			// Assert
-			expect(workspaceConfiguration.get).toBeCalledWith('defaultColumnVisibility', {});
+			expect(workspaceConfiguration.get).toBeCalledWith('defaultColumnVisibility', configDefaults['defaultColumnVisibility']);
 			expect(value).toStrictEqual({ date: true, author: true, commit: true });
 		});
 
@@ -1071,7 +1072,7 @@ describe('Config', () => {
 			const value = config.defaultColumnVisibility;
 
 			// Assert
-			expect(workspaceConfiguration.get).toBeCalledWith('defaultColumnVisibility', {});
+			expect(workspaceConfiguration.get).toBeCalledWith('defaultColumnVisibility', configDefaults['defaultColumnVisibility']);
 			expect(value).toStrictEqual({ date: true, author: true, commit: true });
 		});
 
@@ -1083,7 +1084,7 @@ describe('Config', () => {
 			const value = config.defaultColumnVisibility;
 
 			// Assert
-			expect(workspaceConfiguration.get).toBeCalledWith('defaultColumnVisibility', {});
+			expect(workspaceConfiguration.get).toBeCalledWith('defaultColumnVisibility', configDefaults['defaultColumnVisibility']);
 			expect(value).toStrictEqual({ date: true, author: true, commit: true });
 		});
 
@@ -1092,7 +1093,7 @@ describe('Config', () => {
 			const value = config.defaultColumnVisibility;
 
 			// Assert
-			expect(workspaceConfiguration.get).toBeCalledWith('defaultColumnVisibility', {});
+			expect(workspaceConfiguration.get).toBeCalledWith('defaultColumnVisibility', configDefaults['defaultColumnVisibility']);
 			expect(value).toStrictEqual({ date: true, author: true, commit: true });
 		});
 	});
@@ -3228,9 +3229,9 @@ describe('Config', () => {
 
 	describe('onlyFollowFirstParent', testBooleanExtensionSetting('onlyFollowFirstParent', 'repository.onlyFollowFirstParent', false));
 
-	describe('singleAuthorSelect', testBooleanExtensionSetting('singleAuthorSelect', 'repository.singleAuthorSelect', true));
+	describe('singleAuthorSelect', testBooleanExtensionSetting('singleAuthorSelect', 'repository.singleAuthorSelect', false));
 
-	describe('singleBranchSelect', testBooleanExtensionSetting('singleBranchSelect', 'repository.singleBranchSelect', true));
+	describe('singleBranchSelect', testBooleanExtensionSetting('singleBranchSelect', 'repository.singleBranchSelect', false));
 
 	describe('simplifyByDecoration', testBooleanExtensionSetting('simplifyByDecoration', 'repository.simplifyByDecoration', false));
 

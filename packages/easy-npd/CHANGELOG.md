@@ -6,6 +6,12 @@ easy-npd starts from [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.8.0
 
 0.0.0 lists every change relative to npminstall 6.8.0; later versions list changes relative to the previous version.
 
+## Unreleased
+
+### Fixed
+
+- When a package's download fails, the install now waits for its sibling downloads to finish before returning the error, so later scripts and the next install no longer race with directories still being written in the background; dependency-script waiting also skips optional-dependency directories that were never linked because their download failed.
+
 ## 0.0.9 (2026-11-05)
 
 ### Fixed

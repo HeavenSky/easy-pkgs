@@ -6,16 +6,11 @@ easy-npd starts from [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.8.0
 
 0.0.0 lists every change relative to npminstall 6.8.0; later versions list changes relative to the previous version.
 
-## Unreleased
-
-### Fixed
-
-- When a package's download fails, the install now waits for its sibling downloads to finish before returning the error, so later scripts and the next install no longer race with directories still being written in the background; dependency-script waiting also skips optional-dependency directories that were never linked because their download failed.
-
 ## 0.0.9 (2026-11-05)
 
 ### Fixed
 
+- When a package's download fails, the install now waits for its sibling downloads to finish before returning the error, so later scripts and the next install no longer race with directories still being written in the background; dependency-script waiting also skips optional-dependency directories that were never linked because their download failed.
 - HTTP(S) Git dependency credentials are kept out of Git process arguments and restricted to the original protocol, host and port, including recursive submodule fetches; explicit default ports such as `:443` authenticate correctly.
 - Git downloads preserve your `GIT_SSH_COMMAND`, including custom private-key and proxy options.
 - On Windows, the registry, token and other settings in `~/.nprc` are read when the file has LF line endings, e.g. when it was written by a script or copied from macOS or Linux.

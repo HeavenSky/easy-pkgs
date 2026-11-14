@@ -1,16 +1,20 @@
 import type { z } from "zod";
 import { ApiErrorBody } from "./contract";
 
-/** 管理页挂载前缀: 按页面所在路径推算, 宿主把 easy-mok 挂在子路径(如 app.use("/api", mock))时为 /api/__mock */
+/** 管理页挂载前缀: 按页面所在路径推算, 宿主把 easy-mok 挂在子路径(如 app.use("/api", mock))时为 /api/__mock;
+ *  /__mock 后可选的 /ui 段不参与推算, /__mock/ui/logs 与 /__mock/logs 得到同一前缀 */
 export const mockBaseOf = (pathname: string) => {
 	const m = /^(.*?\/__mock)(\/|$)/.exec(pathname);
 	return m ? m[1] : "/__mock";
 };
 
-export const MOCK_BASE = mockBaseOf(
-	typeof location === "undefined" ? "/__mock/" : location.pathname
-);
-export const API_BASE = `${MOCK_BASE}/api`;
+const PATHNAME = typeof location === "undefined" ? "/__mock/" : location.pathname;
+const MOUNT = mockBaseOf(PATHNAME);
+// wouter 路由基座: dev 下 vite base 为 /__mock/ui/, 页面 URL 恒为 /<挂载前缀>/__mock/ui/<页面>, 基座须多吞
+// 一层 /ui 才能命中 /logs 等路由; 生产页面 URL 无 /ui, 且入口(/ui/ 结尾)也不能吞, 否则导航会生成 /ui 页面
+// URL, 服务端 SPA_PATHS 不含 /ui/*, 刷新即 404 — 故仅当 /__mock/ui 后仍有页面路径(dev 独有形态)时才吞
+export const MOCK_BASE = `${MOUNT}${/\/__mock\/ui\/\S/.test(PATHNAME) ? "/ui" : ""}`;
+export const API_BASE = `${MOUNT}/api`;
 
 export class ApiError extends Error {
 	readonly code: string;

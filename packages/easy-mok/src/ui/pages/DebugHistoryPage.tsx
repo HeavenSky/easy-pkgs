@@ -17,9 +17,20 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/dialog";
 import { Hint } from "@/components/ui/input";
 import { Panel, Toolbar } from "@/components/ui/panel";
+import { Switch } from "@/components/ui/switch";
 import { EmptyState } from "@/components/ui/state";
 
 const dayText = (d: string) => `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6)}`;
+
+/** 时间显示开关状态存本机, 刷新后保持; 默认不展示时间 */
+const SHOW_TIME_KEY = "easy-mok:debug-history-show-time";
+const loadShowTime = () => {
+	try {
+		return localStorage.getItem(SHOW_TIME_KEY) === "1";
+	} catch {
+		return false;
+	}
+};
 
 /** 全局调试历史: 按天统计与删除, 按时间倒序的全部条目 */
 export const DebugHistoryPage = () => {
@@ -30,6 +41,15 @@ export const DebugHistoryPage = () => {
 	const entry = useHistoryEntry(viewing);
 	const tree = useDebugTree();
 	const [saving, setSaving] = useState(false);
+	const [showTime, setShowTime] = useState(loadShowTime);
+	const toggleTime = (v: boolean) => {
+		setShowTime(v);
+		try {
+			localStorage.setItem(SHOW_TIME_KEY, v ? "1" : "0");
+		} catch {
+			// 存储不可用时仅本次会话内生效
+		}
+	};
 	const total = (days.data || []).reduce((s, d) => s + d.bytes, 0);
 	return (
 		<div className="flex h-full min-h-0">
@@ -69,10 +89,20 @@ export const DebugHistoryPage = () => {
 						))}
 					</ul>
 				</div>
+				<div className="flex items-center gap-1.5 border-b border-zinc-200 px-3 py-2 dark:border-zinc-800">
+					<span className="text-xs text-zinc-500">显示时间</span>
+					<Switch
+						label="显示时间"
+						checked={showTime}
+						onChange={toggleTime}
+						className="ml-auto"
+					/>
+				</div>
 				<HistoryList
 					requestId={undefined}
 					selected={viewing}
 					onSelect={line => setViewing(line.id)}
+					time={showTime ? "below" : "hidden"}
 				/>
 			</aside>
 			<section className="min-h-0 min-w-0 flex-1 overflow-auto bg-zinc-50 p-4 dark:bg-zinc-950">

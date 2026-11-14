@@ -11,7 +11,9 @@
  * 5. 配置默认值自洽 (checkConfigDefaults);
  * 6. `devkit/check-extra.mjs` 存在时执行它默认导出的 `checks(root)`。
  *
- * 用法: node scripts/check.mjs
+ * 用法: node scripts/check.mjs [--fix]
+ *   `--fix` 先跑 fixConfigDefaults, 把配置默认值里只差复制的问题直接修好, 再照常跑全部检查。
+ *   修复 package.json 后须重跑 gen-config-defaults 同步生成物。
  */
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
@@ -22,6 +24,7 @@ import {
 	checkInlineRuntimeStrings,
 	checkL10nBundleParity,
 	checkNlsParity,
+	fixConfigDefaults,
 } from "../devkit/check-manifest.mjs";
 
 const ROOT = join(fileURLToPath(new URL(".", import.meta.url)), "..");
@@ -56,6 +59,15 @@ const run = (label, fn) => {
 		console.log(`fail  ${label}`);
 	}
 };
+
+if (process.argv.includes("--fix")) {
+	const applied = fixConfigDefaults(ROOT);
+	if (applied.length === 0) console.log("  ok  配置默认值没有可自动修复的问题");
+	else {
+		console.log(`fix  自动修复了 ${applied.length} 处可复制的默认值漂移:`);
+		for (const message of applied) console.log(`  - ${message}`);
+	}
+}
 
 console.log("checks:");
 

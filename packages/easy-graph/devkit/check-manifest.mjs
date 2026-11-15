@@ -125,11 +125,14 @@ function deepEqual(a, b) {
 	if (a === b) return true;
 	const type = jsonType(a);
 	if (type !== jsonType(b)) return false;
-	if (type === "array") return a.length === b.length && a.every((value, index) => deepEqual(value, b[index]));
+	if (type === "array")
+		return a.length === b.length && a.every((value, index) => deepEqual(value, b[index]));
 	if (type !== "object") return false;
 	const keys = Object.keys(a);
-	return keys.length === Object.keys(b).length &&
-		keys.every(key => Object.hasOwn(b, key) && deepEqual(a[key], b[key]));
+	return (
+		keys.length === Object.keys(b).length &&
+		keys.every(key => Object.hasOwn(b, key) && deepEqual(a[key], b[key]))
+	);
 }
 
 /**
@@ -161,7 +164,10 @@ function analyzeConfigDefaults(manifest) {
 
 			if (prop.type === "object") {
 				if (!("additionalProperties" in prop)) {
-					issues.push({ message: `${key} 是 object 配置但缺少 additionalProperties`, fix: null });
+					issues.push({
+						message: `${key} 是 object 配置但缺少 additionalProperties`,
+						fix: null,
+					});
 				}
 				const parent = prop.default;
 				// null 或标量承载不了 nested 默认值, 下面的对比会直接抛 TypeError; 报出可定位的
@@ -178,7 +184,10 @@ function analyzeConfigDefaults(manifest) {
 
 				for (const [name, child] of Object.entries(nested)) {
 					if (!("default" in child)) {
-						issues.push({ message: `${key}.properties.${name} 缺少 default`, fix: null });
+						issues.push({
+							message: `${key}.properties.${name} 缺少 default`,
+							fix: null,
+						});
 					}
 				}
 				// 父 default 只覆盖部分 nested 键时, 缺的键既出现在设置界面又无默认值,
@@ -202,7 +211,10 @@ function analyzeConfigDefaults(manifest) {
 				}
 				for (const name of Object.keys(parent)) {
 					if (!Object.hasOwn(nested, name)) {
-						issues.push({ message: `${key} 的 default 含有 schema 未声明的键: ${name}`, fix: null });
+						issues.push({
+							message: `${key} 的 default 含有 schema 未声明的键: ${name}`,
+							fix: null,
+						});
 					}
 				}
 
@@ -272,8 +284,11 @@ export function fixConfigDefaults(root) {
 	}
 	if (applied.length > 0) {
 		// 缩进按原文件探测, 避免 JSON.stringify 默认两空格把整份清单重排污染 diff。
-		const space = raw.includes("\n") ? raw.match(/\n([ \t]+)/)?.[1] ?? "\t" : undefined;
-		writeFileSync(path, JSON.stringify(manifest, null, space) + (raw.endsWith("\n") ? "\n" : ""));
+		const space = raw.includes("\n") ? (raw.match(/\n([ \t]+)/)?.[1] ?? "\t") : undefined;
+		writeFileSync(
+			path,
+			JSON.stringify(manifest, null, space) + (raw.endsWith("\n") ? "\n" : "")
+		);
 	}
 	return applied;
 }

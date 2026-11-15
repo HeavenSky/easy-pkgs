@@ -71,7 +71,9 @@ export const HistoryList = ({
 								{line.status !== null ? (
 									<StatusBadge status={line.status} />
 								) : (
-									<span className="shrink-0 text-xs text-rose-600">{line.error}</span>
+									<span className="shrink-0 text-xs text-rose-600">
+										{line.error}
+									</span>
 								)}
 								<span
 									className={cn(

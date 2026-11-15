@@ -37,7 +37,10 @@ describe("mockBaseOf 与路由基座", () => {
 			mockBase: "/x/__mock",
 			apiBase: "/x/__mock/api",
 		});
-		expect(await loadBases("/__mock/ui")).toEqual({ mockBase: "/__mock", apiBase: "/__mock/api" });
+		expect(await loadBases("/__mock/ui")).toEqual({
+			mockBase: "/__mock",
+			apiBase: "/__mock/api",
+		});
 	});
 
 	it("无 __mock 时兜底 /__mock", async () => {

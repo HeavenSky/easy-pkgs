@@ -2,6 +2,16 @@
 
 **English** · [简体中文](./zh/CHANGELOG.md)
 
+## 0.0.8 (2026-11-15)
+
+### Changed
+
+- The debug history page hides each entry's time by default; a **Show time** (`显示时间`) switch in the history panel turns it on. The choice is remembered in this browser, and while it is on the time moves to a second line under the method, status and URL instead of sharing the entry's first line.
+
+### Fixed
+
+- In dev (`npm run dev:ui`), opening an admin page URL directly or refreshing it (such as `/__mock/logs`) now lands on that page instead of the fallback route or a 404: the dev server redirects `/__mock/<page>` to `/__mock/ui/<page>`, and the client router only treats the extra `/ui` segment as part of the route base on those dev URLs, leaving production page URLs and the `/ui/` entry unchanged.
+
 ## 0.0.7 (2026-11-05)
 
 ### Fixed

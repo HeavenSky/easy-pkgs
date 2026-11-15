@@ -1,0 +1,15 @@
+# 本文件定义 Git 钩子: 提交前对暂存文件先 lint 再统一格式化, 修复结果自动回填暂存区.
+# 只拦本次提交涉及的文件; CI 的 lint job 仍全仓跑 lint:check 与 fmt:check 兜底.
+
+pre-commit:
+    jobs:
+        # 必须排在 oxfmt 之前而不与它并行: 两者会改写同一批文件, 并行执行时后写入的一方会覆盖另一方的修复结果
+        - name: oxlint
+          glob: "*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}"
+          run: node_modules/.bin/oxlint --fix --deny-warnings --no-error-on-unmatched-pattern {staged_files}
+          stage_fixed: true
+
+        - name: oxfmt
+          glob: "*.{js,jsx,mjs,cjs,ts,tsx,mts,cts,json,jsonc,md,css,html,yaml,yml}"
+          run: node_modules/.bin/oxfmt --write --no-error-on-unmatched-pattern {staged_files}
+          stage_fixed: true

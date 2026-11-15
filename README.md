@@ -52,6 +52,7 @@ npm run build
 ```
 
 - 每个包 MUST 提供 `test` 脚本; `typecheck` 与 `build` 有则由 CI 执行. 根目录的 `install:all`, `test`, `build` 由 `scripts/each.mjs` 在各包内依次执行.
+- 提交门禁用 lefthook: 配置在根目录 `lefthook.yml`, 提交前对暂存文件先 `oxlint --fix --deny-warnings` 再 `oxfmt --write`, 修复结果自动回填暂存区; CI 的 lint job 仍全仓兜底. lefthook 二进制自装不进 devDependencies, 克隆后执行一次 `lefthook install` 接管钩子; 临时跳过用 `git commit --no-verify` 或 `LEFTHOOK=0`.
 - lint 与格式化统一在根目录: oxlint 与 oxfmt 只装在根目录的 devDependencies, 各包不再声明 `lint` / `fmt` 脚本与依赖. oxlint 使用默认规则, 不另配规则: 根目录 `.oxlintrc.json` 只用 `ignorePatterns` 排除入库的测试 fixture, `lint:check` 带 `--deny-warnings`, 出现 warning 即失败, 改代码消除而不是关规则或写豁免注释; 格式化选项在根目录 `.oxfmtrc.json`. 接手新包时删掉上游自带的 lint / 格式化配置与依赖. 根目录执行 `npm ci` 才能运行这两个工具.
 - 不发布的内部包放在 `packages/_<名称>/`, `package.json` 写 `"private": true`: CI 通用 job 跳过 `_` 开头的目录, `release.yml` 拒绝发布 private 包; 目前只有 `_official_style_suites`(包名 `official-style-suites`, 官方样式测试集的下载, 抽取与判定, 见下文 CI 一节).
 - 一个修复要同时用到多个包时, 分别修改并分别提交, 不抽公共代码.

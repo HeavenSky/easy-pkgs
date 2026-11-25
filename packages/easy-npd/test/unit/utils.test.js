@@ -454,6 +454,48 @@ describe("test/unit/utils.test.js", () => {
 				done: true,
 			});
 		});
+
+		it("should retry an atomic state replacement after EPERM", async () => {
+			const mm = require("mm");
+			const dir = await createPackage("_a@1.0.0@a");
+			const rename = fs.rename;
+			let attempts = 0;
+			mm(fs, "rename", async (from, to) => {
+				assert.equal(to, path.join(store, ".npd-state.json"));
+				if (++attempts === 1) {
+					throw Object.assign(new Error("state file is locked"), { code: "EPERM" });
+				}
+				await rename(from, to);
+			});
+			try {
+				await installState.reset(dir);
+			} finally {
+				mm.restore();
+			}
+			assert.equal(attempts, 2);
+			assert.deepEqual(await installState.get(dir), { done: false });
+		});
+
+		it("should preserve the old state and remove the temp file when replacement fails", async () => {
+			const mm = require("mm");
+			const dir = await createPackage("_a@1.0.0@a");
+			const file = path.join(store, ".npd-state.json");
+			const previous = await fs.readFile(file, "utf8");
+			const error = Object.assign(new Error("permission denied"), { code: "EACCES" });
+			let attempts = 0;
+			mm(fs, "rename", async () => {
+				attempts++;
+				throw error;
+			});
+			try {
+				await assert.rejects(installState.reset(dir), err => err === error);
+			} finally {
+				mm.restore();
+			}
+			assert.equal(attempts, 1);
+			assert.equal(await fs.readFile(file, "utf8"), previous);
+			assert(!(await fs.readdir(store)).some(name => name.endsWith(".tmp")));
+		});
 	});
 
 	describe("stripUrlAuth()", () => {

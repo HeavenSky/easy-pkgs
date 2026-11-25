@@ -21,6 +21,25 @@ describe("test/registry/download.test.js", () => {
 		mm.restore();
 	});
 
+	it("should reject every download caller when the install state cannot be written", async function () {
+		this.timeout(5000);
+		const { EventEmitter } = require("node:events");
+		const download = require("../../lib/download/npm");
+		const installState = require("../../lib/install_state");
+		const pkg = { raw: "example@1.0.0", name: "example", version: "1.0.0" };
+		const error = Object.assign(new Error("state file is locked"), { code: "EPERM" });
+		const events = new EventEmitter();
+		events.await = require("await-event");
+		const options = { cache: { dependenciesTree: { [pkg.raw]: pkg } }, storeDir: tmp, events };
+		mm(installState, "reset", async () => {
+			throw error;
+		});
+
+		const check = () => assert.rejects(download(pkg, options), err => err === error);
+		await Promise.all([check(), check()]);
+		await check();
+	});
+
 	describe("mock tarball not exists", () => {
 		it("should throw error when status === 404", async () => {
 			const mockAgent = new MockAgent();

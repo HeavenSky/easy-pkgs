@@ -420,20 +420,18 @@ async function download(pkg, options) {
 
 	const ungzipDir = options.ungzipDir || utils.getPackageStorePath(options.storeDir, pkg);
 
-	// make sure only one download for a version
+	// 复用下载结果, 状态写入等步骤失败时也会唤醒所有等待方
 	const key = `download:${pkg.name}@${pkg.version}`;
 	if (options.cache[key]) {
-		// wait download finish
-		if (!options.cache[key].done) {
-			const err = await options.events.await(key);
-			if (err) {
-				throw err;
-			}
-		}
+		await options.cache[key];
 		return { exists: true, dir: ungzipDir };
 	}
-	options.cache[key] = { done: false };
+	const pending = downloadToStore(pkg, options, ungzipDir);
+	options.cache[key] = pending;
+	return pending;
+}
 
+async function downloadToStore(pkg, options, ungzipDir) {
 	const done = await utils.isInstallDone(ungzipDir);
 	// 来源后缀出现之前, git / url / 本地包装在不带后缀的同一目录里, 不能当作 registry 包复用
 	if (
@@ -445,9 +443,6 @@ async function download(pkg, options) {
 		// 上次安装中断或失败的包带回阶段, 由本次运行第一个到达的调用方继续安装; 继续执行脚本需要解压出的 scripts
 		const stage = await utils.getResumeStage(ungzipDir, options);
 		if (stage) await mergePackageMeta(pkg, ungzipDir, options);
-		options.cache[key].done = true;
-		options.events.emit(key);
-		// debug('[%s@%s] Exists', pkg.name, pkg.version);
 		return { exists: true, dir: ungzipDir, stage };
 	}
 
@@ -506,10 +501,7 @@ async function download(pkg, options) {
 			}
 		}
 	}
-	if (lastErr) {
-		options.events.emit(key, lastErr);
-		throw lastErr;
-	}
+	if (lastErr) throw lastErr;
 
 	await mergePackageMeta(pkg, ungzipDir, options);
 
@@ -544,8 +536,6 @@ async function download(pkg, options) {
 
 	await utils.addMetaToJSONFile(path.join(ungzipDir, "package.json"), pkgMeta);
 
-	options.cache[key].done = true;
-	options.events.emit(key);
 	options.registryPackages++;
 
 	return { exists: false, dir: ungzipDir };

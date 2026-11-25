@@ -4,7 +4,7 @@ const fs = require("fs");
 const http = require("http");
 const path = require("path");
 const { spawn } = require("child_process");
-const { listen, makeFixture, sleep, waitFor } = require("../helpers/server");
+const { listen, makeFixture, waitFor } = require("../helpers/server");
 const { loadSrc } = require("../helpers/src");
 
 const { startMock } = loadSrc();
@@ -55,7 +55,7 @@ describe("startMock", () => {
 		expect(started.server.listening).toBe(false);
 	});
 
-	it("mock 目录不存在时警告一次, 不抛错; 稍后创建的目录照常监听", async () => {
+	it("mock 目录不存在时警告一次, 不抛错; 稍后创建的目录照常监听", async ({ onTestFinished }) => {
 		const dir = fixture();
 		const warns = [];
 		const spy = vi.spyOn(console, "warn").mockImplementation((...a) => {
@@ -63,6 +63,7 @@ describe("startMock", () => {
 		});
 		try {
 			const started = await start(dir, { folder: "later", watch: undefined });
+			onTestFinished(() => started.close());
 			const folder = path.join(dir, "later");
 			const hits = warns.filter(w => w.includes("mock 目录不存在"));
 			expect(hits.length).toBe(1);
@@ -78,24 +79,24 @@ describe("startMock", () => {
 				async () => (await fetch(`${started.url}/api/later`)).status === 200,
 				5000
 			);
-			await started.close();
-			// 上级目录也不存在: 监听最近的已存在祖先, 多级目录稍后创建同样自动加载
-			const deep = await start(dir, { folder: "x/y/mocks", watch: undefined });
-			expect(warns.at(-1)).toMatch(/无需重启/);
+			// 在监听器首次扫描前创建多级目录, 复现启动时漏掉文件的竞态
+			const startingDeep = start(dir, { folder: "x/y/mocks", watch: undefined });
 			fs.writeFileSync(
 				path.join(dir, "sibling.js"),
 				"module.exports = { 'GET /api/sibling': 1 };"
 			); // 不在通往 mock 目录的路径上, 不加载
-			expect((await fetch(`${deep.url}/api/deep`)).status).toBe(404);
-			await sleep(300); // 等监听就绪
 			fs.mkdirSync(path.join(dir, "x/y/mocks"), { recursive: true });
-			fs.writeFileSync(
-				path.join(dir, "x/y/mocks/a.js"),
-				"module.exports = { 'GET /api/deep': { deep: true } };"
-			);
-			await waitFor(async () => (await fetch(`${deep.url}/api/deep`)).status === 200, 5000);
+			const deepFile = path.join(dir, "x/y/mocks/a.js");
+			fs.writeFileSync(deepFile, "module.exports = { 'GET /api/deep': { deep: true } };");
+			const deep = await startingDeep;
+			onTestFinished(() => deep.close());
+			expect(warns.at(-1)).toMatch(/无需重启/);
+			const deepStatus = async () =>
+				(await fetch(`${deep.url}/api/deep`, { signal: AbortSignal.timeout(2000) })).status;
+			await waitFor(async () => (await deepStatus()) === 200, 5000);
 			expect((await fetch(`${deep.url}/api/sibling`)).status).toBe(404);
-			await deep.close();
+			fs.unlinkSync(deepFile);
+			await waitFor(async () => (await deepStatus()) === 404, 5000);
 			const nested = await start(dir, { folder: "no/such/mocks" });
 			expect(warns.filter(w => w.includes("mock 目录不存在")).length).toBe(3);
 			expect(warns.at(-1)).toMatch(/重启/);

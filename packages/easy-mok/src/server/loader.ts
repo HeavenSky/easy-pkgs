@@ -283,7 +283,7 @@ export const createRegistry = (opt: {
 		tryNative: false,
 		fsCache: opt.cacheDir || true,
 	});
-	const files = new Set(walk(folder));
+	let files = new Set(walk(folder));
 	const deps = new Set<string>(); // mock 入口的项目内传递依赖, 含宿主预加载的模块
 	const watchedDeps = new Set<string>(); // 额外监听的 mock 目录外依赖
 	const lastGood = new Map<string, Snapshot>(); // 各入口上次导入, 校验与编译都成功的快照
@@ -705,6 +705,17 @@ export const createRegistry = (opt: {
 				schedule();
 			} // 目录连同文件一起创建时补登已有入口
 			if (ownMock || inScenes || deps.has(file) || type.startsWith("unlink")) schedule();
+		});
+		watcher.once("ready", () => {
+			// ignoreInitial 会略过首次扫描发现的文件, 补上同步加载与监听就绪之间的目录变化
+			if (root !== folder && fs.existsSync(folder) && !(folder in watcher.getWatched())) {
+				watcher.add(folder);
+			}
+			const current = new Set(walk(folder));
+			if (current.size !== files.size || [...current].some(file => !files.has(file))) {
+				files = current;
+				schedule();
+			}
 		});
 	}
 	reload(); // 启动时同步加载, 避免首批请求漏掉 mock

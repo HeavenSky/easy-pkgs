@@ -30,10 +30,11 @@ function locate(realRoot) {
 
 async function readEntries(file) {
 	try {
-		return JSON.parse(await fs.readFile(file, "utf8")).packages || {};
-	} catch {
+		return JSON.parse(await fs.readFile(file, "utf8"))?.packages || {};
+	} catch (err) {
 		// 状态文件缺失或损坏时视为没有记录: 包会被当作未完成而重新处理, 不会被误判为已完成
-		return {};
+		if (err.code === "ENOENT" || err instanceof SyntaxError) return {};
+		throw err;
 	}
 }
 
@@ -57,7 +58,7 @@ class StateFile {
 	async sync() {
 		const signature = await statSignature(this.file);
 		if (signature === this.signature) return;
-		const fileEntries = signature ? await readEntries(this.file) : {};
+		const fileEntries = signature ? await readEntries(this.file).catch(() => ({})) : {};
 		// 读完文件再取本进程未写盘的修改: 先取会漏掉读文件期间的 set, 磁盘上的旧值随后被写回
 		const pending = {};
 		for (const key of this.touched) pending[key] = this.entries[key];
@@ -103,16 +104,31 @@ class StateFile {
 
 	async write() {
 		const keys = [...this.touched];
-		const entries = await readEntries(this.file);
-		for (const key of keys) {
-			if (this.entries[key]) entries[key] = this.entries[key];
-			else delete entries[key];
-		}
 		await fs.mkdir(path.dirname(this.file), { recursive: true });
 		// 先写临时文件再改名, 中断或并发读取时不会看到写了一半的 JSON
 		const tmpFile = `${this.file}.${randomUUID()}.tmp`;
-		await fs.writeFile(tmpFile, JSON.stringify({ version: 1, packages: entries }));
-		await fs.rename(tmpFile, this.file);
+		let entries;
+		try {
+			for (let attempt = 0; ; attempt++) {
+				try {
+					entries = await readEntries(this.file);
+					for (const key of keys) {
+						if (this.entries[key]) entries[key] = this.entries[key];
+						else delete entries[key];
+					}
+					await fs.writeFile(tmpFile, JSON.stringify({ version: 1, packages: entries }));
+					await fs.rename(tmpFile, this.file);
+					break;
+				} catch (err) {
+					// Windows 上文件短暂被占用时, 保留原文件并重试原子替换
+					if (attempt === 4 || (err.code !== "EPERM" && err.code !== "EBUSY")) throw err;
+					await new Promise(resolve => setTimeout(resolve, 25 * 2 ** attempt));
+				}
+			}
+		} catch (err) {
+			await fs.rm(tmpFile, { force: true }).catch(() => {});
+			throw err;
+		}
 		for (const key of keys) {
 			if (this.entries[key] === entries[key] || (!this.entries[key] && !entries[key]))
 				this.touched.delete(key);

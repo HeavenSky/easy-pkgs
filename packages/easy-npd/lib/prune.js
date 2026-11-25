@@ -5,22 +5,48 @@ const path = require("path");
 const fs = require("fs/promises");
 const utils = require("./utils");
 const installState = require("./install_state");
+const planManifestPrune = require("./prune_manifest");
 
 // .npd 下的包版本目录: _name@version@name, scope 包为 _@scope_name@version@@scope, 包本体在其下的 name 子目录
 const isStoreEntry = name => name.startsWith("_") && name.includes("@");
 
-module.exports = async ({ root, dryRun = false }) => {
+module.exports = async ({ root, dryRun = false, only = [] }) => {
 	// 链接目标都按 realpath 比较, node_modules 或 --root 经过符号链接时不取 realpath 会把所有包都判为不可达
 	const linkedStoreDir = path.join(root, "node_modules");
 	const storeDir = await fs.realpath(linkedStoreDir).catch(() => linkedStoreDir);
-	const packagesDir = utils.getPackagesDir(storeDir);
+	const packagesPath = utils.getPackagesDir(storeDir);
+	const packagesDir = only.length
+		? await fs.realpath(packagesPath).catch(() => packagesPath)
+		: packagesPath;
 	let entries;
 	try {
 		entries = (await fs.readdir(packagesDir)).filter(isStoreEntry);
-	} catch {
-		return { removed: [], kept: 0 };
+	} catch (error) {
+		if (!only.length) return { removed: [], kept: 0, links: [] };
+		if (error.code !== "ENOENT") throw error;
+		entries = [];
 	}
 
+	const { reachable, links } = only.length
+		? await planManifestPrune({ projects: [root], only, storeRoot: packagesDir, entries })
+		: { reachable: await findReachable(storeDir, packagesDir), links: [] };
+	const removed = entries.filter(entry => !reachable.has(entry)).sort();
+	if (!dryRun) {
+		for (const link of links) {
+			await fs.unlink(link).catch(error => {
+				if (error.code !== "ENOENT") throw error;
+			});
+		}
+		await installState.removeEntries(
+			packagesDir,
+			entry => removed.includes(entry) || !entries.includes(entry)
+		);
+		for (const entry of removed) await utils.rimraf(path.join(packagesDir, entry));
+	}
+	return { removed, kept: entries.length - removed.length, links };
+};
+
+async function findReachable(storeDir, packagesDir) {
 	const reachable = new Set();
 	const visitedDirs = new Set();
 	// 扫描一个 node_modules 目录: 链接到包版本目录的条目记为可达并继续扫描该包的 node_modules
@@ -58,14 +84,5 @@ module.exports = async ({ root, dryRun = false }) => {
 		}
 	};
 	await scan(storeDir, true);
-
-	const removed = entries.filter(entry => !reachable.has(entry)).sort();
-	if (!dryRun) {
-		await installState.removeEntries(
-			packagesDir,
-			entry => removed.includes(entry) || !entries.includes(entry)
-		);
-		for (const entry of removed) await utils.rimraf(path.join(packagesDir, entry));
-	}
-	return { removed, kept: entries.length - removed.length };
-};
+	return reachable;
+}

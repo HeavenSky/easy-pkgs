@@ -8,7 +8,7 @@ const SUMMARIES = {
 	rebuild: "rerun lifecycle scripts of installed dependencies",
 	"approve-scripts": "allow install scripts of dependencies in package.json allowScripts",
 	"deny-scripts": "deny install scripts of dependencies in package.json allowScripts",
-	prune: "remove package versions in node_modules/.np that nothing links to",
+	prune: "remove unreferenced package versions or prune to selected dependency fields",
 };
 
 // commands: [{ name, aliases }], 顺序即展示顺序
@@ -253,16 +253,22 @@ exports.prune = () => `
 Usage:
 
   np-x prune
-  np-x prune --dry-run
+  np-x prune --only=prod,optional --dry-run
+  np-x prune --prod
 
 Upgrading packages leaves their old versions in node_modules/.np; np-x uninstall removes unreferenced versions by itself.
 This command walks the links from node_modules of the project and every workspace,
 removes the <name>@<version> folders in node_modules/.np that are not reachable,
 and the fallback links in node_modules/.np/node_modules that point to them.
 Installs never remove these folders by themselves.
+With --only or --prod, keep packages reachable from the selected package.json fields.
+Remove unused top-level symlinks, their bin entries and unreferenced versions.
+Use update to reinstall or resolve newer versions.
 
 Options:
 
+  --only=<type>[,...]: dependency fields to keep, e.g. prod, dev, optional, peer or a custom type
+  --prod: same as --only=prod
   --dry-run: only list what would be removed
   -v, --version: show version
   -h, --help: show help

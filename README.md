@@ -77,22 +77,34 @@ npm run build
 
 ## 发布
 
-推送 `<包目录名>@<版本>` 形式的 tag 后, `.github/workflows/release.yml` 校验 tag 与 `packages/<包目录名>/package.json` 的 `version` 一致, 等待同一提交在 main 上的 CI 通过(不重复跑 lint 与单测, CI 未通过或该提交没推到 main 时不发布); 包有 `build` 脚本时先安装依赖并构建; 打包用 `npm pack --ignore-scripts`, 不执行任何生命周期脚本; `files` 中声明了 `npm-shrinkwrap.json` 的包(easy-np, easy-npd)由 `scripts/shrinkwrap.mjs` 从 lockfile 去掉开发依赖后生成并打进包, 用户用 npm 安装时整棵依赖树按已测版本解析; 再发布到 npm, 并以 CHANGELOG 中该版本的段落创建 GitHub Release; 带 `-` 的预发布版本发布到 dist-tag `next`.
+GitHub Actions 根据版本 tag 发布 npm 包和 VS Code 插件, 并用该版本的变更日志创建 GitHub Release. 发布流程见 [release.yml](./.github/workflows/release.yml).
 
-VS Code 插件(`package.json` 有 `engines.vscode`)走另一条路: 同样先等 CI, 再在包目录 `npm ci`, `npm run check`, `npm run package` 打出 vsix(内容按允许清单断言), 用仓库 Secrets 的 `VSCE_PAT` 发布到 VS Code Marketplace(必需), 配了 `OVSX_PAT` 时同时发布到 Open VSX, 两边发布同一个 vsix 并附到 GitHub Release; 两个市场都先查询该版本是否已存在, 已存在就跳过, 重跑安全. 包内任何文件含 `RELEASE-BLOCKER` 时, npm 包与插件都拒绝发布.
+1. 同步包的 `package.json`、锁文件和中英文 CHANGELOG, 把发布改动提交到 `main`.
+2. 推送 `main`, 再把 `<包目录名>@<版本>` tag 打在同一提交并推送. 工作流会核对版本号及 `RELEASE-BLOCKER` 标记, 等这次提交的 CI 通过再发布.
+3. 在 [GitHub Actions](https://github.com/HeavenSky/easy-pkgs/actions/workflows/release.yml) 查看结果. GitHub Release 从英文 CHANGELOG 提取本次版本的条目, 其中的仓库内链接指向发布提交.
 
-- 首次发布插件前在 [Marketplace 管理页](https://marketplace.visualstudio.com/manage) 建好与 `package.json` 的 `publisher` 相同的发布者, 用 Azure DevOps 生成 Marketplace (Manage) 权限的 PAT 存为仓库 Secret `VSCE_PAT`; 发布 Open VSX 时在 open-vsx.org 生成 token 存为 `OVSX_PAT`, 并先用 `npx ovsx create-namespace <publisher>` 建命名空间.
+以 easy-np 为例, 在仓库根目录运行:
 
 ```bash
-# 先改好 version 与 CHANGELOG 并提交
-git tag easy-np@0.0.5
-git push origin main easy-np@0.0.5
+release_version="$(node -p "require('./packages/easy-np/package.json').version")"
+git push origin main
+git tag "easy-np@$release_version" main
+git push origin "easy-np@$release_version"
 ```
 
-npm 登录走 Trusted Publishing, 不需要 `NPM_TOKEN`: 每个包需在 npmjs.com 的 Settings → Trusted Publisher 中登记一次 GitHub Actions, 仓库 `HeavenSky/easy-pkgs`, 工作流 `release.yml`.
+### npm 包
 
-- 新包名的首个版本必须在本机 `npm login` 后 `npm publish --access public`: npm 只能给已存在的包登记 Trusted Publisher, 不支持先登记再由 CI 首发(npm/cli#8544). 登记后 2 天内要完成一次 OIDC 发布, 否则配置过期.
-- 登记的仓库与 `package.json` 的 `repository.url` 都必须是当前仓库名; 仓库改名后要在每个已登记的包上改过来, 否则 release.yml 的发布会失败.
+GitHub Actions 将包发布到 npm 公共注册表. 正式版本更新 `latest`, 版本号带预发布后缀时更新 `next`. 工作流按需构建, 用 `npm pack --ignore-scripts` 打包. easy-np 和 easy-npd 的包内还带由 [锁文件脚本](./scripts/shrinkwrap.mjs) 生成的 `npm-shrinkwrap.json`, 供 npm 按已测试的运行时依赖版本安装.
+
+- 在 npm 包的 Settings → Trusted publishing 中登记 GitHub 仓库 `HeavenSky/easy-pkgs` 和工作流 `release.yml`. 仓库改名后, 更新登记和 `package.json` 的 `repository.url`. 新连接须在 2 天内完成一次成功发布. [npm Trusted Publishing](https://docs.npmjs.com/trusted-publishers/)
+- 新包名可先在本机 `npm login`, 再用 `npm publish --access public` 发布首个版本, 然后登记 Trusted Publishing.
+
+### VS Code 插件
+
+带 `engines.vscode` 的包在 CI 通过后执行 `npm ci`、`npm run check` 和 `npm run package`. 工作流将同一个 VSIX 发布到 VS Code Marketplace, 配置了 `OVSX_PAT` 时也发布到 Open VSX, 并附到 GitHub Release. 已存在的市场版本会跳过.
+
+- 首次发布前, 在 Marketplace 创建与 `package.json` 的 `publisher` 相同的发布者, 将 Azure DevOps 的 Marketplace (Manage) PAT 存为仓库 Secret `VSCE_PAT`. [Marketplace 管理页](https://marketplace.visualstudio.com/manage)
+- 发布到 Open VSX 时, 创建访问 token 并存为 `OVSX_PAT`, 再运行 `npx ovsx create-namespace <publisher>` 创建命名空间.
 
 ## 分支
 

@@ -82,14 +82,7 @@ exports.removeStaleBins = async (linkDir, newPkg, binDir) => {
 	} catch {
 		// 旧目录已不存在时只按链接路径比对
 	}
-	const tokens = new Set();
-	for (const dir of oldDirs) {
-		const relative = path.relative(binDir, dir);
-		for (const p of [dir, relative]) {
-			tokens.add(p.split(path.sep).join("/"));
-			tokens.add(p.split(path.sep).join("\\"));
-		}
-	}
+	const tokens = binPathTokens(binDir, oldDirs);
 	for (const name of Object.keys(oldBins)) {
 		if (name in newBins) continue;
 		for (const target of await exports.listBinShims(path.join(binDir, name))) {
@@ -100,6 +93,39 @@ exports.removeStaleBins = async (linkDir, newPkg, binDir) => {
 		}
 	}
 };
+
+exports.findBinsPointingTo = async (binDir, dirs) => {
+	const targets = dirs.filter(dir => {
+		const relative = path.relative(dir, binDir);
+		return (
+			relative === ".." || relative.startsWith(".." + path.sep) || path.isAbsolute(relative)
+		);
+	});
+	if (targets.length === 0) return [];
+	const stat = await fs.lstat(binDir).catch(error => {
+		if (error.code !== "ENOENT") throw error;
+	});
+	if (!stat?.isDirectory()) return [];
+	const tokens = binPathTokens(binDir, targets);
+	const matches = [];
+	for (const name of await fs.readdir(binDir)) {
+		const target = path.join(binDir, name);
+		if (await binPointsTo(target, targets, tokens)) matches.push(target);
+	}
+	return matches;
+};
+
+function binPathTokens(binDir, dirs) {
+	const tokens = new Set();
+	for (const dir of dirs) {
+		const relative = path.relative(binDir, dir);
+		for (const p of [dir, relative]) {
+			tokens.add(p.split(path.sep).join("/") + "/");
+			tokens.add(p.split(path.sep).join("\\") + "\\");
+		}
+	}
+	return tokens;
+}
 
 // 软链接按解析后的路径判断, shim 文件按内容中是否出现旧包目录判断
 async function binPointsTo(target, dirs, tokens) {

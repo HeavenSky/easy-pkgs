@@ -16,6 +16,7 @@ const {
 } = require("..");
 const npa = require("../npa");
 const utils = require("../utils");
+const { TYPE_FIELDS, fieldOf, parseDepTypes } = require("../dependency_types");
 const globalConfig = require("../config");
 const { parsePackageName } = require("../alias");
 const { LOCAL_TYPES, REMOTE_TYPES, ALIAS_TYPES } = require("../npa_types");
@@ -82,16 +83,6 @@ const REMOVED_SHORT_ARGS = {
 	w: "run np inside the workspace folder instead",
 	c: "public registries and binary mirrors switch automatically by speed",
 };
-// <type> 的格式, 对应 package.json 的 <type>Dependencies 字段
-const DEP_TYPE = /^[a-z][a-zA-Z0-9]*$/;
-// 内置类型的字段名, 其他 <type> 对应 <type>Dependencies
-const TYPE_FIELDS = {
-	prod: "dependencies",
-	dev: "devDependencies",
-	optional: "optionalDependencies",
-	peer: "peerDependencies",
-};
-const fieldOf = type => TYPE_FIELDS[type] || `${type}Dependencies`;
 // 不传 --only 时安装的类型
 const DEFAULT_TYPES = ["prod", "dev", "optional"];
 // npm 定义的依赖字段, 其余 <type>Dependencies 字段只在 --only / --include 列出时安装
@@ -943,22 +934,6 @@ async function main(
 			omitted.size === 0 &&
 			skippedDepFields.length === 0,
 	});
-}
-
-// 逗号分隔且可重复传入的依赖类型名; 校验格式, 防止把包名或路径当作类型
-function parseDepTypes(value, flag) {
-	const types = []
-		.concat(value ?? [])
-		.flatMap(item => String(item).split(","))
-		.map(item => item.trim())
-		.filter(Boolean);
-	for (const type of types) {
-		if (!DEP_TYPE.test(type))
-			throw utils.userError(
-				`${flag} takes dependency types like client or build, got "${type}"`
-			);
-	}
-	return [...new Set(types)];
 }
 
 // package.json 中声明了但本次不安装的非标准依赖字段, 如未传 --include=client 时的 clientDependencies

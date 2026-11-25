@@ -16,7 +16,7 @@
 | `np-x rebuild`         | 无              | 按依赖顺序重跑已安装依赖的 `preinstall`、`install` 与 `postinstall` |
 | `np-x approve-scripts` | `approve`       | 把依赖写入 `package.json` 的 `allowScripts`，放行其安装脚本         |
 | `np-x deny-scripts`    | `deny`          | 在 `allowScripts` 中写入拒绝条目，并删除同一包已有的放行条目        |
-| `np-x prune`           | 无              | 删除 `node_modules/.np` 中不再被任何链接引用的包版本                |
+| `np-x prune`           | 无              | 回收无人引用的版本，也可按所选依赖字段清理                          |
 | `np-x help <command>`  | 无              | 显示子命令的帮助，同 `np-x <command> -h`                            |
 
 - 全部命令都支持 `-v, --version` 与 `-h, --help`；`np -v` 打印 `np v<version>`，`np-x -v` 与 `np-x <command> -v` 打印 `np-x v<version>`；`np-x -h` 列出全部子命令。
@@ -34,4 +34,10 @@
 | `np-x rebuild [<pkg>[@<range>] ...]`   | install 参数（如 `--registry`、`--offline`、`--ignore-scripts`）同样生效                                                                     |
 | `np-x approve-scripts <pkg> ...`       | `--all`：放行全部未审核的包；`--pending`：只列出；`--no-pin`：只写包名或不带 commit 的地址                                                   |
 | `np-x deny-scripts <pkg> ...`          | `--all`：拒绝全部未审核的包                                                                                                                  |
-| `np-x prune`                           | `--dry-run`：只列出不删除；不支持 `-g`，全局包没有共享的 `.np`                                                                               |
+| `np-x prune`                           | `--only=<type>[,...]`、`--prod`、`--dry-run`                                                                                                 |
+
+## 按依赖字段清理已安装的包
+
+修改 `package.json` 后，运行 `np-x prune --prod --dry-run`，预览将删除的包链接、命令入口和版本目录。运行 `np-x prune --prod`，清理范围覆盖根项目和所有 workspace。
+
+`--prod` 等同于 `--only=prod`，选用 `dependencies`。用 `--only=prod,optional` 可同时选用 `optionalDependencies`。所选依赖树仍需的包保留当前安装版本，顶层实体包目录也会保留。如需重装并在声明范围内解析新版本，使用 `np-x update --prod`。

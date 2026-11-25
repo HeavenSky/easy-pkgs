@@ -42,7 +42,7 @@
 | `npd-x rebuild`         | 无              | 重跑已安装依赖的 preinstall / install / postinstall          |
 | `npd-x approve-scripts` | `approve`       | 把依赖写进 `package.json` 的 `allowScripts`，放行其安装脚本  |
 | `npd-x deny-scripts`    | `deny`          | 在 `allowScripts` 中写入拒绝条目，并删除同一包已有的放行条目 |
-| `npd-x prune`           | 无              | 删除 `node_modules/.npd` 中没有任何链接指向的目录            |
+| `npd-x prune`           | 无              | 回收无人引用的版本，也可按所选依赖字段清理                   |
 | `npd-x help <command>`  | 无              | 显示子命令的帮助，同 `npd-x <command> -h`                    |
 
 - 全部命令都支持 `-v, --version` 与 `-h, --help`；`npd-x -h` 列出全部子命令。

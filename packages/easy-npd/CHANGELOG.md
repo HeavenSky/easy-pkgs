@@ -6,6 +6,12 @@ easy-npd starts from [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.8.0
 
 0.0.0 lists every change relative to npminstall 6.8.0; later versions list changes relative to the previous version.
 
+## 0.0.10 (2026-11-25)
+
+### Added
+
+- Clean up unused packages after editing `package.json` with `npd-x prune --only=<type>` or `--prod`, and preview removals with `--dry-run`. [Prune to selected dependency fields](./docs/manage-packages.md#prune-to-selected-dependency-fields)
+
 ## 0.0.9 (2026-11-05)
 
 ### Fixed

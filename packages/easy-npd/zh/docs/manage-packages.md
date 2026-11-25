@@ -73,3 +73,9 @@
 2. 运行 `npd-x prune`。预期：这些目录及其在 `.npd-state.json` 中的记录被删除。
 
 `node_modules` 或项目路径经过符号链接时，prune 同样正常工作。
+
+### 按依赖字段清理已安装的包
+
+修改 `package.json` 后，运行 `npd-x prune --prod --dry-run`，预览将删除的包链接、命令入口和版本目录。运行 `npd-x prune --prod` 执行清理。
+
+`--prod` 等同于 `--only=prod`，选用 `dependencies`。用 `--only=prod,optional` 可同时选用 `optionalDependencies`。所选依赖树仍需的包保留当前安装版本，顶层实体包目录也会保留。如需重装并在声明范围内解析新版本，使用 `npd-x update --prod`。

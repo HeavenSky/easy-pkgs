@@ -16,7 +16,7 @@ Every task besides installing has its own `np-x` command, listed below with its 
 | `np-x rebuild`         | none            | Reruns `preinstall`, `install` and `postinstall` of installed dependencies, dependencies first              |
 | `np-x approve-scripts` | `approve`       | Adds dependencies to `allowScripts` in `package.json` so their install scripts run                          |
 | `np-x deny-scripts`    | `deny`          | Adds deny entries to `allowScripts` and removes allow entries of the same package                           |
-| `np-x prune`           | none            | Deletes package versions in `node_modules/.np` that no link references                                      |
+| `np-x prune`           | none            | Reclaims unused versions and can prune to selected dependency fields                                        |
 | `np-x help <command>`  | none            | Shows the help of a command, same as `np-x <command> -h`                                                    |
 
 - Every command accepts `-v, --version` and `-h, --help`; `np -v` prints `np v<version>`, `np-x -v` and `np-x <command> -v` print `np-x v<version>`, and `np-x -h` lists all commands.
@@ -34,4 +34,10 @@ Every task besides installing has its own `np-x` command, listed below with its 
 | `np-x rebuild [<pkg>[@<range>] ...]`   | install options such as `--registry`, `--offline` and `--ignore-scripts` apply as well                                                                                                  |
 | `np-x approve-scripts <pkg> ...`       | `--all`: approve every unreviewed package; `--pending`: only list them; `--no-pin`: write only the name or the address without a commit                                                 |
 | `np-x deny-scripts <pkg> ...`          | `--all`: deny every unreviewed package                                                                                                                                                  |
-| `np-x prune`                           | `--dry-run`: only list, do not delete; `-g` is not supported because global packages have no shared `.np`                                                                               |
+| `np-x prune`                           | `--only=<type>[,...]`, `--prod`, `--dry-run`                                                                                                                                            |
+
+## Prune to selected dependency fields
+
+After editing `package.json`, run `np-x prune --prod --dry-run` to preview the links, bin entries and package versions that would be removed. Run `np-x prune --prod` to apply the cleanup across the project and all its workspaces.
+
+`--prod` is shorthand for `--only=prod`, which selects `dependencies`. Use `--only=prod,optional` to also select `optionalDependencies`. Packages still needed by the selected dependency tree keep their installed versions. Top-level package directories on disk are kept. To reinstall and resolve newer versions within the declared ranges, use `np-x update --prod`.

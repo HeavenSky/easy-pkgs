@@ -6,6 +6,12 @@ easy-npd 起步于 [cnpm/npminstall](https://github.com/cnpm/npminstall) 6.8.0�
 
 0.0.0 列出相对 npminstall 6.8.0 的全部改动，之后每个版本列出相对上一版的改动。
 
+## 0.0.10 (2026-11-25)
+
+### 新增
+
+- 改完 `package.json` 后，用 `npd-x prune --only=<type>` 或 `--prod` 清理多余的包，用 `--dry-run` 预览将删除的内容。[按依赖字段清理已安装的包](./docs/manage-packages.md#按依赖字段清理已安装的包)
+
 ## 0.0.9 (2026-11-05)
 
 ### 修复

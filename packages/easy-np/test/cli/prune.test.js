@@ -89,4 +89,142 @@ describe("test/cli/prune.test.js", () => {
 		await run(helper.npminstall, []).expect("code", 0).end();
 		assert.equal(require(path.join(tmp, "node_modules/debug/package.json")).version, "3.2.7");
 	});
+
+	it("should prune selected fields and retain shared versions and peer links", async () => {
+		const modules = path.join(tmp, "node_modules");
+		const storePackage = (pkg, version) =>
+			path.join(modules, ".np", `${pkg}@${version}/node_modules`, pkg);
+		const manifest = JSON.stringify({
+			dependencies: { app: "1.0.0" },
+			devDependencies: { devtool: "1.0.0" },
+			clientDependencies: { client: "1.0.0" },
+		});
+		const pkgFile = path.join(tmp, "package.json");
+		await fs.writeFile(pkgFile, manifest);
+		await fs.writeFile(path.join(tmp, "np-lock.json"), "{}");
+		for (const [name, version, deps] of [
+			[
+				"app",
+				"1.0.0",
+				{ dependencies: { shared: "1.0.0" }, peerDependencies: { peer: "*" } },
+			],
+			["shared", "1.0.0"],
+			["shared", "2.0.0"],
+			["peer", "1.0.0"],
+			["devtool", "1.0.0"],
+			["client", "1.0.0"],
+		]) {
+			const dir = storePackage(name, version);
+			await fs.mkdir(dir, { recursive: true });
+			await fs.writeFile(
+				path.join(dir, "package.json"),
+				JSON.stringify({ name, version, ...deps })
+			);
+		}
+		for (const name of ["app", "devtool", "peer", "client"]) {
+			await fs.symlink(storePackage(name, "1.0.0"), path.join(modules, name), "junction");
+		}
+		const sharedDir = path.join(path.dirname(storePackage("app", "1.0.0")), "shared");
+		await fs.mkdir(path.dirname(sharedDir), { recursive: true });
+		const sharedBridge = path.join(modules, "shared-bridge");
+		await fs.symlink(storePackage("shared", "1.0.0"), sharedBridge, "junction");
+		await fs.symlink(sharedBridge, sharedDir, "junction");
+		await fs.symlink(storePackage("shared", "2.0.0"), path.join(modules, "shared"), "junction");
+		const external = path.join(tmp, "external");
+		await fs.mkdir(external);
+		await fs.symlink(external, path.join(modules, "undeclared"), "junction");
+
+		const binDir = path.join(modules, ".bin");
+		await fs.mkdir(binDir);
+		for (const name of ["tool", "tool.cmd", "tool.ps1"]) {
+			await fs.writeFile(path.join(binDir, name), "../devtool/cli.js");
+		}
+		await fs.writeFile(path.join(binDir, "other"), "../devtool-other/cli.js");
+
+		await run(x, ["prune", "--only=prod", "--only=client", "--dry-run"])
+			.expect("code", 0)
+			.expect("stdout", /would remove .*devtool/)
+			.notExpect("stdout", /would remove .*client/)
+			.end();
+		await run(x, ["prune", "--only=typo"])
+			.expect("code", 1)
+			.expect("stderr", /no typoDependencies/)
+			.end();
+		await fs.lstat(path.join(modules, "undeclared"));
+		assert.deepEqual((await fs.readdir(binDir)).sort(), [
+			"other",
+			"tool",
+			"tool.cmd",
+			"tool.ps1",
+		]);
+
+		await run(x, ["prune", "--prod"])
+			.expect("code", 0)
+			.expect("stdout", /removed .*undeclared/)
+			.end();
+		assert.deepEqual((await fs.readdir(binDir)).sort(), ["other"]);
+		for (const name of ["devtool", "client", "undeclared", "shared"]) {
+			await assert.rejects(fs.lstat(path.join(modules, name)), { code: "ENOENT" });
+		}
+		await assert.rejects(fs.stat(storePackage("shared", "2.0.0")), { code: "ENOENT" });
+		await fs.stat(external);
+		await fs.stat(path.join(modules, "app"));
+		await fs.stat(path.join(modules, "peer"));
+		assert.equal(
+			await fs.realpath(sharedDir),
+			await fs.realpath(storePackage("shared", "1.0.0"))
+		);
+		assert.equal(await fs.readFile(pkgFile, "utf8"), manifest);
+		assert.equal(await fs.readFile(path.join(tmp, "np-lock.json"), "utf8"), "{}");
+
+		await run(x, ["prune", "--prod", "--dry-run"])
+			.expect("code", 0)
+			.notExpect("stdout", /would remove/)
+			.end();
+	});
+
+	it("should apply the selection across workspaces and preserve a linked workspace's peer", async () => {
+		const workspace = path.join(tmp, "packages", "app");
+		const modules = path.join(tmp, "node_modules");
+		await fs.writeFile(
+			path.join(tmp, "package.json"),
+			JSON.stringify({
+				workspaces: ["packages/*"],
+				dependencies: { app: "workspace:*" },
+				devDependencies: { peer: "*", devtool: "*" },
+			})
+		);
+		await fs.mkdir(path.join(workspace, "node_modules"), { recursive: true });
+		await fs.writeFile(
+			path.join(workspace, "package.json"),
+			JSON.stringify({
+				name: "app",
+				version: "1.0.0",
+				peerDependencies: { peer: "*" },
+				devDependencies: { devtool: "*" },
+			})
+		);
+		for (const name of ["peer", "devtool"]) {
+			const dir = path.join(store, `${name}@1.0.0`, "node_modules", name);
+			await fs.mkdir(dir, { recursive: true });
+			await fs.writeFile(path.join(dir, "package.json"), JSON.stringify({ name }));
+			await fs.symlink(dir, path.join(modules, name), "junction");
+		}
+		const devtool = path.join(modules, "devtool");
+		const workspaceDevtool = path.join(workspace, "node_modules", "devtool");
+		await fs.symlink(devtool, workspaceDevtool, "junction");
+		await fs.symlink(workspace, path.join(modules, "app"), "junction");
+		const fallbackDir = path.join(store, "node_modules");
+		await fs.mkdir(fallbackDir);
+		await fs.symlink(devtool, path.join(fallbackDir, "devtool"), "junction");
+
+		await coffee.fork(x, ["prune", "--prod"], { cwd: workspace }).expect("code", 0).end();
+
+		await fs.stat(path.join(modules, "app"));
+		await fs.stat(path.join(modules, "peer"));
+		for (const link of [devtool, workspaceDevtool, path.join(fallbackDir, "devtool")]) {
+			await assert.rejects(fs.lstat(link), { code: "ENOENT" });
+		}
+		assert.deepEqual(await storeEntries(), ["peer@1.0.0"]);
+	});
 });

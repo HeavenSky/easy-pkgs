@@ -73,3 +73,9 @@ Run `npd-x prune` to delete the folders in `node_modules/.npd` that no link refe
 2. Run `npd-x prune`. Expected: those folders and their records in `.npd-state.json` are gone.
 
 Prune works when `node_modules` or the project path goes through a symlink.
+
+### Prune to selected dependency fields
+
+After editing `package.json`, run `npd-x prune --prod --dry-run` to preview the links, bin entries and package versions that would be removed. Run `npd-x prune --prod` to apply the cleanup.
+
+`--prod` is shorthand for `--only=prod`, which selects `dependencies`. Use `--only=prod,optional` to also select `optionalDependencies`. Packages still needed by the selected dependency tree keep their installed versions. Top-level package directories on disk are kept. To reinstall and resolve newer versions within the declared ranges, use `npd-x update --prod`.

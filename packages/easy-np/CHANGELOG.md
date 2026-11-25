@@ -6,6 +6,12 @@ easy-np started from [cnpm/npminstall](https://github.com/cnpm/npminstall) 8.0.1
 
 0.0.0 lists every change relative to npminstall 8.0.1; later versions list the changes relative to the previous version.
 
+## 0.0.10 (2026-11-25)
+
+### Added
+
+- Clean up unused packages after editing `package.json` with `np-x prune --only=<type>` or `--prod`, and preview removals with `--dry-run`. [Prune to selected dependency fields](./docs/commands.md#prune-to-selected-dependency-fields)
+
 ## 0.0.9 (2026-11-05)
 
 ### Fixed
